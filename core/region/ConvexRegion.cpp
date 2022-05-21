@@ -166,12 +166,15 @@ namespace worldedit {
             vertexBacklog.insert(vertex + change);
         }
         delete tmpVertexBacklog;
-        for (auto triangle : triangles) {
-            Vec3 v0 = triangle.getVertex(0) + change.toVec3();
-            Vec3 v1 = triangle.getVertex(1) + change.toVec3();
-            Vec3 v2 = triangle.getVertex(2) + change.toVec3();
-            triangle = Triangle(v0, v1, v2);
+        auto tmpTriangles = new std::vector<Triangle>(triangles);
+        triangles.clear();
+        for (auto triangle : *tmpTriangles) {
+            triangles.emplace_back(
+                Triangle(triangle.vertices[0] + change.toVec3(),
+                         triangle.vertices[1] + change.toVec3(),
+                         triangle.vertices[2] + change.toVec3()));
         }
+        delete tmpTriangles;
         auto tmpEdges = new std::unordered_set<Edge, _hash>(edges);
         edges.clear();
         for (auto edge : *tmpEdges) {
@@ -181,6 +184,8 @@ namespace worldedit {
         delete tmpEdges;
         centerAccum = centerAccum + change * (int)vertices.size();
         hasLast = false;
+
+        updateBoundingBox();
         player->sendFormattedText("§aThis region has been shifted");
         return true;
     }

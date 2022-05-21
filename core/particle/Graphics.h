@@ -46,6 +46,12 @@ namespace worldedit {
 
     std::string facingToString(FACING facing);
 
+    BlockPos facingToPos(FACING facing, int length);
+
+    FACING dirStringToFacing(const std::string& dir);
+
+    FACING dirToFacing(const Vec3& dir);
+
     std::string facingToDirString(FACING facing);
 
     void drawLine(const Vec3& originPoint,

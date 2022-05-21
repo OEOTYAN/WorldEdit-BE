@@ -65,7 +65,7 @@ namespace cpp_eval {
             NUMBER = 258,
             FINISHED = 259,
 
-            POWER = 260,  //**
+            POWER = '^',  //**
 
             MULTIPLY = '*',
             DIVIDE = '/',
@@ -83,11 +83,11 @@ namespace cpp_eval {
             NOT_EQUAL = 266,  //!=
 
             AND = '&',
-            XOR = '^',
+            XOR = 267,  //^^
             OR = '|',
 
-            LOGIC_AND = 267,  //&&
-            LOGIC_OR = 268    //||
+            LOGIC_AND = 268,  //&&
+            LOGIC_OR = 269    //||
         };
         Type mType;
         std::string mIdentifier;
@@ -98,8 +98,18 @@ namespace cpp_eval {
                 if (isspace(*mCurrent)) {
                     ++mCurrent;
                     continue;
-                } else if (*mCurrent == '*' && *(mCurrent + 1) == '*')
-                    mType = POWER, mCurrent += 2;
+                } else if (*mCurrent == 'a' && *(mCurrent + 1) == 'n' &&
+                           *(mCurrent + 2) == 'd')
+                    mType = LOGIC_AND, mCurrent += 3;
+                else if (*mCurrent == 'm' && *(mCurrent + 1) == 'o' &&
+                         *(mCurrent + 2) == 'd')
+                    mType = MOD, mCurrent += 3;
+                else if (*mCurrent == 'o' && *(mCurrent + 1) == 'r')
+                    mType = LOGIC_OR, mCurrent += 2;
+                else if (*mCurrent == '=' && *(mCurrent + 1) == '=')
+                    mType = EQUAL, mCurrent += 2;
+                else if (*mCurrent == '^' && *(mCurrent + 1) == '^')
+                    mType = XOR, mCurrent += 2;
                 else if (*mCurrent == '<' && *(mCurrent + 1) == '=')
                     mType = LESS_THAN_OR_EQUAL, mCurrent += 2;
                 else if (*mCurrent == '>' && *(mCurrent + 1) == '=')
@@ -118,14 +128,15 @@ namespace cpp_eval {
                          *mCurrent == PARAMETER_SEPERATOR ||
                          *mCurrent == LESS_THAN || *mCurrent == GREATER_THAN ||
                          *mCurrent == EQUAL || *mCurrent == AND ||
-                         *mCurrent == XOR || *mCurrent == OR)
+                         *mCurrent == POWER || *mCurrent == OR)
                     mType = (Type)*mCurrent, ++mCurrent;
                 else if (isalpha(*mCurrent)) {
                     mType = IDENTIFIER;
                     mIdentifier.clear();
                     mIdentifier += *mCurrent;
                     ++mCurrent;
-                    while (isalpha(*mCurrent) || isdigit(*mCurrent))
+                    while (isalpha(*mCurrent) || isdigit(*mCurrent) ||
+                           *mCurrent == '_' || *mCurrent == ':')
                         mIdentifier += *mCurrent, ++mCurrent;
                 } else if (*mCurrent == 0)
                     mType = FINISHED;
@@ -345,6 +356,10 @@ namespace cpp_eval {
                 std::vector<number> param = parameter_list();
                 result = mFuncs(id.c_str(), param);
             } else {
+                if (id == "pi" || id == "π")
+                    return 3.14159265358979323846;
+                if (id == "e")
+                    return 2.7182818284590452354;
                 if (mVariables.find(id) == mVariables.end())
                     return 0;
                 result = mVariables.find(id)->second;

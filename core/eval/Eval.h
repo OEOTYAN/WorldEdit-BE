@@ -5,20 +5,55 @@
 #ifndef WORLDEDIT_EVAL_H
 #define WORLDEDIT_EVAL_H
 
-#include <numeric>
-#include <vector>
-#include <map>
-#include <cmath>
-#include <random>
-#include <string>
-#include "CppEval.h"
+#include "pch.h"
+#include <EventAPI.h>
+#include <LoggerAPI.h>
+#include <MC/Level.hpp>
+#include <MC/BlockInstance.hpp>
+#include <MC/Block.hpp>
+#include <MC/BlockLegacy.hpp>
+#include <MC/BlockSource.hpp>
 #include <MC/Actor.hpp>
+#include <MC/Player.hpp>
+#include <MC/ServerPlayer.hpp>
+#include <MC/Dimension.hpp>
+#include <MC/ItemStack.hpp>
+#include "string/StringTool.h"
+#include <LLAPI.h>
+#include <ServerAPI.h>
+#include <EventAPI.h>
+#include <ScheduleAPI.h>
+#include <DynamicCommandAPI.h>
+#include "particle/Graphics.h"
+#include "WorldEdit.h"
+#include "CppEval.h"
+#include "pcg_random.hpp"
+#include "FastNoise/FastNoise.h"
 
 namespace worldedit {
+    pcg32 rng(pcg_extras::seed_seq_from<std::random_device>{});
     class EvalFunctions {
+        BlockPos here;
+        std::uniform_real_distribution<double> uniform_dist{0.0, 1.0};
+        BlockSource* blockSource;
+        bool blockdataInitialized = false;
+
        public:
+        void setPos(const BlockPos& pos) { here = pos; }
+        void setbs(BlockSource* bs) {
+            blockSource = bs;
+            blockdataInitialized = true;
+        }
         double operator()(const char* name, const std::vector<double>& params) {
             switch (do_hash(name)) {
+                case do_hash("rand"):
+                    if (params.size() == 0) {
+                        return uniform_dist(rng);
+                    } else if (params.size() == 2) {
+                        return uniform_dist(rng) * (params[1] - params[0]) +
+                               params[0];
+                    }
+                    break;
                 case do_hash("sin"):
                     if (params.size() == 1)
                         return sin(params[0]);
@@ -126,13 +161,176 @@ namespace worldedit {
                     break;
                 case do_hash("max"):
                     return *max_element(params.begin(), params.end());
-                default:
+                    break;
+                case do_hash("id"):
+                    if (blockdataInitialized) {
+                        if (params.size() == 0) {
+                            return blockSource->getBlock(here).getId();
+                        } else if (params.size() == 3) {
+                            return blockSource
+                                ->getBlock(
+                                    here +
+                                    BlockPos(
+                                        static_cast<int>(floor(params[0])),
+                                        static_cast<int>(floor(params[1])),
+                                        static_cast<int>(floor(params[2]))))
+                                .getId();
+                        }
+                    }
                     return 0;
+                    break;
+                case do_hash("data"):
+                    if (blockdataInitialized) {
+                        if (params.size() == 0) {
+                            return (const_cast<Block&>(
+                                        blockSource->getBlock(here)))
+                                .getTileData();
+                        } else if (params.size() == 3) {
+                            return (const_cast<Block&>(blockSource->getBlock(
+                                        here +
+                                        BlockPos(
+                                            static_cast<int>(floor(params[0])),
+                                            static_cast<int>(floor(params[1])),
+                                            static_cast<int>(
+                                                floor(params[2]))))))
+                                .getTileData();
+                        }
+                    }
+                    return 0;
+                    break;
+                case do_hash("issolid"):
+                    if (blockdataInitialized) {
+                        if (params.size() == 0) {
+                            return blockSource->getBlock(here).isSolid();
+                        } else if (params.size() == 3) {
+                            return blockSource
+                                ->getBlock(
+                                    here +
+                                    BlockPos(
+                                        static_cast<int>(floor(params[0])),
+                                        static_cast<int>(floor(params[1])),
+                                        static_cast<int>(floor(params[2]))))
+                                .isSolid();
+                        }
+                    }
+                    return 0;
+                    break;
+                case do_hash("iswaterblocking"):
+                    if (blockdataInitialized) {
+                        if (params.size() == 0) {
+                            return blockSource->getBlock(here)
+                                .isWaterBlocking();
+                        } else if (params.size() == 3) {
+                            return blockSource
+                                ->getBlock(
+                                    here +
+                                    BlockPos(
+                                        static_cast<int>(floor(params[0])),
+                                        static_cast<int>(floor(params[1])),
+                                        static_cast<int>(floor(params[2]))))
+                                .isWaterBlocking();
+                        }
+                    }
+                    return 0;
+                    break;
+                case do_hash("issbblock"):
+                    if (blockdataInitialized) {
+                        if (params.size() == 0) {
+                            return !blockSource->getBlock(here)
+                                        .isSolidBlockingBlock();
+                        } else if (params.size() == 3) {
+                            return !blockSource
+                                        ->getBlock(
+                                            here +
+                                            BlockPos(static_cast<int>(
+                                                         floor(params[0])),
+                                                     static_cast<int>(
+                                                         floor(params[1])),
+                                                     static_cast<int>(
+                                                         floor(params[2]))))
+                                        .isSolidBlockingBlock();
+                        }
+                    }
+                    return 0;
+                    break;
+                case do_hash("issurface"):
+                    if (blockdataInitialized) {
+                        BlockPos tmp = here;
+                        if (params.size() == 0) {
+                            tmp = tmp + BlockPos(0, 1, 0);
+                        } else if (params.size() == 3) {
+                            tmp =
+                                tmp +
+                                BlockPos(static_cast<int>(floor(params[0])),
+                                         static_cast<int>(floor(params[1])) + 1,
+                                         static_cast<int>(floor(params[2])));
+                        }
+                        return blockSource->getHeightmapPos(tmp) == tmp;
+                    }
+                    return 0;
+                    break;
+                default:
+                    if (blockdataInitialized) {
+                        std::string sname(name);
+                        if (sname.substr(0, 3) == "is_") {
+                            if (sname.find(":") == std::string::npos) {
+                                sname = "minecraft:" + sname.substr(3);
+                            } else {
+                                sname = sname.substr(3);
+                            }
+                            if (params.size() == 0) {
+                                if (sname ==
+                                    blockSource->getBlock(here).getTypeName()) {
+                                    return 1;
+                                }
+                                return 0;
+                            } else {
+                                if (sname ==
+                                    blockSource
+                                        ->getBlock(
+                                            here +
+                                            BlockPos(static_cast<int>(
+                                                         floor(params[0])),
+                                                     static_cast<int>(
+                                                         floor(params[1])),
+                                                     static_cast<int>(
+                                                         floor(params[2]))))
+                                        .getTypeName()) {
+                                    return 1;
+                                }
+                                return 0;
+                            }
+                        } else if (sname.substr(0, 4) == "has_") {
+                            sname = sname.substr(4);
+                            if (params.size() == 0) {
+                                if (blockSource->getBlock(here)
+                                        .getTypeName()
+                                        .find(sname) != std::string::npos) {
+                                    return 1;
+                                }
+                                return 0;
+                            } else {
+                                if (blockSource
+                                        ->getBlock(
+                                            here +
+                                            BlockPos(static_cast<int>(
+                                                         floor(params[0])),
+                                                     static_cast<int>(
+                                                         floor(params[1])),
+                                                     static_cast<int>(
+                                                         floor(params[2]))))
+                                        .getTypeName()
+                                        .find(sname) != std::string::npos) {
+                                    return 1;
+                                }
+                                return 0;
+                            }
+                        }
+                        return 0;
+                    }
             }
             return 0;
         }
     };
-
-    double eval(Player* player, const std::string& s);
 }  // namespace worldedit
 #endif

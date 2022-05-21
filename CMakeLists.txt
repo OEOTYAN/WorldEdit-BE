@@ -14,9 +14,11 @@ file(GLOB_RECURSE SRC_FILES_DIR
         ${PROJECT_SOURCE_DIR}/Template/*.cpp
         ${PROJECT_SOURCE_DIR}/Template/*.hpp
         ${PROJECT_SOURCE_DIR}/Template/*.h
+        ${PROJECT_SOURCE_DIR}/pcg/*.hpp
         )
-
+include_directories(FastNoise2/include)
 include_directories(core)
+include_directories(pcg)
 include_directories(SDK/Header)
 include_directories(SDK/Header/third-party)
 include_directories(Template)

@@ -41,7 +41,7 @@ inline void CheckProtocolVersion() {
 
 void PluginInit() {
     CheckProtocolVersion();
-
+    auto &mod= worldedit::getMod();
     worldedit::serverSubscribe();
     worldedit::playerSubscribe();
     worldedit::commandsSetup();

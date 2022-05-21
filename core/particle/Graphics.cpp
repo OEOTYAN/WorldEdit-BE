@@ -47,7 +47,35 @@ namespace worldedit {
                 return "unknown";
         }
     }
-
+    FACING dirStringToFacing(const std::string& dir) {
+        if (dir == "west") {
+            return FACING::POS_X;
+        } else if (dir == "east") {
+            return FACING::NEG_X;
+        } else if (dir == "down") {
+            return FACING::NEG_Y;
+        } else if (dir == "south") {
+            return FACING::POS_Z;
+        } else if (dir == "north") {
+            return FACING::NEG_Z;
+        }
+        return FACING::POS_Y;
+    }
+    FACING dirToFacing(const Vec3& dir) {
+        Vec3 mDir = dir.normalize();
+        if (mDir.x > 0.71) {
+            return FACING::POS_X;
+        } else if (mDir.x < -0.71) {
+            return FACING::NEG_X;
+        } else if (mDir.y < -0.71) {
+            return FACING::NEG_Y;
+        } else if (mDir.z > 0.71) {
+            return FACING::POS_Z;
+        } else if (mDir.z < -0.71) {
+            return FACING::NEG_Z;
+        }
+        return FACING::POS_Y;
+    }
     bool facingIsPos(FACING facing) {
         return facing == FACING::POS_X || facing == FACING::POS_Y ||
                facing == FACING::POS_Z;
@@ -68,6 +96,24 @@ namespace worldedit {
 
     bool facingIsZ(FACING facing) {
         return facing == FACING::POS_Z || facing == FACING::NEG_Z;
+    }
+    BlockPos facingToPos(FACING facing, int length = 1) {
+        switch (facing) {
+            case FACING::POS_X:
+                return BlockPos(length, 0, 0);
+            case FACING::NEG_X:
+                return BlockPos(-length, 0, 0);
+            case FACING::NEG_Z:
+                return BlockPos(0, 0, -length);
+            case FACING::POS_Z:
+                return BlockPos(0, 0, length);
+            case FACING::NEG_Y:
+                return BlockPos(0, -length, 0);
+            case FACING::POS_Y:
+                return BlockPos(0, length, 0);
+            default:
+                return BlockPos(0, 0, 0);
+        }
     }
 
     FACING invFacing(FACING facing) {
@@ -276,71 +322,71 @@ namespace worldedit {
         }
     }
     void drawOrientedLine(Vec3 start, Vec3 end, int dimType) {
-        Vec3 tmpStart, tmpEnd, vector;
-        if (start.y > end.y) {
-            tmpStart = end;
-            tmpEnd = start;
-        } else {
-            tmpStart = start;
-            tmpEnd = end;
-        }
-        float tmpChebyshevLength;
-        do {
-            vector = tmpEnd - tmpStart;
-            float chebyshevLength =
-                std::max((std::max(vector.x, vector.y)), vector.z);
-            tmpChebyshevLength = chebyshevLength;
-            bool isGreater = false;
-            if (chebyshevLength > MAX_LENGTH) {
-                isGreater = true;
-            }
-            int length;
-            if (!isGreater) {
-                length = (int)round(vector.length());
-            }
-            vector = vector * (MAX_LENGTH / chebyshevLength);
-            vector.x = round(vector.x);
-            vector.y = round(vector.y);
-            vector.z = round(vector.z);
-            Vec3 tmpVector(vector);
-            vector = vector.y >= 0 ? vector : Vec3::ZERO - vector;
-            std::string num = std::to_string((int)vector.x) + "_" +
-                              std::to_string((int)vector.y) + "_" +
-                              std::to_string((int)vector.z) + "_";
-            stringReplace(num, "-", "_");
-            if (isGreater)
-                length = (int)round(vector.length());
-            float tmpLength = (float)length;
-            vector = vector.normalize();
-            auto mstart = tmpStart;
-            for (auto defaultLength = (int)(MAX_LENGTH); defaultLength >= 1;
-                 defaultLength /= 2) {
-                if (length >= defaultLength) {
-                    length -= defaultLength;
-                    auto point =
-                        (vector * (float)(0.5f * defaultLength) + mstart) +
-                        Vec3(0.5f, 0.5f, 0.5f);
-                    mstart = mstart + vector * (float)defaultLength;
-                    std::string particleType = "worldedit:orientedline" + num;
-                    std::string particleTypeInv =
-                        "worldedit:orientedline" + num;
-                    std::string particleBackType =
-                        "worldedit:orientedline_back" + num;
-                    std::string particleBackTypeInv =
-                        "worldedit:orientedline_back" + num;
-                    std::string mlength = std::to_string(defaultLength);
-                    // std::string mlength = "1";
-                    particleType += mlength + "mY";
-                    particleTypeInv += mlength + "pY";
-                    particleBackType += mlength + "mY";
-                    particleBackTypeInv += mlength + "pY";
-                    spawnParticle(point, particleType, dimType);
-                    spawnParticle(point, particleTypeInv, dimType);
-                    spawnParticle(point, particleBackType, dimType);
-                    spawnParticle(point, particleBackTypeInv, dimType);
-                }
-            }
-            tmpStart = tmpStart + tmpVector.normalize() * tmpLength;
-        } while (tmpChebyshevLength > MAX_LENGTH);
+        // Vec3 tmpStart, tmpEnd, vector;
+        // if (start.y > end.y) {
+        //     tmpStart = end;
+        //     tmpEnd = start;
+        // } else {
+        //     tmpStart = start;
+        //     tmpEnd = end;
+        // }
+        // float tmpChebyshevLength;
+        // do {
+        //     vector = tmpEnd - tmpStart;
+        //     float chebyshevLength =
+        //         std::max((std::max(vector.x, vector.y)), vector.z);
+        //     tmpChebyshevLength = chebyshevLength;
+        //     bool isGreater = false;
+        //     if (chebyshevLength > MAX_LENGTH) {
+        //         isGreater = true;
+        //     }
+        //     int length;
+        //     if (!isGreater) {
+        //         length = (int)round(vector.length());
+        //     }
+        //     vector = vector * (MAX_LENGTH / chebyshevLength);
+        //     vector.x = round(vector.x);
+        //     vector.y = round(vector.y);
+        //     vector.z = round(vector.z);
+        //     Vec3 tmpVector(vector);
+        //     vector = vector.y >= 0 ? vector : Vec3::ZERO - vector;
+        //     std::string num = std::to_string((int)vector.x) + "_" +
+        //                       std::to_string((int)vector.y) + "_" +
+        //                       std::to_string((int)vector.z) + "_";
+        //     stringReplace(num, "-", "_");
+        //     if (isGreater)
+        //         length = (int)round(vector.length());
+        //     float tmpLength = (float)length;
+        //     vector = vector.normalize();
+        //     auto mstart = tmpStart;
+        //     for (auto defaultLength = (int)(MAX_LENGTH); defaultLength >= 1;
+        //          defaultLength /= 2) {
+        //         if (length >= defaultLength) {
+        //             length -= defaultLength;
+        //             auto point =
+        //                 (vector * (float)(0.5f * defaultLength) + mstart) +
+        //                 Vec3(0.5f, 0.5f, 0.5f);
+        //             mstart = mstart + vector * (float)defaultLength;
+        //             std::string particleType = "worldedit:orientedline" + num;
+        //             std::string particleTypeInv =
+        //                 "worldedit:orientedline" + num;
+        //             std::string particleBackType =
+        //                 "worldedit:orientedline_back" + num;
+        //             std::string particleBackTypeInv =
+        //                 "worldedit:orientedline_back" + num;
+        //             std::string mlength = std::to_string(defaultLength);
+        //             // std::string mlength = "1";
+        //             particleType += mlength + "mY";
+        //             particleTypeInv += mlength + "pY";
+        //             particleBackType += mlength + "mY";
+        //             particleBackTypeInv += mlength + "pY";
+        //             spawnParticle(point, particleType, dimType);
+        //             spawnParticle(point, particleTypeInv, dimType);
+        //             spawnParticle(point, particleBackType, dimType);
+        //             spawnParticle(point, particleBackTypeInv, dimType);
+        //         }
+        //     }
+        //     tmpStart = tmpStart + tmpVector.normalize() * tmpLength;
+        // } while (tmpChebyshevLength > MAX_LENGTH);
     }
 }  // namespace worldedit

@@ -39,9 +39,13 @@ namespace worldedit {
 
     int SphereRegion::checkChanges(const std::vector<BlockPos>& changes) {
         BlockPos tmp;
+        int x = 0, y = 0, z = 0;
         for (auto change : changes) {
-            tmp = tmp + change;
+            x += abs(change.x);
+            y += abs(change.y);
+            z += abs(change.z);
         }
+        tmp = {x, y, z};
         if ((tmp.x) == (tmp.y) && (tmp.y) == (tmp.z)) {
             return (tmp.x) / 2;
         }

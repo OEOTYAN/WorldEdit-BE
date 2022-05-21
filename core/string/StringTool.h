@@ -7,15 +7,27 @@
 
 #include <string>
 #include <algorithm>
+#include <iomanip>
 
 namespace worldedit {
 
     namespace {
         template <typename T>
-        std::string fto_string(const T a_value,int i=22) {
+        std::string fto_string(const T a_value, int i = 23, bool j = false) {
             std::ostringstream out;
             out.precision(i);
-            out << a_value;
+            if (i < 23 && i > -1) {
+                if (j) {
+                    out << std::fixed << std::setw(i + 3) << std::setfill(' ')
+                        << a_value;
+                } else {
+                    out << std::fixed << a_value;
+                }
+            } else if (i < 0) {
+                out << std::setw(-i) << std::setfill(' ') << a_value;
+            } else {
+                out << a_value;
+            }
             return out.str();
         }
 

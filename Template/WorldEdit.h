@@ -6,6 +6,8 @@
 #define WORLDEDIT_WORLDEDIT_H
 #include "pch.h"
 #include "region/Regions.h"
+#include "store/BlockNBTSet.hpp"
+#include "store/Clipboard.hpp"
 #include <map>
 
 namespace worldedit {
@@ -16,9 +18,14 @@ namespace worldedit {
             playerMainPosMap;
         std::map<std::string, std::pair<BlockPos, std::pair<int, int>>>
             playerVicePosMap;
+        std::map<std::string, Clipboard> playerClipboardMap;
+        std::map<std::string, std::string> playerGMaskMap;
         void renderMVpos();
     };
     WE& getMod();
+    std::unordered_map<int, std::string>& getBlockNameMap();
+    Block* getBlock(int id);
+    std::string getBlockName(int id);
 }  // namespace worldedit
 
 #endif  // WORLDEDIT_WORLDEDIT_H

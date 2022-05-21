@@ -98,6 +98,8 @@ namespace worldedit {
                     "§cThis region can only expand vertically");
                 return false;
             }
+        }
+        for (BlockPos change : changes) {
             int changeY = change.y;
             if (changeY > 0) {
                 maxY += changeY;
@@ -119,6 +121,8 @@ namespace worldedit {
                     "§cThis region can only contract vertically");
                 return false;
             }
+        }
+        for (BlockPos change : changes) {
             int changeY = change.y;
             if (changeY > 0) {
                 minY += changeY;

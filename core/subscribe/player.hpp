@@ -25,35 +25,14 @@
 #include <DynamicCommandAPI.h>
 #include "particle/Graphics.h"
 #include "WorldEdit.h"
+#include "region/changeRegion.hpp"
 
 namespace worldedit {
     void playerSubscribe() {
         Event::PlayerUseItemOnEvent::subscribe(
             [](const Event::PlayerUseItemOnEvent& ev) {
                 if (ev.mItemStack->getTypeName() == "minecraft:wooden_axe") {
-                    auto& mod = worldedit::getMod();
-                    auto xuid = ev.mPlayer->getXuid();
-                    if (mod.playerRegionMap.count(xuid) == 0) {
-                        mod.playerRegionMap[xuid] =
-                            new worldedit::CuboidRegion();
-                    }
-                    auto blockInstance = ev.mBlockInstance;
-                    auto pos = blockInstance.getPosition();
-                    if (mod.playerVicePosMap.count(xuid) == 0 ||
-                        mod.playerVicePosMap[xuid].first != pos)
-                        if (mod.playerRegionMap[xuid]->setVicePos(
-                                pos, ev.mPlayer->getDimensionId())) {
-                            ev.mPlayer->sendFormattedText(
-                                "§aSecond position set to ({}, {}, {})", pos.x,
-                                pos.y, pos.z);
-                            mod.playerVicePosMap[xuid].first = pos;
-                            mod.playerVicePosMap[xuid].second.first = 0;
-                            mod.playerVicePosMap[xuid].second.second =
-                                ev.mPlayer->getDimensionId();
-                        } else {
-                            ev.mPlayer->sendFormattedText(
-                                "§cSecond position set failed");
-                        }
+                    changeVicePos(ev.mPlayer, ev.mBlockInstance);
                     return false;
                 }
                 // std::cout << ev.mItemStack->getTypeName() << std::endl;
@@ -67,27 +46,7 @@ namespace worldedit {
             [](const Event::PlayerDestroyBlockEvent& ev) {
                 if (ev.mPlayer->getHandSlot()->getTypeName() ==
                     "minecraft:wooden_axe") {
-                    auto& mod = worldedit::getMod();
-                    auto xuid = ev.mPlayer->getXuid();
-                    if (mod.playerRegionMap.count(xuid) == 0) {
-                        mod.playerRegionMap[xuid] =
-                            new worldedit::CuboidRegion();
-                    }
-                    auto blockInstance = ev.mBlockInstance;
-                    auto pos = blockInstance.getPosition();
-                    if (mod.playerRegionMap[xuid]->setMainPos(
-                            pos, ev.mPlayer->getDimensionId())) {
-                        ev.mPlayer->sendFormattedText(
-                            "§aFirst position set to ({}, {}, {})", pos.x,
-                            pos.y, pos.z);
-                        mod.playerMainPosMap[xuid].first = pos;
-                        mod.playerMainPosMap[xuid].second.first = 0;
-                        mod.playerMainPosMap[xuid].second.second =
-                            ev.mPlayer->getDimensionId();
-                    } else {
-                        ev.mPlayer->sendFormattedText(
-                            "§cFirst position set failed");
-                    }
+                    changeMainPos(ev.mPlayer, ev.mBlockInstance);
                     return false;
                 }
 
