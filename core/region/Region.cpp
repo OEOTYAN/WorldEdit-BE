@@ -7,8 +7,8 @@
 namespace worldedit {
     void Region::forEachBlockInRegion(
         const std::function<void(const BlockPos&)>& todo) {
-        for (int x = boundingBox.bpos1.x; x <= boundingBox.bpos2.x; x++)
-            for (int y = boundingBox.bpos1.y; y <= boundingBox.bpos2.y; y++)
+        for (int y = boundingBox.bpos1.y; y <= boundingBox.bpos2.y; y++)
+            for (int x = boundingBox.bpos1.x; x <= boundingBox.bpos2.x; x++)
                 for (int z = boundingBox.bpos1.z; z <= boundingBox.bpos2.z;
                      z++) {
                     if (contains({x, y, z})) {

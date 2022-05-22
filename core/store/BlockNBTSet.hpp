@@ -14,6 +14,8 @@
 #include <MC/BlockActor.hpp>
 #include <MC/BlockSource.hpp>
 #include <MC/CompoundTag.hpp>
+#include <MC/StructureSettings.hpp>
+#include <MC/VanillaBlockStateTransformUtils.hpp>
 #include <MC/Actor.hpp>
 #include <MC/Player.hpp>
 #include <MC/ServerPlayer.hpp>
@@ -36,24 +38,23 @@ namespace worldedit {
         bool hasBlockEntity = false;
         blockNBTSet() = default;
         blockNBTSet(BlockInstance& blockInstance) : hasBlock(true) {
-            block = blockInstance.getBlock()->getNbt()->toSNBT(
-                0, SnbtFormat::Minimize);
+            block = blockInstance.getBlock()->getNbt()->toBinaryNBT();
             exblock = const_cast<Block&>(
                           blockInstance.getBlockSource()->getExtraBlock(
                               blockInstance.getPosition()))
                           .getNbt()
-                          ->toSNBT(0, SnbtFormat::Minimize);
+                          ->toBinaryNBT();
             if (blockInstance.hasBlockEntity()) {
                 hasBlockEntity = true;
-                blockEntity = blockInstance.getBlockEntity()->getNbt()->toSNBT(
-                    0, SnbtFormat::Minimize);
+                blockEntity =
+                    blockInstance.getBlockEntity()->getNbt()->toBinaryNBT();
             }
         }
         Block* getBlock() const {
-            return Block::create(CompoundTag::fromSNBT(block).get());
+            return Block::create(CompoundTag::fromBinaryNBT(block).get());
         }
         Block* getExBlock() const {
-            return Block::create(CompoundTag::fromSNBT(exblock).get());
+            return Block::create(CompoundTag::fromBinaryNBT(exblock).get());
         }
         std::string getBlockEntity() const {
             return hasBlockEntity ? blockEntity : "";
@@ -61,21 +62,43 @@ namespace worldedit {
         void setBlock(BlockPos& pos, int dimID) const {
             auto blockSource = Level::getBlockSource(dimID);
             blockSource->setBlock(
-                pos, *Block::create(CompoundTag::fromSNBT(block).get()), 2,
+                pos, *Block::create(CompoundTag::fromBinaryNBT(block).get()), 2,
                 nullptr, nullptr);
             blockSource->setExtraBlock(
-                pos, *Block::create(CompoundTag::fromSNBT(exblock).get()), 2);
+                pos, *Block::create(CompoundTag::fromBinaryNBT(exblock).get()),
+                2);
             if (hasBlockEntity) {
                 auto blockInstance = blockSource->getBlockInstance(pos);
                 if (blockInstance.hasBlockEntity()) {
                     blockInstance.getBlockEntity()->setNbt(
-                        CompoundTag::fromSNBT(blockEntity).get());
+                        CompoundTag::fromBinaryNBT(blockEntity).get());
                 }
             }
         }
-        std::string getStr() {
-            return "block:\n" + block + "\nexblock:\n" + exblock +
-                   (hasBlockEntity ? ("\nblockEntity:\n" + blockEntity) : "");
+        void setBlock(BlockPos& pos,
+                      int dimID,
+                      Rotation rotation,
+                      Mirror mirror) const {
+            auto blockSource = Level::getBlockSource(dimID);
+            blockSource->setBlock(
+                pos,
+                *VanillaBlockStateTransformUtils::transformBlock(
+                    *Block::create(CompoundTag::fromBinaryNBT(block).get()),
+                    rotation, mirror),
+                2, nullptr, nullptr);
+            blockSource->setExtraBlock(
+                pos,
+                *VanillaBlockStateTransformUtils::transformBlock(
+                    *Block::create(CompoundTag::fromBinaryNBT(exblock).get()),
+                    rotation, mirror),
+                2);
+            if (hasBlockEntity) {
+                auto blockInstance = blockSource->getBlockInstance(pos);
+                if (blockInstance.hasBlockEntity()) {
+                    blockInstance.getBlockEntity()->setNbt(
+                        CompoundTag::fromBinaryNBT(blockEntity).get());
+                }
+            }
         }
     };
 }  // namespace worldedit

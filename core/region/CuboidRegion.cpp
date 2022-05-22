@@ -257,18 +257,9 @@ namespace worldedit {
         return true;
     }
 
-    // void CuboidRegion::forEachBlockInRegion(
-    //        const std::function<void(const BlockPos &)> &todo) {
-    //    for (int x = mainPos.x; x <= vicePos.x; x++)
-    //        for (int y = mainPos.y; y <= vicePos.y; y++)
-    //            for (int z = mainPos.z; z <= vicePos.z; z++) {
-    //                if (contains({x, y, z})) {
-    //                    todo({x, y, z});
-    //                }
-    //            }
-    //}
-
-    CuboidRegion::CuboidRegion(): Region{BoundingBox(),-1} { this->regionType = CUBOID; }
+    CuboidRegion::CuboidRegion() : Region{BoundingBox(), -1} {
+        this->regionType = CUBOID;
+    }
     CuboidRegion::CuboidRegion(const BoundingBox& region, const int& dim)
         : Region(region, dim) {
         this->regionType = CUBOID;

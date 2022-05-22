@@ -357,9 +357,9 @@ namespace cpp_eval {
                 result = mFuncs(id.c_str(), param);
             } else {
                 if (id == "pi" || id == "π")
-                    return 3.14159265358979323846;
+                    return 3.141592653589793238462643383279;
                 if (id == "e")
-                    return 2.7182818284590452354;
+                    return 2.718281828459045235360287471352;
                 if (mVariables.find(id) == mVariables.end())
                     return 0;
                 result = mVariables.find(id)->second;

@@ -31,25 +31,49 @@ namespace worldedit {
     void playerSubscribe() {
         Event::PlayerUseItemOnEvent::subscribe(
             [](const Event::PlayerUseItemOnEvent& ev) {
-                if (ev.mItemStack->getTypeName() == "minecraft:wooden_axe") {
+                auto itemName = ev.mItemStack->getTypeName();
+                if (itemName == "minecraft:wooden_axe") {
                     changeVicePos(ev.mPlayer, ev.mBlockInstance);
                     return false;
                 }
-                // std::cout << ev.mItemStack->getTypeName() << std::endl;
-                // auto blockInstance = ev.mBlockInstance;
-                // std::cout << blockInstance.getBlock()->getTypeName() <<
-                // std::endl;
+                auto& mod = worldedit::getMod();
+                auto xuid = ev.mPlayer->getXuid();
+                if (mod.playerHandToolMap.find(xuid) !=
+                        mod.playerHandToolMap.end() &&
+                    mod.playerHandToolMap[xuid].find(itemName) !=
+                        mod.playerHandToolMap[xuid].end()) {
+                    if (mod.playerHandToolMap[xuid][itemName] == "farwand") {
+                        BlockInstance blockInstance =
+                            ev.mPlayer->getBlockFromViewVector(
+                                true, false, 2048.0f, true, false);
+                        changeVicePos(ev.mPlayer, blockInstance);
+                        return false;
+                    }
+                }
                 return true;
             });
 
         Event::PlayerDestroyBlockEvent::subscribe(
             [](const Event::PlayerDestroyBlockEvent& ev) {
-                if (ev.mPlayer->getHandSlot()->getTypeName() ==
-                    "minecraft:wooden_axe") {
+                auto itemName = ev.mPlayer->getHandSlot()->getTypeName();
+                if (itemName == "minecraft:wooden_axe") {
                     changeMainPos(ev.mPlayer, ev.mBlockInstance);
                     return false;
                 }
-
+                auto& mod = worldedit::getMod();
+                auto xuid = ev.mPlayer->getXuid();
+                if (mod.playerHandToolMap.find(xuid) !=
+                        mod.playerHandToolMap.end() &&
+                    mod.playerHandToolMap[xuid].find(itemName) !=
+                        mod.playerHandToolMap[xuid].end()) {
+                    if (mod.playerHandToolMap[xuid][itemName] == "farwand") {
+                        BlockInstance blockInstance =
+                            ev.mPlayer->getBlockFromViewVector(
+                                true, false, 2048.0f, true, false);
+                        changeMainPos(ev.mPlayer, blockInstance);
+                        return false;
+                    }
+                }
                 return true;
             });
     }

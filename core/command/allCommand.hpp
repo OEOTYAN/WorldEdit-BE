@@ -7,6 +7,7 @@
 #include "command/RegionCommand.hpp"
 #include "command/RegionInfoCommand.hpp"
 #include "command/ClipboardCommand.hpp"
+#include "command/HandToolCommand.hpp"
 #include "MC/Container.hpp"
 
 namespace worldedit {
@@ -15,34 +16,9 @@ namespace worldedit {
     using ParamData = DynamicCommand::ParameterData;
     void commandsSetup() {
         regionCommandSetup();
-        regionInfoCommandSetup();
+        HandToolCommandSetup();
         clipboardCommandSetup();
-
-        DynamicCommand::setup(
-            "wedebug",  // command name
-            "wedebug",  // command description
-            {}, {ParamData("pos", ParamType::BlockPos, true, "pos")}, {{"pos"}},
-            // dynamic command callback
-            [](DynamicCommand const& command, CommandOrigin const& origin,
-               CommandOutput& output,
-               std::unordered_map<std::string, DynamicCommand::Result>&
-                   results) {
-                auto& mod = worldedit::getMod();
-                auto player = origin.getPlayer();
-                BlockInstance blockInstance;
-                if (results["pos"].isSet) {
-                    auto pos = results["pos"].get<BlockPos>();
-                    blockInstance =
-                        Level::getBlockInstance(pos, player->getDimensionId());
-                } else {
-                    blockInstance = Level::getBlockInstance(
-                        player->getBlockPosCurrentlyStandingOn(player),
-                        player->getDimensionId());
-                }
-                blockNBTSet bset(blockInstance);
-                output.success(fmt::format("§b{}", bset.getStr()));
-            },
-            CommandPermissionLevel::GameMasters);
+        regionInfoCommandSetup();
 
         DynamicCommand::setup(
             "set",        // command name
@@ -273,7 +249,7 @@ namespace worldedit {
                     worldedit::stringReplace(origin, "%", "%%");
                     worldedit::stringReplace(origin2, "%", "%%");
                     output.success(fmt::format(
-                        "§gfunction:{}\n§gpattern{}\n§a{} block(s) placed",
+                        "§gfunction:{}\n§gpattern:{}\n§a{} block(s) placed",
                         origin, origin2, i));
                 } else {
                     output.error("You don't have a region yet");

@@ -197,7 +197,7 @@ namespace worldedit {
             },
             CommandPermissionLevel::GameMasters);
 
-        DynamicCommand::setup(
+        DynamicCommand::setup( 
             "hpos2",                          // command name
             "set second position from view",  // command description
             {}, {}, {{}},
