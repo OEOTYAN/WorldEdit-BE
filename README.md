@@ -1,3 +1,3 @@
-# WorldEdit-BE-LL
-WorldEdit-BE-LL
+# WorldEdit-BE
+WorldEdit-BE
 
