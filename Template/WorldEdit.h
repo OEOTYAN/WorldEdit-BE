@@ -13,7 +13,7 @@
 namespace worldedit {
     class WE {
        public:
-        int historyLengyh = 20;
+        int maxHistoryLength = 20;
         std::map<std::string, Region*> playerRegionMap;
         std::map<std::string, std::pair<BlockPos, std::pair<int, int>>>
             playerMainPosMap;
@@ -23,10 +23,14 @@ namespace worldedit {
         std::map<std::string, std::map<std::string, std::string>>
             playerHandToolMap;
         std::map<std::string, std::string> playerGMaskMap;
-        std::map<std::string, std::pair<std::vector<Clipboard>, int>>
+        std::map<std::string,
+                 std::pair<std::vector<Clipboard>, std::pair<int, int>>>
             playerHistoryMap;
-            
+
         void renderMVpos();
+        Clipboard* getPlayerNextHistory(std::string xuid);
+        std::pair<Clipboard*, int> getPlayerUndoHistory(std::string xuid);
+        std::pair<Clipboard*, int> getPlayerRedoHistory(std::string xuid);
     };
     WE& getMod();
     std::unordered_map<int, std::string>& getBlockNameMap();

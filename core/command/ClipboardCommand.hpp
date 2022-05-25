@@ -12,6 +12,7 @@
 #include <MC/BlockInstance.hpp>
 #include <MC/Block.hpp>
 #include <MC/BlockActor.hpp>
+#include <MC/BedrockBlocks.hpp>
 #include <MC/BlockSource.hpp>
 #include <MC/CompoundTag.hpp>
 #include <MC/Actor.hpp>
@@ -106,7 +107,20 @@ namespace worldedit {
                 if (mod.playerRegionMap.find(xuid) !=
                     mod.playerRegionMap.end()) {
                     auto* region = mod.playerRegionMap[xuid];
+                    auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
+                    auto blockSource = Level::getBlockSource(dimID);
+
+                    auto history = mod.getPlayerNextHistory(xuid);
+                    *history = Clipboard(boundingBox.bpos2 - boundingBox.bpos1);
+                    history->playerRelPos.x = dimID;
+                    history->playerPos = boundingBox.bpos1;
+                    region->forEachBlockInRegion([&](const BlockPos& pos) {
+                        auto localPos = pos - boundingBox.bpos1;
+                        auto blockInstance = blockSource->getBlockInstance(pos);
+                        history->storeBlock(blockInstance, localPos);
+                    });
+
                     mod.playerClipboardMap[xuid] =
                         Clipboard(boundingBox.bpos2 - boundingBox.bpos1);
                     auto pPos = origin.getPlayer()->getPosition();
@@ -115,23 +129,22 @@ namespace worldedit {
                     mod.playerClipboardMap[xuid].playerRelPos =
                         BlockPos(floor(pPos.x), floor(pPos.y), floor(pPos.z)) -
                         boundingBox.bpos1;
-                    auto dimID = mod.playerRegionMap[xuid]->getDimensionID();
-                    auto blockSource = Level::getBlockSource(dimID);
-                    mod.playerRegionMap[xuid]->forEachBlockInRegion(
-                        [&](const BlockPos& pos) {
-                            auto localPos = pos - boundingBox.bpos1;
-                            auto blockInstance =
-                                blockSource->getBlockInstance(pos);
-                            mod.playerClipboardMap[xuid].storeBlock(
-                                blockInstance, localPos);
-                        });
-                    mod.playerRegionMap[xuid]->forEachBlockInRegion(
-                        [&](const BlockPos& pos) {
-                            blockSource->setExtraBlock(pos,
-                                                       *BedrockBlocks::mAir, 2);
-                            blockSource->setBlock(pos, *BedrockBlocks::mAir, 2,
-                                                  nullptr, nullptr);
-                        });
+                    region->forEachBlockInRegion([&](const BlockPos& pos) {
+                        auto localPos = pos - boundingBox.bpos1;
+                        auto blockInstance = blockSource->getBlockInstance(pos);
+                        mod.playerClipboardMap[xuid].storeBlock(blockInstance,
+                                                                localPos);
+                    });
+                    region->forEachBlockInRegion([&](const BlockPos& pos) {
+                        auto blockInstance = blockSource->getBlockInstance(pos);
+                        if (blockInstance.hasContainer()) {
+                            blockInstance.getContainer()->removeAllItems();
+                        }
+                        blockSource->setExtraBlock(pos, *BedrockBlocks::mAir,
+                                                   2);
+                        blockSource->setBlock(pos, *BedrockBlocks::mAir, 2,
+                                              nullptr, nullptr);
+                    });
                     output.success(fmt::format("§aregion cutted"));
                 } else {
                     output.error("You don't have a region yet");
@@ -184,8 +197,38 @@ namespace worldedit {
                                          floor(pPos.z));
                     }
 
+                    BlockInstance blockInstance;
+                    BoundingBox box = clipboard->getBoundingBox();
+                    box.bpos1 = box.bpos1 + pbPos;
+                    box.bpos2 = box.bpos2 + pbPos;
+                    if (arg_n || arg_s) {
+                        blockInstance = Level::getBlockInstance(
+                            box.bpos1, origin.getPlayer()->getDimensionId());
+                        changeMainPos(origin.getPlayer(), blockInstance, false);
+                        blockInstance = Level::getBlockInstance(
+                            box.bpos2, origin.getPlayer()->getDimensionId());
+                        changeVicePos(origin.getPlayer(), blockInstance, false);
+                    }
+
                     auto dimID = origin.getPlayer()->getDimensionId();
                     if (!arg_n) {
+                        auto blockSource = Level::getBlockSource(dimID);
+                        auto history = mod.getPlayerNextHistory(xuid);
+                        *history = Clipboard(box.bpos2 - box.bpos1);
+                        history->playerRelPos.x = dimID;
+                        history->playerPos = box.bpos1;
+                        for (int y = box.bpos1.y; y <= box.bpos2.y; y++)
+                            for (int x = box.bpos1.x; x <= box.bpos2.x; x++)
+                                for (int z = box.bpos1.z; z <= box.bpos2.z;
+                                     z++) {
+                                    auto localPos =
+                                        BlockPos(x, y, z) - box.bpos1;
+                                    auto blockInstance =
+                                        blockSource->getBlockInstance(
+                                            {x, y, z});
+                                    history->storeBlock(blockInstance,
+                                                        localPos);
+                                }
                         if (arg_a) {
                             clipboard->forEachBlockInClipboard(
                                 [&](const BlockPos& pos) {

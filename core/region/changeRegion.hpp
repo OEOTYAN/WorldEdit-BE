@@ -28,6 +28,39 @@
 #include "WorldEdit.h"
 
 namespace worldedit {
+    void setBlock(const char* funcstr,
+                  BlockSource* blockSource,
+                  const BlockPos& pos,
+                  Block* block,
+                  Block* exblock = const_cast<Block*>(BedrockBlocks::mAir)) {
+        static EvalFunctions mGMaskFunction;
+        mGMaskFunction.setbs(blockSource);
+        mGMaskFunction.setPos(pos);
+        static std::map<std::string, double> mGlobalVariables;
+        mGlobalVariables["x"] = pos.x;
+        mGlobalVariables["y"] = pos.y;
+        mGlobalVariables["z"] = pos.z;
+        if (cpp_eval::eval<double>(funcstr, mGlobalVariables, mGMaskFunction) >
+            0.5) {
+            auto blockInstance = blockSource->getBlockInstance(pos);
+            if (blockInstance.hasContainer()) {
+                blockInstance.getContainer()->removeAllItems();
+            }
+            blockSource->setExtraBlock(pos, *exblock, 2);
+            blockSource->setBlock(pos, *block, 2, nullptr, nullptr);
+        }
+    }
+    void setBlock(BlockSource* blockSource,
+                  const BlockPos& pos,
+                  Block* block,
+                  Block* exblock = const_cast<Block*>(BedrockBlocks::mAir)) {
+        auto blockInstance = blockSource->getBlockInstance(pos);
+        if (blockInstance.hasContainer()) {
+            blockInstance.getContainer()->removeAllItems();
+        }
+        blockSource->setExtraBlock(pos, *exblock, 2);
+        blockSource->setBlock(pos, *block, 2, nullptr, nullptr);
+    }
     bool changeVicePos(Player* player,
                        BlockInstance blockInstance,
                        bool output = true) {

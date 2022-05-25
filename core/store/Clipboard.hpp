@@ -36,6 +36,14 @@
 
 namespace worldedit {
 
+    inline BlockPos max(const BlockPos& a, const BlockPos& b) {
+        return {std::max(a.x, b.x), std::max(a.y, b.y), std::max(a.z, b.z)};
+    }
+
+    inline BlockPos min(const BlockPos& a, const BlockPos& b) {
+        return {std::min(a.x, b.x), std::min(a.y, b.y), std::min(a.z, b.z)};
+    }
+
     class Clipboard {
        public:
         BlockPos size;
@@ -46,12 +54,14 @@ namespace worldedit {
         Mirror mirror;
         Vec3 rotationAngle;
         bool flipY = false;
+        bool used = false;
         long long vsize;
         std::vector<blockNBTSet> blockslist;
         Clipboard() = default;
         Clipboard(const BlockPos& sizes)
             : size(sizes + BlockPos(1, 1, 1)),
               board(sizes),
+              used(true),
               rotation(Rotation::None_14),
               mirror(Mirror::None_15),
               rotationAngle({0, 0, 0}) {
@@ -70,6 +80,32 @@ namespace worldedit {
             if (pos.containedWithin(BlockPos(0, 0, 0), board)) {
                 blockslist[getIter(pos)] = blockNBTSet(blockInstance);
             }
+        }
+        BoundingBox getBoundingBox() {
+            BoundingBox res;
+            res.bpos1 = getPos({0, 0, 0});
+            res.bpos1 = min(res.bpos1, getPos({board.x, 0, 0}));
+            res.bpos1 = min(res.bpos1, getPos({0, board.y, 0}));
+            res.bpos1 = min(res.bpos1, getPos({0, 0, board.z}));
+            res.bpos1 = min(res.bpos1, getPos({board.x, 0, board.z}));
+            res.bpos1 = min(res.bpos1, getPos({board.x, board.y, 0}));
+            res.bpos1 = min(res.bpos1, getPos({0, board.y, board.z}));
+            res.bpos1 = min(res.bpos1, getPos({board.x, board.y, board.z}));
+            res.bpos2 = getPos({0, 0, 0});
+            res.bpos2 = max(res.bpos2, getPos({board.x, 0, 0}));
+            res.bpos2 = max(res.bpos2, getPos({0, board.y, 0}));
+            res.bpos2 = max(res.bpos2, getPos({0, 0, board.z}));
+            res.bpos2 = max(res.bpos2, getPos({board.x, 0, board.z}));
+            res.bpos2 = max(res.bpos2, getPos({board.x, board.y, 0}));
+            res.bpos2 = max(res.bpos2, getPos({0, board.y, board.z}));
+            res.bpos2 = max(res.bpos2, getPos({board.x, board.y, board.z}));
+            if (!(abs(fmod(rotationAngle.x, 90.0f)) < 0.01f &&
+                  abs(fmod(rotationAngle.y, 90.0f)) < 0.01f &&
+                  abs(fmod(rotationAngle.z, 90.0f)) < 0.01f)) {
+                res.bpos1 = res.bpos1 - BlockPos(1, 1, 1);
+                res.bpos2 = res.bpos2 + BlockPos(1, 1, 1);
+            }
+            return res;
         }
         void rotate(Vec3 angle) {
             rotationAngle = rotationAngle + angle;

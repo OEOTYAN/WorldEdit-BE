@@ -16,6 +16,7 @@
 #include <MC/CompoundTag.hpp>
 #include <MC/StructureSettings.hpp>
 #include <MC/VanillaBlockStateTransformUtils.hpp>
+#include "MC/Container.hpp"
 #include <MC/Actor.hpp>
 #include <MC/Player.hpp>
 #include <MC/ServerPlayer.hpp>
@@ -61,6 +62,10 @@ namespace worldedit {
         }
         void setBlock(BlockPos& pos, int dimID) const {
             auto blockSource = Level::getBlockSource(dimID);
+            auto blockInstance = blockSource->getBlockInstance(pos);
+            if (blockInstance.hasContainer()) {
+                blockInstance.getContainer()->removeAllItems();
+            }
             blockSource->setBlock(
                 pos, *Block::create(CompoundTag::fromBinaryNBT(block).get()), 2,
                 nullptr, nullptr);
@@ -80,6 +85,10 @@ namespace worldedit {
                       Rotation rotation,
                       Mirror mirror) const {
             auto blockSource = Level::getBlockSource(dimID);
+            auto blockInstance = blockSource->getBlockInstance(pos);
+            if (blockInstance.hasContainer()) {
+                blockInstance.getContainer()->removeAllItems();
+            }
             blockSource->setBlock(
                 pos,
                 *VanillaBlockStateTransformUtils::transformBlock(

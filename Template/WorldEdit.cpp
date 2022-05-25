@@ -6,9 +6,28 @@
 #include "HookAPI.h"
 #include <MC/Block.hpp>
 #include <MC/BlockLegacy.hpp>
+#include <MC/ServerNetworkHandler.hpp>
+#include <MC/NetworkPacketEventCoordinator.hpp>
+#include <MC/PacketHeader.hpp>
+#include <MC/Packet.hpp>
+#include <MC/NetworkIdentifier.hpp>
+#include <MC/PlayerActionPacket.hpp>
 #include <fstream>
 
-// unsigned int const &  Block*
+//?handle@ServerNetworkHandler@@UEAAXAEBVNetworkIdentifier@@AEBVPlayerActionPacket@@@Z
+// THook(void,
+//       "?handle@ServerNetworkHandler@@UEAAXAEBVNetworkIdentifier@@"
+//       "AEBVPlayerActionPacket@@@Z",
+//       ServerNetworkHandler* serverNetworkHandler,
+//       NetworkIdentifier const& networkIdentifier,
+//       PlayerActionPacket const& playerActionPacket) {
+//     std::cout
+//         <<
+//         const_cast<PlayerActionPacket&>(playerActionPacket).toDebugString()
+//         << std::endl;
+//     return original(serverNetworkHandler, networkIdentifier,
+//                     playerActionPacket);
+// }
 THook(void,
       "?setRuntimeId@Block@@IEBAXAEBI@Z",
       Block* block,
@@ -16,10 +35,6 @@ THook(void,
     auto& blockName = worldedit::getBlockNameMap();
     auto blockid = block->getId();
     blockName[blockid] = block->getTypeName();
-    std::ofstream ofs;
-    ofs.open("text.txt", std::ios::out | std::ios::app);
-    ofs << id << " " << blockid << " " << block->getTypeName() << std::endl;
-    ofs.close();
     return original(block, id);
 }
 
@@ -62,5 +77,68 @@ namespace worldedit {
             }
             PosPair.second.second.first--;
         }
+    }
+
+    Clipboard* WE::getPlayerNextHistory(std::string xuid) {
+        if (playerHistoryMap.find(xuid) == playerHistoryMap.end()) {
+            playerHistoryMap[xuid].first.resize(maxHistoryLength);
+            playerHistoryMap[xuid].second.first = 0;
+        } else {
+            playerHistoryMap[xuid].second.first += 1;
+            playerHistoryMap[xuid].second.first %= maxHistoryLength;
+        }
+        playerHistoryMap[xuid].second.second =
+            playerHistoryMap[xuid].second.first;
+        return &playerHistoryMap[xuid]
+                    .first[playerHistoryMap[xuid].second.first];
+    }
+
+    std::pair<Clipboard*, int> WE::getPlayerUndoHistory(std::string xuid) {
+        std::pair<Clipboard*, int> result = {nullptr, -1};
+        if (playerHistoryMap.find(xuid) != playerHistoryMap.end()) {
+            int maximum =
+                (playerHistoryMap[xuid].second.second + 1) % maxHistoryLength;
+            int current = playerHistoryMap[xuid].second.first;
+            if (maximum == current) {
+                result.second = 0;
+                return result;
+            }
+            result.first = &playerHistoryMap[xuid].first[current];
+            if (result.first->used == false) {
+                result.second = 0;
+                return result;
+            }
+            result.second = 1;
+            current -= 1;
+            if (current < 0) {
+                current += maxHistoryLength;
+            }
+            playerHistoryMap[xuid].second.first = current;
+            return result;
+        }
+        return result;
+    }
+
+    std::pair<Clipboard*, int> WE::getPlayerRedoHistory(std::string xuid) {
+        std::pair<Clipboard*, int> result = {nullptr, -1};
+        if (playerHistoryMap.find(xuid) != playerHistoryMap.end()) {
+            int maximum =
+                (playerHistoryMap[xuid].second.second + 1) % maxHistoryLength;
+            int current = playerHistoryMap[xuid].second.first+1;
+            current %= maxHistoryLength;
+            if (maximum == current) {
+                result.second = 0;
+                return result;
+            }
+            result.first = &playerHistoryMap[xuid].first[current];
+            if (result.first->used == false) {
+                result.second = 0;
+                return result;
+            }
+            result.second = 1;
+            playerHistoryMap[xuid].second.first = current;
+            return result;
+        }
+        return result;
     }
 }  // namespace worldedit
