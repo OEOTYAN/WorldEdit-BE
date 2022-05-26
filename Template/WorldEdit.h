@@ -42,8 +42,10 @@ namespace worldedit {
     };
     WE& getMod();
     std::unordered_map<int, std::string>& getBlockNameMap();
+    std::unordered_map<std::string, int>& getBlockIdMap();
     Block* getBlock(int id);
     std::string getBlockName(int id);
+    int getBlockId(const std::string& name);
 }  // namespace worldedit
 
 #endif  // WORLDEDIT_WORLDEDIT_H

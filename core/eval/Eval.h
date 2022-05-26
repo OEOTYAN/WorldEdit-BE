@@ -29,9 +29,9 @@
 
 namespace worldedit {
     pcg32 rng(pcg_extras::seed_seq_from<std::random_device>{});
+    std::uniform_real_distribution<double> uniform_dist{0.0, 1.0};
     class EvalFunctions {
         BlockPos here;
-        std::uniform_real_distribution<double> uniform_dist{0.0, 1.0};
         BlockSource* blockSource;
         bool blockdataInitialized = false;
 

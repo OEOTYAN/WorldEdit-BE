@@ -33,8 +33,10 @@ THook(void,
       Block* block,
       unsigned int const& id) {
     auto& blockName = worldedit::getBlockNameMap();
+    auto& blockId = worldedit::getBlockIdMap();
     auto blockid = block->getId();
     blockName[blockid] = block->getTypeName();
+    blockId[block->getTypeName()] = blockid;
     return original(block, id);
 }
 
@@ -48,11 +50,22 @@ namespace worldedit {
         static std::unordered_map<int, std::string> blockName;
         return blockName;
     }
+
+    std::unordered_map<std::string, int>& getBlockIdMap() {
+        static std::unordered_map<std::string, int> blockId;
+        return blockId;
+    }
     std::string getBlockName(int id) {
         auto& blockName = worldedit::getBlockNameMap();
         if (blockName.find(id) != blockName.end())
             return blockName[id];
         return "minecraft:air";
+    }
+    int getBlockId(const std::string& name) {
+        auto& blockId = worldedit::getBlockIdMap();
+        if (blockId.find(name) != blockId.end())
+            return blockId[name];
+        return 0;
     }
     void WE::renderMVpos() {
         for (auto& PosPair : playerMainPosMap) {
@@ -124,7 +137,7 @@ namespace worldedit {
         if (playerHistoryMap.find(xuid) != playerHistoryMap.end()) {
             int maximum =
                 (playerHistoryMap[xuid].second.second + 1) % maxHistoryLength;
-            int current = playerHistoryMap[xuid].second.first+1;
+            int current = playerHistoryMap[xuid].second.first + 1;
             current %= maxHistoryLength;
             if (maximum == current) {
                 result.second = 0;

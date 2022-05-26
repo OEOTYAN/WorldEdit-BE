@@ -4,6 +4,7 @@
 #pragma once
 #ifndef WORLDEDIT_ALLCOMMAND_H
 #define WORLDEDIT_ALLCOMMAND_H
+#include "store/BlockPattern.hpp"
 #include "command/RegionCommand.hpp"
 #include "command/HistoryCommand.hpp"
 #include "command/HandToolCommand.hpp"
@@ -134,13 +135,13 @@ namespace worldedit {
              //   (identifier = enumOptions.empty() ? name:enumOptions)
              ParamData("function", ParamType::String, "function"),
              ParamData("block", ParamType::Block, "block"),
-             ParamData("idpattern", ParamType::String, "idpattern"),
+             ParamData("blockPattern", ParamType::String, "blockPattern"),
              ParamData("data", ParamType::Int, true, "data"),
              ParamData("datapattern", ParamType::String, "datapattern"),
              ParamData("pat", ParamType::Enum, "pat")},
             {{"block", "function", "data"},
              {"block", "function", "datapattern"},
-             {"pat", "idpattern", "function", "datapattern"}},
+             {"pat", "blockPattern", "function", "datapattern"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin,
                CommandOutput& output,
@@ -191,9 +192,10 @@ namespace worldedit {
                         auto dataf = results["datapattern"].get<std::string>();
                         std::string s2(dataf);
                         origin2 = s2;
-                        if (results["idpattern"].isSet) {
-                            auto idf = results["idpattern"].get<std::string>();
+                        if (results["blockPattern"].isSet) {
+                            auto idf = results["blockPattern"].get<std::string>();
                             std::string s3(idf);
+                            BlockPattern blockPattern(idf);
                             mod.playerRegionMap[xuid]->forEachBlockInRegion(
                                 [&](const BlockPos& pos) {
                                     f.setPos(pos);
@@ -226,18 +228,8 @@ namespace worldedit {
                                                 ->removeAllItems();
                                         }
                                         blockSource->setBlock(
-                                            pos,
-                                            *Block::create(
-                                                worldedit::getBlockName(
-                                                    (int)round(
-                                                        cpp_eval::eval<double>(
-                                                            s3.c_str(),
-                                                            variables, f))),
-                                                (unsigned short)round(
-                                                    cpp_eval::eval<double>(
-                                                        s2.c_str(), variables,
-                                                        f))),
-                                            2, nullptr, nullptr);
+                                            pos, *blockPattern.getBlock(variables,f), 2,
+                                            nullptr, nullptr);
                                         i++;
                                     }
                                 });
