@@ -4,27 +4,35 @@
 #pragma once
 #ifndef WORLDEDIT_WORLDEDIT_H
 #define WORLDEDIT_WORLDEDIT_H
+
+// #ifndef DISABLE_CONSTRUCTOR_PREVENTION_BOUNDINGBOX
+// #define DISABLE_CONSTRUCTOR_PREVENTION_BOUNDINGBOX
+// #endif  //
+
 #include "pch.h"
 #include "region/Regions.h"
 #include "store/BlockNBTSet.hpp"
 #include "store/Clipboard.hpp"
-#include <map>
 
 namespace worldedit {
     class WE {
        public:
         int maxHistoryLength = 20;
-        std::map<std::string, Region*> playerRegionMap;
-        std::map<std::string, std::pair<BlockPos, std::pair<int, int>>>
+        std::unordered_map<std::string, Region*> playerRegionMap;
+        std::unordered_map<std::string,
+                           std::pair<BlockPos, std::pair<int, int>>>
             playerMainPosMap;
-        std::map<std::string, std::pair<BlockPos, std::pair<int, int>>>
+        std::unordered_map<std::string,
+                           std::pair<BlockPos, std::pair<int, int>>>
             playerVicePosMap;
-        std::map<std::string, Clipboard> playerClipboardMap;
-        std::map<std::string, std::map<std::string, std::string>>
+        std::unordered_map<std::string, Clipboard> playerClipboardMap;
+        std::unordered_map<std::string,
+                           std::unordered_map<std::string, std::string>>
             playerHandToolMap;
-        std::map<std::string, std::string> playerGMaskMap;
-        std::map<std::string,
-                 std::pair<std::vector<Clipboard>, std::pair<int, int>>>
+        std::unordered_map<std::string, std::string> playerGMaskMap;
+        std::unordered_map<
+            std::string,
+            std::pair<std::vector<Clipboard>, std::pair<int, int>>>
             playerHistoryMap;
 
         void renderMVpos();

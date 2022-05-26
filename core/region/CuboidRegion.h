@@ -1,16 +1,17 @@
 //
 // Created by OEOTYAN on 2021/2/8.
 //
-
+#pragma once
 #ifndef WORLDEDIT_CUBOIDREGION_H
 #define WORLDEDIT_CUBOIDREGION_H
 
+#include "pch.h"
 #include "Region.h"
 namespace worldedit {
     class CuboidRegion : public Region {
        public:
-        BlockPos mainPos{-2100000000, -2100000000, -2100000000};
-        BlockPos vicePos{-2100000000, -2100000000, -2100000000};
+        BlockPos mainPos=BlockPos::MIN;
+        BlockPos vicePos=BlockPos::MIN;
         void updateBoundingBox() override;
 
         explicit CuboidRegion(const BoundingBox& region, const int& dim);

@@ -1,15 +1,12 @@
 //
 // Created by OEOTYAN on 2021/2/8.
 //
-
+#pragma once
 #ifndef WORLDEDIT_CONVEXREGION_H
 #define WORLDEDIT_CONVEXREGION_H
 
+#include "pch.h"
 #include "Region.h"
-#include <unordered_set>
-#include <vector>
-#include <xhash>
-#include <algorithm>
 namespace worldedit {
     class Triangle;
     class Edge {
@@ -25,16 +22,7 @@ namespace worldedit {
     class _hash {
        public:
         size_t operator()(const Edge& rc) const {
-            return (std::hash<float>()(rc.start.x) ^
-                    std::hash<float>()(rc.start.y) ^
-                    std::hash<float>()(rc.start.z)) ^
-                   (std::hash<float>()(rc.end.x) ^
-                    std::hash<float>()(rc.end.y) ^
-                    std::hash<float>()(rc.end.z));
-        }
-        size_t operator()(const BlockPos& rc) const {
-            return (std::hash<int>()(rc.x) ^ std::hash<int>()(rc.y) ^
-                    std::hash<int>()(rc.z));
+            return std::hash<Vec3>()(rc.start) ^ std::hash<Vec3>()(rc.end);
         }
     };
     class Triangle {
@@ -52,6 +40,8 @@ namespace worldedit {
         bool operator==(const Triangle& v) const;
     };
 
+    class Region;
+
     class ConvexRegion : public Region {
        private:
         bool addVertex(const BlockPos& vertex);
@@ -60,13 +50,13 @@ namespace worldedit {
 
         void updateEdges();
 
-        std::unordered_set<BlockPos, _hash> vertices;
+        std::unordered_set<BlockPos> vertices;
 
         std::vector<Triangle> triangles;
 
         std::unordered_set<Edge, _hash> edges;
 
-        std::unordered_set<BlockPos, _hash> vertexBacklog;
+        std::unordered_set<BlockPos> vertexBacklog;
 
         BlockPos centerAccum;
 
@@ -96,4 +86,5 @@ namespace worldedit {
         bool contains(const BlockPos& pos) override;
     };
 }  // namespace worldedit
+
 #endif  // WORLDEDIT_CONVEXREGION_H

@@ -6,25 +6,26 @@
 #define WORLDEDIT_CHANGEREGION_H
 
 #include "pch.h"
-#include <EventAPI.h>
-#include <LoggerAPI.h>
-#include <MC/Level.hpp>
+// #include <EventAPI.h>
+// #include <LoggerAPI.h>
+// #include <MC/Level.hpp>
+#include <MC/Container.hpp>
 #include <MC/BlockInstance.hpp>
-#include <MC/Block.hpp>
-#include <MC/BlockSource.hpp>
-#include <MC/Actor.hpp>
+// #include <MC/Block.hpp>
+// #include <MC/BlockSource.hpp>
+// #include <MC/Actor.hpp>
 #include <MC/Player.hpp>
-#include <MC/ServerPlayer.hpp>
-#include <MC/ItemStack.hpp>
-#include "Version.h"
+// #include <MC/ServerPlayer.hpp>
+// #include <MC/ItemStack.hpp>
+// #include "Version.h"
 #include "eval/Eval.h"
-#include "string/StringTool.h"
-#include <LLAPI.h>
-#include <ServerAPI.h>
-#include <EventAPI.h>
-#include <ScheduleAPI.h>
-#include <DynamicCommandAPI.h>
-#include "particle/Graphics.h"
+// #include "string/StringTool.h"
+// #include <LLAPI.h>
+// #include <ServerAPI.h>
+// #include <EventAPI.h>
+// #include <ScheduleAPI.h>
+// #include <DynamicCommandAPI.h>
+// #include "particle/Graphics.h"
 #include "WorldEdit.h"
 
 namespace worldedit {
@@ -36,7 +37,7 @@ namespace worldedit {
         static EvalFunctions mGMaskFunction;
         mGMaskFunction.setbs(blockSource);
         mGMaskFunction.setPos(pos);
-        static std::map<std::string, double> mGlobalVariables;
+        static std::unordered_map<std::string, double> mGlobalVariables;
         mGlobalVariables["x"] = pos.x;
         mGlobalVariables["y"] = pos.y;
         mGlobalVariables["z"] = pos.z;

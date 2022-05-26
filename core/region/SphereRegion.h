@@ -5,8 +5,8 @@
 #ifndef WORLDEDIT_SPHEREREGION_H
 #define WORLDEDIT_SPHEREREGION_H
 
+#include "pch.h"
 #include "Region.h"
-#include <cmath>
 #ifndef __M__PI__
 #define __M__PI__ 3.141592653589793238462643383279
 #endif

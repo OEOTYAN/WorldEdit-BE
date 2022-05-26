@@ -1,14 +1,12 @@
 //
 // Created by OEOTYAN on 2021/2/8.
 //
-
+#pragma once
 #ifndef WORLDEDIT_POLYREGION_H
 #define WORLDEDIT_POLYREGION_H
 
+#include "pch.h"
 #include "Region.h"
-#include <vector>
-#include <algorithm>
-
 namespace worldedit {
     class PolyRegion : public Region {
        public:

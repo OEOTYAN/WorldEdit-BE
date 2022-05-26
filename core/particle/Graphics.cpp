@@ -2,11 +2,9 @@
 // Created by OEOTYAN on 2022/5/15.
 //
 #pragma once
-#include <string>
+#include "pch.h"
 #include "Graphics.h"
-#include "Particle.h"
-#include "MC/Vec3.hpp"
-#include "MC/Level.hpp"
+// #include "MC/Level.hpp"
 
 #define MAX_LENGTH (16.0f)
 namespace worldedit {
@@ -136,8 +134,8 @@ namespace worldedit {
     }
 
     namespace {
-        std::map<float, int> binSplit(float start, float end) {
-            std::map<float, int> lengthMap;
+        std::unordered_map<float, int> binSplit(float start, float end) {
+            std::unordered_map<float, int> lengthMap;
             float size = end - start;
             if (std::abs(size - round(size)) > 10e-5f)
                 lengthMap.insert({end - 0.5f, 1});
@@ -291,7 +289,7 @@ namespace worldedit {
         // split point list;
 
         auto list = binSplit(start, end);
-        std::map<Vec3, int> positionList;
+        std::unordered_map<Vec3, int> positionList;
         if (facingIsX(direction)) {
             for (auto i : list)
                 positionList.insert(
@@ -367,8 +365,8 @@ namespace worldedit {
         //                 (vector * (float)(0.5f * defaultLength) + mstart) +
         //                 Vec3(0.5f, 0.5f, 0.5f);
         //             mstart = mstart + vector * (float)defaultLength;
-        //             std::string particleType = "worldedit:orientedline" + num;
-        //             std::string particleTypeInv =
+        //             std::string particleType = "worldedit:orientedline" +
+        //             num; std::string particleTypeInv =
         //                 "worldedit:orientedline" + num;
         //             std::string particleBackType =
         //                 "worldedit:orientedline_back" + num;

@@ -2,7 +2,8 @@
 // Created by OEOTYAN on 2021/2/8.
 //
 
-#include "ConvexRegion.h"
+#include "ConvexRegion.h" 
+#include "pch.h"
 namespace worldedit {
     void ConvexRegion::updateBoundingBox() {
         rendertick = 0;
@@ -120,7 +121,7 @@ namespace worldedit {
 
         if (!vertexBacklog.empty()) {
             vertices.erase(vertex);
-            std::unordered_set<BlockPos, _hash> vertexBacklog2(vertexBacklog);
+            std::unordered_set<BlockPos> vertexBacklog2(vertexBacklog);
             vertexBacklog.clear();
             for (BlockPos vertex2 : vertexBacklog2) {
                 addVertex(vertex2);
@@ -153,14 +154,14 @@ namespace worldedit {
     bool ConvexRegion::shift(const BlockPos& change, Player* player) {
         boundingBox.bpos1 = boundingBox.bpos1 + change;
         boundingBox.bpos2 = boundingBox.bpos2 + change;
-        auto tmpVertices = new std::unordered_set<BlockPos, _hash>(vertices);
+        auto tmpVertices = new std::unordered_set<BlockPos>(vertices);
         vertices.clear();
         for (auto vertice : *tmpVertices) {
             vertices.insert(vertice + change);
         }
         delete tmpVertices;
         auto tmpVertexBacklog =
-            new std::unordered_set<BlockPos, _hash>(vertexBacklog);
+            new std::unordered_set<BlockPos>(vertexBacklog);
         vertexBacklog.clear();
         for (auto vertex : *tmpVertexBacklog) {
             vertexBacklog.insert(vertex + change);

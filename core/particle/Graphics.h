@@ -5,15 +5,12 @@
 #ifndef WORLDEDIT_GRAPHICS_H
 #define WORLDEDIT_GRAPHICS_H
 
+#include "pch.h"
 #include "Particle.h"
-#include "MC/AABB.hpp"
-#include "MC/Vec3.hpp"
-#include "string/StringTool.h"
-#include <vector>
-#include <map>
+// #include "string/StringTool.h"
+// #include "WorldEdit.h"
 
 namespace worldedit {
-    enum class GRAPHIC_COLOR;
 
     enum class DIRECTION {
         NEG_Y = 0,

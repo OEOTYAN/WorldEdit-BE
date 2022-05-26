@@ -5,9 +5,7 @@
 #ifndef WORLDEDIT_STRINGTOOL_H
 #define WORLDEDIT_STRINGTOOL_H
 
-#include <string>
-#include <algorithm>
-#include <iomanip>
+//#include "pch.h"
 
 namespace worldedit {
 

@@ -2,7 +2,6 @@
 // Created by OEOTYAN on 2021/2/8.
 //
 
-#include "Region.h"
 #include "Regions.h"
 namespace worldedit {
     void Region::forEachBlockInRegion(

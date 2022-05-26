@@ -5,11 +5,11 @@
 #ifndef WORLDEDIT_PARTICLE_H
 #define WORLDEDIT_PARTICLE_H
 
-#include <string>
-#include "Graphics.h"
-#include "MC/AABB.hpp"
-#include "MC/Vec3.hpp"
-#include "MC/Level.hpp"
+// #include "pch.h"
+// #include "WorldEdit.h"
+// #include <string>
+// #include "Graphics.h"
+// #include "MC/Level.hpp"
 namespace worldedit {
 
     enum class GRAPHIC_COLOR {

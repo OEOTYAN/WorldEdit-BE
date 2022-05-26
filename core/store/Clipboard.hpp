@@ -5,30 +5,30 @@
 #ifndef WORLDEDIT_CLIPBOARD_H
 #define WORLDEDIT_CLIPBOARD_H
 
-#include "pch.h"
-#include <EventAPI.h>
-#include <LoggerAPI.h>
-#include <MC/Level.hpp>
-#include <MC/BlockInstance.hpp>
-#include <MC/Block.hpp>
-#include <MC/BlockActor.hpp>
-#include <MC/BlockSource.hpp>
-#include <MC/CompoundTag.hpp>
-#include <MC/StructureSettings.hpp>
-#include <MC/VanillaBlockStateTransformUtils.hpp>
-#include <MC/Actor.hpp>
-#include <MC/Player.hpp>
-#include <MC/ServerPlayer.hpp>
-#include <MC/Dimension.hpp>
-#include <MC/ItemStack.hpp>
-#include "string/StringTool.h"
-#include "particle/Graphics.h"
-#include <LLAPI.h>
-#include <ServerAPI.h>
-#include <EventAPI.h>
-#include <DynamicCommandAPI.h>
-#include "WorldEdit.h"
-#include "store/BlockNBTSet.hpp"
+// #include "pch.h"
+// #include <EventAPI.h>
+// #include <LoggerAPI.h>
+// #include <MC/Level.hpp>
+// #include <MC/BlockInstance.hpp>
+// #include <MC/Block.hpp>
+// #include <MC/BlockActor.hpp>
+// #include <MC/BlockSource.hpp>
+// #include <MC/CompoundTag.hpp>
+// #include <MC/StructureSettings.hpp>
+// #include <MC/VanillaBlockStateTransformUtils.hpp>
+// #include <MC/Actor.hpp>
+// #include <MC/Player.hpp>
+// #include <MC/ServerPlayer.hpp>
+// #include <MC/Dimension.hpp>
+// #include <MC/ItemStack.hpp>
+// #include "string/StringTool.h"
+// #include "particle/Graphics.h"
+// #include <LLAPI.h>
+// #include <ServerAPI.h>
+// #include <EventAPI.h>
+// #include <DynamicCommandAPI.h>
+// #include "store/BlockNBTSet.hpp"
+// #include "WorldEdit.h"
 
 #ifndef __M__PI__
 #define __M__PI__ 3.141592653589793238462643383279

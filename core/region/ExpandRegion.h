@@ -1,10 +1,11 @@
 //
 // Created by OEOTYAN on 2021/2/8.
 //
-
+#pragma once
 #ifndef WORLDEDIT_EXPANDREGION_H
 #define WORLDEDIT_EXPANDREGION_H
 
+#include "pch.h"
 #include "Region.h"
 namespace worldedit {
     class ExpandRegion : public Region {

@@ -4,29 +4,26 @@
 #pragma once
 #ifndef WORLDEDIT_REGIONINFOCOMMAND_H
 #define WORLDEDIT_REGIONINFOCOMMAND_H
-#include "pch.h"
-#include <EventAPI.h>
-#include <LoggerAPI.h>
-#include <MC/Level.hpp>
-#include <MC/BlockInstance.hpp>
-#include <MC/BedrockBlocks.hpp>
-#include <MC/Block.hpp>
-#include <MC/BlockSource.hpp>
-#include <MC/Actor.hpp>
-#include <MC/Player.hpp>
-#include <MC/ServerPlayer.hpp>
-#include <MC/Dimension.hpp>
-#include <MC/ItemStack.hpp>
-#include "Version.h"
-#include "eval/Eval.h"
-#include "string/StringTool.h"
-#include <LLAPI.h>
-#include <ServerAPI.h>
-#include <EventAPI.h>
-#include <ScheduleAPI.h>
-#include <DynamicCommandAPI.h>
-#include "particle/Graphics.h"
-#include "WorldEdit.h"
+// #include "pch.h"
+// #include <MC/Level.hpp>
+// #include <MC/BlockInstance.hpp>
+// #include <MC/BedrockBlocks.hpp>
+// #include <MC/Block.hpp>
+// #include <MC/BlockSource.hpp>
+// #include <MC/Actor.hpp>
+// #include <MC/Player.hpp>
+// #include <MC/ServerPlayer.hpp>
+// #include <MC/Dimension.hpp>
+// #include <MC/ItemStack.hpp>
+// #include "Version.h"
+// #include "eval/Eval.h"
+// #include "string/StringTool.h"
+// #include <LLAPI.h>
+// #include <ServerAPI.h>
+// #include <EventAPI.h>
+// #include <ScheduleAPI.h>
+// #include <DynamicCommandAPI.h>
+// #include "WorldEdit.h"
 namespace worldedit {
     using ParamType = DynamicCommand::ParameterType;
     using ParamData = DynamicCommand::ParameterData;
@@ -165,7 +162,7 @@ namespace worldedit {
 
                 if (mod.playerRegionMap.find(xuid) !=
                     mod.playerRegionMap.end()) {
-                    std::map<std::string, long long> blocksMap;
+                    std::unordered_map<std::string, long long> blocksMap;
                     std::vector<std::pair<std::string, long long>> blocksMap2;
                     blocksMap2.resize(0);
                     long long all = 0;

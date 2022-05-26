@@ -6,29 +6,26 @@
 #define WORLDEDIT_EVAL_H
 
 #include "pch.h"
-#include <EventAPI.h>
-#include <LoggerAPI.h>
-#include <MC/Level.hpp>
-#include <MC/BlockInstance.hpp>
+// #include <MC/Level.hpp>
+// #include <MC/BlockInstance.hpp>
 #include <MC/Block.hpp>
-#include <MC/BlockLegacy.hpp>
+// #include <MC/BlockLegacy.hpp>
 #include <MC/BlockSource.hpp>
-#include <MC/Actor.hpp>
-#include <MC/Player.hpp>
-#include <MC/ServerPlayer.hpp>
-#include <MC/Dimension.hpp>
-#include <MC/ItemStack.hpp>
-#include "string/StringTool.h"
-#include <LLAPI.h>
-#include <ServerAPI.h>
-#include <EventAPI.h>
-#include <ScheduleAPI.h>
-#include <DynamicCommandAPI.h>
-#include "particle/Graphics.h"
-#include "WorldEdit.h"
+// #include <MC/Actor.hpp>
+// #include <MC/Player.hpp>
+// #include <MC/ServerPlayer.hpp>
+// #include <MC/Dimension.hpp>
+// #include <MC/ItemStack.hpp>
+// #include "string/StringTool.h"
+// #include <LLAPI.h>
+// #include <ServerAPI.h>
+// #include <EventAPI.h>
+// #include <ScheduleAPI.h>
+// #include <DynamicCommandAPI.h>
 #include "CppEval.h"
 #include "pcg_random.hpp"
 #include "FastNoise/FastNoise.h"
+// #include "WorldEdit.h"
 
 namespace worldedit {
     pcg32 rng(pcg_extras::seed_seq_from<std::random_device>{});
@@ -236,10 +233,10 @@ namespace worldedit {
                 case do_hash("issbblock"):
                     if (blockdataInitialized) {
                         if (params.size() == 0) {
-                            return !blockSource->getBlock(here)
+                            return blockSource->getBlock(here)
                                         .isSolidBlockingBlock();
                         } else if (params.size() == 3) {
-                            return !blockSource
+                            return blockSource
                                         ->getBlock(
                                             here +
                                             BlockPos(static_cast<int>(

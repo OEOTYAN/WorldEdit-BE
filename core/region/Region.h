@@ -5,12 +5,9 @@
 #pragma once
 #ifndef WORLDEDIT_REGION_H
 #define WORLDEDIT_REGION_H
-#include "MC/Types.hpp"
+#include "pch.h"
 #include "MC/Player.hpp"
 #include "particle/Graphics.h"
-#include <functional>
-#include <vector>
-#include <algorithm>
 
 namespace worldedit {
     inline AABB toRealAABB(const BoundingBox& bound) {
@@ -31,7 +28,7 @@ namespace worldedit {
         RegionType regionType = CUBOID;
         int rendertick = 0;
         int dimensionID = -1;
-        BoundingBox boundingBox{};
+        BoundingBox boundingBox;
 
        public:
         bool selecting = false;
@@ -89,7 +86,7 @@ namespace worldedit {
             return false;
         };
 
-        virtual bool contains(const BlockPos& pos){
+        virtual bool contains(const BlockPos& pos) {
             return pos.containedWithin(boundingBox.bpos1, boundingBox.bpos2);
         };
 

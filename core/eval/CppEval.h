@@ -10,7 +10,7 @@
 
 #include <string>
 #include <cmath>
-#include <map>
+#include <unordered_map>
 #include <vector>
 #include <sstream>
 #include <stdexcept>
@@ -22,11 +22,11 @@ namespace cpp_eval {
 
     template <typename number>
     number eval(const char* expression,
-                const ::std::map<::std::string, number>& variables);
+                const ::std::unordered_map<::std::string, number>& variables);
 
     template <typename number, typename functions>
     number eval(const char* expression,
-                const ::std::map<::std::string, number>& variables,
+                const ::std::unordered_map<::std::string, number>& variables,
                 functions& funcs);
 
     template <typename number>
@@ -40,21 +40,21 @@ namespace cpp_eval {
 
     template <typename number>
     number eval(const char* expression) {
-        ::std::map<::std::string, number> variables;
+        ::std::unordered_map<::std::string, number> variables;
         dummy_functions<number> funcs;
         return eval(expression, variables, funcs);
     }
 
     template <typename number>
     number eval(const char* expression,
-                const ::std::map<::std::string, number>& variables) {
+                const ::std::unordered_map<::std::string, number>& variables) {
         dummy_functions<number> funcs;
         return eval(expression, variables, funcs);
     }
 
     template <typename number, typename functions>
     class evaler {
-        const ::std::map<::std::string, number>& mVariables;
+        const ::std::unordered_map<::std::string, number>& mVariables;
         functions& mFuncs;
         const char* mCurrent;
         enum Type {
@@ -390,7 +390,7 @@ namespace cpp_eval {
         }
 
        public:
-        evaler(const ::std::map<::std::string, number>& variables,
+        evaler(const ::std::unordered_map<::std::string, number>& variables,
                functions& funcs)
             : mVariables(variables), mFuncs(funcs) {}
 
@@ -406,7 +406,7 @@ namespace cpp_eval {
 
     template <typename number, typename functions>
     number eval(const char* expression,
-                const ::std::map<::std::string, number>& variables,
+                const ::std::unordered_map<::std::string, number>& variables,
                 functions& funcs) {
         return evaler<number, functions>(variables, funcs)(expression);
     }

@@ -9,7 +9,6 @@
 #include "command/HandToolCommand.hpp"
 #include "command/ClipboardCommand.hpp"
 #include "command/RegionInfoCommand.hpp"
-#include "MC/Container.hpp"
 
 namespace worldedit {
     // Direct setup of dynamic command with necessary information
@@ -178,7 +177,7 @@ namespace worldedit {
                     std::string s(function);
                     std::string origin(s);
                     std::string origin2 = "";
-                    std::map<std::string, double> variables;
+                    std::unordered_map<std::string, double> variables;
                     EvalFunctions f;
                     f.setbs(blockSource);
                     auto box = mod.playerRegionMap[xuid]->getBoundBox();
