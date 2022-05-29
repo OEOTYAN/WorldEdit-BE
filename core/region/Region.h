@@ -6,7 +6,6 @@
 #ifndef WORLDEDIT_REGION_H
 #define WORLDEDIT_REGION_H
 #include "pch.h"
-#include "MC/Player.hpp"
 #include "particle/Graphics.h"
 
 namespace worldedit {
@@ -32,6 +31,7 @@ namespace worldedit {
 
        public:
         bool selecting = false;
+        bool needResetVice = true;
         explicit Region(const BoundingBox& b, int dim);
 
         BoundingBox getBoundBox() const { return this->boundingBox; }
@@ -48,30 +48,17 @@ namespace worldedit {
                    (boundingBox.bpos2.z - boundingBox.bpos1.z + 1);
         };
 
-        virtual bool expand(const std::vector<BlockPos>& changes,
-                            Player* player) {
-            player->sendFormattedText("§cThis region can not be extended");
-            return false;
+        virtual std::pair<std::string, bool> expand(
+            const std::vector<BlockPos>& changes) {
+            return {"This region can not be extended", false};
         };
 
-        virtual bool contract(const std::vector<BlockPos>& changes,
-                              Player* player) {
-            player->sendFormattedText("§cThis region can not be contracted");
-            return false;
+        virtual std::pair<std::string, bool> contract(
+            const std::vector<BlockPos>& changes) {
+            return {"This region can not be contracted", false};
         };
-
-        virtual bool expand(const BlockPos& change, Player* player) {
-            player->sendFormattedText("§cThis region can not be extended");
-            return false;
-        };
-
-        virtual bool contract(const BlockPos& change, Player* player) {
-            player->sendFormattedText("§cThis region can not be contracted");
-            return false;
-        };
-        virtual bool shift(const BlockPos& change, Player* player) {
-            player->sendFormattedText("§cThis region can not be shifted");
-            return false;
+        virtual std::pair<std::string, bool> shift(const BlockPos& change) {
+            return {"This region can not be shifted", false};
         };
 
         virtual Vec3 getCenter() const {
@@ -91,6 +78,9 @@ namespace worldedit {
         };
 
         virtual void forEachBlockInRegion(
+            const std::function<void(const BlockPos&)>& todo);
+
+        virtual void forTopBlockInRegion(
             const std::function<void(const BlockPos&)>& todo);
 
         virtual void renderRegion();

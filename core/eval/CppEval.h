@@ -358,6 +358,8 @@ namespace cpp_eval {
             } else {
                 if (id == "pi" || id == "π")
                     return 3.141592653589793238462643383279;
+                if (id == "phi" || id == "φ")
+                    return 3.141592653589793238462643383279;
                 if (id == "e")
                     return 2.718281828459045235360287471352;
                 if (mVariables.find(id) == mVariables.end())

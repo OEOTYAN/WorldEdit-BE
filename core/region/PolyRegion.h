@@ -19,21 +19,26 @@ namespace worldedit {
 
         explicit PolyRegion(const BoundingBox& region, const int& dim);
 
-        bool expand(const std::vector<BlockPos>& changes,
-                    Player* player) override;
+        std::pair<std::string, bool> expand(
+            const std::vector<BlockPos>& changes) override;
 
-        bool contract(const std::vector<BlockPos>& changes,
-                      Player* player) override;
+        std::pair<std::string, bool>  contract(const std::vector<BlockPos>& changes) override;
 
-        bool expand(const BlockPos& change, Player* player) override;
-
-        bool contract(const BlockPos& change, Player* player) override;
-
-        bool shift(const BlockPos& change, Player* player) override;
+        std::pair<std::string, bool>  shift(const BlockPos& change) override;
 
         int size() const override;
 
         void renderRegion() override;
+
+        Vec3 getCenter() const override {
+            BlockPos tmp(0, 0, 0);
+            for (auto& point : points) {
+                tmp = tmp + point;
+            }
+            return Vec3(static_cast<double>(tmp.x) / points.size() + 0.5,
+                        static_cast<double>(maxY + minY) * 0.5 + 0.5,
+                        static_cast<double>(tmp.z) / points.size() + 0.5);
+        };
 
         bool setMainPos(const BlockPos& pos, const int& dim) override;
 

@@ -32,7 +32,7 @@ namespace worldedit {
 
     // undo redo maxhistorylength clearhistory
 
-    void HistoryCommandSetup() {
+    void historyCommandSetup() {
         DynamicCommand::setup(
             "maxhistorylength",        // command name
             "set max history length",  // command description

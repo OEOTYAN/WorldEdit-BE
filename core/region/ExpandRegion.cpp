@@ -3,14 +3,19 @@
 //
 
 #include "ExpandRegion.h"
+#include "MC/Level.hpp"
+#include "MC/Dimension.hpp"
 namespace worldedit {
     void ExpandRegion::updateBoundingBox() {
+        auto range = Level::getDimension(dimensionID)->getHeightRange();
         rendertick = 0;
         boundingBox.bpos1.x = std::min(mainPos.x, vicePos.x);
-        boundingBox.bpos1.y = std::min(mainPos.y, vicePos.y);
+        boundingBox.bpos1.y = std::max(std::min(mainPos.y, vicePos.y),
+                                       static_cast<int>(range.min));
         boundingBox.bpos1.z = std::min(mainPos.z, vicePos.z);
         boundingBox.bpos2.x = std::max(mainPos.x, vicePos.x);
-        boundingBox.bpos2.y = std::max(mainPos.y, vicePos.y);
+        boundingBox.bpos2.y = std::min(std::max(mainPos.y, vicePos.y),
+                                       static_cast<int>(range.max) - 1);
         boundingBox.bpos2.z = std::max(mainPos.z, vicePos.z);
     }
 
@@ -40,105 +45,8 @@ namespace worldedit {
         return false;
     }
 
-    bool ExpandRegion::expand(const BlockPos& change, Player* player) {
-        if (change.x > 0) {
-            if (std::max(mainPos.x, vicePos.x) == mainPos.x) {
-                mainPos = mainPos + BlockPos(change.x, 0, 0);
-            } else {
-                vicePos = vicePos + BlockPos(change.x, 0, 0);
-            }
-        } else {
-            if (std::min(mainPos.x, vicePos.x) == mainPos.x) {
-                mainPos = mainPos + BlockPos(change.x, 0, 0);
-            } else {
-                vicePos = vicePos + BlockPos(change.x, 0, 0);
-            }
-        }
-
-        if (change.y > 0) {
-            if (std::max(mainPos.y, vicePos.y) == mainPos.y) {
-                mainPos = mainPos + BlockPos(0, change.y, 0);
-            } else {
-                vicePos = vicePos + BlockPos(0, change.y, 0);
-            }
-        } else {
-            if (std::min(mainPos.y, vicePos.y) == mainPos.y) {
-                mainPos = mainPos + BlockPos(0, change.y, 0);
-            } else {
-                vicePos = vicePos + BlockPos(0, change.y, 0);
-            }
-        }
-
-        if (change.z > 0) {
-            if (std::max(mainPos.z, vicePos.z) == mainPos.z) {
-                mainPos = mainPos + BlockPos(0, 0, change.z);
-            } else {
-                vicePos = vicePos + BlockPos(0, 0, change.z);
-            }
-        } else {
-            if (std::min(mainPos.z, vicePos.z) == mainPos.z) {
-                mainPos = mainPos + BlockPos(0, 0, change.z);
-            } else {
-                vicePos = vicePos + BlockPos(0, 0, change.z);
-            }
-        }
-
-        updateBoundingBox();
-
-        player->sendFormattedText("§aThis region has been expanded");
-        return true;
-    }
-
-    bool ExpandRegion::contract(const BlockPos& change, Player* player) {
-        if (change.x < 0) {
-            if (std::max(mainPos.x, vicePos.x) == mainPos.x) {
-                mainPos = mainPos + BlockPos(change.x, 0, 0);
-            } else {
-                vicePos = vicePos + BlockPos(change.x, 0, 0);
-            }
-        } else {
-            if (std::min(mainPos.x, vicePos.x) == mainPos.x) {
-                mainPos = mainPos + BlockPos(change.x, 0, 0);
-            } else {
-                vicePos = vicePos + BlockPos(change.x, 0, 0);
-            }
-        }
-
-        if (change.y < 0) {
-            if (std::max(mainPos.y, vicePos.y) == mainPos.y) {
-                mainPos = mainPos + BlockPos(0, change.y, 0);
-            } else {
-                vicePos = vicePos + BlockPos(0, change.y, 0);
-            }
-        } else {
-            if (std::min(mainPos.y, vicePos.y) == mainPos.y) {
-                mainPos = mainPos + BlockPos(0, change.y, 0);
-            } else {
-                vicePos = vicePos + BlockPos(0, change.y, 0);
-            }
-        }
-
-        if (change.z < 0) {
-            if (std::max(mainPos.z, vicePos.z) == mainPos.z) {
-                mainPos = mainPos + BlockPos(0, 0, change.z);
-            } else {
-                vicePos = vicePos + BlockPos(0, 0, change.z);
-            }
-        } else {
-            if (std::min(mainPos.z, vicePos.z) == mainPos.z) {
-                mainPos = mainPos + BlockPos(0, 0, change.z);
-            } else {
-                vicePos = vicePos + BlockPos(0, 0, change.z);
-            }
-        }
-
-        updateBoundingBox();
-        player->sendFormattedText("§aThis region has been contracted");
-        return true;
-    }
-
-    bool ExpandRegion::expand(const std::vector<BlockPos>& changes,
-                              Player* player) {
+    std::pair<std::string, bool> ExpandRegion::expand(
+        const std::vector<BlockPos>& changes) {
         for (auto change : changes) {
             if (change.x > 0) {
                 if (std::max(mainPos.x, vicePos.x) == mainPos.x) {
@@ -185,12 +93,11 @@ namespace worldedit {
 
         updateBoundingBox();
 
-        player->sendFormattedText("§aThis region has been expanded");
-        return true;
+        return {"§aThis region has been expanded", true};
     }
 
-    bool ExpandRegion::contract(const std::vector<BlockPos>& changes,
-                                Player* player) {
+    std::pair<std::string, bool> ExpandRegion::contract(
+        const std::vector<BlockPos>& changes) {
         for (auto change : changes) {
             if (change.x < 0) {
                 if (std::max(mainPos.x, vicePos.x) == mainPos.x) {
@@ -236,17 +143,15 @@ namespace worldedit {
         }
 
         updateBoundingBox();
-        player->sendFormattedText("§aThis region has been contracted");
-        return true;
+        return {"§aThis region has been contracted", true};
     }
 
-    bool ExpandRegion::shift(const BlockPos& change, Player* player) {
+    std::pair<std::string, bool> ExpandRegion::shift(const BlockPos& change) {
         mainPos = mainPos + change;
         vicePos = vicePos + change;
         updateBoundingBox();
 
-        player->sendFormattedText("§aThis region has been shifted");
-        return true;
+        return {"§aThis region has been shifted", true};
     }
 
     ExpandRegion::ExpandRegion(const BoundingBox& region, const int& dim)

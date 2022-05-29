@@ -23,13 +23,11 @@
 // #include <ScheduleAPI.h>
 // #include <DynamicCommandAPI.h>
 #include "CppEval.h"
-#include "pcg_random.hpp"
 #include "FastNoise/FastNoise.h"
 // #include "WorldEdit.h"
 
 namespace worldedit {
-    pcg32 rng(pcg_extras::seed_seq_from<std::random_device>{});
-    std::uniform_real_distribution<double> uniform_dist{0.0, 1.0};
+    double uniformRandDouble();
     class EvalFunctions {
         BlockPos here;
         BlockSource* blockSource;
@@ -45,9 +43,9 @@ namespace worldedit {
             switch (do_hash(name)) {
                 case do_hash("rand"):
                     if (params.size() == 0) {
-                        return uniform_dist(rng);
+                        return uniformRandDouble();
                     } else if (params.size() == 2) {
-                        return uniform_dist(rng) * (params[1] - params[0]) +
+                        return uniformRandDouble() * (params[1] - params[0]) +
                                params[0];
                     }
                     break;

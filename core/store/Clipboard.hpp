@@ -56,7 +56,7 @@ namespace worldedit {
         bool flipY = false;
         bool used = false;
         long long vsize;
-        std::vector<blockNBTSet> blockslist;
+        std::vector<BlockNBTSet> blockslist;
         Clipboard() = default;
         Clipboard(const BlockPos& sizes)
             : size(sizes + BlockPos(1, 1, 1)),
@@ -78,7 +78,7 @@ namespace worldedit {
         }
         void storeBlock(BlockInstance& blockInstance, const BlockPos& pos) {
             if (pos.containedWithin(BlockPos(0, 0, 0), board)) {
-                blockslist[getIter(pos)] = blockNBTSet(blockInstance);
+                blockslist[getIter(pos)] = BlockNBTSet(blockInstance);
             }
         }
         BoundingBox getBoundingBox() {
@@ -250,10 +250,10 @@ namespace worldedit {
             }
             return res;
         }
-        blockNBTSet getSet(const BlockPos& pos) {
+        BlockNBTSet getSet(const BlockPos& pos) {
             return blockslist[getIter(pos)];
         }
-        blockNBTSet getSet2(const BlockPos& pos) {
+        BlockNBTSet getSet2(const BlockPos& pos) {
             return blockslist[getIter2(pos)];
         }
         bool contains(const BlockPos& pos) {

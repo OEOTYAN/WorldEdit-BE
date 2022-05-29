@@ -5,7 +5,7 @@
 #ifndef WORLDEDIT_REGIONCOMMAND_H
 #define WORLDEDIT_REGIONCOMMAND_H
 
-// #include "pch.h"
+//#include "pch.h"
 // #include <MC/Level.hpp>
 // #include <MC/BlockInstance.hpp>
 // #include <MC/Block.hpp>
@@ -38,7 +38,7 @@ namespace worldedit {
             {
                 // enums{enumName, {values...}}
                 {"region",
-                 {"cuboid", "expand", "poly", "sphere", "convex", "clear"}},
+                 {"cuboid", "extend", "poly", "sphere", "convex", "clear"}},
             },
             {// parameters(type, name, [optional], [enumOptions(also
              // enumName)], [identifier]) identifier: used to identify unique
@@ -80,13 +80,13 @@ namespace worldedit {
                             output.success(
                                 "§aRegion has been switched to cuboid");
                             break;
-                        case do_hash("expand"):
+                        case do_hash("extend"):
                             mod.playerRegionMap[xuid] =
                                 worldedit::Region::createRegion(
                                     worldedit::EXPAND, tmpbox,
                                     origin.getPlayer()->getDimensionId());
                             output.success(
-                                "§aRegion has been switched to expand");
+                                "§aRegion has been switched to extend");
                             break;
                         case do_hash("poly"):
                             mod.playerRegionMap[xuid] =
@@ -194,7 +194,7 @@ namespace worldedit {
             },
             CommandPermissionLevel::GameMasters);
 
-        DynamicCommand::setup( 
+        DynamicCommand::setup(
             "hpos2",                          // command name
             "set second position from view",  // command description
             {}, {}, {{}},
@@ -300,7 +300,12 @@ namespace worldedit {
                             worldedit::invFacing(facing),
                             results["numback"].get<int>()));
                     }
-                    mod.playerRegionMap[xuid]->contract(list, player);
+                    auto res = mod.playerRegionMap[xuid]->contract(list);
+                    if (res.second) {
+                        output.success(res.first);
+                    } else {
+                        output.error(res.first);
+                    }
                 } else {
                     output.error("You don't have a region yet");
                 }
@@ -310,17 +315,16 @@ namespace worldedit {
         DynamicCommand::setup(
             "expand",         // command name
             "expand region",  // command description
-            {
-                {"dir",
-                 {"me", "back", "up", "down", "south", "north", "east",
-                  "west"}},
-            },
+            {{"dir",
+              {"me", "back", "up", "down", "south", "north", "east", "west"}},
+             {"vert", {"vert"}}},
             {
                 ParamData("dir", ParamType::Enum, true, "dir"),
                 ParamData("num", ParamType::Int, false, "num"),
                 ParamData("numback", ParamType::Int, true, "numback"),
+                ParamData("vert", ParamType::Enum, "vert"),
             },
-            {{"num", "dir", "numback"}},
+            {{"num", "dir", "numback"}, {"vert"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin,
                CommandOutput& output,
@@ -331,33 +335,50 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 if (mod.playerRegionMap.find(xuid) !=
                     mod.playerRegionMap.end()) {
-                    int l = results["num"].get<int>();
-                    worldedit::FACING facing;
-                    if (results["dir"].isSet) {
-                        auto str = results["dir"].getRaw<std::string>();
-                        if (str == "me") {
-                            facing = worldedit::dirToFacing(
-                                player->getViewVector(1.0f));
-                        } else if (str == "back") {
-                            facing = worldedit::dirToFacing(
-                                player->getViewVector(1.0f));
-                            facing = worldedit::invFacing(facing);
-                        } else {
-                            facing = worldedit::dirStringToFacing(str);
-                        }
-                    } else {
-                        facing =
-                            worldedit::dirToFacing(player->getViewVector(1.0f));
-                    }
                     std::vector<BlockPos> list;
                     list.resize(0);
-                    list.push_back(worldedit::facingToPos(facing, l));
-                    if (results["numback"].isSet) {
-                        list.push_back(worldedit::facingToPos(
-                            worldedit::invFacing(facing),
-                            results["numback"].get<int>()));
+                    if (results["vert"].isSet) {
+                        auto heightRange =
+                            player->getDimensionConst().getHeightRange();
+                        auto* region = mod.playerRegionMap[xuid];
+                        auto boundingBox = region->getBoundBox();
+                        list.push_back(BlockPos(
+                            0,
+                            std::min(boundingBox.bpos1.y - heightRange.min, 0),
+                            0));
+                        list.push_back(BlockPos(0, std::max(heightRange.max-boundingBox.bpos2.y-1,0), 0));
+                    }else{
+                        int l = results["num"].get<int>();
+                        worldedit::FACING facing;
+                        if (results["dir"].isSet) {
+                            auto str = results["dir"].getRaw<std::string>();
+                            if (str == "me") {
+                                facing = worldedit::dirToFacing(
+                                    player->getViewVector(1.0f));
+                            } else if (str == "back") {
+                                facing = worldedit::dirToFacing(
+                                    player->getViewVector(1.0f));
+                                facing = worldedit::invFacing(facing);
+                            } else {
+                                facing = worldedit::dirStringToFacing(str);
+                            }
+                        } else {
+                            facing = worldedit::dirToFacing(
+                                player->getViewVector(1.0f));
+                        }
+                        list.push_back(worldedit::facingToPos(facing, l));
+                        if (results["numback"].isSet) {
+                            list.push_back(worldedit::facingToPos(
+                                worldedit::invFacing(facing),
+                                results["numback"].get<int>()));
+                        }
                     }
-                    mod.playerRegionMap[xuid]->expand(list, player);
+                        auto res = mod.playerRegionMap[xuid]->expand(list);
+                        if (res.second) {
+                            output.success(res.first);
+                        } else {
+                            output.error(res.first);
+                        }
                 } else {
                     output.error("You don't have a region yet");
                 }
@@ -403,8 +424,13 @@ namespace worldedit {
                         facing =
                             worldedit::dirToFacing(player->getViewVector(1.0f));
                     }
-                    mod.playerRegionMap[xuid]->shift(
-                        worldedit::facingToPos(facing, l), player);
+                    auto res = mod.playerRegionMap[xuid]->shift(
+                        worldedit::facingToPos(facing, l));
+                    if (res.second) {
+                        output.success(res.first);
+                    } else {
+                        output.error(res.first);
+                    }
                 } else {
                     output.error("You don't have a region yet");
                 }
@@ -453,7 +479,12 @@ namespace worldedit {
                         list.push_back({0, 0, -l});
                         list.push_back({0, 0, l});
                     }
-                    mod.playerRegionMap[xuid]->expand(list, player);
+                    auto res = mod.playerRegionMap[xuid]->expand(list);
+                    if (res.second) {
+                        output.success(res.first);
+                    } else {
+                        output.error(res.first);
+                    }
                 } else {
                     output.error("You don't have a region yet");
                 }
@@ -502,7 +533,12 @@ namespace worldedit {
                         list.push_back({0, 0, -l});
                         list.push_back({0, 0, l});
                     }
-                    mod.playerRegionMap[xuid]->contract(list, player);
+                    auto res = mod.playerRegionMap[xuid]->contract(list);
+                    if (res.second) {
+                        output.success(res.first);
+                    } else {
+                        output.error(res.first);
+                    }
                 } else {
                     output.error("You don't have a region yet");
                 }

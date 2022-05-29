@@ -2,19 +2,26 @@
 // Created by OEOTYAN on 2021/2/8.
 //
 
-#include "ConvexRegion.h" 
+#include "ConvexRegion.h"
 #include "pch.h"
+#include "MC/Level.hpp"
+#include "MC/Dimension.hpp"
 namespace worldedit {
     void ConvexRegion::updateBoundingBox() {
+        auto range = Level::getDimension(dimensionID)->getHeightRange();
         rendertick = 0;
         boundingBox.bpos1 = *vertices.begin();
         boundingBox.bpos2 = *vertices.begin();
         for_each(vertices.begin(), vertices.end(), [&](BlockPos value) {
             boundingBox.bpos1.x = std::min(boundingBox.bpos1.x, value.x);
-            boundingBox.bpos1.y = std::min(boundingBox.bpos1.y, value.y);
+            boundingBox.bpos1.y =
+                std::max(std::min(boundingBox.bpos1.y, value.y),
+                         static_cast<int>(range.min));
             boundingBox.bpos1.z = std::min(boundingBox.bpos1.z, value.z);
             boundingBox.bpos2.x = std::max(boundingBox.bpos2.x, value.x);
-            boundingBox.bpos2.y = std::max(boundingBox.bpos2.y, value.y);
+            boundingBox.bpos2.y =
+                std::min(std::max(boundingBox.bpos2.y, value.y),
+                         static_cast<int>(range.max) - 1);
             boundingBox.bpos2.z = std::max(boundingBox.bpos2.z, value.z);
         });
     }
@@ -151,7 +158,7 @@ namespace worldedit {
         return addVertex(pos);
     }
 
-    bool ConvexRegion::shift(const BlockPos& change, Player* player) {
+    std::pair<std::string, bool> ConvexRegion::shift(const BlockPos& change) {
         boundingBox.bpos1 = boundingBox.bpos1 + change;
         boundingBox.bpos2 = boundingBox.bpos2 + change;
         auto tmpVertices = new std::unordered_set<BlockPos>(vertices);
@@ -160,8 +167,7 @@ namespace worldedit {
             vertices.insert(vertice + change);
         }
         delete tmpVertices;
-        auto tmpVertexBacklog =
-            new std::unordered_set<BlockPos>(vertexBacklog);
+        auto tmpVertexBacklog = new std::unordered_set<BlockPos>(vertexBacklog);
         vertexBacklog.clear();
         for (auto vertex : *tmpVertexBacklog) {
             vertexBacklog.insert(vertex + change);
@@ -186,9 +192,7 @@ namespace worldedit {
         centerAccum = centerAccum + change * (int)vertices.size();
         hasLast = false;
 
-        updateBoundingBox();
-        player->sendFormattedText("§aThis region has been shifted");
-        return true;
+        return {"§aThis region has been shifted",true};
     }
 
     bool ConvexRegion::contains(const BlockPos& pos) {

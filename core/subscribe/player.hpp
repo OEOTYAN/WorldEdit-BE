@@ -48,9 +48,10 @@ namespace worldedit {
                         mod.playerHandToolMap.end() &&
                     mod.playerHandToolMap[xuid].find(itemName) !=
                         mod.playerHandToolMap[xuid].end()) {
-                    if (mod.playerHandToolMap[xuid][itemName] == "farwand") {
-                        return false;
-                    }
+                    // auto tmpType = mod.playerHandToolMap[xuid][itemName];
+                    // if (tmpType == "farwand" || tmpType=="info") {
+                    return false;
+                    // }
                 }
                 return true;
             });
@@ -63,19 +64,53 @@ namespace worldedit {
                         mod.playerHandToolMap.end() &&
                     mod.playerHandToolMap[xuid].find(itemName) !=
                         mod.playerHandToolMap[xuid].end()) {
-                    if (mod.playerHandToolMap[xuid][itemName] == "farwand") {
-                        bool requiereWater = true;
-                        if (Level::getBlock(BlockPos(ev.mPlayer->getPosition()),
-                                            ev.mPlayer->getDimensionId()) !=
-                            BedrockBlocks::mAir) {
-                            requiereWater = false;
-                        }
-                        BlockInstance blockInstance =
-                            ev.mPlayer->getBlockFromViewVector(
-                                requiereWater, false, 2048.0f, true, false);
-                        changeVicePos(ev.mPlayer, blockInstance);
-                        return false;
+                    bool requiereWater = true;
+                    if (Level::getBlock(BlockPos(ev.mPlayer->getPosition()),
+                                        ev.mPlayer->getDimensionId()) !=
+                        BedrockBlocks::mAir) {
+                        requiereWater = false;
                     }
+                    BlockInstance blockInstance =
+                        ev.mPlayer->getBlockFromViewVector(
+                            requiereWater, false, 2048.0f, true, false);
+                    auto tmpType = mod.playerHandToolMap[xuid][itemName];
+                    if (tmpType == "farwand") {
+                        changeVicePos(ev.mPlayer, blockInstance);
+                    } else if (tmpType == "tree") {
+                    } else if (tmpType == "deltree") {
+                    } else if (tmpType == "cycler") {
+                    } else if (tmpType == "info") {
+                        auto block = blockInstance.getBlock();
+                        auto& exblock = const_cast<Block&>(
+                            blockInstance.getBlockSource()->getExtraBlock(
+                                blockInstance.getPosition()));
+                        std::cout << "block:\n"
+                                  << block->getNbt()->toPrettySNBT()
+                                  << std::endl;
+                        ev.mPlayer->sendText(
+                            "block:\n" + block->getNbt()->toPrettySNBT(true));
+                        if (&exblock != BedrockBlocks::mAir) {
+                            std::cout << "exBlock:\n"
+                                      << exblock.getNbt()->toPrettySNBT()
+                                      << std::endl;
+                            ev.mPlayer->sendText(
+                                "exBlock:\n" +
+                                exblock.getNbt()->toPrettySNBT(true));
+                        }
+                        if (blockInstance.hasBlockEntity()) {
+                            std::cout << "blockEntity:\n"
+                                      << blockInstance.getBlockEntity()
+                                             ->getNbt()
+                                             ->toPrettySNBT()
+                                      << std::endl;
+                            ev.mPlayer->sendText("blockEntity:\n" +
+                                                 blockInstance.getBlockEntity()
+                                                     ->getNbt()
+                                                     ->toPrettySNBT(true));
+                        }
+                    } else if (tmpType == "flood") {
+                    }
+                    return false;
                 }
                 return true;
             });
@@ -93,9 +128,9 @@ namespace worldedit {
                         mod.playerHandToolMap.end() &&
                     mod.playerHandToolMap[xuid].find(itemName) !=
                         mod.playerHandToolMap[xuid].end()) {
-                    if (mod.playerHandToolMap[xuid][itemName] == "farwand") {
-                        return false;
-                    }
+                    // if (mod.playerHandToolMap[xuid][itemName] == "farwand") {
+                    return false;
+                    //}
                 }
                 return true;
             });
@@ -111,10 +146,6 @@ THook(void,
     if (animatePacket.mAction == AnimatePacket::Action::Swing) {
         Player* player =
             serverNetworkHandler->getServerPlayer(networkIdentifier);
-        // std::cout << fmt::format("{}({})->{}", animatePacket.getName(),
-                                //  animatePacket.getId(),
-                                //  animatePacket.mAction)
-                //   << std::endl;
         auto& mod = worldedit::getMod();
         auto itemName = player->getHandSlot()->getTypeName();
         auto xuid = player->getXuid();

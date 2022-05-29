@@ -3,15 +3,20 @@
 //
 
 #include "SphereRegion.h"
+#include "MC/Level.hpp"
+#include "MC/Dimension.hpp"
 namespace worldedit {
     void SphereRegion::updateBoundingBox() {
+        auto range = Level::getDimension(dimensionID)->getHeightRange();
         rendertick = 0;
         auto newRadius = (int)(radius);
         boundingBox.bpos1.x = center.x - newRadius;
-        boundingBox.bpos1.y = std::max(center.y - newRadius, 0);
+        boundingBox.bpos1.y =
+            std::max(center.y - newRadius, static_cast<int>(range.min));
         boundingBox.bpos1.z = center.z - newRadius;
         boundingBox.bpos2.x = center.x + newRadius;
-        boundingBox.bpos2.y = std::min(center.y + newRadius, 255);
+        boundingBox.bpos2.y =
+            std::min(center.y + newRadius, static_cast<int>(range.max) - 1);
         boundingBox.bpos2.z = center.z + newRadius;
     }
 
@@ -52,68 +57,35 @@ namespace worldedit {
         return -1;
     }
 
-    bool SphereRegion::expand(const BlockPos& change, Player* player) {
-        if (!(change.x == change.y && change.y == change.z)) {
-            player->sendFormattedText(
-                "§cThis region can only be expanded isotropically");
-            return false;
-        } else {
-            radius += change.x / 2;
-            updateBoundingBox();
-        }
-
-        player->sendFormattedText("§aThis region has been expanded");
-        return true;
-    }
-
-    bool SphereRegion::contract(const BlockPos& change, Player* player) {
-        if (!(change.x == change.y && change.y == change.z)) {
-            player->sendFormattedText(
-                "§cThis region can only be contracted isotropically");
-            return false;
-        } else {
-            radius += change.x / 2;
-            updateBoundingBox();
-        }
-        player->sendFormattedText("§aThis region has been contracted");
-        return true;
-    }
-    bool SphereRegion::expand(const std::vector<BlockPos>& changes,
-                              Player* player) {
+    std::pair<std::string, bool> SphereRegion::expand(
+        const std::vector<BlockPos>& changes) {
         int check = checkChanges(changes);
         if (check == -1) {
-            player->sendFormattedText(
-                "§cThis region can only be expanded isotropically");
-            return false;
+            return {"This region can only be expanded isotropically", false};
         } else {
             radius += check;
             updateBoundingBox();
         }
 
-        player->sendFormattedText("§aThis region has been expanded");
-        return true;
+        return {"§aThis region has been expanded", true};
     }
 
-    bool SphereRegion::contract(const std::vector<BlockPos>& changes,
-                                Player* player) {
+    std::pair<std::string, bool> SphereRegion::contract(
+        const std::vector<BlockPos>& changes) {
         int check = checkChanges(changes);
         if (check == -1) {
-            player->sendFormattedText(
-                "§cThis region can only be contracted isotropically");
-            return false;
+            return {"This region can only be contracted isotropically", false};
         } else {
             radius += check;
             updateBoundingBox();
         }
-        player->sendFormattedText("§aThis region has been contracted");
-        return true;
+        return {"§aThis region has been contracted", true};
     }
 
-    bool SphereRegion::shift(const BlockPos& change, Player* player) {
+    std::pair<std::string, bool> SphereRegion::shift(const BlockPos& change) {
         center = center + change;
         updateBoundingBox();
-        player->sendFormattedText("§aThis region has been shifted");
-        return true;
+        return {"§aThis region has been shifted", true};
     }
 
     bool SphereRegion::contains(const BlockPos& pos) {

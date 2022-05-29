@@ -46,15 +46,18 @@ namespace worldedit {
             return cpp_eval::eval<double>(function.c_str(), variables, funcs);
         }
     };
-    class rawBlock {
+    class RawBlock {
        public:
         bool constBlock = true;
         Block* block = const_cast<Block*>(BedrockBlocks::mAir);
-        int blockId = 0;
-        int blockData = 0;
+        Block* exBlock = const_cast<Block*>(BedrockBlocks::mAir);
+        bool hasBE = false;
+        std::string blockEntity = "";
+        int blockId = -2140000000;
+        int blockData = -2140000000;
         std::string blockIdfunc = "0";
         std::string blockDatafunc = "0";
-        rawBlock() = default;
+        RawBlock() = default;
         template <typename functions>
         Block* getBlock(
             const std::unordered_map<::std::string, double>& variables,
@@ -63,14 +66,18 @@ namespace worldedit {
                 return block;
             }
             int mId = blockId;
-            if (mId < 0) {
+            if (mId == -1) {
                 mId = static_cast<int>(round(cpp_eval::eval<double>(
                     blockIdfunc.c_str(), variables, funcs)));
+            } else if (mId == -2140000000) {
+                mId = 0;
             }
             int mData = blockData;
-            if (mData < 0) {
+            if (mData == -1) {
                 mData = static_cast<int>(round(cpp_eval::eval<double>(
                     blockDatafunc.c_str(), variables, funcs)));
+            } else if (mData == -2140000000) {
+                mData = 0;
             }
             return Block::create(getBlockName(mId), mData);
         }
@@ -79,10 +86,10 @@ namespace worldedit {
        public:
         size_t blockNum = 0;
         std::vector<Percents> percents;
-        std::vector<rawBlock> rawBlocks;
+        std::vector<RawBlock> rawBlocks;
         BlockPattern(std::string str) {
             std::vector<std::string> raw;
-            raw.resize(0);
+            raw.clear();
             string form = "";
             size_t i = 0;
             while (i < str.size()) {
@@ -170,8 +177,43 @@ namespace worldedit {
                 } else if (blockList[iter].find("%SNBT") != std::string::npos) {
                     rawBlocks[iter].blockId = -1;
                     rawBlocks[iter].blockData = -1;
-                    rawBlocks[iter].block =
-                        Block::create(CompoundTag::fromSNBT(raw[rawPtr]).get());
+                    std::string tmpSNBT = raw[rawPtr];
+                    if (tmpSNBT[0] == '{' && tmpSNBT[1] == '{') {
+                        size_t i2 = 1;
+                        int bracket2 = -1;
+                        std::vector<std::string> tmpSNBTs;
+                        tmpSNBTs.clear();
+                        while (i2 < tmpSNBT.size() - 1) {
+                            if (tmpSNBT[i2] == '{') {
+                                auto head2 = i2;
+                                while (i2 < tmpSNBT.size() && bracket2 < 0) {
+                                    if (tmpSNBT[i2] == '{') {
+                                        bracket2--;
+                                    } else if (tmpSNBT[i2] == '}') {
+                                        bracket2++;
+                                    }
+                                    i2++;
+                                }
+                                tmpSNBTs.emplace_back(
+                                    tmpSNBT.substr(head2, i2 - head2));
+                            }
+                            i2++;
+                        }
+                        rawBlocks[iter].block = Block::create(
+                            CompoundTag::fromSNBT(tmpSNBTs[0]).get());
+                        if (tmpSNBTs.size() > 1) {
+                            rawBlocks[iter].exBlock = Block::create(
+                                CompoundTag::fromSNBT(tmpSNBTs[1]).get());
+                        }
+                        if (tmpSNBTs.size() > 2) {
+                            rawBlocks[iter].blockEntity =
+                                CompoundTag::fromSNBT(tmpSNBTs[2])
+                                    ->toBinaryNBT();
+                        }
+                    } else {
+                        rawBlocks[iter].block =
+                            Block::create(CompoundTag::fromSNBT(tmpSNBT).get());
+                    }
                     rawPtr++;
                     continue;
                 }
@@ -193,7 +235,7 @@ namespace worldedit {
             }
         }
         template <typename functions>
-        Block* getBlock(
+        RawBlock* getRawBlock(
             const std::unordered_map<::std::string, double>& variables,
             functions& funcs) {
             std::vector<double> weights;
@@ -204,15 +246,46 @@ namespace worldedit {
                     std::max(percents[i].getPercents(variables, funcs), 0.0);
                 total += weights[i];
             }
-            double random = uniform_dist(rng) * total;
+            double random = uniformRandDouble() * total;
             double sum = 0;
             for (int i = 0; i < blockNum - 1; i++) {
                 sum += weights[i];
                 if (random <= sum) {
-                    return rawBlocks[i].getBlock(variables, funcs);
+                    return &rawBlocks[i];
                 }
             }
-            return rawBlocks[blockNum - 1].getBlock(variables, funcs);
+            return &rawBlocks[blockNum - 1];
+        }
+        template <typename functions>
+        Block* getBlock(
+            const std::unordered_map<::std::string, double>& variables,
+            functions& funcs) {
+            return getRawBlock(variables, funcs)->getBlock(variables, funcs);
+        }
+        bool hasBlock(Block* block) {
+            for (auto& rawBlock : rawBlocks) {
+                if (block->getTypeName() == getBlockName(rawBlock.blockId) &&
+                    (rawBlock.blockData < 0 ||
+                     rawBlock.blockData == block->getTileData())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        template <typename functions>
+        void setBlock(
+            const std::unordered_map<::std::string, double>& variables,
+            functions& funcs,
+            BlockSource* blockSource,
+            const BlockPos& pos) {
+            auto blockInstance = blockSource->getBlockInstance(pos);
+            auto* rawBlock = getRawBlock(variables, funcs);
+            auto* block = rawBlock->getBlock(variables, funcs);
+            setBlockSimple(blockSource, pos, block, rawBlock->exBlock);
+            if (rawBlock->hasBE && blockInstance.hasBlockEntity()) {
+                blockInstance.getBlockEntity()->setNbt(
+                    CompoundTag::fromBinaryNBT(rawBlock->blockEntity).get());
+            }
         }
     };
 }  // namespace worldedit

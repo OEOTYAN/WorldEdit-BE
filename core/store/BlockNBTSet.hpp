@@ -10,13 +10,12 @@
 // #include <MC/BlockInstance.hpp>
 #include <MC/Block.hpp>
 #include <MC/BlockActor.hpp>
+#include <MC/CommandUtils.hpp>
 #include <MC/BlockSource.hpp>
-// #include <MC/CompoundTag.hpp>
+#include <MC/BedrockBlocks.hpp>
 #include <MC/StructureSettings.hpp>
 #include <MC/VanillaBlockStateTransformUtils.hpp>
 #include "particle/Graphics.h"
-#include "MC/Container.hpp"
-// #include <MC/Actor.hpp>
 // #include <MC/Player.hpp>
 // #include <MC/ServerPlayer.hpp>
 // #include <MC/Dimension.hpp>
@@ -31,13 +30,13 @@
 // #include "WorldEdit.h"
 
 namespace worldedit {
-    class blockNBTSet {
+    class BlockNBTSet {
        public:
         std::string block, exblock, blockEntity;
         bool hasBlock = false;
         bool hasBlockEntity = false;
-        blockNBTSet() = default;
-        blockNBTSet(BlockInstance& blockInstance) : hasBlock(true) {
+        BlockNBTSet() = default;
+        BlockNBTSet(BlockInstance& blockInstance) : hasBlock(true) {
             block = blockInstance.getBlock()->getNbt()->toBinaryNBT();
             exblock = const_cast<Block&>(
                           blockInstance.getBlockSource()->getExtraBlock(
@@ -59,55 +58,11 @@ namespace worldedit {
         std::string getBlockEntity() const {
             return hasBlockEntity ? blockEntity : "";
         }
-        void setBlock(BlockPos& pos, int dimID) const {
-            auto blockSource = Level::getBlockSource(dimID);
-            auto blockInstance = blockSource->getBlockInstance(pos);
-            if (blockInstance.hasContainer()) {
-                blockInstance.getContainer()->removeAllItems();
-            }
-            blockSource->setBlock(
-                pos, *Block::create(CompoundTag::fromBinaryNBT(block).get()), 2,
-                nullptr, nullptr);
-            blockSource->setExtraBlock(
-                pos, *Block::create(CompoundTag::fromBinaryNBT(exblock).get()),
-                2);
-            if (hasBlockEntity) {
-                auto blockInstance = blockSource->getBlockInstance(pos);
-                if (blockInstance.hasBlockEntity()) {
-                    blockInstance.getBlockEntity()->setNbt(
-                        CompoundTag::fromBinaryNBT(blockEntity).get());
-                }
-            }
-        }
+        void setBlock(BlockPos& pos, int dimID) const;
         void setBlock(BlockPos& pos,
                       int dimID,
                       Rotation rotation,
-                      Mirror mirror) const {
-            auto blockSource = Level::getBlockSource(dimID);
-            auto blockInstance = blockSource->getBlockInstance(pos);
-            if (blockInstance.hasContainer()) {
-                blockInstance.getContainer()->removeAllItems();
-            }
-            blockSource->setBlock(
-                pos,
-                *VanillaBlockStateTransformUtils::transformBlock(
-                    *Block::create(CompoundTag::fromBinaryNBT(block).get()),
-                    rotation, mirror),
-                2, nullptr, nullptr);
-            blockSource->setExtraBlock(
-                pos,
-                *VanillaBlockStateTransformUtils::transformBlock(
-                    *Block::create(CompoundTag::fromBinaryNBT(exblock).get()),
-                    rotation, mirror),
-                2);
-            if (hasBlockEntity) {
-                auto blockInstance = blockSource->getBlockInstance(pos);
-                if (blockInstance.hasBlockEntity()) {
-                    blockInstance.getBlockEntity()->setNbt(
-                        CompoundTag::fromBinaryNBT(blockEntity).get());
-                }
-            }
-        }
+                      Mirror mirror) const;
     };
 }  // namespace worldedit
 

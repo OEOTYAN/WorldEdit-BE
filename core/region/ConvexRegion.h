@@ -73,10 +73,10 @@ namespace worldedit {
 
         void renderRegion() override;
 
-        bool shift(const BlockPos& change, Player* player) override;
+        std::pair<std::string, bool> shift(const BlockPos& change) override;
 
         Vec3 getCenter() const override {
-            return centerAccum.toVec3() * (1.0f / vertices.size());
+            return centerAccum.toVec3() * (1.0f / vertices.size()) + Vec3(0.5,0.5,0.5);
         };
 
         bool setMainPos(const BlockPos& pos, const int& dim) override;

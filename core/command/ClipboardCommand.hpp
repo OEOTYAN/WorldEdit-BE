@@ -6,7 +6,7 @@
 #define WORLDEDIT_CLIPBOARDCOMMAND_H
 
 // #include "pch.h"
-// #include <MC/Level.hpp>
+#include <MC/CommandUtils.hpp>
 // #include <MC/BlockInstance.hpp>
 // #include <MC/Block.hpp>
 // #include <MC/BlockActor.hpp>
@@ -134,10 +134,8 @@ namespace worldedit {
                                                                 localPos);
                     });
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
-                        auto blockInstance = blockSource->getBlockInstance(pos);
-                        if (blockInstance.hasContainer()) {
-                            blockInstance.getContainer()->removeAllItems();
-                        }
+                        CommandUtils::clearBlockEntityContents(*blockSource,
+                                                               pos);
                         blockSource->setExtraBlock(pos, *BedrockBlocks::mAir,
                                                    2);
                         blockSource->setBlock(pos, *BedrockBlocks::mAir, 2,

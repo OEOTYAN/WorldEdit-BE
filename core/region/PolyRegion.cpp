@@ -3,11 +3,15 @@
 //
 
 #include "PolyRegion.h"
+#include "MC/Level.hpp"
+#include "MC/Dimension.hpp"
 namespace worldedit {
     void PolyRegion::updateBoundingBox() {
+        auto range = Level::getDimension(dimensionID)->getHeightRange();
         rendertick = 0;
-        boundingBox.bpos1.y = minY;
-        boundingBox.bpos2.y = maxY;
+        boundingBox.bpos1.y = std::max(minY, static_cast<int>(range.min));
+        boundingBox.bpos2.y = std::min(maxY, static_cast<int>(range.max) - 1);
+        ;
         boundingBox.bpos1.x = points[0].x;
         boundingBox.bpos1.z = points[0].z;
         boundingBox.bpos2.x = points[0].x;
@@ -53,50 +57,11 @@ namespace worldedit {
         updateBoundingBox();
         return true;
     }
-
-    bool PolyRegion::expand(const BlockPos& change, Player* player) {
-        if (change.x != 0 || change.z != 0) {
-            player->sendFormattedText(
-                "§cThis region can only expand vertically");
-            return false;
-        }
-        int changeY = change.y;
-        if (changeY > 0) {
-            maxY += changeY;
-        } else {
-            minY += changeY;
-        }
-
-        updateBoundingBox();
-
-        player->sendFormattedText("§aThis region has been expanded");
-        return true;
-    }
-
-    bool PolyRegion::contract(const BlockPos& change, Player* player) {
-        if (change.x != 0 || change.z != 0) {
-            player->sendFormattedText(
-                "§cThis region can only contract vertically");
-            return false;
-        }
-        int changeY = change.y;
-        if (changeY > 0) {
-            minY += changeY;
-        } else {
-            maxY += changeY;
-        }
-
-        updateBoundingBox();
-        player->sendFormattedText("§aThis region has been contracted");
-        return true;
-    }
-    bool PolyRegion::expand(const std::vector<BlockPos>& changes,
-                            Player* player) {
+    std::pair<std::string, bool> PolyRegion::expand(
+        const std::vector<BlockPos>& changes) {
         for (BlockPos change : changes) {
             if (change.x != 0 || change.z != 0) {
-                player->sendFormattedText(
-                    "§cThis region can only expand vertically");
-                return false;
+                return {"§aThis region can only expand vertically", false};
             }
         }
         for (BlockPos change : changes) {
@@ -109,17 +74,14 @@ namespace worldedit {
         }
         updateBoundingBox();
 
-        player->sendFormattedText("§aThis region has been expanded");
-        return true;
+        return {"§aThis region has been expanded", true};
     }
 
-    bool PolyRegion::contract(const std::vector<BlockPos>& changes,
-                              Player* player) {
+    std::pair<std::string, bool> PolyRegion::contract(
+        const std::vector<BlockPos>& changes) {
         for (BlockPos change : changes) {
             if (change.x != 0 || change.z != 0) {
-                player->sendFormattedText(
-                    "§cThis region can only contract vertically");
-                return false;
+                return {"§aThis region can only contract vertically", false};
             }
         }
         for (BlockPos change : changes) {
@@ -131,11 +93,10 @@ namespace worldedit {
             }
         }
         updateBoundingBox();
-        player->sendFormattedText("§aThis region has been contracted");
-        return true;
+            return {"§aThis region has been contracted", true};
     }
 
-    bool PolyRegion::shift(const BlockPos& change, Player* player) {
+    std::pair<std::string, bool> PolyRegion::shift(const BlockPos& change) {
         minY += change.y;
         maxY += change.y;
         mainPos = mainPos + change;
@@ -144,8 +105,7 @@ namespace worldedit {
             point.z += change.z;
         }
         updateBoundingBox();
-        player->sendFormattedText("§aThis region has been shifted");
-        return true;
+        return {"§aThis region has been shifted", true};
     }
 
     int PolyRegion::size() const {

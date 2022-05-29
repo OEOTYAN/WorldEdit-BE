@@ -9,8 +9,8 @@
 // #include <EventAPI.h>
 // #include <LoggerAPI.h>
 // #include <MC/Level.hpp>
-#include <MC/Container.hpp>
 #include <MC/BlockInstance.hpp>
+#include <MC/VanillaBlocks.hpp>
 // #include <MC/Block.hpp>
 // #include <MC/BlockSource.hpp>
 // #include <MC/Actor.hpp>
@@ -29,106 +29,46 @@
 #include "WorldEdit.h"
 
 namespace worldedit {
-    void setBlock(const char* funcstr,
-                  BlockSource* blockSource,
-                  const BlockPos& pos,
-                  Block* block,
-                  Block* exblock = const_cast<Block*>(BedrockBlocks::mAir)) {
-        static EvalFunctions mGMaskFunction;
-        mGMaskFunction.setbs(blockSource);
-        mGMaskFunction.setPos(pos);
-        static std::unordered_map<std::string, double> mGlobalVariables;
-        mGlobalVariables["x"] = pos.x;
-        mGlobalVariables["y"] = pos.y;
-        mGlobalVariables["z"] = pos.z;
-        if (cpp_eval::eval<double>(funcstr, mGlobalVariables, mGMaskFunction) >
-            0.5) {
-            auto blockInstance = blockSource->getBlockInstance(pos);
-            if (blockInstance.hasContainer()) {
-                blockInstance.getContainer()->removeAllItems();
-            }
-            blockSource->setExtraBlock(pos, *exblock, 2);
-            blockSource->setBlock(pos, *block, 2, nullptr, nullptr);
-        }
+    void setBlockSimple(
+        BlockSource* blockSource,
+        const BlockPos& pos,
+        Block* block = const_cast<Block*>(BedrockBlocks::mAir),
+        Block* exblock = const_cast<Block*>(BedrockBlocks::mAir));
+
+    template <typename functions>
+    void setFunction(std::unordered_map<::std::string, double>& variables,
+                     functions& funcs,
+                     const BoundingBox& boundingBox,
+                     const Vec3& playerPos,
+                     const BlockPos& pos) {
+        double lengthx = (boundingBox.bpos2.x - boundingBox.bpos1.x) * 0.5;
+        double lengthy = (boundingBox.bpos2.y - boundingBox.bpos1.y) * 0.5;
+        double lengthz = (boundingBox.bpos2.z - boundingBox.bpos1.z) * 0.5;
+        double centerx = (boundingBox.bpos2.x + boundingBox.bpos1.x) * 0.5;
+        double centery = (boundingBox.bpos2.y + boundingBox.bpos1.y) * 0.5;
+        double centerz = (boundingBox.bpos2.z + boundingBox.bpos1.z) * 0.5;
+        funcs.setPos(pos);
+        variables["x"] = (pos.x - centerx) / lengthx;
+        variables["y"] = (pos.y - centery) / lengthy;
+        variables["z"] = (pos.z - centerz) / lengthz;
+        variables["rx"] = pos.x;
+        variables["ry"] = pos.y;
+        variables["rz"] = pos.z;
+        variables["ox"] = pos.x - floor(playerPos.x);
+        variables["oy"] = pos.y - floor(playerPos.y);
+        variables["oz"] = pos.z - floor(playerPos.z);
+        variables["cx"] = pos.x - floor(centerx);
+        variables["cy"] = pos.y - floor(centery);
+        variables["cz"] = pos.z - floor(centerz);
     }
-    void setBlock(BlockSource* blockSource,
-                  const BlockPos& pos,
-                  Block* block,
-                  Block* exblock = const_cast<Block*>(BedrockBlocks::mAir)) {
-        auto blockInstance = blockSource->getBlockInstance(pos);
-        if (blockInstance.hasContainer()) {
-            blockInstance.getContainer()->removeAllItems();
-        }
-        blockSource->setExtraBlock(pos, *exblock, 2);
-        blockSource->setBlock(pos, *block, 2, nullptr, nullptr);
-    }
+
     bool changeVicePos(Player* player,
                        BlockInstance blockInstance,
-                       bool output = true) {
-        if (blockInstance == BlockInstance::Null) {
-            if (output)
-                player->sendFormattedText("§cSecond position set failed");
-            return false;
-        }
-        auto& mod = worldedit::getMod();
-        auto xuid = player->getXuid();
-        if (mod.playerRegionMap.find(xuid) == mod.playerRegionMap.end()) {
-            mod.playerRegionMap[xuid] = new worldedit::CuboidRegion();
-        }
-        auto pos = blockInstance.getPosition();
-        if (mod.playerVicePosMap.find(xuid) == mod.playerVicePosMap.end() ||
-            mod.playerVicePosMap[xuid].first != pos)
-            if (mod.playerRegionMap[xuid]->setVicePos(
-                    pos, player->getDimensionId())) {
-                if (output)
-                    player->sendFormattedText(
-                        "§aSecond position set to ({}, {}, {})", pos.x, pos.y,
-                        pos.z);
-                mod.playerVicePosMap[xuid].first = pos;
-                mod.playerVicePosMap[xuid].second.first = 0;
-                mod.playerVicePosMap[xuid].second.second =
-                    player->getDimensionId();
-                return true;
-            } else {
-                if (output)
-                    player->sendFormattedText("§cSecond position set failed");
-            }
-        return false;
-    }
+                       bool output = true);
 
     bool changeMainPos(Player* player,
                        BlockInstance blockInstance,
-                       bool output = true) {
-        if (blockInstance == BlockInstance::Null) {
-            if (output)
-                player->sendFormattedText("§cFirst position set failed");
-            return false;
-        }
-        auto& mod = worldedit::getMod();
-        auto xuid = player->getXuid();
-        if (mod.playerRegionMap.find(xuid) == mod.playerRegionMap.end()) {
-            mod.playerRegionMap[xuid] = new worldedit::CuboidRegion();
-        }
-        auto pos = blockInstance.getPosition();
-        if (mod.playerMainPosMap.find(xuid) == mod.playerMainPosMap.end() ||
-            mod.playerMainPosMap[xuid].first != pos)
-            if (mod.playerRegionMap[xuid]->setMainPos(
-                    pos, player->getDimensionId())) {
-                if (output)
-                    player->sendFormattedText(
-                        "§aFirst position set to ({}, {}, {})", pos.x, pos.y,
-                        pos.z);
-                mod.playerMainPosMap[xuid].first = pos;
-                mod.playerMainPosMap[xuid].second.first = 0;
-                mod.playerMainPosMap[xuid].second.second =
-                    player->getDimensionId();
-                return true;
-            } else {
-                if (output)
-                    player->sendFormattedText("§cFirst position set failed");
-            }
-        return false;
-    }
+                       bool output = true);
 
 }  // namespace worldedit
 

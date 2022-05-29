@@ -22,17 +22,12 @@ namespace worldedit {
 
         explicit SphereRegion(const BoundingBox& region, const int& dim);
 
-        bool expand(const std::vector<BlockPos>& changes,
-                    Player* player) override;
+        std::pair<std::string, bool> expand(
+            const std::vector<BlockPos>& changes) override;
 
-        bool contract(const std::vector<BlockPos>& changes,
-                      Player* player) override;
+        std::pair<std::string, bool> contract(const std::vector<BlockPos>& changes) override;
 
-        bool expand(const BlockPos& change, Player* player) override;
-
-        bool contract(const BlockPos& change, Player* player) override;
-
-        bool shift(const BlockPos& change, Player* player) override;
+        std::pair<std::string, bool> shift(const BlockPos& change) override;
 
         bool setMainPos(const BlockPos& pos, const int& dim) override;
 

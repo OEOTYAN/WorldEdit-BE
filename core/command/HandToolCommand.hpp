@@ -30,33 +30,41 @@ namespace worldedit {
     using ParamType = DynamicCommand::ParameterType;
     using ParamData = DynamicCommand::ParameterData;
 
-    // none farwand
+    // tool
 
-    void HandToolCommandSetup() {
+    void handToolCommandSetup() {
         DynamicCommand::setup(
-            "none",                  // command name
-            "clear your hand tool",  // command description
-            {}, {}, {{}},
-            // dynamic command callback
-            [](DynamicCommand const& command, CommandOrigin const& origin,
-               CommandOutput& output,
-               std::unordered_map<std::string, DynamicCommand::Result>&
-                   results) {
-                auto& mod = worldedit::getMod();
-                auto xuid = origin.getPlayer()->getXuid();
-                if (mod.playerHandToolMap.find(xuid) !=
-                    mod.playerHandToolMap.end()) {
-                    std::string toolName =
-                        origin.getPlayer()->getHandSlot()->getTypeName();
-                    mod.playerHandToolMap[xuid].erase(toolName);
-                }
-                output.success(fmt::format("§ahand tool cleared"));
+            "tool",                // command name
+            "set your hand tool",  // command description
+            {
+                {"tree", {"tree"}},
+                {"deltree", {"deltree"}},
+                {"farwand", {"farwand"}},
+                {"cycler", {"cycler"}},
+                {"info", {"info"}},
+                {"flood", {"flood"}},
+                {"none", {"none"}},
             },
-            CommandPermissionLevel::GameMasters);
-        DynamicCommand::setup(
-            "farwand",            // command name
-            "set your far wand",  // command description
-            {}, {}, {{}},
+            {
+                ParamData("tree", ParamType::Enum, "tree"),
+                ParamData("deltree", ParamType::Enum, "deltree"),
+                ParamData("farwand", ParamType::Enum, "farwand"),
+                ParamData("cycler", ParamType::Enum, "cycler"),
+                ParamData("info", ParamType::Enum, "info"),
+                ParamData("flood", ParamType::Enum, "flood"),
+                ParamData("none", ParamType::Enum, "none"),
+                ParamData("blockPattern", ParamType::String, "blockPattern"),
+                ParamData("distance", ParamType::Float, "distance"),
+            },
+            {
+                {"tree"},
+                {"deltree"},
+                {"farwand"},
+                {"cycler"},
+                {"info"},
+                {"flood", "blockPattern", "distance"},
+                {"none"},
+            },
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin,
                CommandOutput& output,
@@ -66,10 +74,36 @@ namespace worldedit {
                 auto xuid = origin.getPlayer()->getXuid();
                 std::string toolName =
                     origin.getPlayer()->getHandSlot()->getTypeName();
-                mod.playerHandToolMap[xuid][toolName] = "farwand";
-                stringReplace(toolName, "minecraft:", "");
-                output.success(
-                    fmt::format("§aFar wand tool bound to {}", toolName));
+                if (results["tree"].isSet) {
+                    mod.playerHandToolMap[xuid][toolName] = "tree";
+                    stringReplace(toolName, "minecraft:", "");
+                    output.success(
+                        fmt::format("§aTree tool bound to {}", toolName));
+                } else if (results["deltree"].isSet) {
+                    mod.playerHandToolMap[xuid][toolName] = "deltree";
+                    stringReplace(toolName, "minecraft:", "");
+                    output.success(
+                        fmt::format("§aDeltree tool bound to {}", toolName));
+                } else if (results["farwand"].isSet) {
+                    mod.playerHandToolMap[xuid][toolName] = "farwand";
+                    stringReplace(toolName, "minecraft:", "");
+                    output.success(
+                        fmt::format("§aFar wand tool bound to {}", toolName));
+                } else if (results["cycler"].isSet) {
+                    mod.playerHandToolMap[xuid][toolName] = "cycler";
+                    stringReplace(toolName, "minecraft:", "");
+                    output.success(
+                        fmt::format("§aCycler tool bound to {}", toolName));
+                } else if (results["info"].isSet) {
+                    mod.playerHandToolMap[xuid][toolName] = "info";
+                    stringReplace(toolName, "minecraft:", "");
+                    output.success(
+                        fmt::format("§aBlock info tool bound to {}", toolName));
+                } else if (results["flood"].isSet) {
+                } else if (results["none"].isSet) {
+                    mod.playerHandToolMap[xuid].erase(toolName);
+                    output.success(fmt::format("§aHand tool cleared"));
+                }
             },
             CommandPermissionLevel::GameMasters);
     }
