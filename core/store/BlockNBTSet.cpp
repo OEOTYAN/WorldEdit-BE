@@ -2,7 +2,7 @@
 #include "region/changeRegion.hpp"
 
 namespace worldedit {
-    void BlockNBTSet::setBlock(BlockPos& pos, int dimID) const {
+    void BlockNBTSet::setBlock(const BlockPos& pos, int dimID) const {
         auto blockSource = Level::getBlockSource(dimID);
         setBlockSimple(
             blockSource, pos,
@@ -16,7 +16,7 @@ namespace worldedit {
             }
         }
     }
-    void BlockNBTSet::setBlock(BlockPos& pos,
+    void BlockNBTSet::setBlock(const BlockPos& pos,
                                int dimID,
                                Rotation rotation,
                                Mirror mirror) const {

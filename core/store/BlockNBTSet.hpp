@@ -58,8 +58,8 @@ namespace worldedit {
         std::string getBlockEntity() const {
             return hasBlockEntity ? blockEntity : "";
         }
-        void setBlock(BlockPos& pos, int dimID) const;
-        void setBlock(BlockPos& pos,
+        void setBlock(const BlockPos& pos, int dimID) const;
+        void setBlock(const BlockPos& pos,
                       int dimID,
                       Rotation rotation,
                       Mirror mirror) const;

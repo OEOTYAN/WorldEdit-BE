@@ -5,6 +5,8 @@
 #include "Regions.h"
 #include "MC/Level.hpp"
 #include "MC/BlockSource.hpp"
+#include "MC/Block.hpp"
+#include "region/changeRegion.hpp"
 #include <MC/BedrockBlocks.hpp>
 namespace worldedit {
     void Region::forEachBlockInRegion(
@@ -50,6 +52,94 @@ namespace worldedit {
                     }
                 }
             }
+    }
+
+    std::vector<double> Region::getHeightMap() {
+        int sizex = boundingBox.bpos2.x - boundingBox.bpos1.x+1;
+        int sizez = boundingBox.bpos2.z - boundingBox.bpos1.z+1;
+        std::vector<double> res(sizex * sizez, -1e200);
+        forTopBlockInRegion([&](const BlockPos& pos) {
+            int x = pos.x - boundingBox.bpos1.x;
+            int z = pos.z - boundingBox.bpos1.z;
+            res[x * sizez + z] = pos.y - 0.5;
+        });
+        return res;
+    }
+
+    void Region::applyHeightMap(const std::vector<double>& data) {
+        int sizex = boundingBox.bpos2.x - boundingBox.bpos1.x+1;
+        int sizez = boundingBox.bpos2.z - boundingBox.bpos1.z+1;
+        auto blockSource = Level::getBlockSource(dimensionID);
+        forTopBlockInRegion([&](const BlockPos& pos) {
+            int x = pos.x - boundingBox.bpos1.x;
+            int z = pos.z - boundingBox.bpos1.z;
+            int index = x * sizez + z;
+
+            if (data[index] < -1e150) {
+                return;
+            }
+
+            int curHeight = pos.y - 1;
+            // Clamp newHeight within the selection area
+            int newHeight = std::min(boundingBox.bpos2.y,
+                                     static_cast<int>(floor(data[index])));
+
+            // Offset x,z to be 'real' coordinates
+            int xr = pos.x;
+            int zr = pos.z;
+
+            // We are keeping the topmost blocks so take that in account for the
+            // scale
+            double scale = static_cast<double>(curHeight - boundingBox.bpos1.y) /
+                           static_cast<double>(newHeight - boundingBox.bpos1.y);
+
+            // Depending on growing or shrinking we need to start at the bottom
+            // or top
+            if (newHeight > curHeight) {
+                // Set the top block of the column to be the same type (this
+                // might go wrong with rounding)
+                auto* top = const_cast<Block*>(
+                    &blockSource->getBlock({xr, pos.y - 1, zr}));
+
+                // Skip water/lava
+                // if (!existing.getBlockType().getMaterial().isLiquid()) {
+
+                setBlockSimple(blockSource, {xr, newHeight, zr}, top);
+
+                // Grow -- start from 1 below top replacing airblocks
+                for (int y = newHeight - 1 - boundingBox.bpos1.y; y >= 0; y--) {
+                    int copyFrom = static_cast<int>(floor(y * scale));
+                    setBlockSimple(
+                        blockSource, {xr, boundingBox.bpos1.y + y, zr},
+                        const_cast<Block*>(&blockSource->getBlock(
+                            {xr, boundingBox.bpos1.y + copyFrom, zr})));
+                }
+                //}
+            } else if (curHeight > newHeight) {
+                // auto* top = const_cast<Block*>(
+                    // &blockSource->getBlock({xr, curHeight, zr}));
+
+                // Shrink -- start from bottom
+                for (int y = 0; y < newHeight - boundingBox.bpos1.y; y++) {
+                    int copyFrom = static_cast<int>(floor(y * scale));
+                    setBlockSimple(
+                        blockSource, {xr, boundingBox.bpos1.y + y, zr},
+                        const_cast<Block*>(&blockSource->getBlock(
+                            {xr, boundingBox.bpos1.y + copyFrom, zr})));
+                }
+
+                // Set the top block of the column to be the same type
+                // (this could otherwise go wrong with rounding)
+                setBlockSimple(blockSource, {xr, newHeight, zr},
+                               const_cast<Block*>(&blockSource->getBlock(
+                                   {xr, curHeight, zr})));
+
+                // Fill rest with air
+                for (int y = newHeight + 1; y <= curHeight; y++) {
+                    setBlockSimple(blockSource, {xr, y, zr});
+                }
+            }
+        });
     }
 
     void Region::renderRegion() {

@@ -9,7 +9,7 @@
 // #include <MC/Level.hpp>
 // #include <MC/BlockInstance.hpp>
 #include <MC/Block.hpp>
-// #include <MC/BlockLegacy.hpp>
+#include <MC/BedrockBlocks.hpp>
 #include <MC/BlockSource.hpp>
 // #include <MC/Actor.hpp>
 // #include <MC/Player.hpp>
@@ -27,10 +27,22 @@
 // #include "WorldEdit.h"
 
 namespace worldedit {
+    class LongLong3 {
+       public:
+        long long x = 0;
+        long long y = 0;
+        long long z = 0;
+    };
     double uniformRandDouble();
     class EvalFunctions {
+        int normalSearchDis = 3;
         BlockPos here;
+        BlockPos size;
         BlockSource* blockSource;
+        BoundingBox normalSearchBox;
+        std::vector<LongLong3> posMap;
+        std::vector<long long> solidMap;
+        bool searchBoxInitialized = false;
         bool blockdataInitialized = false;
 
        public:
@@ -38,6 +50,74 @@ namespace worldedit {
         void setbs(BlockSource* bs) {
             blockSource = bs;
             blockdataInitialized = true;
+        }
+        void setbox(BoundingBox box) {
+            normalSearchBox = box;
+            normalSearchBox.bpos1 -= normalSearchDis;
+            normalSearchBox.bpos2 += normalSearchDis;
+            size = normalSearchBox.bpos2 - normalSearchBox.bpos1 + 1;
+            posMap.clear();
+            solidMap.clear();
+            posMap.resize(size.x * size.y * size.z+1);
+            solidMap.resize(size.x * size.y * size.z+1);
+            posMap[size.x * size.y * size.z] = {0, 0, 0};
+            solidMap[size.x * size.y * size.z] = 0;
+            searchBoxInitialized = true;
+            normalSearchBox.forEachBlockInBox([&](const BlockPos& pos) {
+                auto index = getIndex(pos);
+                int counts = 0;
+                for (auto& calPos : pos.getNeighbors()) {
+                    counts +=
+                        &blockSource->getBlock(calPos) != BedrockBlocks::mAir;
+                }
+                solidMap[index] = counts == 6;
+                if (counts == 6) {
+                    posMap[index].x = pos.x;
+                    posMap[index].y = pos.y;
+                    posMap[index].z = pos.z;
+                }
+            });
+            for (int x = 1; x <= size.x; x++)
+                for (int y = 0; y <= size.y; y++)
+                    for (int z = 0; z <= size.z; z++) {
+                        long long index = (y + size.y * z) * size.x + x;
+                        long long indexf = (y + size.y * z) * size.x + (x - 1);
+                        solidMap[index] = solidMap[index] + solidMap[indexf];
+                        posMap[index].x = posMap[index].x + posMap[indexf].x;
+                        posMap[index].y = posMap[index].y + posMap[indexf].y;
+                        posMap[index].z = posMap[index].z + posMap[indexf].z;
+                    }
+            for (int x = 0; x <= size.x; x++)
+                for (int y = 1; y <= size.y; y++)
+                    for (int z = 0; z <= size.z; z++) {
+                        long long index = (y + size.y * z) * size.x + x;
+                        long long indexf = ((y - 1) + size.y * z) * size.x + x;
+                        solidMap[index] = solidMap[index] + solidMap[indexf];
+                        posMap[index].x = posMap[index].x + posMap[indexf].x;
+                        posMap[index].y = posMap[index].y + posMap[indexf].y;
+                        posMap[index].z = posMap[index].z + posMap[indexf].z;
+                    }
+            for (int x = 0; x <= size.x; x++)
+                for (int y = 0; y <= size.y; y++)
+                    for (int z = 1; z <= size.z; z++) {
+                        long long index = (y + size.y * z) * size.x + x;
+                        long long indexf = (y + size.y * (z - 1)) * size.x + x;
+                        solidMap[index] = solidMap[index] + solidMap[indexf];
+                        posMap[index].x = posMap[index].x + posMap[indexf].x;
+                        posMap[index].y = posMap[index].y + posMap[indexf].y;
+                        posMap[index].z = posMap[index].z + posMap[indexf].z;
+                    }
+        }
+        long long getIndex(const BlockPos& pos) {
+            auto localPos = pos - normalSearchBox.bpos1;
+            if (pos.x < normalSearchBox.bpos1.x ||
+                pos.y < normalSearchBox.bpos1.y ||
+                pos.z < normalSearchBox.bpos1.z ||
+                pos.x > normalSearchBox.bpos2.x ||
+                pos.y > normalSearchBox.bpos2.y ||
+                pos.z > normalSearchBox.bpos2.z)
+                return size.y * size.z*size.x;
+                return (localPos.y + size.y * localPos.z) * size.x + localPos.x;
         }
         double operator()(const char* name, const std::vector<double>& params) {
             switch (do_hash(name)) {
@@ -232,18 +312,16 @@ namespace worldedit {
                     if (blockdataInitialized) {
                         if (params.size() == 0) {
                             return blockSource->getBlock(here)
-                                        .isSolidBlockingBlock();
+                                .isSolidBlockingBlock();
                         } else if (params.size() == 3) {
                             return blockSource
-                                        ->getBlock(
-                                            here +
-                                            BlockPos(static_cast<int>(
-                                                         floor(params[0])),
-                                                     static_cast<int>(
-                                                         floor(params[1])),
-                                                     static_cast<int>(
-                                                         floor(params[2]))))
-                                        .isSolidBlockingBlock();
+                                ->getBlock(
+                                    here +
+                                    BlockPos(
+                                        static_cast<int>(floor(params[0])),
+                                        static_cast<int>(floor(params[1])),
+                                        static_cast<int>(floor(params[2]))))
+                                .isSolidBlockingBlock();
                         }
                     }
                     return 0;

@@ -83,6 +83,10 @@ namespace worldedit {
         virtual void forTopBlockInRegion(
             const std::function<void(const BlockPos&)>& todo);
 
+        virtual std::vector<double> getHeightMap();
+
+        virtual void applyHeightMap(const std::vector<double>& data);
+
         virtual void renderRegion();
 
         inline bool hasSelected() { return this->selecting; }

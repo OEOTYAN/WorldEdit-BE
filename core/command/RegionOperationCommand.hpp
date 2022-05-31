@@ -9,11 +9,16 @@
 #include "eval/blur.hpp"
 
 namespace worldedit {
+    // BoundingBox mergeBoundingBox(BoundingBox const& a, BoundingBox const& b)
+    // {
+    //     return BoundingBox(min(a.bpos1, b.bpos1), max(a.bpos2, b.bpos2));
+    // }
+
     using ParamType = DynamicCommand::ParameterType;
     using ParamData = DynamicCommand::ParameterData;
 
     // set rep center stack move gen walls faces overlay naturalize hollow
-    // | deform smooth
+    // smooth | deform
 
     void regionOperationCommandSetup() {
         DynamicCommand::setup(
@@ -61,34 +66,25 @@ namespace worldedit {
                     f.setbs(blockSource);
                     std::unordered_map<std::string, double> variables;
 
-                    if (results["block"].isSet) {
-                        auto* block = const_cast<Block*>(
-                            results["block"].get<Block const*>());
-                        region->forEachBlockInRegion([&](const BlockPos& pos) {
-                            setFunction(variables, f, boundingBox, playerPos,
-                                        pos);
-                            if (gMask == "" ||
-                                cpp_eval::eval<double>(gMask.c_str(), variables,
-                                                       f) > 0.5) {
-                                setBlockSimple(blockSource, pos, block);
-                                i++;
-                            }
-                        });
-                    } else {
-                        auto bps = results["blockPattern"].get<std::string>();
-                        BlockPattern blockPattern(bps);
-                        region->forEachBlockInRegion([&](const BlockPos& pos) {
-                            setFunction(variables, f, boundingBox, playerPos,
-                                        pos);
-                            if (gMask == "" ||
-                                cpp_eval::eval<double>(gMask.c_str(), variables,
-                                                       f) > 0.5) {
-                                blockPattern.setBlock(variables, f, blockSource,
-                                                      pos);
-                                i++;
-                            }
-                        });
+                    std::string bps = "minecraft:air";
+                    if (results["blockPattern"].isSet) {
+                        bps = results["blockPattern"].get<std::string>();
+                    } else if (results["block"].isSet) {
+                        bps =
+                            results["block"].get<Block const*>()->getTypeName();
                     }
+                    BlockPattern blockPattern(bps);
+                    region->forEachBlockInRegion([&](const BlockPos& pos) {
+                        setFunction(variables, f, boundingBox, playerPos, pos);
+                        if (gMask == "" ||
+                            cpp_eval::eval<double>(gMask.c_str(), variables,
+                                                   f) > 0.5) {
+                            blockPattern.setBlock(variables, f, blockSource,
+                                                  pos);
+                            i++;
+                        }
+                    });
+
                     output.success(fmt::format("§a{} block(s) placed", i));
                 } else {
                     output.error("You don't have a region yet");
@@ -144,81 +140,37 @@ namespace worldedit {
                     f.setbs(blockSource);
                     std::unordered_map<std::string, double> variables;
 
-                    if (results["blockAfter"].isSet) {
-                        auto* block = const_cast<Block*>(
-                            results["blockAfter"].get<Block const*>());
-                        if (results["blockBefore"].isSet) {
-                            auto* blockFilter = const_cast<Block*>(
-                                results["blockBefore"].get<Block const*>());
-                            region->forEachBlockInRegion([&](const BlockPos&
-                                                                 pos) {
-                                setFunction(variables, f, boundingBox,
-                                            playerPos, pos);
-                                if ((gMask == "" ||
-                                     cpp_eval::eval<double>(
-                                         gMask.c_str(), variables, f) > 0.5) &&
-                                    blockSource->getBlock(pos).getTypeName() ==
-                                        blockFilter->getTypeName()) {
-                                    setBlockSimple(blockSource, pos, block);
-                                    i++;
-                                }
-                            });
-                        } else {
-                            region->forEachBlockInRegion(
-                                [&](const BlockPos& pos) {
-                                    setFunction(variables, f, boundingBox,
-                                                playerPos, pos);
-                                    if ((gMask == "" ||
-                                         cpp_eval::eval<double>(gMask.c_str(),
-                                                                variables,
-                                                                f) > 0.5) &&
-                                        &blockSource->getBlock(pos) !=
-                                            BedrockBlocks::mAir) {
-                                        setBlockSimple(blockSource, pos, block);
-                                        i++;
-                                    }
-                                });
-                        }
-                    } else {
-                        auto bps = results["blockAfterS"].get<std::string>();
-                        BlockPattern blockPattern(bps);
-                        if (results["blockBeforeS"].isSet) {
-                            auto bps2 =
-                                results["blockBeforeS"].get<std::string>();
-                            BlockPattern blockFilter(bps2);
-                            region->forEachBlockInRegion(
-                                [&](const BlockPos& pos) {
-                                    setFunction(variables, f, boundingBox,
-                                                playerPos, pos);
-                                    if ((gMask == "" ||
-                                         cpp_eval::eval<double>(gMask.c_str(),
-                                                                variables,
-                                                                f) > 0.5) &&
-                                        blockFilter.hasBlock(const_cast<Block*>(
-                                            &blockSource->getBlock(pos)))) {
-                                        blockPattern.setBlock(variables, f,
-                                                              blockSource, pos);
-                                        i++;
-                                    }
-                                });
-                        } else {
-                            region->forEachBlockInRegion(
-                                [&](const BlockPos& pos) {
-                                    setFunction(variables, f, boundingBox,
-                                                playerPos, pos);
-                                    if ((gMask == "" ||
-                                         cpp_eval::eval<double>(gMask.c_str(),
-                                                                variables,
-                                                                f) > 0.5) &&
-                                        &blockSource->getBlock(pos) !=
-                                            BedrockBlocks::mAir) {
-                                        blockPattern.setBlock(variables, f,
-                                                              blockSource, pos);
-                                        i++;
-                                    }
-                                });
-                        }
+                    std::string bps = "minecraft:air";
+                    if (results["blockAfterS"].isSet) {
+                        bps = results["blockAfterS"].get<std::string>();
+                    } else if (results["blockAfter"].isSet) {
+                        bps = results["blockAfter"]
+                                  .get<Block const*>()
+                                  ->getTypeName();
                     }
+                    std::string bps2 = "minecraft:air";
+                    if (results["blockBeforeS"].isSet) {
+                        bps2 = results["blockBeforeS"].get<std::string>();
+                    } else if (results["blockBefore"].isSet) {
+                        bps2 = results["blockBefore"]
+                                   .get<Block const*>()
+                                   ->getTypeName();
+                    }
+                    BlockPattern blockPattern(bps);
+                    BlockPattern blockFilter(bps2);
+                    region->forEachBlockInRegion([&](const BlockPos& pos) {
+                        setFunction(variables, f, boundingBox, playerPos, pos);
+                        if ((gMask == "" ||
+                             cpp_eval::eval<double>(gMask.c_str(), variables,
+                                                    f) > 0.5) &&
+                            blockFilter.hasBlock(const_cast<Block*>(
+                                &blockSource->getBlock(pos)))) {
+                            blockPattern.setBlock(variables, f, blockSource,
+                                                  pos);
+                            i++;
+                        }
+                    });
+
                     output.success(fmt::format("§a{} block(s) replaced", i));
                 } else {
                     output.error("You don't have a region yet");
@@ -265,54 +217,30 @@ namespace worldedit {
                     *history = Clipboard(boundingBox.bpos2 - boundingBox.bpos1);
                     history->playerRelPos.x = dimID;
                     history->playerPos = boundingBox.bpos1;
-                    for (int y = boundingBox.bpos1.y; y <= boundingBox.bpos2.y;
-                         y++)
-                        for (int x = boundingBox.bpos1.x;
-                             x <= boundingBox.bpos2.x; x++)
-                            for (int z = boundingBox.bpos1.z;
-                                 z <= boundingBox.bpos2.z; z++) {
-                                BlockPos pos(x, y, z);
-                                auto localPos = pos - boundingBox.bpos1;
-                                auto blockInstance =
-                                    blockSource->getBlockInstance(pos);
-                                history->storeBlock(blockInstance, localPos);
-                            }
+                    boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
+                        auto localPos = pos - boundingBox.bpos1;
+                        auto blockInstance = blockSource->getBlockInstance(pos);
+                        history->storeBlock(blockInstance, localPos);
+                    });
 
                     auto playerPos = origin.getPlayer()->getPosition();
                     EvalFunctions f;
                     f.setbs(blockSource);
                     std::unordered_map<std::string, double> variables;
 
-                    if (results["block"].isSet) {
-                        auto* block = const_cast<Block*>(
-                            results["block"].get<Block const*>());
-                        for (int y = boundingBox.bpos1.y;
-                             y <= boundingBox.bpos2.y; y++)
-                            for (int x = boundingBox.bpos1.x;
-                                 x <= boundingBox.bpos2.x; x++)
-                                for (int z = boundingBox.bpos1.z;
-                                     z <= boundingBox.bpos2.z; z++) {
-                                    BlockPos pos(x, y, z);
-                                    setFunction(variables, f, boundingBox,
-                                                playerPos, pos);
-                                    setBlockSimple(blockSource, pos, block);
-                                }
-                    } else {
-                        auto bps = results["blockPattern"].get<std::string>();
-                        BlockPattern blockPattern(bps);
-                        for (int y = boundingBox.bpos1.y;
-                             y <= boundingBox.bpos2.y; y++)
-                            for (int x = boundingBox.bpos1.x;
-                                 x <= boundingBox.bpos2.x; x++)
-                                for (int z = boundingBox.bpos1.z;
-                                     z <= boundingBox.bpos2.z; z++) {
-                                    BlockPos pos(x, y, z);
-                                    setFunction(variables, f, boundingBox,
-                                                playerPos, pos);
-                                    blockPattern.setBlock(variables, f,
-                                                          blockSource, pos);
-                                }
+                    std::string bps = "minecraft:air";
+                    if (results["blockPattern"].isSet) {
+                        bps = results["blockPattern"].get<std::string>();
+                    } else if (results["block"].isSet) {
+                        bps =
+                            results["block"].get<Block const*>()->getTypeName();
                     }
+                    BlockPattern blockPattern(bps);
+                    boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
+                        setFunction(variables, f, boundingBox, playerPos, pos);
+                        blockPattern.setBlock(variables, f, blockSource, pos);
+                    });
+
                     output.success(fmt::format("§acenter placed"));
                 } else {
                     output.error("You don't have a region yet");
@@ -390,38 +318,21 @@ namespace worldedit {
                         boundingBoxLast.bpos1 + movingVec * times;
                     boundingBoxLast.bpos2 =
                         boundingBoxLast.bpos2 + movingVec * times;
-                    auto boundingBoxHistory = boundingBoxLast;
-
-                    boundingBoxHistory.bpos1.x = std::min(
-                        boundingBoxHistory.bpos1.x, boundingBox.bpos1.x);
-                    boundingBoxHistory.bpos1.y = std::min(
-                        boundingBoxHistory.bpos1.y, boundingBox.bpos1.y);
-                    boundingBoxHistory.bpos1.z = std::min(
-                        boundingBoxHistory.bpos1.z, boundingBox.bpos1.z);
-                    boundingBoxHistory.bpos2.x = std::max(
-                        boundingBoxHistory.bpos2.x, boundingBox.bpos2.x);
-                    boundingBoxHistory.bpos2.y = std::max(
-                        boundingBoxHistory.bpos2.y, boundingBox.bpos2.y);
-                    boundingBoxHistory.bpos2.z = std::max(
-                        boundingBoxHistory.bpos2.z, boundingBox.bpos2.z);
+                    auto boundingBoxHistory = BoundingBox::mergeBoundingBox(
+                        boundingBoxLast, boundingBox);
 
                     auto history = mod.getPlayerNextHistory(xuid);
                     *history = Clipboard(boundingBoxHistory.bpos2 -
                                          boundingBoxHistory.bpos1);
                     history->playerRelPos.x = dimID;
                     history->playerPos = boundingBoxHistory.bpos1;
-                    for (int y = boundingBoxHistory.bpos1.y;
-                         y <= boundingBoxHistory.bpos2.y; y++)
-                        for (int x = boundingBoxHistory.bpos1.x;
-                             x <= boundingBoxHistory.bpos2.x; x++)
-                            for (int z = boundingBoxHistory.bpos1.z;
-                                 z <= boundingBoxHistory.bpos2.z; z++) {
-                                BlockPos pos(x, y, z);
-                                auto localPos = pos - boundingBoxHistory.bpos1;
-                                auto blockInstance =
-                                    blockSource->getBlockInstance(pos);
-                                history->storeBlock(blockInstance, localPos);
-                            }
+                    boundingBoxHistory.forEachBlockInBox(
+                        [&](const BlockPos& pos) {
+                            auto localPos = pos - boundingBoxHistory.bpos1;
+                            auto blockInstance =
+                                blockSource->getBlockInstance(pos);
+                            history->storeBlock(blockInstance, localPos);
+                        });
 
                     long long i = 0;
 
@@ -474,8 +385,12 @@ namespace worldedit {
             },
             {ParamData("dis", ParamType::Int, "dis"),
              ParamData("dir", ParamType::Enum, true, "dir"),
-             ParamData("args", ParamType::String, true, "-sa")},
-            {{"dis", "dir", "args"}},
+             ParamData("args", ParamType::String, true, "-sa"),
+             ParamData("block", ParamType::Block, true, "block"),
+             ParamData("blockPattern", ParamType::String, true,
+                       "blockPattern")},
+            {{"dis", "dir", "block", "args"},
+             {"dis", "dir", "blockPattern", "args"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin,
                CommandOutput& output,
@@ -529,53 +444,27 @@ namespace worldedit {
 
                     boundingBoxLast.bpos1 = boundingBoxLast.bpos1 + faceVec;
                     boundingBoxLast.bpos2 = boundingBoxLast.bpos2 + faceVec;
-                    auto boundingBoxHistory = boundingBoxLast;
-
-                    boundingBoxHistory.bpos1.x = std::min(
-                        boundingBoxHistory.bpos1.x, boundingBox.bpos1.x);
-                    boundingBoxHistory.bpos1.y = std::min(
-                        boundingBoxHistory.bpos1.y, boundingBox.bpos1.y);
-                    boundingBoxHistory.bpos1.z = std::min(
-                        boundingBoxHistory.bpos1.z, boundingBox.bpos1.z);
-                    boundingBoxHistory.bpos2.x = std::max(
-                        boundingBoxHistory.bpos2.x, boundingBox.bpos2.x);
-                    boundingBoxHistory.bpos2.y = std::max(
-                        boundingBoxHistory.bpos2.y, boundingBox.bpos2.y);
-                    boundingBoxHistory.bpos2.z = std::max(
-                        boundingBoxHistory.bpos2.z, boundingBox.bpos2.z);
+                    auto boundingBoxHistory = BoundingBox::mergeBoundingBox(
+                        boundingBoxLast, boundingBox);
 
                     auto history = mod.getPlayerNextHistory(xuid);
                     *history = Clipboard(boundingBoxHistory.bpos2 -
                                          boundingBoxHistory.bpos1);
                     history->playerRelPos.x = dimID;
                     history->playerPos = boundingBoxHistory.bpos1;
-                    for (int y = boundingBox.bpos1.y; y <= boundingBox.bpos2.y;
-                         y++)
-                        for (int x = boundingBox.bpos1.x;
-                             x <= boundingBox.bpos2.x; x++)
-                            for (int z = boundingBox.bpos1.z;
-                                 z <= boundingBox.bpos2.z; z++) {
-                                BlockPos pos(x, y, z);
-                                auto localPos = pos - boundingBoxHistory.bpos1;
-                                auto blockInstance =
-                                    blockSource->getBlockInstance(pos);
-                                history->storeBlock(blockInstance, localPos);
-                            }
-                    for (int y = boundingBoxLast.bpos1.y;
-                         y <= boundingBoxLast.bpos2.y; y++)
-                        for (int x = boundingBoxLast.bpos1.x;
-                             x <= boundingBoxLast.bpos2.x; x++)
-                            for (int z = boundingBoxLast.bpos1.z;
-                                 z <= boundingBoxLast.bpos2.z; z++) {
-                                BlockPos pos(x, y, z);
-                                auto localPos = pos - boundingBoxHistory.bpos1;
-                                if (!history->getSet(localPos).hasBlock) {
-                                    auto blockInstance =
-                                        blockSource->getBlockInstance(pos);
-                                    history->storeBlock(blockInstance,
-                                                        localPos);
-                                }
-                            }
+                    boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
+                        auto localPos = pos - boundingBoxHistory.bpos1;
+                        auto blockInstance = blockSource->getBlockInstance(pos);
+                        history->storeBlock(blockInstance, localPos);
+                    });
+                    boundingBoxLast.forEachBlockInBox([&](const BlockPos& pos) {
+                        auto localPos = pos - boundingBoxHistory.bpos1;
+                        if (!history->getSet(localPos).hasBlock) {
+                            auto blockInstance =
+                                blockSource->getBlockInstance(pos);
+                            history->storeBlock(blockInstance, localPos);
+                        }
+                    });
 
                     long long i = 0;
 
@@ -589,17 +478,27 @@ namespace worldedit {
                     EvalFunctions f;
                     f.setbs(blockSource);
                     std::unordered_map<std::string, double> variables;
+
+                    std::string bps = "minecraft:air";
+                    if (results["blockPattern"].isSet) {
+                        bps = results["blockPattern"].get<std::string>();
+                    } else if (results["block"].isSet) {
+                        bps =
+                            results["block"].get<Block const*>()->getTypeName();
+                    }
+                    BlockPattern blockPattern(bps);
                     region->forEachBlockInRegion([&](const BlockPos& posk) {
                         auto pos = posk + faceVec;
                         setFunction(variables, f, boundingBox, playerPos, pos);
                         if (gMask == "" ||
                             cpp_eval::eval<double>(gMask.c_str(), variables,
                                                    f) > 0.5) {
-                            auto localPos = posk - boundingBoxHistory.bpos1;
-                            setBlockSimple(blockSource, posk);
+                            blockPattern.setBlock(variables, f, blockSource,
+                                                  posk);
                             i++;
                         }
                     });
+
                     region->forEachBlockInRegion([&](const BlockPos& posk) {
                         auto pos = posk + faceVec;
                         auto localPos = posk - boundingBoxHistory.bpos1;
@@ -713,153 +612,38 @@ namespace worldedit {
                         std::vector<bool> tmp2(size, false);
                         region->forEachBlockInRegion([&](const BlockPos& pos) {
                             auto localPos = pos - boundingBox.bpos1 + 1;
-                            auto calPos = localPos;
                             if (tmp[(localPos.y + sizeDim.y * localPos.z) *
                                         sizeDim.x +
                                     localPos.x]) {
                                 int counts = 0;
 
-                                calPos = localPos + BlockPos(0, 1, 0);
-                                if (!caled[(calPos.y + sizeDim.y * calPos.z) *
-                                               sizeDim.x +
-                                           calPos.x]) {
-                                    setFunction(variables, f, boundingBox,
-                                                playerPos,
-                                                pos + BlockPos(0, 1, 0));
-                                    tmp[(calPos.y + sizeDim.y * calPos.z) *
-                                            sizeDim.x +
-                                        calPos.x] =
-                                        cpp_eval::eval<double>(genfunc.c_str(),
-                                                               variables,
-                                                               f) > 0.5;
+                                for (auto& calPos : localPos.getNeighbors()) {
+                                    if (!caled[(calPos.y +
+                                                sizeDim.y * calPos.z) *
+                                                   sizeDim.x +
+                                               calPos.x]) {
+                                        setFunction(
+                                            variables, f, boundingBox,
+                                            playerPos,
+                                            calPos + boundingBox.bpos1 - 1);
+                                        tmp[(calPos.y + sizeDim.y * calPos.z) *
+                                                sizeDim.x +
+                                            calPos.x] =
+                                            cpp_eval::eval<double>(
+                                                genfunc.c_str(), variables, f) >
+                                            0.5;
 
-                                    caled[(calPos.y + sizeDim.y * calPos.z) *
-                                              sizeDim.x +
-                                          calPos.x] = true;
+                                        caled[(calPos.y +
+                                               sizeDim.y * calPos.z) *
+                                                  sizeDim.x +
+                                              calPos.x] = true;
+                                    }
+                                    if (tmp[(calPos.y + sizeDim.y * calPos.z) *
+                                                sizeDim.x +
+                                            calPos.x]) {
+                                        counts++;
+                                    }
                                 }
-                                if (tmp[(calPos.y + sizeDim.y * calPos.z) *
-                                            sizeDim.x +
-                                        calPos.x]) {
-                                    counts++;
-                                }
-
-                                calPos = localPos + BlockPos(0, -1, 0);
-                                if (!caled[(calPos.y + sizeDim.y * calPos.z) *
-                                               sizeDim.x +
-                                           calPos.x]) {
-                                    setFunction(variables, f, boundingBox,
-                                                playerPos,
-                                                pos + BlockPos(0, -1, 0));
-                                    tmp[(calPos.y + sizeDim.y * calPos.z) *
-                                            sizeDim.x +
-                                        calPos.x] =
-                                        cpp_eval::eval<double>(genfunc.c_str(),
-                                                               variables,
-                                                               f) > 0.5;
-                                    caled[(calPos.y + sizeDim.y * calPos.z) *
-                                              sizeDim.x +
-                                          calPos.x] = true;
-                                }
-                                if (tmp[(calPos.y + sizeDim.y * calPos.z) *
-                                            sizeDim.x +
-                                        calPos.x]) {
-                                    counts++;
-                                }
-
-                                calPos = localPos + BlockPos(1, 0, 0);
-                                if (!caled[(calPos.y + sizeDim.y * calPos.z) *
-                                               sizeDim.x +
-                                           calPos.x]) {
-                                    setFunction(variables, f, boundingBox,
-                                                playerPos,
-                                                pos + BlockPos(1, 0, 0));
-                                    tmp[(calPos.y + sizeDim.y * calPos.z) *
-                                            sizeDim.x +
-                                        calPos.x] =
-                                        cpp_eval::eval<double>(genfunc.c_str(),
-                                                               variables,
-                                                               f) > 0.5;
-                                    caled[(calPos.y + sizeDim.y * calPos.z) *
-                                              sizeDim.x +
-                                          calPos.x] = true;
-                                }
-                                if (tmp[(calPos.y + sizeDim.y * calPos.z) *
-                                            sizeDim.x +
-                                        calPos.x]) {
-                                    counts++;
-                                }
-
-                                calPos = localPos + BlockPos(-1, 0, 0);
-                                if (!caled[(calPos.y + sizeDim.y * calPos.z) *
-                                               sizeDim.x +
-                                           calPos.x]) {
-                                    setFunction(variables, f, boundingBox,
-                                                playerPos,
-                                                pos + BlockPos(-1, 0, 0));
-                                    tmp[(calPos.y + sizeDim.y * calPos.z) *
-                                            sizeDim.x +
-                                        calPos.x] =
-                                        cpp_eval::eval<double>(genfunc.c_str(),
-                                                               variables,
-                                                               f) > 0.5;
-                                    caled[(calPos.y + sizeDim.y * calPos.z) *
-                                              sizeDim.x +
-                                          calPos.x] = true;
-                                }
-                                if (tmp[(calPos.y + sizeDim.y * calPos.z) *
-                                            sizeDim.x +
-                                        calPos.x]) {
-                                    counts++;
-                                }
-
-                                calPos = localPos + BlockPos(0, 0, 1);
-                                if (!caled[(calPos.y + sizeDim.y * calPos.z) *
-                                               sizeDim.x +
-                                           calPos.x]) {
-                                    setFunction(variables, f, boundingBox,
-                                                playerPos,
-                                                pos + BlockPos(0, 0, 1));
-                                    tmp[(calPos.y + sizeDim.y * calPos.z) *
-                                            sizeDim.x +
-                                        calPos.x] =
-                                        cpp_eval::eval<double>(genfunc.c_str(),
-                                                               variables,
-                                                               f) > 0.5;
-                                    caled[(calPos.y + sizeDim.y * calPos.z) *
-                                              sizeDim.x +
-                                          calPos.x] = true;
-                                }
-                                if (tmp[(calPos.y + sizeDim.y * calPos.z) *
-                                            sizeDim.x +
-                                        calPos.x]) {
-                                    counts++;
-                                }
-
-                                calPos = localPos + BlockPos(0, 0, -1);
-                                if (!caled[(calPos.y + sizeDim.y * calPos.z) *
-                                               sizeDim.x +
-                                           calPos.x]) {
-                                    setFunction(variables, f, boundingBox,
-                                                playerPos,
-                                                pos + BlockPos(0, 0, -1));
-                                    tmp[(calPos.y + sizeDim.y * calPos.z) *
-                                            sizeDim.x +
-                                        calPos.x] =
-                                        cpp_eval::eval<double>(genfunc.c_str(),
-                                                               variables,
-                                                               f) > 0.5;
-                                    caled[(calPos.y + sizeDim.y * calPos.z) *
-                                              sizeDim.x +
-                                          calPos.x] = true;
-                                }
-                                if (tmp[(calPos.y + sizeDim.y * calPos.z) *
-                                            sizeDim.x +
-                                        calPos.x]) {
-                                    counts++;
-                                }
-                                // std::cout << counts << " " << pos.x << " "
-                                //           << pos.y << " " << pos.z <<
-                                //           std::endl;
                                 if (counts < 6)
                                     tmp2[(localPos.y + sizeDim.y * localPos.z) *
                                              sizeDim.x +
@@ -869,37 +653,29 @@ namespace worldedit {
                         tmp.assign(tmp2.begin(), tmp2.end());
                     }
 
-                    if (results["block"].isSet) {
-                        auto* block = const_cast<Block*>(
-                            results["block"].get<Block const*>());
-                        region->forEachBlockInRegion([&](const BlockPos& pos) {
-                            auto localPos = pos - boundingBox.bpos1 + 1;
-                            if (tmp[(localPos.y + sizeDim.y * localPos.z) *
-                                        sizeDim.x +
-                                    localPos.x]) {
-                                setBlockSimple(blockSource, pos, block);
-                                i++;
-                            }
-                        });
-                    } else {
-                        auto bps = results["blockPattern"].get<std::string>();
-                        BlockPattern blockPattern(bps);
-                        region->forEachBlockInRegion([&](const BlockPos& pos) {
-                            auto localPos = pos - boundingBox.bpos1 + 1;
-                            if (tmp[(localPos.y + sizeDim.y * localPos.z) *
-                                        sizeDim.x +
-                                    localPos.x]) {
-                                setFunction(variables, f, boundingBox,
-                                            playerPos, pos);
-                                blockPattern.setBlock(variables, f, blockSource,
-                                                      pos);
-                                i++;
-                            }
-                        });
+                    std::string bps = "minecraft:air";
+                    if (results["blockPattern"].isSet) {
+                        bps = results["blockPattern"].get<std::string>();
+                    } else if (results["block"].isSet) {
+                        bps =
+                            results["block"].get<Block const*>()->getTypeName();
                     }
+                    BlockPattern blockPattern(bps);
+                    region->forEachBlockInRegion([&](const BlockPos& pos) {
+                        auto localPos = pos - boundingBox.bpos1 + 1;
+                        if (tmp[(localPos.y + sizeDim.y * localPos.z) *
+                                    sizeDim.x +
+                                localPos.x]) {
+                            setFunction(variables, f, boundingBox, playerPos,
+                                        pos);
+                            blockPattern.setBlock(variables, f, blockSource,
+                                                  pos);
+                            i++;
+                        }
+                    });
+
                     output.success(fmt::format(
                         "§gfunction: {}\n§a{} block(s) placed", genfunc, i));
-                    ;
                 } else {
                     output.error("You don't have a region yet");
                 }
@@ -951,80 +727,36 @@ namespace worldedit {
                     f.setbs(blockSource);
                     std::unordered_map<std::string, double> variables;
 
-                    if (results["block"].isSet) {
-                        auto* block = const_cast<Block*>(
-                            results["block"].get<Block const*>());
-                        region->forEachBlockInRegion([&](const BlockPos& pos) {
-                            setFunction(variables, f, boundingBox, playerPos,
-                                        pos);
-                            if (gMask == "" ||
-                                cpp_eval::eval<double>(gMask.c_str(), variables,
-                                                       f) > 0.5) {
-                                int counts = 0;
-                                if (pos.y < boundingBox.bpos2.y) {
-                                    counts += region->contains(
-                                        pos + BlockPos(0, 1, 0));
-                                } else {
-                                    counts += 1;
-                                }
-                                if (pos.y > boundingBox.bpos1.y) {
-                                    counts += region->contains(
-                                        pos + BlockPos(0, -1, 0));
-                                } else {
-                                    counts += 1;
-                                }
-                                counts +=
-                                    region->contains(pos + BlockPos(1, 0, 0));
-                                counts +=
-                                    region->contains(pos + BlockPos(-1, 0, 0));
-                                counts +=
-                                    region->contains(pos + BlockPos(0, 0, 1));
-                                counts +=
-                                    region->contains(pos + BlockPos(0, 0, -1));
-                                if (counts < 6) {
-                                    setBlockSimple(blockSource, pos, block);
-                                    i++;
-                                }
-                            }
-                        });
-                    } else {
-                        auto bps = results["blockPattern"].get<std::string>();
-                        BlockPattern blockPattern(bps);
-                        region->forEachBlockInRegion([&](const BlockPos& pos) {
-                            setFunction(variables, f, boundingBox, playerPos,
-                                        pos);
-                            if (gMask == "" ||
-                                cpp_eval::eval<double>(gMask.c_str(), variables,
-                                                       f) > 0.5) {
-                                int counts = 0;
-                                if (pos.y < boundingBox.bpos2.y) {
-                                    counts += region->contains(
-                                        pos + BlockPos(0, 1, 0));
-                                } else {
-                                    counts += 1;
-                                }
-                                if (pos.y > boundingBox.bpos1.y) {
-                                    counts += region->contains(
-                                        pos + BlockPos(0, -1, 0));
-                                } else {
-                                    counts += 1;
-                                }
-                                counts +=
-                                    region->contains(pos + BlockPos(1, 0, 0));
-                                counts +=
-                                    region->contains(pos + BlockPos(-1, 0, 0));
-                                counts +=
-                                    region->contains(pos + BlockPos(0, 0, 1));
-                                counts +=
-                                    region->contains(pos + BlockPos(0, 0, -1));
-                                if (counts < 6) {
-                                    blockPattern.setBlock(variables, f,
-                                                          blockSource, pos);
-                                    i++;
-                                }
-                            }
-                        });
+                    std::string bps = "minecraft:air";
+                    if (results["blockPattern"].isSet) {
+                        bps = results["blockPattern"].get<std::string>();
+                    } else if (results["block"].isSet) {
+                        bps =
+                            results["block"].get<Block const*>()->getTypeName();
                     }
+                    BlockPattern blockPattern(bps);
+                    region->forEachBlockInRegion([&](const BlockPos& pos) {
+                        setFunction(variables, f, boundingBox, playerPos, pos);
+                        if (gMask == "" ||
+                            cpp_eval::eval<double>(gMask.c_str(), variables,
+                                                   f) > 0.5) {
+                            int counts = 0;
+                            for (auto& calPos : pos.getNeighbors()) {
+                                if (calPos.y <= boundingBox.bpos2.y &&
+                                    calPos.y >= boundingBox.bpos1.y) {
+                                    counts += region->contains(calPos);
+                                } else {
+                                    counts += 1;
+                                }
+                            }
+                            if (counts < 6) {
+                                blockPattern.setBlock(variables, f, blockSource,
+                                                      pos);
+                                i++;
+                            }
+                        }
+                    });
+
                     output.success(fmt::format("§a{} block(s) placed", i));
                 } else {
                     output.error("You don't have a region yet");
@@ -1076,65 +808,31 @@ namespace worldedit {
                     EvalFunctions f;
                     f.setbs(blockSource);
                     std::unordered_map<std::string, double> variables;
-
-                    if (results["block"].isSet) {
-                        auto* block = const_cast<Block*>(
-                            results["block"].get<Block const*>());
-                        region->forEachBlockInRegion([&](const BlockPos& pos) {
-                            setFunction(variables, f, boundingBox, playerPos,
-                                        pos);
-                            if (gMask == "" ||
-                                cpp_eval::eval<double>(gMask.c_str(), variables,
-                                                       f) > 0.5) {
-                                int counts = 0;
-                                counts +=
-                                    region->contains(pos + BlockPos(0, 1, 0));
-                                counts +=
-                                    region->contains(pos + BlockPos(0, -1, 0));
-                                counts +=
-                                    region->contains(pos + BlockPos(1, 0, 0));
-                                counts +=
-                                    region->contains(pos + BlockPos(-1, 0, 0));
-                                counts +=
-                                    region->contains(pos + BlockPos(0, 0, 1));
-                                counts +=
-                                    region->contains(pos + BlockPos(0, 0, -1));
-                                if (counts < 6) {
-                                    setBlockSimple(blockSource, pos, block);
-                                    i++;
-                                }
-                            }
-                        });
-                    } else {
-                        auto bps = results["blockPattern"].get<std::string>();
-                        BlockPattern blockPattern(bps);
-                        region->forEachBlockInRegion([&](const BlockPos& pos) {
-                            setFunction(variables, f, boundingBox, playerPos,
-                                        pos);
-                            if (gMask == "" ||
-                                cpp_eval::eval<double>(gMask.c_str(), variables,
-                                                       f) > 0.5) {
-                                int counts = 0;
-                                counts +=
-                                    region->contains(pos + BlockPos(0, 1, 0));
-                                counts +=
-                                    region->contains(pos + BlockPos(0, -1, 0));
-                                counts +=
-                                    region->contains(pos + BlockPos(1, 0, 0));
-                                counts +=
-                                    region->contains(pos + BlockPos(-1, 0, 0));
-                                counts +=
-                                    region->contains(pos + BlockPos(0, 0, 1));
-                                counts +=
-                                    region->contains(pos + BlockPos(0, 0, -1));
-                                if (counts < 6) {
-                                    blockPattern.setBlock(variables, f,
-                                                          blockSource, pos);
-                                    i++;
-                                }
-                            }
-                        });
+                    std::string bps = "minecraft:air";
+                    if (results["blockPattern"].isSet) {
+                        bps = results["blockPattern"].get<std::string>();
+                    } else if (results["block"].isSet) {
+                        bps =
+                            results["block"].get<Block const*>()->getTypeName();
                     }
+                    BlockPattern blockPattern(bps);
+                    region->forEachBlockInRegion([&](const BlockPos& pos) {
+                        setFunction(variables, f, boundingBox, playerPos, pos);
+                        if (gMask == "" ||
+                            cpp_eval::eval<double>(gMask.c_str(), variables,
+                                                   f) > 0.5) {
+                            int counts = 0;
+                            for (auto& calPos : pos.getNeighbors()) {
+                                counts += region->contains(calPos);
+                            }
+                            if (counts < 6) {
+                                blockPattern.setBlock(variables, f, blockSource,
+                                                      pos);
+                                i++;
+                            }
+                        }
+                    });
+
                     output.success(fmt::format("§a{} block(s) placed", i));
                 } else {
                     output.error("You don't have a region yet");
@@ -1186,35 +884,24 @@ namespace worldedit {
                     EvalFunctions f;
                     f.setbs(blockSource);
                     std::unordered_map<std::string, double> variables;
-
-                    if (results["block"].isSet) {
-                        auto* block = const_cast<Block*>(
-                            results["block"].get<Block const*>());
-                        region->forTopBlockInRegion([&](const BlockPos& pos) {
-                            setFunction(variables, f, boundingBox, playerPos,
-                                        pos);
-                            if (gMask == "" ||
-                                cpp_eval::eval<double>(gMask.c_str(), variables,
-                                                       f) > 0.5) {
-                                setBlockSimple(blockSource, pos, block);
-                                i++;
-                            }
-                        });
-                    } else {
-                        auto bps = results["blockPattern"].get<std::string>();
-                        BlockPattern blockPattern(bps);
-                        region->forTopBlockInRegion([&](const BlockPos& pos) {
-                            setFunction(variables, f, boundingBox, playerPos,
-                                        pos);
-                            if (gMask == "" ||
-                                cpp_eval::eval<double>(gMask.c_str(), variables,
-                                                       f) > 0.5) {
-                                blockPattern.setBlock(variables, f, blockSource,
-                                                      pos);
-                                i++;
-                            }
-                        });
+                    std::string bps = "minecraft:air";
+                    if (results["blockPattern"].isSet) {
+                        bps = results["blockPattern"].get<std::string>();
+                    } else if (results["block"].isSet) {
+                        bps =
+                            results["block"].get<Block const*>()->getTypeName();
                     }
+                    BlockPattern blockPattern(bps);
+                    region->forTopBlockInRegion([&](const BlockPos& pos) {
+                        setFunction(variables, f, boundingBox, playerPos, pos);
+                        if (gMask == "" ||
+                            cpp_eval::eval<double>(gMask.c_str(), variables,
+                                                   f) > 0.5) {
+                            blockPattern.setBlock(variables, f, blockSource,
+                                                  pos);
+                            i++;
+                        }
+                    });
                     output.success(fmt::format("§a{} block(s) placed", i));
                 } else {
                     output.error("You don't have a region yet");
@@ -1293,7 +980,7 @@ namespace worldedit {
                             }
                         }
                     });
-                    output.success(fmt::format("§aregion naturalized"));
+                    output.success(fmt::format("§aRegion naturalized"));
                 } else {
                     output.error("You don't have a region yet");
                 }
@@ -1301,12 +988,13 @@ namespace worldedit {
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "hollow",                 // command name
-            "hollows out selection",  // command description
+            "hollow",              // command name
+            "hollows out region",  // command description
             {},
-            {ParamData("num", ParamType::Int,true, "num"),
-             ParamData("block", ParamType::Block,true, "block"),
-             ParamData("blockPattern", ParamType::String,true, "blockPattern")},
+            {ParamData("num", ParamType::Int, true, "num"),
+             ParamData("block", ParamType::Block, true, "block"),
+             ParamData("blockPattern", ParamType::String, true,
+                       "blockPattern")},
             {{"num", "block"}, {"num", "blockPattern"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin,
@@ -1352,24 +1040,11 @@ namespace worldedit {
 
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
                         int counts = 0;
-                        counts +=
-                            &blockSource->getBlock(pos + BlockPos(0, 1, 0)) !=
-                            BedrockBlocks::mAir;
-                        counts +=
-                            &blockSource->getBlock(pos + BlockPos(0, -1, 0)) !=
-                            BedrockBlocks::mAir;
-                        counts +=
-                            &blockSource->getBlock(pos + BlockPos(1, 0, 0)) !=
-                            BedrockBlocks::mAir;
-                        counts +=
-                            &blockSource->getBlock(pos + BlockPos(-1, 0, 0)) !=
-                            BedrockBlocks::mAir;
-                        counts +=
-                            &blockSource->getBlock(pos + BlockPos(0, 0, 1)) !=
-                            BedrockBlocks::mAir;
-                        counts +=
-                            &blockSource->getBlock(pos + BlockPos(0, 0, -1)) !=
-                            BedrockBlocks::mAir;
+
+                        for (auto& calPos : pos.getNeighbors()) {
+                            counts += &blockSource->getBlock(calPos) !=
+                                      BedrockBlocks::mAir;
+                        }
                         if (counts == 6) {
                             auto localPos = pos - boundingBox.bpos1 + 1;
                             tmp[(localPos.y + sizeDim.y * localPos.z) *
@@ -1386,36 +1061,12 @@ namespace worldedit {
                             if (tmp[(localPos.y + sizeDim.y * localPos.z) *
                                         sizeDim.x +
                                     localPos.x]) {
-                                auto calPos = localPos + BlockPos(0, 1, 0);
-                                counts +=
-                                    tmp[(calPos.y + sizeDim.y * calPos.z) *
-                                            sizeDim.x +
-                                        calPos.x];
-                                calPos = localPos + BlockPos(0, -1, 0);
-                                counts +=
-                                    tmp[(calPos.y + sizeDim.y * calPos.z) *
-                                            sizeDim.x +
-                                        calPos.x];
-                                calPos = localPos + BlockPos(0, 0, 1);
-                                counts +=
-                                    tmp[(calPos.y + sizeDim.y * calPos.z) *
-                                            sizeDim.x +
-                                        calPos.x];
-                                calPos = localPos + BlockPos(0, 0, -1);
-                                counts +=
-                                    tmp[(calPos.y + sizeDim.y * calPos.z) *
-                                            sizeDim.x +
-                                        calPos.x];
-                                calPos = localPos + BlockPos(1, 0, 0);
-                                counts +=
-                                    tmp[(calPos.y + sizeDim.y * calPos.z) *
-                                            sizeDim.x +
-                                        calPos.x];
-                                calPos = localPos + BlockPos(-1, 0, 0);
-                                counts +=
-                                    tmp[(calPos.y + sizeDim.y * calPos.z) *
-                                            sizeDim.x +
-                                        calPos.x];
+                                for (auto& calPos : localPos.getNeighbors()) {
+                                    counts +=
+                                        tmp[(calPos.y + sizeDim.y * calPos.z) *
+                                                sizeDim.x +
+                                            calPos.x];
+                                }
                                 if (counts < 6) {
                                     tmp2[(localPos.y + sizeDim.y * localPos.z) *
                                              sizeDim.x +
@@ -1433,50 +1084,84 @@ namespace worldedit {
 
                     long long i = 0;
 
-                    if (!results["blockPattern"].isSet) {
-                        Block* block;
-                        if (results["block"].isSet) {
-                            block = const_cast<Block*>(
-                                results["block"].get<Block const*>());
-                        } else {
-                            block = const_cast<Block*>(BedrockBlocks::mAir);
-                        }
-                        region->forEachBlockInRegion([&](const BlockPos& pos) {
-                            auto localPos = pos - boundingBox.bpos1 + 1;
-                            if (gMask == "" ||
-                                cpp_eval::eval<double>(gMask.c_str(), variables,
-                                                       f) > 0.5) {
-                                auto localPos = pos - boundingBox.bpos1 + 1;
-                                if (tmp[(localPos.y + sizeDim.y * localPos.z) *
-                                            sizeDim.x +
-                                        localPos.x]) {
-                                    setBlockSimple(blockSource, pos, block);
-                                    i++;
-                                }
-                            }
-                        });
-                    } else {
-                        auto bps = results["blockPattern"].get<std::string>();
-                        BlockPattern blockPattern(bps);
-                        region->forEachBlockInRegion([&](const BlockPos& pos) {
-                            auto localPos = pos - boundingBox.bpos1 + 1;
-                            if (gMask == "" ||
-                                cpp_eval::eval<double>(gMask.c_str(), variables,
-                                                       f) > 0.5) {
-                                auto localPos = pos - boundingBox.bpos1 + 1;
-                                if (tmp[(localPos.y + sizeDim.y * localPos.z) *
-                                            sizeDim.x +
-                                        localPos.x]) {
-                                    setFunction(variables, f, boundingBox,
-                                                playerPos, pos);
-                                    blockPattern.setBlock(variables, f,
-                                                          blockSource, pos);
-                                    i++;
-                                }
-                            }
-                        });
+                    std::string bps = "minecraft:air";
+                    if (results["blockPattern"].isSet) {
+                        bps = results["blockPattern"].get<std::string>();
+                    } else if (results["block"].isSet) {
+                        bps =
+                            results["block"].get<Block const*>()->getTypeName();
                     }
+                    BlockPattern blockPattern(bps);
+                    region->forEachBlockInRegion([&](const BlockPos& pos) {
+                        auto localPos = pos - boundingBox.bpos1 + 1;
+                        if (gMask == "" ||
+                            cpp_eval::eval<double>(gMask.c_str(), variables,
+                                                   f) > 0.5) {
+                            auto localPos = pos - boundingBox.bpos1 + 1;
+                            if (tmp[(localPos.y + sizeDim.y * localPos.z) *
+                                        sizeDim.x +
+                                    localPos.x]) {
+                                setFunction(variables, f, boundingBox,
+                                            playerPos, pos);
+                                blockPattern.setBlock(variables, f, blockSource,
+                                                      pos);
+                                i++;
+                            }
+                        }
+                    });
                     output.success(fmt::format("§a{} block(s) hollowed", i));
+                } else {
+                    output.error("You don't have a region yet");
+                }
+            },
+            CommandPermissionLevel::GameMasters);
+
+        DynamicCommand::setup(
+            "smooth",            // command name
+            "smooth selection",  // command description
+            {}, {ParamData("num", ParamType::Int, true, "num")}, {{"num"}},
+            // dynamic command callback
+            [](DynamicCommand const& command, CommandOrigin const& origin,
+               CommandOutput& output,
+               std::unordered_map<std::string, DynamicCommand::Result>&
+                   results) {
+                auto& mod = worldedit::getMod();
+                auto xuid = origin.getPlayer()->getXuid();
+                if (mod.playerRegionMap.find(xuid) !=
+                        mod.playerRegionMap.end() &&
+                    mod.playerRegionMap[xuid]->hasSelected()) {
+                    int ksize = 5;
+                    if (results["num"].isSet) {
+                        ksize = results["num"].get<int>();
+                    }
+
+                    auto* region = mod.playerRegionMap[xuid];
+                    auto dimID = region->getDimensionID();
+                    auto boundingBox = region->getBoundBox();
+                    auto blockSource = Level::getBlockSource(dimID);
+
+                    auto history = mod.getPlayerNextHistory(xuid);
+                    *history = Clipboard(boundingBox.bpos2 - boundingBox.bpos1);
+                    history->playerRelPos.x = dimID;
+                    history->playerPos = boundingBox.bpos1;
+                    boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
+                        auto localPos = pos - boundingBox.bpos1;
+                        auto blockInstance = blockSource->getBlockInstance(pos);
+                        history->storeBlock(blockInstance, localPos);
+                    });
+
+                    auto heightMap = region->getHeightMap();
+                    std::cout<<"get"<< std::endl;
+                    int sizex = boundingBox.bpos2.x - boundingBox.bpos1.x+1;
+                    int sizez = boundingBox.bpos2.z - boundingBox.bpos1.z+1;
+
+                    auto smoothedHeightMap =
+                        blur2D(heightMap, ksize, sizex, sizez);
+                    std::cout << "blur" << std::endl;
+                    region->applyHeightMap(smoothedHeightMap);
+                    std::cout << "apply" << std::endl;
+
+                    output.success(fmt::format("§aRegion smoothed"));
                 } else {
                     output.error("You don't have a region yet");
                 }

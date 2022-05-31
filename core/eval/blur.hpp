@@ -38,6 +38,50 @@ namespace worldedit {
         }
         return res;
     }
+    std::vector<double> blur2D(std::vector<double> heightMap,
+                               int ksize,
+                               int sizex,
+                               int sizez) {
+        std::vector<double> res;
+        res.resize(heightMap.size());
+        auto kernel = gaussianKernel(ksize);
+        for (int x = 0; x < sizex; x++)
+            for (int z = 0; z < sizez; z++) {
+                double sum = 0;
+                double sumk = 0;
+                for (int k = -ksize; k <= ksize; k++)
+                    if (x + k >= 0 && x + k < sizex &&
+                        heightMap[(x + k) * sizez + z] > -1e100) {
+                        sum +=
+                            heightMap[(x + k) * sizez + z] * kernel[k + ksize];
+                        sumk += kernel[k + ksize];
+                    }
+                if (sumk <= 0) {
+                    res[x * sizez + z] = heightMap[x * sizez + z];
+                } else {
+                    res[x * sizez + z] = sum / sumk;
+                }
+            }
+        heightMap.assign(res.begin(), res.end());
+        for (int x = 0; x < sizex; x++)
+            for (int z = 0; z < sizez; z++) {
+                double sum = 0;
+                double sumk = 0;
+                for (int k = -ksize; k <= ksize; k++)
+                    if (z + k >= 0 && z + k < sizez &&
+                        heightMap[x * sizez + (z + k)] > -1e100) {
+                        sum +=
+                            heightMap[x * sizez + (z + k)] * kernel[k + ksize];
+                        sumk += kernel[k + ksize];
+                    }
+                if (sumk <= 0) {
+                    res[x * sizez + z] = heightMap[x * sizez + z];
+                } else {
+                    res[x * sizez + z] = sum / sumk;
+                }
+            }
+        return res;
+    }
 }  // namespace worldedit
 
 #endif  // WORLDEDIT_BLUR_H

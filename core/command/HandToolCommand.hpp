@@ -53,6 +53,7 @@ namespace worldedit {
                 ParamData("info", ParamType::Enum, "info"),
                 ParamData("flood", ParamType::Enum, "flood"),
                 ParamData("none", ParamType::Enum, "none"),
+                ParamData("block", ParamType::Block, "block"),
                 ParamData("blockPattern", ParamType::String, "blockPattern"),
                 ParamData("distance", ParamType::Float, "distance"),
             },
@@ -62,6 +63,7 @@ namespace worldedit {
                 {"farwand"},
                 {"cycler"},
                 {"info"},
+                {"flood", "block", "distance"},
                 {"flood", "blockPattern", "distance"},
                 {"none"},
             },
@@ -75,32 +77,30 @@ namespace worldedit {
                 std::string toolName =
                     origin.getPlayer()->getHandSlot()->getTypeName();
                 if (results["tree"].isSet) {
-                    mod.playerHandToolMap[xuid][toolName] = "tree";
                     stringReplace(toolName, "minecraft:", "");
                     output.success(
                         fmt::format("§aTree tool bound to {}", toolName));
                 } else if (results["deltree"].isSet) {
-                    mod.playerHandToolMap[xuid][toolName] = "deltree";
                     stringReplace(toolName, "minecraft:", "");
                     output.success(
                         fmt::format("§aDeltree tool bound to {}", toolName));
                 } else if (results["farwand"].isSet) {
-                    mod.playerHandToolMap[xuid][toolName] = "farwand";
+                    mod.playerHandToolMap[xuid][toolName] = new FarWand();
                     stringReplace(toolName, "minecraft:", "");
                     output.success(
                         fmt::format("§aFar wand tool bound to {}", toolName));
                 } else if (results["cycler"].isSet) {
-                    mod.playerHandToolMap[xuid][toolName] = "cycler";
                     stringReplace(toolName, "minecraft:", "");
                     output.success(
                         fmt::format("§aCycler tool bound to {}", toolName));
                 } else if (results["info"].isSet) {
-                    mod.playerHandToolMap[xuid][toolName] = "info";
+                    mod.playerHandToolMap[xuid][toolName] = new InfoTool();
                     stringReplace(toolName, "minecraft:", "");
                     output.success(
                         fmt::format("§aBlock info tool bound to {}", toolName));
                 } else if (results["flood"].isSet) {
                 } else if (results["none"].isSet) {
+                    delete mod.playerHandToolMap[xuid][toolName];
                     mod.playerHandToolMap[xuid].erase(toolName);
                     output.success(fmt::format("§aHand tool cleared"));
                 }

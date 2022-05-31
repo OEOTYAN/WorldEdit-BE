@@ -13,6 +13,7 @@
 #include "region/Regions.h"
 #include "store/BlockNBTSet.hpp"
 #include "store/Clipboard.hpp"
+#include "tool/tool.h"
 
 namespace worldedit {
     class WE {
@@ -27,7 +28,7 @@ namespace worldedit {
             playerVicePosMap;
         std::unordered_map<std::string, Clipboard> playerClipboardMap;
         std::unordered_map<std::string,
-                           std::unordered_map<std::string, std::string>>
+                           std::unordered_map<std::string, Tool*>>
             playerHandToolMap;
         std::unordered_map<std::string, std::string> playerGMaskMap;
         std::unordered_map<
