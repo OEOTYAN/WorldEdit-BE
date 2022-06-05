@@ -1,5 +1,5 @@
 #include "tool.h"
-#include "region/changeRegion.hpp"
+#include "region/ChangeRegion.hpp"
 #include "string/StringTool.h"
 namespace worldedit {
 
@@ -7,19 +7,17 @@ namespace worldedit {
         changeMainPos(player, blockInstance);
         return true;
     }
-    bool FarWand::rightClick(Player* player,
-                             BlockInstance blockInstance) {
+    bool FarWand::rightClick(Player* player, BlockInstance blockInstance) {
         changeVicePos(player, blockInstance);
         return true;
     }
-    bool InfoTool::rightClick(Player* player,
-                            BlockInstance blockInstance) {
+    bool InfoTool::rightClick(Player* player, BlockInstance blockInstance) {
         auto block = blockInstance.getBlock();
         auto& exblock =
             const_cast<Block&>(blockInstance.getBlockSource()->getExtraBlock(
                 blockInstance.getPosition()));
         std::cout << "block: (" << getBlockId(block->getTypeName()) << ":"
-                  << block->getTileData()<< ")\n"
+                  << block->getTileData() << ")\n"
                   << block->getNbt()->toPrettySNBT() << std::endl;
         player->sendText("block: (" +
                          fto_string(getBlockId(block->getTypeName())) + ":" +

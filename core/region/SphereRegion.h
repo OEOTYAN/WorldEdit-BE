@@ -13,7 +13,7 @@
 namespace worldedit {
     class SphereRegion : public Region {
        private:
-        BlockPos center = {0, -65, 0};
+        BlockPos center = BlockPos::MIN;
         float radius = 0.5;
         int checkChanges(const std::vector<BlockPos>& changes);
 
@@ -25,15 +25,12 @@ namespace worldedit {
         std::pair<std::string, bool> expand(
             const std::vector<BlockPos>& changes) override;
 
-        std::pair<std::string, bool> contract(const std::vector<BlockPos>& changes) override;
+        std::pair<std::string, bool> contract(
+            const std::vector<BlockPos>& changes) override;
 
         std::pair<std::string, bool> shift(const BlockPos& change) override;
 
-        bool setMainPos(const BlockPos& pos, const int& dim) override;
-
-        Vec3 getCenter() const override {
-            return center.toVec3() + Vec3(0.5f, 0.5f, 0.5f);
-        };
+        Vec3 getCenter() const override { return center.toVec3() + 0.5f; };
 
         int size() const override {
             return (int)std::round(4.0 / 3.0 * __M__PI__ * (double)radius *
@@ -44,6 +41,8 @@ namespace worldedit {
 
         float getRadius() const { return radius; };
 
+        bool setMainPos(const BlockPos& pos, const int& dim) override;
+    
         bool setVicePos(const BlockPos& pos, const int& dim) override;
 
         bool contains(const BlockPos& pos) override;

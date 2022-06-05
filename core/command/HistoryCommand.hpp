@@ -102,7 +102,7 @@ namespace worldedit {
                 res.first->forEachBlockInClipboard([&](const BlockPos& pos) {
                     auto worldPos = pos + res.first->playerPos;
                     res.first->blockslist[res.first->getIter(pos)].setBlock(
-                        worldPos, dimID);
+                        worldPos, blockSource);
                     i++;
                 });
                 *res.first = tmp;
@@ -147,7 +147,7 @@ namespace worldedit {
                 res.first->forEachBlockInClipboard([&](const BlockPos& pos) {
                     auto worldPos = pos + res.first->playerPos;
                     res.first->blockslist[res.first->getIter(pos)].setBlock(
-                        worldPos, dimID);
+                        worldPos, blockSource);
                     i++;
                 });
                 *res.first = tmp;

@@ -19,6 +19,7 @@ namespace worldedit {
     class WE {
        public:
         int maxHistoryLength = 20;
+        int updateArg = 2;
         std::unordered_map<std::string, Region*> playerRegionMap;
         std::unordered_map<std::string,
                            std::pair<BlockPos, std::pair<int, int>>>

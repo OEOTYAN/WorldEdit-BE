@@ -24,7 +24,7 @@
 // #include <EventAPI.h>
 // #include <ScheduleAPI.h>
 // #include <DynamicCommandAPI.h>
-#include "region/changeRegion.hpp"
+#include "region/ChangeRegion.hpp"
 // #include <MC/ServerNetworkHandler.hpp>
 // #include <MC/NetworkPacketEventCoordinator.hpp>
 // #include <MC/PacketHeader.hpp>
@@ -121,7 +121,7 @@ THook(void,
             BlockInstance blockInstance = player->getBlockFromViewVector(
                 requiereWater, false, 2048.0f, true, false);
             mod.playerHandToolMap[xuid][itemName]->leftClick(player,
-                                                              blockInstance);
+                                                             blockInstance);
         }
     }
     return original(serverNetworkHandler, networkIdentifier, animatePacket);

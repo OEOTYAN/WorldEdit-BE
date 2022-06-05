@@ -9,10 +9,6 @@
 #include "eval/blur.hpp"
 
 namespace worldedit {
-    // BoundingBox mergeBoundingBox(BoundingBox const& a, BoundingBox const& b)
-    // {
-    //     return BoundingBox(min(a.bpos1, b.bpos1), max(a.bpos2, b.bpos2));
-    // }
 
     using ParamType = DynamicCommand::ParameterType;
     using ParamData = DynamicCommand::ParameterData;
@@ -39,6 +35,7 @@ namespace worldedit {
                         mod.playerRegionMap.end() &&
                     mod.playerRegionMap[xuid]->hasSelected()) {
                     auto* region = mod.playerRegionMap[xuid];
+                    auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = Level::getBlockSource(dimID);
@@ -64,6 +61,7 @@ namespace worldedit {
                     auto playerPos = origin.getPlayer()->getPosition();
                     EvalFunctions f;
                     f.setbs(blockSource);
+                    f.setbox(boundingBox);
                     std::unordered_map<std::string, double> variables;
 
                     std::string bps = "minecraft:air";
@@ -73,9 +71,10 @@ namespace worldedit {
                         bps =
                             results["block"].get<Block const*>()->getTypeName();
                     }
-                    BlockPattern blockPattern(bps);
+                    BlockPattern blockPattern(bps, xuid, region);
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
-                        setFunction(variables, f, boundingBox, playerPos, pos);
+                        setFunction(variables, f, boundingBox, playerPos, pos,
+                                    center);
                         if (gMask == "" ||
                             cpp_eval::eval<double>(gMask.c_str(), variables,
                                                    f) > 0.5) {
@@ -113,6 +112,7 @@ namespace worldedit {
                         mod.playerRegionMap.end() &&
                     mod.playerRegionMap[xuid]->hasSelected()) {
                     auto* region = mod.playerRegionMap[xuid];
+                    auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = Level::getBlockSource(dimID);
@@ -138,6 +138,7 @@ namespace worldedit {
                     auto playerPos = origin.getPlayer()->getPosition();
                     EvalFunctions f;
                     f.setbs(blockSource);
+                    f.setbox(boundingBox);
                     std::unordered_map<std::string, double> variables;
 
                     std::string bps = "minecraft:air";
@@ -156,10 +157,11 @@ namespace worldedit {
                                    .get<Block const*>()
                                    ->getTypeName();
                     }
-                    BlockPattern blockPattern(bps);
+                    BlockPattern blockPattern(bps, xuid, region);
                     BlockPattern blockFilter(bps2);
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
-                        setFunction(variables, f, boundingBox, playerPos, pos);
+                        setFunction(variables, f, boundingBox, playerPos, pos,
+                                    center);
                         if ((gMask == "" ||
                              cpp_eval::eval<double>(gMask.c_str(), variables,
                                                     f) > 0.5) &&
@@ -226,6 +228,7 @@ namespace worldedit {
                     auto playerPos = origin.getPlayer()->getPosition();
                     EvalFunctions f;
                     f.setbs(blockSource);
+                    f.setbox(boundingBox);
                     std::unordered_map<std::string, double> variables;
 
                     std::string bps = "minecraft:air";
@@ -235,9 +238,10 @@ namespace worldedit {
                         bps =
                             results["block"].get<Block const*>()->getTypeName();
                     }
-                    BlockPattern blockPattern(bps);
+                    BlockPattern blockPattern(bps, xuid, region);
                     boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
-                        setFunction(variables, f, boundingBox, playerPos, pos);
+                        setFunction(variables, f, boundingBox, playerPos, pos,
+                                    center);
                         blockPattern.setBlock(variables, f, blockSource, pos);
                     });
 
@@ -306,6 +310,7 @@ namespace worldedit {
                     BlockPos faceVec = worldedit::facingToPos(facing, 1);
 
                     auto* region = mod.playerRegionMap[xuid];
+                    auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
                     auto boundingBoxLast = boundingBox;
@@ -345,12 +350,13 @@ namespace worldedit {
                     auto playerPos = origin.getPlayer()->getPosition();
                     EvalFunctions f;
                     f.setbs(blockSource);
+                    f.setbox(boundingBox);
                     std::unordered_map<std::string, double> variables;
                     region->forEachBlockInRegion([&](const BlockPos& posk) {
                         for (int j = 1; j <= times; j++) {
                             auto pos = posk + movingVec * j;
                             setFunction(variables, f, boundingBox, playerPos,
-                                        pos);
+                                        pos, center);
                             if ((arg_a && (&blockSource->getBlock(posk) !=
                                            BedrockBlocks::mAir)) ||
                                 !arg_a)
@@ -437,6 +443,7 @@ namespace worldedit {
                     BlockPos faceVec = worldedit::facingToPos(facing, dis);
 
                     auto* region = mod.playerRegionMap[xuid];
+                    auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
                     auto boundingBoxLast = boundingBox;
@@ -477,6 +484,7 @@ namespace worldedit {
                     auto playerPos = origin.getPlayer()->getPosition();
                     EvalFunctions f;
                     f.setbs(blockSource);
+                    f.setbox(boundingBox);
                     std::unordered_map<std::string, double> variables;
 
                     std::string bps = "minecraft:air";
@@ -486,10 +494,11 @@ namespace worldedit {
                         bps =
                             results["block"].get<Block const*>()->getTypeName();
                     }
-                    BlockPattern blockPattern(bps);
+                    BlockPattern blockPattern(bps, xuid, region);
                     region->forEachBlockInRegion([&](const BlockPos& posk) {
                         auto pos = posk + faceVec;
-                        setFunction(variables, f, boundingBox, playerPos, pos);
+                        setFunction(variables, f, boundingBox, playerPos, pos,
+                                    center);
                         if (gMask == "" ||
                             cpp_eval::eval<double>(gMask.c_str(), variables,
                                                    f) > 0.5) {
@@ -503,7 +512,8 @@ namespace worldedit {
                         auto pos = posk + faceVec;
                         auto localPos = posk - boundingBoxHistory.bpos1;
                         auto block = history->getSet(localPos).getBlock();
-                        setFunction(variables, f, boundingBox, playerPos, pos);
+                        setFunction(variables, f, boundingBox, playerPos, pos,
+                                    center);
                         if ((arg_a && (block != BedrockBlocks::mAir)) || !arg_a)
                             if (gMask == "" ||
                                 cpp_eval::eval<double>(gMask.c_str(), variables,
@@ -554,6 +564,7 @@ namespace worldedit {
                     }
 
                     auto* region = mod.playerRegionMap[xuid];
+                    auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = Level::getBlockSource(dimID);
@@ -581,6 +592,7 @@ namespace worldedit {
                     auto playerPos = origin.getPlayer()->getPosition();
                     EvalFunctions f;
                     f.setbs(blockSource);
+                    f.setbox(boundingBox);
                     std::unordered_map<std::string, double> variables;
 
                     auto sizeDim = boundingBox.bpos2 - boundingBox.bpos1 + 3;
@@ -591,7 +603,8 @@ namespace worldedit {
                     std::vector<bool> caled(size, false);
 
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
-                        setFunction(variables, f, boundingBox, playerPos, pos);
+                        setFunction(variables, f, boundingBox, playerPos, pos,
+                                    center);
                         if (gMask == "" ||
                             cpp_eval::eval<double>(gMask.c_str(), variables,
                                                    f) > 0.5) {
@@ -625,7 +638,8 @@ namespace worldedit {
                                         setFunction(
                                             variables, f, boundingBox,
                                             playerPos,
-                                            calPos + boundingBox.bpos1 - 1);
+                                            calPos + boundingBox.bpos1 - 1,
+                                            center);
                                         tmp[(calPos.y + sizeDim.y * calPos.z) *
                                                 sizeDim.x +
                                             calPos.x] =
@@ -660,14 +674,14 @@ namespace worldedit {
                         bps =
                             results["block"].get<Block const*>()->getTypeName();
                     }
-                    BlockPattern blockPattern(bps);
+                    BlockPattern blockPattern(bps, xuid, region);
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
                         auto localPos = pos - boundingBox.bpos1 + 1;
                         if (tmp[(localPos.y + sizeDim.y * localPos.z) *
                                     sizeDim.x +
                                 localPos.x]) {
                             setFunction(variables, f, boundingBox, playerPos,
-                                        pos);
+                                        pos, center);
                             blockPattern.setBlock(variables, f, blockSource,
                                                   pos);
                             i++;
@@ -700,6 +714,7 @@ namespace worldedit {
                         mod.playerRegionMap.end() &&
                     mod.playerRegionMap[xuid]->hasSelected()) {
                     auto* region = mod.playerRegionMap[xuid];
+                    auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = Level::getBlockSource(dimID);
@@ -725,6 +740,7 @@ namespace worldedit {
                     auto playerPos = origin.getPlayer()->getPosition();
                     EvalFunctions f;
                     f.setbs(blockSource);
+                    f.setbox(boundingBox);
                     std::unordered_map<std::string, double> variables;
 
                     std::string bps = "minecraft:air";
@@ -734,9 +750,10 @@ namespace worldedit {
                         bps =
                             results["block"].get<Block const*>()->getTypeName();
                     }
-                    BlockPattern blockPattern(bps);
+                    BlockPattern blockPattern(bps, xuid, region);
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
-                        setFunction(variables, f, boundingBox, playerPos, pos);
+                        setFunction(variables, f, boundingBox, playerPos, pos,
+                                    center);
                         if (gMask == "" ||
                             cpp_eval::eval<double>(gMask.c_str(), variables,
                                                    f) > 0.5) {
@@ -782,6 +799,7 @@ namespace worldedit {
                         mod.playerRegionMap.end() &&
                     mod.playerRegionMap[xuid]->hasSelected()) {
                     auto* region = mod.playerRegionMap[xuid];
+                    auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = Level::getBlockSource(dimID);
@@ -807,6 +825,7 @@ namespace worldedit {
                     auto playerPos = origin.getPlayer()->getPosition();
                     EvalFunctions f;
                     f.setbs(blockSource);
+                    f.setbox(boundingBox);
                     std::unordered_map<std::string, double> variables;
                     std::string bps = "minecraft:air";
                     if (results["blockPattern"].isSet) {
@@ -815,9 +834,10 @@ namespace worldedit {
                         bps =
                             results["block"].get<Block const*>()->getTypeName();
                     }
-                    BlockPattern blockPattern(bps);
+                    BlockPattern blockPattern(bps, xuid, region);
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
-                        setFunction(variables, f, boundingBox, playerPos, pos);
+                        setFunction(variables, f, boundingBox, playerPos, pos,
+                                    center);
                         if (gMask == "" ||
                             cpp_eval::eval<double>(gMask.c_str(), variables,
                                                    f) > 0.5) {
@@ -858,6 +878,7 @@ namespace worldedit {
                         mod.playerRegionMap.end() &&
                     mod.playerRegionMap[xuid]->hasSelected()) {
                     auto* region = mod.playerRegionMap[xuid];
+                    auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = Level::getBlockSource(dimID);
@@ -883,6 +904,7 @@ namespace worldedit {
                     auto playerPos = origin.getPlayer()->getPosition();
                     EvalFunctions f;
                     f.setbs(blockSource);
+                    f.setbox(boundingBox);
                     std::unordered_map<std::string, double> variables;
                     std::string bps = "minecraft:air";
                     if (results["blockPattern"].isSet) {
@@ -891,9 +913,10 @@ namespace worldedit {
                         bps =
                             results["block"].get<Block const*>()->getTypeName();
                     }
-                    BlockPattern blockPattern(bps);
+                    BlockPattern blockPattern(bps, xuid, region);
                     region->forTopBlockInRegion([&](const BlockPos& pos) {
-                        setFunction(variables, f, boundingBox, playerPos, pos);
+                        setFunction(variables, f, boundingBox, playerPos, pos,
+                                    center);
                         if (gMask == "" ||
                             cpp_eval::eval<double>(gMask.c_str(), variables,
                                                    f) > 0.5) {
@@ -924,6 +947,7 @@ namespace worldedit {
                         mod.playerRegionMap.end() &&
                     mod.playerRegionMap[xuid]->hasSelected()) {
                     auto* region = mod.playerRegionMap[xuid];
+                    auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = Level::getBlockSource(dimID);
@@ -947,6 +971,7 @@ namespace worldedit {
                     auto playerPos = origin.getPlayer()->getPosition();
                     EvalFunctions f;
                     f.setbs(blockSource);
+                    f.setbox(boundingBox);
                     std::unordered_map<std::string, double> variables;
 
                     region->forTopBlockInRegion([&](const BlockPos& posk) {
@@ -955,7 +980,7 @@ namespace worldedit {
                                 VanillaBlocks::mStone &&
                             region->contains(pos)) {
                             setFunction(variables, f, boundingBox, playerPos,
-                                        pos);
+                                        pos, center);
                             if (gMask == "" ||
                                 cpp_eval::eval<double>(gMask.c_str(), variables,
                                                        f) > 0.5) {
@@ -969,7 +994,7 @@ namespace worldedit {
                                     VanillaBlocks::mStone &&
                                 region->contains(pos)) {
                                 setFunction(variables, f, boundingBox,
-                                            playerPos, pos);
+                                            playerPos, pos, center);
                                 if (gMask == "" ||
                                     cpp_eval::eval<double>(
                                         gMask.c_str(), variables, f) > 0.5) {
@@ -1012,6 +1037,7 @@ namespace worldedit {
                     }
 
                     auto* region = mod.playerRegionMap[xuid];
+                    auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = Level::getBlockSource(dimID);
@@ -1080,6 +1106,7 @@ namespace worldedit {
                     auto playerPos = origin.getPlayer()->getPosition();
                     EvalFunctions f;
                     f.setbs(blockSource);
+                    f.setbox(boundingBox);
                     std::unordered_map<std::string, double> variables;
 
                     long long i = 0;
@@ -1091,7 +1118,7 @@ namespace worldedit {
                         bps =
                             results["block"].get<Block const*>()->getTypeName();
                     }
-                    BlockPattern blockPattern(bps);
+                    BlockPattern blockPattern(bps, xuid, region);
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
                         auto localPos = pos - boundingBox.bpos1 + 1;
                         if (gMask == "" ||
@@ -1102,7 +1129,7 @@ namespace worldedit {
                                         sizeDim.x +
                                     localPos.x]) {
                                 setFunction(variables, f, boundingBox,
-                                            playerPos, pos);
+                                            playerPos, pos, center);
                                 blockPattern.setBlock(variables, f, blockSource,
                                                       pos);
                                 i++;
@@ -1136,6 +1163,7 @@ namespace worldedit {
                     }
 
                     auto* region = mod.playerRegionMap[xuid];
+                    auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = Level::getBlockSource(dimID);
@@ -1144,6 +1172,7 @@ namespace worldedit {
                     *history = Clipboard(boundingBox.bpos2 - boundingBox.bpos1);
                     history->playerRelPos.x = dimID;
                     history->playerPos = boundingBox.bpos1;
+                    
                     boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
                         auto localPos = pos - boundingBox.bpos1;
                         auto blockInstance = blockSource->getBlockInstance(pos);
@@ -1151,15 +1180,12 @@ namespace worldedit {
                     });
 
                     auto heightMap = region->getHeightMap();
-                    std::cout<<"get"<< std::endl;
-                    int sizex = boundingBox.bpos2.x - boundingBox.bpos1.x+1;
-                    int sizez = boundingBox.bpos2.z - boundingBox.bpos1.z+1;
+                    int sizex = boundingBox.bpos2.x - boundingBox.bpos1.x + 1;
+                    int sizez = boundingBox.bpos2.z - boundingBox.bpos1.z + 1;
 
                     auto smoothedHeightMap =
                         blur2D(heightMap, ksize, sizex, sizez);
-                    std::cout << "blur" << std::endl;
                     region->applyHeightMap(smoothedHeightMap);
-                    std::cout << "apply" << std::endl;
 
                     output.success(fmt::format("§aRegion smoothed"));
                 } else {

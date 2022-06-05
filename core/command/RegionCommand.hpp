@@ -38,7 +38,8 @@ namespace worldedit {
             {
                 // enums{enumName, {values...}}
                 {"region",
-                 {"cuboid", "extend", "poly", "sphere", "convex", "clear"}},
+                 {"cuboid", "extend", "poly", "sphere", "cylinder", "convex",
+                  "clear"}},
             },
             {// parameters(type, name, [optional], [enumOptions(also
              // enumName)], [identifier]) identifier: used to identify unique
@@ -103,6 +104,14 @@ namespace worldedit {
                                     origin.getPlayer()->getDimensionId());
                             output.success(
                                 "§aRegion has been switched to sphere");
+                            break;
+                        case do_hash("cylinder"):
+                            mod.playerRegionMap[xuid] =
+                                worldedit::Region::createRegion(
+                                    worldedit::CYLINDER, tmpbox,
+                                    origin.getPlayer()->getDimensionId());
+                            output.success(
+                                "§aRegion has been switched to cylinder");
                             break;
                         case do_hash("convex"):
                             mod.playerRegionMap[xuid] =

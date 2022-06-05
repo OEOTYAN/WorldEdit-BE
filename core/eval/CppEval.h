@@ -127,8 +127,8 @@ namespace cpp_eval {
                          *mCurrent == RIGHT_BRACKET ||
                          *mCurrent == PARAMETER_SEPERATOR ||
                          *mCurrent == LESS_THAN || *mCurrent == GREATER_THAN ||
-                         *mCurrent == EQUAL || *mCurrent == AND ||
-                         *mCurrent == POWER || *mCurrent == OR)
+                         *mCurrent == AND || *mCurrent == POWER ||
+                         *mCurrent == OR)
                     mType = (Type)*mCurrent, ++mCurrent;
                 else if (isalpha(*mCurrent)) {
                     mType = IDENTIFIER;
@@ -359,7 +359,9 @@ namespace cpp_eval {
                 if (id == "pi" || id == "π")
                     return 3.141592653589793238462643383279;
                 if (id == "phi" || id == "φ")
-                    return 3.141592653589793238462643383279;
+                    return 0.618033988749894848204586834365;
+                if (id == "γ")
+                    return 0.577215664901532860606512090082;
                 if (id == "e")
                     return 2.718281828459045235360287471352;
                 if (mVariables.find(id) == mVariables.end())

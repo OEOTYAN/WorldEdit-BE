@@ -28,6 +28,18 @@
 //     return original(serverNetworkHandler, networkIdentifier,
 //                     playerActionPacket);
 // }
+//?sendPacketReceivedFrom@NetworkPacketEventCoordinator@@QEAAXAEBVPacketHeader@@AEBVPacket@@@Z
+// THook(void,
+//       "?sendPacketReceivedFrom@NetworkPacketEventCoordinator@@"
+//       "QEAAXAEBVPacketHeader@@AEBVPacket@@@Z",
+//       NetworkPacketEventCoordinator* networkPacketEventCoordinator,
+//       PacketHeader const& packetHeader,
+//       Packet const& packet) {
+//     std::cout << fmt::format("{}({})->{}", packet.getName(), packet.getId(),
+//                              packet.clientSubId)
+//               << std::endl;
+//     return original(networkPacketEventCoordinator, packetHeader, packet);
+// }
 THook(void,
       "?setRuntimeId@Block@@IEBAXAEBI@Z",
       Block* block,

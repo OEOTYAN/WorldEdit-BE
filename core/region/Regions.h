@@ -10,6 +10,7 @@
 #include "CuboidRegion.h"
 #include "ExpandRegion.h"
 #include "SphereRegion.h"
+#include "CylinderRegion.h"
 #include "PolyRegion.h"
 #include "ConvexRegion.h"
 

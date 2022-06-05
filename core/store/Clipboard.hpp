@@ -65,8 +65,10 @@ namespace worldedit {
             return (pos.y + size.y * pos.z) * size.x + pos.x;
         }
         long long getIter2(const BlockPos& pos) {
-            return (pos.y % size.y + size.y * pos.z % size.z) * size.x +
-                   pos.x % size.x;
+            return (static_cast<int>(posfmod(pos.y, size.y)) +
+                    size.y * static_cast<int>(posfmod(pos.z, size.z))) *
+                       size.x +
+                   static_cast<int>(posfmod(pos.x, size.x));
         }
         void storeBlock(BlockInstance& blockInstance, const BlockPos& pos) {
             if (pos.containedWithin(BlockPos(0, 0, 0), board)) {
@@ -91,17 +93,18 @@ namespace worldedit {
             res.bpos2 = max(res.bpos2, getPos({board.x, board.y, 0}));
             res.bpos2 = max(res.bpos2, getPos({0, board.y, board.z}));
             res.bpos2 = max(res.bpos2, getPos({board.x, board.y, board.z}));
-            if (!(abs(fmod(rotationAngle.x, 90.0f)) < 0.01f &&
-                  abs(fmod(rotationAngle.y, 90.0f)) < 0.01f &&
-                  abs(fmod(rotationAngle.z, 90.0f)) < 0.01f)) {
-                res.bpos1 = res.bpos1 - BlockPos(1, 1, 1);
-                res.bpos2 = res.bpos2 + BlockPos(1, 1, 1);
+            if (!(abs(posfmod(rotationAngle.x, 90.0f)) < 0.01 &&
+                  abs(posfmod(rotationAngle.y, 90.0f)) < 0.01 &&
+                  abs(posfmod(rotationAngle.z, 90.0f)) < 0.01)) {
+                res.bpos1 = res.bpos1 - 1;
+                res.bpos2 = res.bpos2 + 1;
             }
             return res;
         }
         void rotate(Vec3 angle) {
             rotationAngle = rotationAngle + angle;
-            rotationAngle.y = fmod(rotationAngle.y, 360.0f);
+            rotationAngle.y =
+                static_cast<float>(posfmod(rotationAngle.y, 360.0f));
             if (rotationAngle.y > 315 || rotationAngle.y <= 45) {
                 rotation = Rotation::None_14;
             } else if (rotationAngle.y > 45 && rotationAngle.y <= 135) {
@@ -151,11 +154,11 @@ namespace worldedit {
                 res.y = -res.y;
             }
             Vec3 angle = rotationAngle;
-            angle.x = fmod(angle.x, 360.0f);
-            angle.y = fmod(angle.y, 360.0f);
-            angle.z = fmod(angle.z, 360.0f);
+            angle.x = static_cast<float>(posfmod(angle.x, 360.0f));
+            angle.y = static_cast<float>(posfmod(angle.y, 360.0f));
+            angle.z = static_cast<float>(posfmod(angle.z, 360.0f));
 
-            if (abs(fmod(angle.y, 90.0f)) < 0.01f) {
+            if (abs(posfmod(angle.y, 90.0f)) < 0.01f) {
                 if (abs(angle.y - 90) < 0.01f) {
                     int tmp = res.x;
                     res.x = -res.z;
@@ -184,7 +187,7 @@ namespace worldedit {
                     static_cast<int>(floor(res.x + 0.5 - (res.z + 0.5) * tanY));
             }
 
-            if (abs(fmod(angle.x, 90.0f)) < 0.01f) {
+            if (abs(posfmod(angle.x, 90.0f)) < 0.01f) {
                 if (abs(angle.x - 90) < 0.01f) {
                     int tmp = res.y;
                     res.y = -res.z;
@@ -212,7 +215,7 @@ namespace worldedit {
                 res.y =
                     static_cast<int>(floor(res.y + 0.5 - (res.z + 0.5) * tanX));
             }
-            if (abs(fmod(angle.z, 90.0f)) < 0.01f) {
+            if (abs(posfmod(angle.z, 90.0f)) < 0.01f) {
                 if (abs(angle.z - 90) < 0.01f) {
                     int tmp = res.x;
                     res.x = -res.y;
@@ -251,9 +254,11 @@ namespace worldedit {
         bool contains(const BlockPos& pos) {
             return blockslist[getIter(pos)].hasBlock;
         }
-        void setBlocks(const BlockPos& pos, BlockPos& worldPos, int dimID) {
-            blockslist[getIter(pos)].setBlock(worldPos, dimID, rotation,
-                                              mirror);
+        void setBlocks(const BlockPos& pos,
+                       BlockPos& worldPos,
+                       BlockSource* blockSource) {
+            blockslist[getIter(pos)].setBlock(worldPos, blockSource, rotation,
+                                               mirror);
         }
         void forEachBlockInClipboard(
             const std::function<void(const BlockPos&)>& todo) {

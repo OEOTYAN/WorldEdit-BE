@@ -20,6 +20,7 @@ namespace worldedit {
         SPHERE = 2,
         POLY = 3,
         CONVEX = 4,
+        CYLINDER= 5,
     };
 
     class Region {

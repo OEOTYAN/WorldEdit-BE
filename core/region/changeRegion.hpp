@@ -29,6 +29,8 @@
 #include "WorldEdit.h"
 
 namespace worldedit {
+
+
     void setBlockSimple(
         BlockSource* blockSource,
         const BlockPos& pos,
@@ -40,7 +42,7 @@ namespace worldedit {
                      functions& funcs,
                      const BoundingBox& boundingBox,
                      const Vec3& playerPos,
-                     const BlockPos& pos) {
+                     const BlockPos& pos,const Vec3& center) {
         double lengthx = (boundingBox.bpos2.x - boundingBox.bpos1.x) * 0.5;
         double lengthy = (boundingBox.bpos2.y - boundingBox.bpos1.y) * 0.5;
         double lengthz = (boundingBox.bpos2.z - boundingBox.bpos1.z) * 0.5;
@@ -57,9 +59,9 @@ namespace worldedit {
         variables["ox"] = pos.x - floor(playerPos.x);
         variables["oy"] = pos.y - floor(playerPos.y);
         variables["oz"] = pos.z - floor(playerPos.z);
-        variables["cx"] = pos.x - floor(centerx);
-        variables["cy"] = pos.y - floor(centery);
-        variables["cz"] = pos.z - floor(centerz);
+        variables["cx"] = pos.x - floor(center.x);
+        variables["cy"] = pos.y - floor(center.y);
+        variables["cz"] = pos.z - floor(center.z);
     }
 
     bool changeVicePos(Player* player,

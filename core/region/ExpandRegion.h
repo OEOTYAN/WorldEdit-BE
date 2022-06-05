@@ -10,8 +10,8 @@
 namespace worldedit {
     class ExpandRegion : public Region {
        public:
-        BlockPos mainPos{-2100000000, -2100000000, -2100000000};
-        BlockPos vicePos{-2100000000, -2100000000, -2100000000};
+        BlockPos mainPos = BlockPos::MIN;
+        BlockPos vicePos = BlockPos::MIN;
         void updateBoundingBox() override;
 
         explicit ExpandRegion(const BoundingBox& region, const int& dim);

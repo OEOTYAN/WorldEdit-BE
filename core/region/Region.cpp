@@ -6,7 +6,7 @@
 #include "MC/Level.hpp"
 #include "MC/BlockSource.hpp"
 #include "MC/Block.hpp"
-#include "region/changeRegion.hpp"
+#include "region/ChangeRegion.hpp"
 #include <MC/BedrockBlocks.hpp>
 namespace worldedit {
     void Region::forEachBlockInRegion(
@@ -25,9 +25,10 @@ namespace worldedit {
         auto blockSource = Level::getBlockSource(dimensionID);
         for (int x = boundingBox.bpos1.x; x <= boundingBox.bpos2.x; x++)
             for (int z = boundingBox.bpos1.z; z <= boundingBox.bpos2.z; z++) {
-                auto top = blockSource->getHeightmapPos({x, 0, z});
-                if (top.y < boundingBox.bpos2.y) {
-                    for (int y = std::max(top.y, boundingBox.bpos1.y + 1);
+                auto topy = blockSource->getHeightmap(x, z);
+                if (topy < boundingBox.bpos2.y) {
+                    for (int y = std::max(static_cast<int>(topy),
+                                          boundingBox.bpos1.y + 1);
                          y <= boundingBox.bpos2.y; y++) {
                         if (&blockSource->getBlock({x, y, z}) ==
                                 BedrockBlocks::mAir &&
@@ -55,91 +56,88 @@ namespace worldedit {
     }
 
     std::vector<double> Region::getHeightMap() {
-        int sizex = boundingBox.bpos2.x - boundingBox.bpos1.x+1;
-        int sizez = boundingBox.bpos2.z - boundingBox.bpos1.z+1;
+        int sizex = boundingBox.bpos2.x - boundingBox.bpos1.x + 1;
+        int sizez = boundingBox.bpos2.z - boundingBox.bpos1.z + 1;
         std::vector<double> res(sizex * sizez, -1e200);
-        forTopBlockInRegion([&](const BlockPos& pos) {
-            int x = pos.x - boundingBox.bpos1.x;
-            int z = pos.z - boundingBox.bpos1.z;
-            res[x * sizez + z] = pos.y - 0.5;
-        });
+
+        auto blockSource = Level::getBlockSource(dimensionID);
+        for (int x = boundingBox.bpos1.x; x <= boundingBox.bpos2.x; x++)
+            for (int z = boundingBox.bpos1.z; z <= boundingBox.bpos2.z; z++) {
+                auto topy = blockSource->getHeightmap(x, z)-1;
+                if (topy <= boundingBox.bpos2.y &&
+                    topy >= boundingBox.bpos1.y) {
+                    int cx = x - boundingBox.bpos1.x;
+                    int cz = z - boundingBox.bpos1.z;
+                    res[cx * sizez + cz] = topy + 0.5;
+                }
+            }
         return res;
     }
 
     void Region::applyHeightMap(const std::vector<double>& data) {
-        int sizex = boundingBox.bpos2.x - boundingBox.bpos1.x+1;
-        int sizez = boundingBox.bpos2.z - boundingBox.bpos1.z+1;
+        int sizex = boundingBox.bpos2.x - boundingBox.bpos1.x + 1;
+        int sizez = boundingBox.bpos2.z - boundingBox.bpos1.z + 1;
         auto blockSource = Level::getBlockSource(dimensionID);
-        forTopBlockInRegion([&](const BlockPos& pos) {
-            int x = pos.x - boundingBox.bpos1.x;
-            int z = pos.z - boundingBox.bpos1.z;
-            int index = x * sizez + z;
-
-            if (data[index] < -1e150) {
-                return;
-            }
-
-            int curHeight = pos.y - 1;
-            // Clamp newHeight within the selection area
-            int newHeight = std::min(boundingBox.bpos2.y,
-                                     static_cast<int>(floor(data[index])));
-
-            // Offset x,z to be 'real' coordinates
-            int xr = pos.x;
-            int zr = pos.z;
-
-            // We are keeping the topmost blocks so take that in account for the
-            // scale
-            double scale = static_cast<double>(curHeight - boundingBox.bpos1.y) /
-                           static_cast<double>(newHeight - boundingBox.bpos1.y);
-
-            // Depending on growing or shrinking we need to start at the bottom
-            // or top
-            if (newHeight > curHeight) {
-                // Set the top block of the column to be the same type (this
-                // might go wrong with rounding)
-                auto* top = const_cast<Block*>(
-                    &blockSource->getBlock({xr, pos.y - 1, zr}));
-
-                // Skip water/lava
-                // if (!existing.getBlockType().getMaterial().isLiquid()) {
-
-                setBlockSimple(blockSource, {xr, newHeight, zr}, top);
-
-                // Grow -- start from 1 below top replacing airblocks
-                for (int y = newHeight - 1 - boundingBox.bpos1.y; y >= 0; y--) {
-                    int copyFrom = static_cast<int>(floor(y * scale));
-                    setBlockSimple(
-                        blockSource, {xr, boundingBox.bpos1.y + y, zr},
-                        const_cast<Block*>(&blockSource->getBlock(
-                            {xr, boundingBox.bpos1.y + copyFrom, zr})));
+        for (int posx = boundingBox.bpos1.x; posx <= boundingBox.bpos2.x;
+             posx++)
+            for (int posz = boundingBox.bpos1.z; posz <= boundingBox.bpos2.z;
+                 posz++) {
+                BlockPos pos = {posx, blockSource->getHeightmap(posx, posz),
+                                posz};
+                pos.y -= 1;
+                if (pos.y > boundingBox.bpos2.y ||
+                    pos.y < boundingBox.bpos1.y) {
+                    continue;
                 }
-                //}
-            } else if (curHeight > newHeight) {
-                // auto* top = const_cast<Block*>(
-                    // &blockSource->getBlock({xr, curHeight, zr}));
+                int x = pos.x - boundingBox.bpos1.x;
+                int z = pos.z - boundingBox.bpos1.z;
+                int index = x * sizez + z;
 
-                // Shrink -- start from bottom
-                for (int y = 0; y < newHeight - boundingBox.bpos1.y; y++) {
-                    int copyFrom = static_cast<int>(floor(y * scale));
-                    setBlockSimple(
-                        blockSource, {xr, boundingBox.bpos1.y + y, zr},
-                        const_cast<Block*>(&blockSource->getBlock(
-                            {xr, boundingBox.bpos1.y + copyFrom, zr})));
+                if (data[index] < -1e150) {
+                    return;
                 }
 
-                // Set the top block of the column to be the same type
-                // (this could otherwise go wrong with rounding)
-                setBlockSimple(blockSource, {xr, newHeight, zr},
-                               const_cast<Block*>(&blockSource->getBlock(
-                                   {xr, curHeight, zr})));
+                int curHeight = pos.y;
+                int newHeight = std::min(boundingBox.bpos2.y,
+                                         static_cast<int>(floor(data[index])));
+                int xr = pos.x;
+                int zr = pos.z;
+                double scale =
+                    static_cast<double>(curHeight - boundingBox.bpos1.y) /
+                    static_cast<double>(newHeight - boundingBox.bpos1.y);
 
-                // Fill rest with air
-                for (int y = newHeight + 1; y <= curHeight; y++) {
-                    setBlockSimple(blockSource, {xr, y, zr});
+                if (newHeight > curHeight) {
+                    auto* top = const_cast<Block*>(
+                        &blockSource->getBlock({xr, curHeight, zr}));
+
+                    setBlockSimple(blockSource, {xr, newHeight, zr}, top);
+
+                    for (int y = newHeight - 1 - boundingBox.bpos1.y; y >= 0;
+                         y--) {
+                        int copyFrom = static_cast<int>(floor(y * scale));
+                        setBlockSimple(
+                            blockSource, {xr, boundingBox.bpos1.y + y, zr},
+                            const_cast<Block*>(&blockSource->getBlock(
+                                {xr, boundingBox.bpos1.y + copyFrom, zr})));
+                    }
+                } else if (curHeight > newHeight) {
+                    for (int y = 0; y < newHeight - boundingBox.bpos1.y; y++) {
+                        int copyFrom = static_cast<int>(floor(y * scale));
+                        setBlockSimple(
+                            blockSource, {xr, boundingBox.bpos1.y + y, zr},
+                            const_cast<Block*>(&blockSource->getBlock(
+                                {xr, boundingBox.bpos1.y + copyFrom, zr})));
+                    }
+
+                    setBlockSimple(blockSource, {xr, newHeight, zr},
+                                   const_cast<Block*>(&blockSource->getBlock(
+                                       {xr, curHeight, zr})));
+
+                    for (int y = newHeight + 1; y <= curHeight; y++) {
+                        setBlockSimple(blockSource, {xr, y, zr});
+                    }
                 }
-            }
-        });
+            };
     }
 
     void Region::renderRegion() {
@@ -168,6 +166,9 @@ namespace worldedit {
                 return new PolyRegion(box, dim);
             case CONVEX:
                 return new ConvexRegion(box, dim);
+            case CYLINDER:
+                 return new CylinderRegion(box, dim);
+                //return new CuboidRegion(box, dim);
             default:
                 return new CuboidRegion(box, dim);
         }

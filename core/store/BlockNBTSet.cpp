@@ -1,13 +1,13 @@
 #include "BlockNBTSet.hpp"
-#include "region/changeRegion.hpp"
+#include "region/ChangeRegion.hpp"
 
 namespace worldedit {
-    void BlockNBTSet::setBlock(const BlockPos& pos, int dimID) const {
-        auto blockSource = Level::getBlockSource(dimID);
-        setBlockSimple(
-            blockSource, pos,
-            Block::create(CompoundTag::fromBinaryNBT(block).get()),
-            Block::create(CompoundTag::fromBinaryNBT(exblock).get()));
+
+    double posfmod(double x, double y) { return x - floor(x / y) * y; }
+
+    void BlockNBTSet::setBlock(const BlockPos& pos,
+                               BlockSource* blockSource) const {
+        setBlockSimple(blockSource, pos, block, exblock);
         if (hasBlockEntity) {
             auto blockInstance = blockSource->getBlockInstance(pos);
             if (blockInstance.hasBlockEntity()) {
@@ -17,18 +17,16 @@ namespace worldedit {
         }
     }
     void BlockNBTSet::setBlock(const BlockPos& pos,
-                               int dimID,
+                               BlockSource* blockSource,
                                Rotation rotation,
                                Mirror mirror) const {
-        auto blockSource = Level::getBlockSource(dimID);
-
         setBlockSimple(
             blockSource, pos,
             const_cast<Block*>(VanillaBlockStateTransformUtils::transformBlock(
-                *Block::create(CompoundTag::fromBinaryNBT(block).get()),
+                *block,
                 rotation, mirror)),
             const_cast<Block*>(VanillaBlockStateTransformUtils::transformBlock(
-                *Block::create(CompoundTag::fromBinaryNBT(exblock).get()),
+                *exblock,
                 rotation, mirror)));
         if (hasBlockEntity) {
             auto blockInstance = blockSource->getBlockInstance(pos);

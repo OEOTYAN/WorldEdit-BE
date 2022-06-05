@@ -134,12 +134,7 @@ namespace worldedit {
                                                                 localPos);
                     });
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
-                        CommandUtils::clearBlockEntityContents(*blockSource,
-                                                               pos);
-                        blockSource->setExtraBlock(pos, *BedrockBlocks::mAir,
-                                                   2);
-                        blockSource->setBlock(pos, *BedrockBlocks::mAir, 2,
-                                              nullptr, nullptr);
+                        setBlockSimple(blockSource, pos);
                     });
                     output.success(fmt::format("§aregion cutted"));
                 } else {
@@ -236,14 +231,16 @@ namespace worldedit {
                                     }
                                     auto worldPos =
                                         clipboard->getPos(pos) + pbPos;
-                                    clipboard->setBlocks(pos, worldPos, dimID);
+                                    clipboard->setBlocks(pos, worldPos,
+                                                         blockSource);
                                 });
                         } else {
                             clipboard->forEachBlockInClipboard(
                                 [&](const BlockPos& pos) {
                                     auto worldPos =
                                         clipboard->getPos(pos) + pbPos;
-                                    clipboard->setBlocks(pos, worldPos, dimID);
+                                    clipboard->setBlocks(pos, worldPos,
+                                                         blockSource);
                                 });
                         }
                     }

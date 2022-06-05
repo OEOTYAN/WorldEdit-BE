@@ -87,7 +87,53 @@ namespace worldedit {
         size_t blockNum = 0;
         std::vector<Percents> percents;
         std::vector<RawBlock> rawBlocks;
-        BlockPattern(std::string str) {
+        Clipboard* clipboard = nullptr;
+        BlockPos bias = {0, 0, 0};
+        BlockPattern(std::string str,
+                     std::string xuid = "",
+                     Region* region = nullptr) {
+            if (str.find("#clipboard") != std::string::npos) {
+                auto& mod = worldedit::getMod();
+                if (mod.playerClipboardMap.find(xuid) ==
+                    mod.playerClipboardMap.end()) {
+                    return;
+                }
+                clipboard = &mod.playerClipboardMap[xuid];
+                if (str.find("@c") != std::string::npos) {
+                    auto center = region->getCenter();
+                    bias.x = static_cast<int>(floor(center.x));
+                    bias.y = static_cast<int>(floor(center.y));
+                    bias.z = static_cast<int>(floor(center.z));
+                } else {
+                    bias = region->getBoundBox().bpos1;
+                }
+                size_t mi = 0;
+                std::vector<int> poslist;
+                poslist.clear();
+                while (mi < str.size()) {
+                    if (str[mi] == '-' || isdigit(str[mi])) {
+                        auto head7 = mi;
+                        mi++;
+                        while (mi < str.size() &&
+                               (isdigit(str[mi]))) {
+                            mi++;
+                        }
+                        poslist.push_back(
+                            std::stoi(str.substr(head7, mi - head7)));
+                    }
+                    mi++;
+                }
+                if (poslist.size() > 0) {
+                    bias.x -= poslist[0];
+                }
+                if (poslist.size() > 1) {
+                    bias.y -= poslist[1];
+                }
+                if (poslist.size() > 2) {
+                    bias.z -= poslist[2];
+                }
+                return;
+            }
             std::vector<std::string> raw;
             raw.clear();
             string form = "";
@@ -278,6 +324,10 @@ namespace worldedit {
             functions& funcs,
             BlockSource* blockSource,
             const BlockPos& pos) {
+            if (clipboard != nullptr) {
+                clipboard->getSet2(pos - bias).setBlock(pos, blockSource);
+                return;
+            }
             auto blockInstance = blockSource->getBlockInstance(pos);
             auto* rawBlock = getRawBlock(variables, funcs);
             auto* block = rawBlock->getBlock(variables, funcs);
