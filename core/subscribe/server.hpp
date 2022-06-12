@@ -27,22 +27,27 @@
 // #include "WorldEdit.h"
 
 namespace worldedit {
-    void serverSubscribe(){
-            Event::ServerStartedEvent::subscribe([](const Event::ServerStartedEvent) {
-        // Logger logger("MyPlugin");
-        // logger.warn << "Warning! Fail to do sth." << logger.endl;
-        auto& mod = worldedit::getMod();
-        Schedule::repeat(
-            [&]() {
-                for (auto& region : mod.playerRegionMap) {
-                    region.second->renderRegion();
-                }
-                mod.renderMVpos();
-            },
-            1);
-        return true;
-    });
+    void serverSubscribe() {
+        Event::ServerStartedEvent::subscribe([](const Event::ServerStartedEvent) {
+            // Logger logger("MyPlugin");
+            // logger.warn << "Warning! Fail to do sth." << logger.endl;
+            auto& mod = worldedit::getMod();
+            Schedule::repeat(
+                [&]() {
+                    auto allPlayers = Level::getAllPlayers();
+
+                    for (auto& player : allPlayers) {
+                        auto xuid = player->getXuid();
+                        if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end()) {
+                            mod.playerRegionMap[xuid]->renderRegion();
+                        }
+                    }
+                    mod.renderMVpos();
+                },
+                1);
+            return true;
+        });
     }
-}
+}  // namespace worldedit
 
 #endif  // WORLDEDIT_SERVER_H

@@ -26,33 +26,31 @@
 // #include <ScheduleAPI.h>
 // #include <DynamicCommandAPI.h>
 // #include "particle/Graphics.h"
-#include "WorldEdit.h"
 
 namespace worldedit {
 
-
-    void setBlockSimple(
-        BlockSource* blockSource,
-        const BlockPos& pos,
-        Block* block = const_cast<Block*>(BedrockBlocks::mAir),
-        Block* exblock = const_cast<Block*>(BedrockBlocks::mAir));
+    void setBlockSimple(BlockSource*    blockSource,
+                        const BlockPos& pos,
+                        Block*          block   = const_cast<Block*>(BedrockBlocks::mAir),
+                        Block*          exblock = const_cast<Block*>(BedrockBlocks::mAir));
 
     template <typename functions>
     void setFunction(std::unordered_map<::std::string, double>& variables,
-                     functions& funcs,
-                     const BoundingBox& boundingBox,
-                     const Vec3& playerPos,
-                     const BlockPos& pos,const Vec3& center) {
-        double lengthx = (boundingBox.bpos2.x - boundingBox.bpos1.x) * 0.5;
-        double lengthy = (boundingBox.bpos2.y - boundingBox.bpos1.y) * 0.5;
-        double lengthz = (boundingBox.bpos2.z - boundingBox.bpos1.z) * 0.5;
-        double centerx = (boundingBox.bpos2.x + boundingBox.bpos1.x) * 0.5;
-        double centery = (boundingBox.bpos2.y + boundingBox.bpos1.y) * 0.5;
-        double centerz = (boundingBox.bpos2.z + boundingBox.bpos1.z) * 0.5;
+                     functions&                                 funcs,
+                     const BoundingBox&                         boundingBox,
+                     const Vec3&                                playerPos,
+                     const BlockPos&                            pos,
+                     const Vec3&                                center) {
+        double lengthx = (boundingBox.max.x - boundingBox.min.x) * 0.5;
+        double lengthy = (boundingBox.max.y - boundingBox.min.y) * 0.5;
+        double lengthz = (boundingBox.max.z - boundingBox.min.z) * 0.5;
+        double centerx = (boundingBox.max.x + boundingBox.min.x) * 0.5;
+        double centery = (boundingBox.max.y + boundingBox.min.y) * 0.5;
+        double centerz = (boundingBox.max.z + boundingBox.min.z) * 0.5;
         funcs.setPos(pos);
-        variables["x"] = (pos.x - centerx) / lengthx;
-        variables["y"] = (pos.y - centery) / lengthy;
-        variables["z"] = (pos.z - centerz) / lengthz;
+        variables["x"]  = (pos.x - centerx) / lengthx;
+        variables["y"]  = (pos.y - centery) / lengthy;
+        variables["z"]  = (pos.z - centerz) / lengthz;
         variables["rx"] = pos.x;
         variables["ry"] = pos.y;
         variables["rz"] = pos.z;
@@ -64,13 +62,9 @@ namespace worldedit {
         variables["cz"] = pos.z - floor(center.z);
     }
 
-    bool changeVicePos(Player* player,
-                       BlockInstance blockInstance,
-                       bool output = true);
+    bool changeVicePos(Player* player, BlockInstance blockInstance, bool output = true);
 
-    bool changeMainPos(Player* player,
-                       BlockInstance blockInstance,
-                       bool output = true);
+    bool changeMainPos(Player* player, BlockInstance blockInstance, bool output = true);
 
 }  // namespace worldedit
 

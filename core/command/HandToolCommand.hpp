@@ -68,36 +68,33 @@ namespace worldedit {
                 {"none"},
             },
             // dynamic command callback
-            [](DynamicCommand const& command, CommandOrigin const& origin,
-               CommandOutput& output,
-               std::unordered_map<std::string, DynamicCommand::Result>&
-                   results) {
-                auto& mod = worldedit::getMod();
-                auto xuid = origin.getPlayer()->getXuid();
-                std::string toolName =
-                    origin.getPlayer()->getHandSlot()->getTypeName();
+            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+               std::unordered_map<std::string, DynamicCommand::Result>& results) {
+                auto&       mod       = worldedit::getMod();
+                auto        xuid      = origin.getPlayer()->getXuid();
+                std::string toolName  = origin.getPlayer()->getHandSlot()->getNbt()->toBinaryNBT();
+                std::string toolrName = origin.getPlayer()->getHandSlot()->getTypeName();
+                if (toolName == "") {
+                    output.error("You need to select an item");
+                    return;
+                }
                 if (results["tree"].isSet) {
-                    stringReplace(toolName, "minecraft:", "");
-                    output.success(
-                        fmt::format("§aTree tool bound to {}", toolName));
+                    stringReplace(toolrName, "minecraft:", "");
+                    output.success(fmt::format("§aTree tool bound to {}", toolrName));
                 } else if (results["deltree"].isSet) {
-                    stringReplace(toolName, "minecraft:", "");
-                    output.success(
-                        fmt::format("§aDeltree tool bound to {}", toolName));
+                    stringReplace(toolrName, "minecraft:", "");
+                    output.success(fmt::format("§aDeltree tool bound to {}", toolrName));
                 } else if (results["farwand"].isSet) {
                     mod.playerHandToolMap[xuid][toolName] = new FarWand();
-                    stringReplace(toolName, "minecraft:", "");
-                    output.success(
-                        fmt::format("§aFar wand tool bound to {}", toolName));
+                    stringReplace(toolrName, "minecraft:", "");
+                    output.success(fmt::format("§aFar wand tool bound to {}", toolrName));
                 } else if (results["cycler"].isSet) {
-                    stringReplace(toolName, "minecraft:", "");
-                    output.success(
-                        fmt::format("§aCycler tool bound to {}", toolName));
+                    stringReplace(toolrName, "minecraft:", "");
+                    output.success(fmt::format("§aCycler tool bound to {}", toolrName));
                 } else if (results["info"].isSet) {
                     mod.playerHandToolMap[xuid][toolName] = new InfoTool();
-                    stringReplace(toolName, "minecraft:", "");
-                    output.success(
-                        fmt::format("§aBlock info tool bound to {}", toolName));
+                    stringReplace(toolrName, "minecraft:", "");
+                    output.success(fmt::format("§aBlock info tool bound to {}", toolrName));
                 } else if (results["flood"].isSet) {
                 } else if (results["none"].isSet) {
                     delete mod.playerHandToolMap[xuid][toolName];

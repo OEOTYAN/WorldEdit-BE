@@ -1,26 +1,27 @@
+//
+// Created by OEOTYAN on 2022/06/10.
+//
 #include "CylinderRegion.h"
 #include "MC/Level.hpp"
 #include "MC/Dimension.hpp"
 namespace worldedit {
-    CylinderRegion::CylinderRegion(const BoundingBox& region, const int& dim)
-        : Region(region, dim) {
-        this->selecting = false;
-        hasY = false;
+    CylinderRegion::CylinderRegion(const BoundingBox& region, const int& dim) : Region(region, dim) {
+        this->selecting  = false;
+        hasY             = false;
         this->regionType = CYLINDER;
     }
 
     void CylinderRegion::updateBoundingBox() {
         if (hasY) {
-            auto range = Level::getDimension(dimensionID)->getHeightRange();
-            rendertick = 0;
-            auto newRadius = (int)(radius);
-            boundingBox.bpos1.x = center.x - newRadius;
-            boundingBox.bpos1.y = std::max(minY, static_cast<int>(range.min));
-            boundingBox.bpos1.z = center.z - newRadius;
-            boundingBox.bpos2.x = center.x + newRadius;
-            boundingBox.bpos2.y =
-                std::min(maxY, static_cast<int>(range.max) - 1);
-            boundingBox.bpos2.z = center.z + newRadius;
+            auto range        = Level::getDimension(dimensionID)->getHeightRange();
+            rendertick        = 0;
+            auto newRadius    = (int)(radius);
+            boundingBox.min.x = center.x - newRadius;
+            boundingBox.min.y = std::max(minY, static_cast<int>(range.min));
+            boundingBox.min.z = center.z - newRadius;
+            boundingBox.max.x = center.x + newRadius;
+            boundingBox.max.y = std::min(maxY, static_cast<int>(range.max) - 1);
+            boundingBox.max.z = center.z + newRadius;
         }
     }
 
@@ -41,13 +42,13 @@ namespace worldedit {
     }
 
     bool CylinderRegion::setMainPos(const BlockPos& pos, const int& dim) {
-        selecting = true;
-        hasY = false;
+        selecting      = true;
+        hasY           = false;
         selectedCenter = false;
         selectedRadius = false;
-        dimensionID = dim;
-        center = pos;
-        radius = 0.5;
+        dimensionID    = dim;
+        center         = pos;
+        radius         = 0.5;
         setY(pos.y);
         selectedCenter = true;
         selectedRadius = false;
@@ -61,9 +62,9 @@ namespace worldedit {
         }
         double disx = pos.x - center.x;
         double disz = pos.z - center.z;
-        double dis = sqrt(disx * disx + disz * disz);
+        double dis  = sqrt(disx * disx + disz * disz);
         if (dis >= radius) {
-            radius = static_cast<double>(dis) + 0.5f;
+            radius = static_cast<float>(dis + 0.5);
         }
         selectedRadius = true;
         setY(pos.y);
@@ -80,6 +81,56 @@ namespace worldedit {
         return disx * disx + disz * disz <= radius * radius;
     }
 
+    int CylinderRegion::checkChanges(const std::vector<BlockPos>& changes) {
+        int x = 0, z = 0;
+        for (auto change : changes) {
+            x += abs(change.x);
+            z += abs(change.z);
+        }
+        if (x == z) {
+            return x / 2;
+        }
+        return -1;
+    }
+
+    std::pair<std::string, bool> CylinderRegion::expand(const std::vector<BlockPos>& changes) {
+        int check = checkChanges(changes);
+        if (check == -1) {
+            return {"This region can only be expanded isotropically", false};
+        } else {
+            radius += check;
+        }
+        for (BlockPos change : changes) {
+            if (change.y > 0) {
+                maxY += change.y;
+            } else {
+                minY += change.y;
+            }
+        }
+        updateBoundingBox();
+        return {"§aThis region has been expanded", true};
+    }
+
+    std::pair<std::string, bool> CylinderRegion::contract(const std::vector<BlockPos>& changes) {
+        int check = checkChanges(changes);
+        if (check == -1) {
+            return {"This region can only be expanded isotropically", false};
+        } else {
+            radius -= check;
+            radius = std::max(radius, 0.5f);
+        }
+        for (BlockPos change : changes) {
+            int height = maxY - minY;
+            if (change.y > 0) {
+                minY += std::min(change.y, height);
+            } else {
+                maxY += std::max(change.y, -height);
+            }
+        }
+        updateBoundingBox();
+        return {"§aThis region has been contracted", true};
+    }
+
     std::pair<std::string, bool> CylinderRegion::shift(const BlockPos& change) {
         center = center + change;
         maxY += change.y;
@@ -90,56 +141,46 @@ namespace worldedit {
 
     void CylinderRegion::renderRegion() {
         if (selecting && dimensionID >= 0 && rendertick <= 0) {
-            rendertick = 40;
+            rendertick       = 40;
             BlockPos centery = center;
-            centery.y = maxY;
-            worldedit::spawnCuboidParticle(
-                {centery.toVec3(), centery.toVec3() + Vec3::ONE},
-                GRAPHIC_COLOR::GREEN, dimensionID);
+            centery.y        = maxY;
+            worldedit::spawnCuboidParticle({centery.toVec3(), centery.toVec3() + Vec3::ONE}, GRAPHIC_COLOR::GREEN,
+                                           dimensionID);
             centery.y = minY;
-            worldedit::spawnCuboidParticle(
-                {centery.toVec3(), centery.toVec3() + Vec3::ONE},
-                GRAPHIC_COLOR::GREEN, dimensionID);
+            worldedit::spawnCuboidParticle({centery.toVec3(), centery.toVec3() + Vec3::ONE}, GRAPHIC_COLOR::GREEN,
+                                           dimensionID);
             if (radius > 1.0f) {
-                centery = center;
+                centery   = center;
                 centery.y = maxY;
                 centery.x = center.x - (int)radius;
-                worldedit::spawnCuboidParticle(
-                    {centery.toVec3(), centery.toVec3() + Vec3::ONE},
-                    GRAPHIC_COLOR::GREEN, dimensionID);
+                worldedit::spawnCuboidParticle({centery.toVec3(), centery.toVec3() + Vec3::ONE}, GRAPHIC_COLOR::GREEN,
+                                               dimensionID);
                 centery.x = center.x + (int)radius;
-                worldedit::spawnCuboidParticle(
-                    {centery.toVec3(), centery.toVec3() + Vec3::ONE},
-                    GRAPHIC_COLOR::GREEN, dimensionID);
+                worldedit::spawnCuboidParticle({centery.toVec3(), centery.toVec3() + Vec3::ONE}, GRAPHIC_COLOR::GREEN,
+                                               dimensionID);
                 centery.x = center.x;
                 centery.z = center.z - (int)radius;
-                worldedit::spawnCuboidParticle(
-                    {centery.toVec3(), centery.toVec3() + Vec3::ONE},
-                    GRAPHIC_COLOR::GREEN, dimensionID);
+                worldedit::spawnCuboidParticle({centery.toVec3(), centery.toVec3() + Vec3::ONE}, GRAPHIC_COLOR::GREEN,
+                                               dimensionID);
                 centery.z = center.z + (int)radius;
-                worldedit::spawnCuboidParticle(
-                    {centery.toVec3(), centery.toVec3() + Vec3::ONE},
-                    GRAPHIC_COLOR::GREEN, dimensionID);
+                worldedit::spawnCuboidParticle({centery.toVec3(), centery.toVec3() + Vec3::ONE}, GRAPHIC_COLOR::GREEN,
+                                               dimensionID);
                 if (minY != maxY) {
                     centery.z = center.z;
                     centery.y = minY;
                     centery.x = center.x - (int)radius;
-                    worldedit::spawnCuboidParticle(
-                        {centery.toVec3(), centery.toVec3() + Vec3::ONE},
-                        GRAPHIC_COLOR::GREEN, dimensionID);
+                    worldedit::spawnCuboidParticle({centery.toVec3(), centery.toVec3() + Vec3::ONE},
+                                                   GRAPHIC_COLOR::GREEN, dimensionID);
                     centery.x = center.x + (int)radius;
-                    worldedit::spawnCuboidParticle(
-                        {centery.toVec3(), centery.toVec3() + Vec3::ONE},
-                        GRAPHIC_COLOR::GREEN, dimensionID);
+                    worldedit::spawnCuboidParticle({centery.toVec3(), centery.toVec3() + Vec3::ONE},
+                                                   GRAPHIC_COLOR::GREEN, dimensionID);
                     centery.x = center.x;
                     centery.z = center.z - (int)radius;
-                    worldedit::spawnCuboidParticle(
-                        {centery.toVec3(), centery.toVec3() + Vec3::ONE},
-                        GRAPHIC_COLOR::GREEN, dimensionID);
+                    worldedit::spawnCuboidParticle({centery.toVec3(), centery.toVec3() + Vec3::ONE},
+                                                   GRAPHIC_COLOR::GREEN, dimensionID);
                     centery.z = center.z + (int)radius;
-                    worldedit::spawnCuboidParticle(
-                        {centery.toVec3(), centery.toVec3() + Vec3::ONE},
-                        GRAPHIC_COLOR::GREEN, dimensionID);
+                    worldedit::spawnCuboidParticle({centery.toVec3(), centery.toVec3() + Vec3::ONE},
+                                                   GRAPHIC_COLOR::GREEN, dimensionID);
                 }
             }
         }

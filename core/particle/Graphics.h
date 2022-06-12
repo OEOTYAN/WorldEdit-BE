@@ -51,11 +51,7 @@ namespace worldedit {
 
     std::string facingToDirString(FACING facing);
 
-    void drawLine(const Vec3& originPoint,
-                  FACING direction,
-                  float length,
-                  GRAPHIC_COLOR color,
-                  int dimType = 0);
+    void drawLine(const Vec3& originPoint, FACING direction, float length, GRAPHIC_COLOR color, int dimType = 0);
     void drawOrientedLine(Vec3 start, Vec3 end, int dimType);
 }  // namespace worldedit
 

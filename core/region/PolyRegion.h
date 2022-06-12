@@ -11,20 +11,19 @@ namespace worldedit {
     class PolyRegion : public Region {
        public:
         std::vector<BlockPos> points;
-        int minY = -2100000000;
-        int maxY = -2100000000;
-        BlockPos mainPos{-2100000000, -2100000000, -2100000000};
+        int                   minY = -2100000000;
+        int                   maxY = -2100000000;
+        BlockPos              mainPos{-2100000000, -2100000000, -2100000000};
 
         void updateBoundingBox() override;
 
         explicit PolyRegion(const BoundingBox& region, const int& dim);
 
-        std::pair<std::string, bool> expand(
-            const std::vector<BlockPos>& changes) override;
+        std::pair<std::string, bool> expand(const std::vector<BlockPos>& changes) override;
 
-        std::pair<std::string, bool>  contract(const std::vector<BlockPos>& changes) override;
+        std::pair<std::string, bool> contract(const std::vector<BlockPos>& changes) override;
 
-        std::pair<std::string, bool>  shift(const BlockPos& change) override;
+        std::pair<std::string, bool> shift(const BlockPos& change) override;
 
         int size() const override;
 
@@ -35,8 +34,7 @@ namespace worldedit {
             for (auto& point : points) {
                 tmp = tmp + point;
             }
-            return Vec3(static_cast<double>(tmp.x) / points.size() + 0.5,
-                        static_cast<double>(maxY + minY) * 0.5 + 0.5,
+            return Vec3(static_cast<double>(tmp.x) / points.size() + 0.5, static_cast<double>(maxY + minY) * 0.5 + 0.5,
                         static_cast<double>(tmp.z) / points.size() + 0.5);
         };
 

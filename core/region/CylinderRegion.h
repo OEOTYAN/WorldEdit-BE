@@ -14,9 +14,10 @@ namespace worldedit {
     class CylinderRegion : public Region {
        private:
         BlockPos center = BlockPos::MIN;
-        float radius = 0.5;
-        int minY = 0, maxY = 0;
-        bool hasY = false, selectedCenter = false, selectedRadius = false;
+        float    radius = 0.5;
+        int      minY = 0, maxY = 0;
+        bool     hasY = false, selectedCenter = false, selectedRadius = false;
+        int      checkChanges(const std::vector<BlockPos>& changes);
 
        public:
         explicit CylinderRegion(const BoundingBox& region, const int& dim);
@@ -26,15 +27,12 @@ namespace worldedit {
         bool setY(int y);
 
         int size() const override {
-            return (int)std::round(__M__PI__ * (double)radius * (double)radius *
-                                   (maxY - minY + 1));
+            return (int)std::round(__M__PI__ * (double)radius * (double)radius * (maxY - minY + 1));
         };
 
-        // std::pair<std::string, bool> expand(
-        //     const std::vector<BlockPos>& changes) override;
+        std::pair<std::string, bool> expand(const std::vector<BlockPos>& changes) override;
 
-        // std::pair<std::string, bool> contract(
-        //     const std::vector<BlockPos>& changes) override;
+        std::pair<std::string, bool> contract(const std::vector<BlockPos>& changes) override;
 
         std::pair<std::string, bool> shift(const BlockPos& change) override;
 

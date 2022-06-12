@@ -5,15 +5,15 @@
 #ifndef WORLDEDIT_WORLDEDIT_H
 #define WORLDEDIT_WORLDEDIT_H
 
-// #ifndef DISABLE_CONSTRUCTOR_PREVENTION_BOUNDINGBOX
-// #define DISABLE_CONSTRUCTOR_PREVENTION_BOUNDINGBOX
-// #endif  //
-
 #include "pch.h"
 #include "region/Regions.h"
 #include "store/BlockNBTSet.hpp"
 #include "store/Clipboard.hpp"
 #include "tool/tool.h"
+#include "brush/Brush.h"
+
+#define WE_DIR "plugins/WorldEdit/"
+#define WE_PNG_DIR "plugins/WorldEdit/image/"
 
 namespace worldedit {
     class WE {
@@ -28,9 +28,10 @@ namespace worldedit {
                            std::pair<BlockPos, std::pair<int, int>>>
             playerVicePosMap;
         std::unordered_map<std::string, Clipboard> playerClipboardMap;
-        std::unordered_map<std::string,
-                           std::unordered_map<std::string, Tool*>>
+        std::unordered_map<std::string, std::unordered_map<std::string, Tool*>>
             playerHandToolMap;
+        std::unordered_map<std::string, std::unordered_map<std::string,Brush*>>
+            playerBrushMap;
         std::unordered_map<std::string, std::string> playerGMaskMap;
         std::unordered_map<
             std::string,

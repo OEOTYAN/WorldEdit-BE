@@ -7,25 +7,23 @@
 #include "MC/Dimension.hpp"
 namespace worldedit {
     void CuboidRegion::updateBoundingBox() {
-        auto range = Level::getDimension(dimensionID)->getHeightRange();
-        rendertick = 0;
-        boundingBox.bpos1.x = std::min(mainPos.x, vicePos.x);
-        boundingBox.bpos1.y = std::max(std::min(mainPos.y, vicePos.y),
-                                       static_cast<int>(range.min));
-        boundingBox.bpos1.z = std::min(mainPos.z, vicePos.z);
-        boundingBox.bpos2.x = std::max(mainPos.x, vicePos.x);
-        boundingBox.bpos2.y = std::min(std::max(mainPos.y, vicePos.y),
-                                       static_cast<int>(range.max) - 1);
-        boundingBox.bpos2.z = std::max(mainPos.z, vicePos.z);
-        boundingBox.bpos2.x = std::max(mainPos.x, vicePos.x);
+        auto range        = Level::getDimension(dimensionID)->getHeightRange();
+        rendertick        = 0;
+        boundingBox.min.x = std::min(mainPos.x, vicePos.x);
+        boundingBox.min.y = std::max(std::min(mainPos.y, vicePos.y), static_cast<int>(range.min));
+        boundingBox.min.z = std::min(mainPos.z, vicePos.z);
+        boundingBox.max.x = std::max(mainPos.x, vicePos.x);
+        boundingBox.max.y = std::min(std::max(mainPos.y, vicePos.y), static_cast<int>(range.max) - 1);
+        boundingBox.max.z = std::max(mainPos.z, vicePos.z);
+        boundingBox.max.x = std::max(mainPos.x, vicePos.x);
     }
 
     bool CuboidRegion::setMainPos(const BlockPos& pos, const int& dim) {
         if (mainPos != pos) {
             if (!selecting) {
                 dimensionID = dim;
-                vicePos = pos;
-                selecting = true;
+                vicePos     = pos;
+                selecting   = true;
             } else {
                 if (dim != dimensionID)
                     return false;
@@ -41,8 +39,8 @@ namespace worldedit {
         if (vicePos != pos) {
             if (!selecting) {
                 dimensionID = dim;
-                mainPos = pos;
-                selecting = true;
+                mainPos     = pos;
+                selecting   = true;
             } else {
                 if (dim != dimensionID)
                     return false;
@@ -54,8 +52,7 @@ namespace worldedit {
         return false;
     }
 
-    std::pair<std::string, bool> CuboidRegion::expand(
-        const std::vector<BlockPos>& changes) {
+    std::pair<std::string, bool> CuboidRegion::expand(const std::vector<BlockPos>& changes) {
         for (auto change : changes) {
             if (change.x > 0) {
                 if (std::max(mainPos.x, vicePos.x) == mainPos.x) {
@@ -105,8 +102,7 @@ namespace worldedit {
         return {"§aThis region has been expanded", true};
     }
 
-    std::pair<std::string, bool> CuboidRegion::contract(
-        const std::vector<BlockPos>& changes) {
+    std::pair<std::string, bool> CuboidRegion::contract(const std::vector<BlockPos>& changes) {
         for (auto change : changes) {
             if (change.x < 0) {
                 if (std::max(mainPos.x, vicePos.x) == mainPos.x) {
@@ -164,15 +160,14 @@ namespace worldedit {
     }
 
     CuboidRegion::CuboidRegion() : Region{BoundingBox(), -1} {
-        this->regionType = CUBOID;
+        this->regionType    = CUBOID;
         this->needResetVice = false;
     }
-    CuboidRegion::CuboidRegion(const BoundingBox& region, const int& dim)
-        : Region(region, dim) {
-        this->regionType = CUBOID;
-        this->mainPos = region.bpos1;
-        this->vicePos = region.bpos2;
-        this->selecting = true;
+    CuboidRegion::CuboidRegion(const BoundingBox& region, const int& dim) : Region(region, dim) {
+        this->regionType    = CUBOID;
+        this->mainPos       = region.min;
+        this->vicePos       = region.max;
+        this->selecting     = true;
         this->needResetVice = false;
     }
 }  // namespace worldedit

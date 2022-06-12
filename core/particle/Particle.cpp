@@ -12,17 +12,15 @@
 
 namespace worldedit {
 
-
     void spawnParticle(Vec3 p, std::string& type, int dimType) {
         auto allPlayers = Level::getAllPlayers();
-        for (auto& player : allPlayers){
-            player->sendSpawnParticleEffectPacket(p, dimType, type);
+        for (auto& player : allPlayers) {
+            if (player->getDimensionId() == dimType)
+                player->sendSpawnParticleEffectPacket(p, dimType, type);
         }
     }
 
-    void spawnCuboidParticle(const AABB& aabb,
-                             GRAPHIC_COLOR color,
-                             int dimType) {
+    void spawnCuboidParticle(const AABB& aabb, GRAPHIC_COLOR color, int dimType) {
         auto p1 = aabb.pointA, p2 = aabb.pointB;
         auto dx = p2.x - p1.x;
         auto dy = p2.y - p1.y;

@@ -31,35 +31,20 @@
 
 namespace worldedit {
 
-    double posfmod(double x, double y);
-
     class BlockNBTSet {
        public:
-        Block* block = const_cast<Block*>(BedrockBlocks::mAir);
-        Block* exblock = const_cast<Block*>(BedrockBlocks::mAir);
+        Block*      block   = const_cast<Block*>(BedrockBlocks::mAir);
+        Block*      exblock = const_cast<Block*>(BedrockBlocks::mAir);
         std::string blockEntity;
-        bool hasBlock = false;
-        bool hasBlockEntity = false;
-        BlockNBTSet() = default;
-        //BlockNBTSet& operator=(BlockNBTSet const&) = delete;
-        BlockNBTSet(BlockInstance& blockInstance) : hasBlock(true) {
-            block = blockInstance.getBlock();
-            exblock = &const_cast<Block&>(
-                          (blockInstance.getBlockSource()->getExtraBlock(
-                              blockInstance.getPosition())));
-            if (blockInstance.hasBlockEntity()) {
-                hasBlockEntity = true;
-                blockEntity =
-                    blockInstance.getBlockEntity()->getNbt()->toBinaryNBT();
-            }
-        }
+        bool        hasBlock       = false;
+        bool        hasBlockEntity = false;
+        BlockNBTSet()              = default;
+        // BlockNBTSet& operator=(BlockNBTSet const&) = delete;
+        BlockNBTSet(BlockInstance& blockInstance);
         Block* getBlock() const { return block; }
         Block* getExBlock() const { return exblock; }
-        void setBlock(const BlockPos& pos, BlockSource* blockSource) const;
-        void setBlock(const BlockPos& pos,
-                      BlockSource* blockSource,
-                      Rotation rotation,
-                      Mirror mirror) const;
+        void   setBlock(const BlockPos& pos, BlockSource* blockSource) const;
+        void   setBlock(const BlockPos& pos, BlockSource* blockSource, Rotation rotation, Mirror mirror) const;
     };
 }  // namespace worldedit
 

@@ -12,12 +12,11 @@ namespace worldedit {
        public:
         BlockPos mainPos = BlockPos::MIN;
         BlockPos vicePos = BlockPos::MIN;
-        void updateBoundingBox() override;
+        void     updateBoundingBox() override;
 
         explicit ExpandRegion(const BoundingBox& region, const int& dim);
 
-        std::pair<std::string, bool> expand(
-            const std::vector<BlockPos>& changes) override;
+        std::pair<std::string, bool> expand(const std::vector<BlockPos>& changes) override;
 
         std::pair<std::string, bool> contract(const std::vector<BlockPos>& changes) override;
 

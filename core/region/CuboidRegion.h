@@ -10,15 +10,14 @@
 namespace worldedit {
     class CuboidRegion : public Region {
        public:
-        BlockPos mainPos=BlockPos::MIN;
-        BlockPos vicePos=BlockPos::MIN;
-        void updateBoundingBox() override;
+        BlockPos mainPos = BlockPos::MIN;
+        BlockPos vicePos = BlockPos::MIN;
+        void     updateBoundingBox() override;
 
         explicit CuboidRegion(const BoundingBox& region, const int& dim);
         explicit CuboidRegion();
 
-        std::pair<std::string, bool> expand(
-            const std::vector<BlockPos>& changes) override;
+        std::pair<std::string, bool> expand(const std::vector<BlockPos>& changes) override;
 
         std::pair<std::string, bool> contract(const std::vector<BlockPos>& changes) override;
 

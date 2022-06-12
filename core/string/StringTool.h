@@ -16,8 +16,7 @@ namespace worldedit {
             out.precision(i);
             if (i < 23 && i > -1) {
                 if (j) {
-                    out << std::fixed << std::setw(i + 3) << std::setfill(' ')
-                        << a_value;
+                    out << std::fixed << std::setw(i + 3) << std::setfill(' ') << a_value;
                 } else {
                     out << std::fixed << a_value;
                 }
@@ -30,17 +29,14 @@ namespace worldedit {
         }
 
         std::string toLowerString(std::string str) {
-            transform(str.begin(), str.end(), str.begin(),
-                      (int (*)(int))tolower);
+            transform(str.begin(), str.end(), str.begin(), (int (*)(int))tolower);
             return str;
         }
 
-        void stringReplace(std::string& str,
-                           const std::string& fstr,
-                           const std::string& rep) {
+        void stringReplace(std::string& str, const std::string& fstr, const std::string& rep) {
             std::string::size_type pos = 0;
-            std::string::size_type a = fstr.length();
-            std::string::size_type b = rep.length();
+            std::string::size_type a   = fstr.length();
+            std::string::size_type b   = rep.length();
             if (b == 0)
                 while ((pos = str.find(fstr, pos)) != std::string::npos) {
                     str.erase(pos, a);

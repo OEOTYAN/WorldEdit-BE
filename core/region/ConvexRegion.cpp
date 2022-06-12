@@ -8,21 +8,17 @@
 #include "MC/Dimension.hpp"
 namespace worldedit {
     void ConvexRegion::updateBoundingBox() {
-        auto range = Level::getDimension(dimensionID)->getHeightRange();
-        rendertick = 0;
-        boundingBox.bpos1 = *vertices.begin();
-        boundingBox.bpos2 = *vertices.begin();
+        auto range      = Level::getDimension(dimensionID)->getHeightRange();
+        rendertick      = 0;
+        boundingBox.min = *vertices.begin();
+        boundingBox.max = *vertices.begin();
         for_each(vertices.begin(), vertices.end(), [&](BlockPos value) {
-            boundingBox.bpos1.x = std::min(boundingBox.bpos1.x, value.x);
-            boundingBox.bpos1.y =
-                std::max(std::min(boundingBox.bpos1.y, value.y),
-                         static_cast<int>(range.min));
-            boundingBox.bpos1.z = std::min(boundingBox.bpos1.z, value.z);
-            boundingBox.bpos2.x = std::max(boundingBox.bpos2.x, value.x);
-            boundingBox.bpos2.y =
-                std::min(std::max(boundingBox.bpos2.y, value.y),
-                         static_cast<int>(range.max) - 1);
-            boundingBox.bpos2.z = std::max(boundingBox.bpos2.z, value.z);
+            boundingBox.min.x = std::min(boundingBox.min.x, value.x);
+            boundingBox.min.y = std::max(std::min(boundingBox.min.y, value.y), static_cast<int>(range.min));
+            boundingBox.min.z = std::min(boundingBox.min.z, value.z);
+            boundingBox.max.x = std::max(boundingBox.max.x, value.x);
+            boundingBox.max.y = std::min(std::max(boundingBox.max.y, value.y), static_cast<int>(range.max) - 1);
+            boundingBox.max.z = std::max(boundingBox.max.z, value.z);
         });
     }
 
@@ -38,14 +34,13 @@ namespace worldedit {
         }
     }
 
-    ConvexRegion::ConvexRegion(const BoundingBox& region, const int& dim)
-        : Region(region, dim) {
+    ConvexRegion::ConvexRegion(const BoundingBox& region, const int& dim) : Region(region, dim) {
         vertices.clear();
         triangles.clear();
         vertexBacklog.clear();
         edges.clear();
-        hasLast = false;
-        centerAccum = BlockPos(0, 0, 0);
+        hasLast          = false;
+        centerAccum      = BlockPos(0, 0, 0);
         this->regionType = CONVEX;
     }
 
@@ -60,7 +55,7 @@ namespace worldedit {
             }
 
             if (triangle.above(pt)) {
-                hasLast = true;
+                hasLast      = true;
                 lastTriangle = triangle;
                 return false;
             }
@@ -97,10 +92,8 @@ namespace worldedit {
             case 3: {
                 std::vector<BlockPos> v;
                 v.assign(vertices.begin(), vertices.end());
-                triangles.emplace_back(
-                    Triangle(v[0].toVec3(), v[1].toVec3(), v[2].toVec3()));
-                triangles.emplace_back(
-                    Triangle(v[0].toVec3(), v[2].toVec3(), v[1].toVec3()));
+                triangles.emplace_back(Triangle(v[0].toVec3(), v[1].toVec3(), v[2].toVec3()));
+                triangles.emplace_back(Triangle(v[0].toVec3(), v[2].toVec3(), v[1].toVec3()));
                 updateEdges();
                 return true;
             };
@@ -141,8 +134,8 @@ namespace worldedit {
 
     bool ConvexRegion::setMainPos(const BlockPos& pos, const int& dim) {
         dimensionID = dim;
-        selecting = 1;
-        hasLast = false;
+        selecting   = 1;
+        hasLast     = false;
         vertices.clear();
         triangles.clear();
         vertexBacklog.clear();
@@ -159,8 +152,8 @@ namespace worldedit {
     }
 
     std::pair<std::string, bool> ConvexRegion::shift(const BlockPos& change) {
-        boundingBox.bpos1 = boundingBox.bpos1 + change;
-        boundingBox.bpos2 = boundingBox.bpos2 + change;
+        boundingBox.min  = boundingBox.min + change;
+        boundingBox.max  = boundingBox.max + change;
         auto tmpVertices = new std::unordered_set<BlockPos>(vertices);
         vertices.clear();
         for (auto vertice : *tmpVertices) {
@@ -176,23 +169,21 @@ namespace worldedit {
         auto tmpTriangles = new std::vector<Triangle>(triangles);
         triangles.clear();
         for (auto triangle : *tmpTriangles) {
-            triangles.emplace_back(
-                Triangle(triangle.vertices[0] + change.toVec3(),
-                         triangle.vertices[1] + change.toVec3(),
-                         triangle.vertices[2] + change.toVec3()));
+            triangles.emplace_back(Triangle(triangle.vertices[0] + change.toVec3(),
+                                            triangle.vertices[1] + change.toVec3(),
+                                            triangle.vertices[2] + change.toVec3()));
         }
         delete tmpTriangles;
         auto tmpEdges = new std::unordered_set<Edge, _hash>(edges);
         edges.clear();
         for (auto edge : *tmpEdges) {
-            edges.insert(
-                Edge(edge.start + change.toVec3(), edge.end + change.toVec3()));
+            edges.insert(Edge(edge.start + change.toVec3(), edge.end + change.toVec3()));
         }
         delete tmpEdges;
         centerAccum = centerAccum + change * (int)vertices.size();
-        hasLast = false;
+        hasLast     = false;
 
-        return {"§aThis region has been shifted",true};
+        return {"§aThis region has been shifted", true};
     }
 
     bool ConvexRegion::contains(const BlockPos& pos) {
@@ -200,7 +191,7 @@ namespace worldedit {
             return false;
         }
 
-        if (!pos.containedWithin(boundingBox.bpos1, boundingBox.bpos2)) {
+        if (!pos.containedWithin(boundingBox.min, boundingBox.max)) {
             return false;
         }
 
@@ -210,9 +201,7 @@ namespace worldedit {
     int ConvexRegion::size() const {
         double volume = 0;
         for (auto triangle : triangles) {
-            volume += triangle.getVertex(0)
-                          .cross(triangle.getVertex(1))
-                          .dot(triangle.getVertex(2));
+            volume += triangle.getVertex(0).cross(triangle.getVertex(1)).dot(triangle.getVertex(2));
         }
         return (int)std::abs(volume / 6.0);
     };
@@ -220,11 +209,10 @@ namespace worldedit {
     void ConvexRegion::renderRegion() {
         if (selecting && dimensionID >= 0 && rendertick <= 0) {
             rendertick = 40;
-            auto size = vertices.size();
+            auto size  = vertices.size();
             for (auto vertice : vertices)
-                worldedit::spawnCuboidParticle(
-                    {vertice.toVec3(), vertice.toVec3() + Vec3::ONE},
-                    GRAPHIC_COLOR::GREEN, dimensionID);
+                worldedit::spawnCuboidParticle({vertice.toVec3(), vertice.toVec3() + Vec3::ONE}, GRAPHIC_COLOR::GREEN,
+                                               dimensionID);
             for (auto edge : edges)
                 drawOrientedLine(edge.start, edge.end, dimensionID);
         }
@@ -232,8 +220,7 @@ namespace worldedit {
     };
 
     bool Edge::operator==(const Edge& other) const {
-        return (start == other.start && end == other.end) ||
-               (end == other.start && start == other.end);
+        return (start == other.start && end == other.end) || (end == other.start && start == other.end);
     }
 
     Triangle Edge::createTriangle(const Vec3& vertex) {
@@ -241,16 +228,14 @@ namespace worldedit {
     }
 
     Triangle::Triangle(const Vec3& v0, const Vec3& v1, const Vec3& v2) {
-        vertices[0] = v0;
-        vertices[1] = v1;
-        vertices[2] = v2;
-        normal = ((v1 - v0).cross(v2 - v0)).normalize();
-        maxDotProduct =
-            std::max(std::max(normal.dot(v0), normal.dot(v1)), normal.dot(v2));
+        vertices[0]   = v0;
+        vertices[1]   = v1;
+        vertices[2]   = v2;
+        normal        = ((v1 - v0).cross(v2 - v0)).normalize();
+        maxDotProduct = std::max(std::max(normal.dot(v0), normal.dot(v1)), normal.dot(v2));
     }
     bool Triangle::operator==(const Triangle& v) const {
-        return (v.maxDotProduct == maxDotProduct) && (v.normal == normal) &&
-               (v.vertices == vertices);
+        return (v.maxDotProduct == maxDotProduct) && (v.normal == normal) && (v.vertices == vertices);
     }
     Edge Triangle::getEdge(const int& index) {
         if (index == 2)

@@ -31,100 +31,10 @@
 // #include <MC/Packet.hpp>
 //#include <MC/NetworkIdentifier.hpp>
 #include <MC/AnimatePacket.hpp>
-// #include "WorldEdit.h"
+#include "WorldEdit.h"
 
 namespace worldedit {
-    void playerSubscribe() {
-        Event::PlayerUseItemOnEvent::subscribe(
-            [](const Event::PlayerUseItemOnEvent& ev) {
-                auto itemName = ev.mItemStack->getTypeName();
-                if (itemName == "minecraft:wooden_axe") {
-                    changeVicePos(ev.mPlayer, ev.mBlockInstance);
-                    return false;
-                }
-                auto& mod = worldedit::getMod();
-                auto xuid = ev.mPlayer->getXuid();
-                if (mod.playerHandToolMap.find(xuid) !=
-                        mod.playerHandToolMap.end() &&
-                    mod.playerHandToolMap[xuid].find(itemName) !=
-                        mod.playerHandToolMap[xuid].end()) {
-                    return false;
-                }
-                return true;
-            });
-        Event::PlayerUseItemEvent::subscribe(
-            [](const Event::PlayerUseItemEvent& ev) {
-                auto itemName = ev.mItemStack->getTypeName();
-                auto& mod = worldedit::getMod();
-                auto xuid = ev.mPlayer->getXuid();
-                if (mod.playerHandToolMap.find(xuid) !=
-                        mod.playerHandToolMap.end() &&
-                    mod.playerHandToolMap[xuid].find(itemName) !=
-                        mod.playerHandToolMap[xuid].end()) {
-                    bool requiereWater = true;
-                    if (Level::getBlock(BlockPos(ev.mPlayer->getPosition()),
-                                        ev.mPlayer->getDimensionId()) !=
-                        BedrockBlocks::mAir) {
-                        requiereWater = false;
-                    }
-                    BlockInstance blockInstance =
-                        ev.mPlayer->getBlockFromViewVector(
-                            requiereWater, false, 2048.0f, true, false);
-                    mod.playerHandToolMap[xuid][itemName]->rightClick(
-                        ev.mPlayer, blockInstance);
-                    return false;
-                }
-                return true;
-            });
-
-        Event::PlayerDestroyBlockEvent::subscribe(
-            [](const Event::PlayerDestroyBlockEvent& ev) {
-                auto itemName = ev.mPlayer->getHandSlot()->getTypeName();
-                if (itemName == "minecraft:wooden_axe") {
-                    changeMainPos(ev.mPlayer, ev.mBlockInstance);
-                    return false;
-                }
-                auto& mod = worldedit::getMod();
-                auto xuid = ev.mPlayer->getXuid();
-                if (mod.playerHandToolMap.find(xuid) !=
-                        mod.playerHandToolMap.end() &&
-                    mod.playerHandToolMap[xuid].find(itemName) !=
-                        mod.playerHandToolMap[xuid].end()) {
-                    return false;
-                }
-                return true;
-            });
-    }
+    void playerSubscribe();
 }  // namespace worldedit
-
-THook(void,
-      "?handle@ServerNetworkHandler@@UEAAXAEBVNetworkIdentifier@@"
-      "AEBVAnimatePacket@@@Z",
-      ServerNetworkHandler* serverNetworkHandler,
-      NetworkIdentifier const& networkIdentifier,
-      AnimatePacket const& animatePacket) {
-    if (animatePacket.mAction == AnimatePacket::Action::Swing) {
-        Player* player =
-            serverNetworkHandler->getServerPlayer(networkIdentifier);
-        auto& mod = worldedit::getMod();
-        auto itemName = player->getHandSlot()->getTypeName();
-        auto xuid = player->getXuid();
-        if (mod.playerHandToolMap.find(xuid) != mod.playerHandToolMap.end() &&
-            mod.playerHandToolMap[xuid].find(itemName) !=
-                mod.playerHandToolMap[xuid].end()) {
-            bool requiereWater = true;
-            if (Level::getBlock(BlockPos(player->getPosition()),
-                                player->getDimensionId()) !=
-                BedrockBlocks::mAir) {
-                requiereWater = false;
-            }
-            BlockInstance blockInstance = player->getBlockFromViewVector(
-                requiereWater, false, 2048.0f, true, false);
-            mod.playerHandToolMap[xuid][itemName]->leftClick(player,
-                                                             blockInstance);
-        }
-    }
-    return original(serverNetworkHandler, networkIdentifier, animatePacket);
-}
 
 #endif  // WORLDEDIT_PLAYER_H

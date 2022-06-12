@@ -7,33 +7,32 @@
 #include "MC/Dimension.hpp"
 namespace worldedit {
     void PolyRegion::updateBoundingBox() {
-        auto range = Level::getDimension(dimensionID)->getHeightRange();
-        rendertick = 0;
-        boundingBox.bpos1.y = std::max(minY, static_cast<int>(range.min));
-        boundingBox.bpos2.y = std::min(maxY, static_cast<int>(range.max) - 1);
+        auto range        = Level::getDimension(dimensionID)->getHeightRange();
+        rendertick        = 0;
+        boundingBox.min.y = std::max(minY, static_cast<int>(range.min));
+        boundingBox.max.y = std::min(maxY, static_cast<int>(range.max) - 1);
         ;
-        boundingBox.bpos1.x = points[0].x;
-        boundingBox.bpos1.z = points[0].z;
-        boundingBox.bpos2.x = points[0].x;
-        boundingBox.bpos2.z = points[0].z;
+        boundingBox.min.x = points[0].x;
+        boundingBox.min.z = points[0].z;
+        boundingBox.max.x = points[0].x;
+        boundingBox.max.z = points[0].z;
         for_each(points.begin(), points.end(), [&](BlockPos value) {
-            boundingBox.bpos1.x = std::min(boundingBox.bpos1.x, value.x);
-            boundingBox.bpos1.z = std::min(boundingBox.bpos1.z, value.z);
-            boundingBox.bpos2.x = std::max(boundingBox.bpos2.x, value.x);
-            boundingBox.bpos2.z = std::max(boundingBox.bpos2.z, value.z);
+            boundingBox.min.x = std::min(boundingBox.min.x, value.x);
+            boundingBox.min.z = std::min(boundingBox.min.z, value.z);
+            boundingBox.max.x = std::max(boundingBox.max.x, value.x);
+            boundingBox.max.z = std::max(boundingBox.max.z, value.z);
         });
     }
-    PolyRegion::PolyRegion(const BoundingBox& region, const int& dim)
-        : Region(region, dim) {
+    PolyRegion::PolyRegion(const BoundingBox& region, const int& dim) : Region(region, dim) {
         points.clear();
         this->regionType = POLY;
     }
     bool PolyRegion::setMainPos(const BlockPos& pos, const int& dim) {
-        mainPos = pos;
+        mainPos     = pos;
         dimensionID = dim;
-        selecting = 1;
-        minY = pos.y;
-        maxY = pos.y;
+        selecting   = 1;
+        minY        = pos.y;
+        maxY        = pos.y;
         points.clear();
         points.push_back({pos.x, 0, pos.z});
         updateBoundingBox();
@@ -57,8 +56,7 @@ namespace worldedit {
         updateBoundingBox();
         return true;
     }
-    std::pair<std::string, bool> PolyRegion::expand(
-        const std::vector<BlockPos>& changes) {
+    std::pair<std::string, bool> PolyRegion::expand(const std::vector<BlockPos>& changes) {
         for (BlockPos change : changes) {
             if (change.x != 0 || change.z != 0) {
                 return {"§aThis region can only expand vertically", false};
@@ -77,8 +75,7 @@ namespace worldedit {
         return {"§aThis region has been expanded", true};
     }
 
-    std::pair<std::string, bool> PolyRegion::contract(
-        const std::vector<BlockPos>& changes) {
+    std::pair<std::string, bool> PolyRegion::contract(const std::vector<BlockPos>& changes) {
         for (BlockPos change : changes) {
             if (change.x != 0 || change.z != 0) {
                 return {"§aThis region can only contract vertically", false};
@@ -93,7 +90,7 @@ namespace worldedit {
             }
         }
         updateBoundingBox();
-            return {"§aThis region has been contracted", true};
+        return {"§aThis region has been contracted", true};
     }
 
     std::pair<std::string, bool> PolyRegion::shift(const BlockPos& change) {
@@ -110,7 +107,7 @@ namespace worldedit {
 
     int PolyRegion::size() const {
         int area = 0;
-        int j = (int)points.size() - 1;
+        int j    = (int)points.size() - 1;
         for (int i = 0; i < points.size(); ++i) {
             int x = points[j].x + points[i].x;
             int z = points[j].z - points[i].z;
@@ -118,30 +115,25 @@ namespace worldedit {
             j = i;
         }
 
-        return (int)std::floor(std::abs((double)area * 0.5)) *
-               (maxY - minY + 1);
+        return (int)std::floor(std::abs((double)area * 0.5)) * (maxY - minY + 1);
     };
 
     void PolyRegion::renderRegion() {
         if (selecting && dimensionID >= 0 && rendertick <= 0) {
             rendertick = 40;
-            auto size = points.size();
+            auto size  = points.size();
             for (int i = 0; i < size; i++) {
                 worldedit::spawnCuboidParticle(
-                    {Vec3(points[i].x, minY, points[i].z),
-                     Vec3(points[i].x, maxY, points[i].z) + Vec3::ONE},
+                    {Vec3(points[i].x, minY, points[i].z), Vec3(points[i].x, maxY, points[i].z) + Vec3::ONE},
                     GRAPHIC_COLOR::GREEN, dimensionID);
             }
             for (int y : {minY, maxY}) {
                 for (int i = 0; i < size - 1; i++) {
-                    drawOrientedLine(Vec3(points[i].x, y, points[i].z),
-                                     Vec3(points[i + 1].x, y, points[i + 1].z),
+                    drawOrientedLine(Vec3(points[i].x, y, points[i].z), Vec3(points[i + 1].x, y, points[i + 1].z),
                                      dimensionID);
                 }
-                drawOrientedLine(
-                    Vec3(points[0].x, y, points[0].z),
-                    Vec3(points[size - 1].x, y, points[size - 1].z),
-                    dimensionID);
+                drawOrientedLine(Vec3(points[0].x, y, points[0].z), Vec3(points[size - 1].x, y, points[size - 1].z),
+                                 dimensionID);
             }
         }
         rendertick--;
@@ -151,13 +143,13 @@ namespace worldedit {
         if (points.size() < 3 || pos.y < minY || pos.y > maxY) {
             return false;
         }
-        bool inside = false;
-        int x1;
-        int z1;
-        int x2;
-        int z2;
+        bool      inside = false;
+        int       x1;
+        int       z1;
+        int       x2;
+        int       z2;
         long long crossproduct;
-        BlockPos point = points.back();
+        BlockPos  point = points.back();
 
         for (auto iter = points.cbegin(); iter != points.cend(); iter++) {
             auto value = *iter;
@@ -175,9 +167,8 @@ namespace worldedit {
                 z2 = point.z;
             }
             if (x1 <= pos.x && pos.x <= x2) {
-                crossproduct =
-                    ((long long)pos.z - (long long)z1) * (long long)(x2 - x1) -
-                    ((long long)z2 - (long long)z1) * (long long)(pos.x - x1);
+                crossproduct = ((long long)pos.z - (long long)z1) * (long long)(x2 - x1) -
+                               ((long long)z2 - (long long)z1) * (long long)(pos.x - x1);
                 if (crossproduct == 0) {
                     if ((z1 <= pos.z) == (pos.z <= z2)) {
                         return true;

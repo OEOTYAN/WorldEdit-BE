@@ -22,7 +22,7 @@
 // #include <ServerAPI.h>
 // #include <EventAPI.h>
 // #include <ScheduleAPI.h>
-#include <DynamicCommandAPI.h>
+// #include <DynamicCommandAPI.h>
 // #include "WorldEdit.h"
 
 namespace worldedit {
@@ -37,9 +37,7 @@ namespace worldedit {
             "change/clear region",  // command description
             {
                 // enums{enumName, {values...}}
-                {"region",
-                 {"cuboid", "extend", "poly", "sphere", "cylinder", "convex",
-                  "clear"}},
+                {"region", {"cuboid", "extend", "poly", "sphere", "cylinder", "convex", "clear"}},
             },
             {// parameters(type, name, [optional], [enumOptions(also
              // enumName)], [identifier]) identifier: used to identify unique
@@ -52,85 +50,61 @@ namespace worldedit {
                 {"region"},  // testenum <add|remove>
             },
             // dynamic command callback
-            [](DynamicCommand const& command, CommandOrigin const& origin,
-               CommandOutput& output,
-               std::unordered_map<std::string, DynamicCommand::Result>&
-                   results) {
+            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+               std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto& action = results["region"].get<std::string&>();
-                auto& mod = worldedit::getMod();
-                auto xuid = origin.getPlayer()->getXuid();
+                auto& mod    = worldedit::getMod();
+                auto  xuid   = origin.getPlayer()->getXuid();
                 if (action == "clear") {
-                    if (mod.playerRegionMap.find(xuid) !=
-                        mod.playerRegionMap.end()) {
+                    if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end()) {
                         mod.playerRegionMap[xuid]->selecting = false;
                     }
                     output.success("§aRegion has been cleared");
                 } else {
                     BoundingBox tmpbox;
-                    if (mod.playerRegionMap.find(xuid) !=
-                        mod.playerRegionMap.end()) {
+                    if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end()) {
                         tmpbox = mod.playerRegionMap[xuid]->getBoundBox();
                         delete mod.playerRegionMap[xuid];
                     }
                     switch (do_hash(action.c_str())) {
                         case do_hash("cuboid"):
-                            mod.playerRegionMap[xuid] =
-                                worldedit::Region::createRegion(
-                                    worldedit::CUBOID, tmpbox,
-                                    origin.getPlayer()->getDimensionId());
-                            output.success(
-                                "§aRegion has been switched to cuboid");
+                            mod.playerRegionMap[xuid] = worldedit::Region::createRegion(
+                                worldedit::CUBOID, tmpbox, origin.getPlayer()->getDimensionId());
+                            output.success("§aRegion has been switched to cuboid");
                             break;
                         case do_hash("extend"):
-                            mod.playerRegionMap[xuid] =
-                                worldedit::Region::createRegion(
-                                    worldedit::EXPAND, tmpbox,
-                                    origin.getPlayer()->getDimensionId());
-                            output.success(
-                                "§aRegion has been switched to extend");
+                            mod.playerRegionMap[xuid] = worldedit::Region::createRegion(
+                                worldedit::EXPAND, tmpbox, origin.getPlayer()->getDimensionId());
+                            output.success("§aRegion has been switched to extend");
                             break;
                         case do_hash("poly"):
-                            mod.playerRegionMap[xuid] =
-                                worldedit::Region::createRegion(
-                                    worldedit::POLY, tmpbox,
-                                    origin.getPlayer()->getDimensionId());
-                            output.success(
-                                "§aRegion has been switched to poly");
+                            mod.playerRegionMap[xuid] = worldedit::Region::createRegion(
+                                worldedit::POLY, tmpbox, origin.getPlayer()->getDimensionId());
+                            output.success("§aRegion has been switched to poly");
                             break;
                         case do_hash("sphere"):
-                            mod.playerRegionMap[xuid] =
-                                worldedit::Region::createRegion(
-                                    worldedit::SPHERE, tmpbox,
-                                    origin.getPlayer()->getDimensionId());
-                            output.success(
-                                "§aRegion has been switched to sphere");
+                            mod.playerRegionMap[xuid] = worldedit::Region::createRegion(
+                                worldedit::SPHERE, tmpbox, origin.getPlayer()->getDimensionId());
+                            output.success("§aRegion has been switched to sphere");
                             break;
                         case do_hash("cylinder"):
-                            mod.playerRegionMap[xuid] =
-                                worldedit::Region::createRegion(
-                                    worldedit::CYLINDER, tmpbox,
-                                    origin.getPlayer()->getDimensionId());
-                            output.success(
-                                "§aRegion has been switched to cylinder");
+                            mod.playerRegionMap[xuid] = worldedit::Region::createRegion(
+                                worldedit::CYLINDER, tmpbox, origin.getPlayer()->getDimensionId());
+                            output.success("§aRegion has been switched to cylinder");
                             break;
                         case do_hash("convex"):
-                            mod.playerRegionMap[xuid] =
-                                worldedit::Region::createRegion(
-                                    worldedit::CONVEX, tmpbox,
-                                    origin.getPlayer()->getDimensionId());
-                            output.success(
-                                "§aRegion has been switched to convex");
+                            mod.playerRegionMap[xuid] = worldedit::Region::createRegion(
+                                worldedit::CONVEX, tmpbox, origin.getPlayer()->getDimensionId());
+                            output.success("§aRegion has been switched to convex");
                             break;
                         default:
                             break;
                     }
                 }
-                if (mod.playerMainPosMap.find(xuid) !=
-                    mod.playerMainPosMap.end()) {
+                if (mod.playerMainPosMap.find(xuid) != mod.playerMainPosMap.end()) {
                     mod.playerMainPosMap.erase(xuid);
                 }
-                if (mod.playerVicePosMap.find(xuid) !=
-                    mod.playerVicePosMap.end()) {
+                if (mod.playerVicePosMap.find(xuid) != mod.playerVicePosMap.end()) {
                     mod.playerVicePosMap.erase(xuid);
                 }
             },
@@ -141,21 +115,17 @@ namespace worldedit {
             "set first position",  // command description
             {}, {ParamData("pos", ParamType::BlockPos, true, "pos")}, {{"pos"}},
             // dynamic command callback
-            [](DynamicCommand const& command, CommandOrigin const& origin,
-               CommandOutput& output,
-               std::unordered_map<std::string, DynamicCommand::Result>&
-                   results) {
-                auto& mod = worldedit::getMod();
-                auto player = origin.getPlayer();
+            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+               std::unordered_map<std::string, DynamicCommand::Result>& results) {
+                auto&         mod    = worldedit::getMod();
+                auto          player = origin.getPlayer();
                 BlockInstance blockInstance;
                 if (results["pos"].isSet) {
-                    auto pos = results["pos"].get<BlockPos>();
-                    blockInstance =
-                        Level::getBlockInstance(pos, player->getDimensionId());
+                    auto pos      = results["pos"].get<BlockPos>();
+                    blockInstance = Level::getBlockInstance(pos, player->getDimensionId());
                 } else {
-                    blockInstance = Level::getBlockInstance(
-                        player->getBlockPosCurrentlyStandingOn(player),
-                        player->getDimensionId());
+                    blockInstance = Level::getBlockInstance(player->getBlockPosCurrentlyStandingOn(player),
+                                                            player->getDimensionId());
                 }
                 changeMainPos(player, blockInstance);
             },
@@ -166,21 +136,17 @@ namespace worldedit {
             "set second position",  // command description
             {}, {ParamData("pos", ParamType::BlockPos, true, "pos")}, {{"pos"}},
             // dynamic command callback
-            [](DynamicCommand const& command, CommandOrigin const& origin,
-               CommandOutput& output,
-               std::unordered_map<std::string, DynamicCommand::Result>&
-                   results) {
-                auto& mod = worldedit::getMod();
-                auto player = origin.getPlayer();
+            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+               std::unordered_map<std::string, DynamicCommand::Result>& results) {
+                auto&         mod    = worldedit::getMod();
+                auto          player = origin.getPlayer();
                 BlockInstance blockInstance;
                 if (results["pos"].isSet) {
-                    auto pos = results["pos"].get<BlockPos>();
-                    blockInstance =
-                        Level::getBlockInstance(pos, player->getDimensionId());
+                    auto pos      = results["pos"].get<BlockPos>();
+                    blockInstance = Level::getBlockInstance(pos, player->getDimensionId());
                 } else {
-                    blockInstance = Level::getBlockInstance(
-                        player->getBlockPosCurrentlyStandingOn(player),
-                        player->getDimensionId());
+                    blockInstance = Level::getBlockInstance(player->getBlockPosCurrentlyStandingOn(player),
+                                                            player->getDimensionId());
                 }
                 changeVicePos(player, blockInstance);
             },
@@ -191,14 +157,11 @@ namespace worldedit {
             "set first position from view",  // command description
             {}, {}, {{}},
             // dynamic command callback
-            [](DynamicCommand const& command, CommandOrigin const& origin,
-               CommandOutput& output,
-               std::unordered_map<std::string, DynamicCommand::Result>&
-                   results) {
-                auto player = origin.getPlayer();
+            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+               std::unordered_map<std::string, DynamicCommand::Result>& results) {
+                auto          player = origin.getPlayer();
                 BlockInstance blockInstance;
-                blockInstance = player->getBlockFromViewVector(
-                    true, false, 2048.0f, true, false);
+                blockInstance = player->getBlockFromViewVector(true, false, 2048.0f, true, false);
                 changeMainPos(player, blockInstance);
             },
             CommandPermissionLevel::GameMasters);
@@ -208,14 +171,11 @@ namespace worldedit {
             "set second position from view",  // command description
             {}, {}, {{}},
             // dynamic command callback
-            [](DynamicCommand const& command, CommandOrigin const& origin,
-               CommandOutput& output,
-               std::unordered_map<std::string, DynamicCommand::Result>&
-                   results) {
-                auto player = origin.getPlayer();
+            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+               std::unordered_map<std::string, DynamicCommand::Result>& results) {
+                auto          player = origin.getPlayer();
                 BlockInstance blockInstance;
-                blockInstance = player->getBlockFromViewVector(
-                    true, false, 2048.0f, true, false);
+                blockInstance = player->getBlockFromViewVector(true, false, 2048.0f, true, false);
                 changeVicePos(player, blockInstance);
             },
             CommandPermissionLevel::GameMasters);
@@ -225,34 +185,30 @@ namespace worldedit {
             "select your chunk",  // command description
             {}, {}, {{}},
             // dynamic command callback
-            [](DynamicCommand const& command, CommandOrigin const& origin,
-               CommandOutput& output,
-               std::unordered_map<std::string, DynamicCommand::Result>&
-                   results) {
-                auto& mod = worldedit::getMod();
-                auto player = origin.getPlayer();
-                auto xuid = player->getXuid();
-                auto heightRange = player->getDimensionConst().getHeightRange();
-                if (mod.playerRegionMap.find(xuid) !=
-                    mod.playerRegionMap.end()) {
+            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+               std::unordered_map<std::string, DynamicCommand::Result>& results) {
+                auto& mod         = worldedit::getMod();
+                auto  player      = origin.getPlayer();
+                auto  xuid        = player->getXuid();
+                auto  heightRange = player->getDimensionConst().getHeightRange();
+                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
+                    mod.playerRegionMap[xuid]->hasSelected()) {
                     delete mod.playerRegionMap[xuid];
                 }
                 mod.playerRegionMap.erase(xuid);
                 BlockPos pos = player->getBlockPosCurrentlyStandingOn(player);
-                pos.x = (pos.x >> 4) << 4;
-                pos.z = (pos.z >> 4) << 4;
-                pos.y = heightRange.min;
+                pos.x        = (pos.x >> 4) << 4;
+                pos.z        = (pos.z >> 4) << 4;
+                pos.y        = heightRange.min;
 
                 BlockInstance blockInstance;
-                blockInstance =
-                    Level::getBlockInstance(pos, player->getDimensionId());
+                blockInstance = Level::getBlockInstance(pos, player->getDimensionId());
                 changeMainPos(player, blockInstance, false);
 
                 pos.x += 15;
                 pos.z += 15;
-                pos.y = heightRange.max - 1;
-                blockInstance =
-                    Level::getBlockInstance(pos, player->getDimensionId());
+                pos.y         = heightRange.max - 1;
+                blockInstance = Level::getBlockInstance(pos, player->getDimensionId());
                 changeVicePos(player, blockInstance, false);
 
                 output.success("§aThis chunk has been selected");
@@ -263,9 +219,7 @@ namespace worldedit {
             "contract",         // command name
             "contract region",  // command description
             {
-                {"dir",
-                 {"me", "back", "up", "down", "south", "north", "east",
-                  "west"}},
+                {"dir", {"me", "back", "up", "down", "south", "north", "east", "west"}},
             },
             {
                 ParamData("dir", ParamType::Enum, true, "dir"),
@@ -274,40 +228,34 @@ namespace worldedit {
             },
             {{"num", "dir", "numback"}},
             // dynamic command callback
-            [](DynamicCommand const& command, CommandOrigin const& origin,
-               CommandOutput& output,
-               std::unordered_map<std::string, DynamicCommand::Result>&
-                   results) {
-                auto& mod = worldedit::getMod();
-                auto player = origin.getPlayer();
-                auto xuid = player->getXuid();
-                if (mod.playerRegionMap.find(xuid) !=
-                    mod.playerRegionMap.end()) {
-                    int l = results["num"].get<int>();
+            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+               std::unordered_map<std::string, DynamicCommand::Result>& results) {
+                auto& mod    = worldedit::getMod();
+                auto  player = origin.getPlayer();
+                auto  xuid   = player->getXuid();
+                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
+                    mod.playerRegionMap[xuid]->hasSelected()) {
+                    int               l = results["num"].get<int>();
                     worldedit::FACING facing;
                     if (results["dir"].isSet) {
                         auto str = results["dir"].getRaw<std::string>();
                         if (str == "me") {
-                            facing = worldedit::dirToFacing(
-                                player->getViewVector(1.0f));
+                            facing = worldedit::dirToFacing(player->getViewVector(1.0f));
                         } else if (str == "back") {
-                            facing = worldedit::dirToFacing(
-                                player->getViewVector(1.0f));
+                            facing = worldedit::dirToFacing(player->getViewVector(1.0f));
                             facing = worldedit::invFacing(facing);
                         } else {
                             facing = worldedit::dirStringToFacing(str);
                         }
                     } else {
-                        facing =
-                            worldedit::dirToFacing(player->getViewVector(1.0f));
+                        facing = worldedit::dirToFacing(player->getViewVector(1.0f));
                     }
                     std::vector<BlockPos> list;
                     list.resize(0);
                     list.push_back(worldedit::facingToPos(facing, l));
                     if (results["numback"].isSet) {
-                        list.push_back(worldedit::facingToPos(
-                            worldedit::invFacing(facing),
-                            results["numback"].get<int>()));
+                        list.push_back(
+                            worldedit::facingToPos(worldedit::invFacing(facing), results["numback"].get<int>()));
                     }
                     auto res = mod.playerRegionMap[xuid]->contract(list);
                     if (res.second) {
@@ -324,9 +272,7 @@ namespace worldedit {
         DynamicCommand::setup(
             "expand",         // command name
             "expand region",  // command description
-            {{"dir",
-              {"me", "back", "up", "down", "south", "north", "east", "west"}},
-             {"vert", {"vert"}}},
+            {{"dir", {"me", "back", "up", "down", "south", "north", "east", "west"}}, {"vert", {"vert"}}},
             {
                 ParamData("dir", ParamType::Enum, true, "dir"),
                 ParamData("num", ParamType::Int, false, "num"),
@@ -335,59 +281,49 @@ namespace worldedit {
             },
             {{"num", "dir", "numback"}, {"vert"}},
             // dynamic command callback
-            [](DynamicCommand const& command, CommandOrigin const& origin,
-               CommandOutput& output,
-               std::unordered_map<std::string, DynamicCommand::Result>&
-                   results) {
-                auto& mod = worldedit::getMod();
-                auto player = origin.getPlayer();
-                auto xuid = player->getXuid();
-                if (mod.playerRegionMap.find(xuid) !=
-                    mod.playerRegionMap.end()) {
+            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+               std::unordered_map<std::string, DynamicCommand::Result>& results) {
+                auto& mod    = worldedit::getMod();
+                auto  player = origin.getPlayer();
+                auto  xuid   = player->getXuid();
+                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
+                    mod.playerRegionMap[xuid]->hasSelected()) {
                     std::vector<BlockPos> list;
                     list.resize(0);
                     if (results["vert"].isSet) {
-                        auto heightRange =
-                            player->getDimensionConst().getHeightRange();
-                        auto* region = mod.playerRegionMap[xuid];
-                        auto boundingBox = region->getBoundBox();
-                        list.push_back(BlockPos(
-                            0,
-                            std::min(boundingBox.bpos1.y - heightRange.min, 0),
-                            0));
-                        list.push_back(BlockPos(0, std::max(heightRange.max-boundingBox.bpos2.y-1,0), 0));
-                    }else{
-                        int l = results["num"].get<int>();
+                        auto  heightRange = player->getDimensionConst().getHeightRange();
+                        auto* region      = mod.playerRegionMap[xuid];
+                        auto  boundingBox = region->getBoundBox();
+                        list.push_back(BlockPos(0, std::min(boundingBox.min.y - heightRange.min, 0), 0));
+                        list.push_back(BlockPos(0, std::max(heightRange.max - boundingBox.max.y - 1, 0), 0));
+                    } else {
+                        int               l = results["num"].get<int>();
                         worldedit::FACING facing;
                         if (results["dir"].isSet) {
                             auto str = results["dir"].getRaw<std::string>();
                             if (str == "me") {
-                                facing = worldedit::dirToFacing(
-                                    player->getViewVector(1.0f));
+                                facing = worldedit::dirToFacing(player->getViewVector(1.0f));
                             } else if (str == "back") {
-                                facing = worldedit::dirToFacing(
-                                    player->getViewVector(1.0f));
+                                facing = worldedit::dirToFacing(player->getViewVector(1.0f));
                                 facing = worldedit::invFacing(facing);
                             } else {
                                 facing = worldedit::dirStringToFacing(str);
                             }
                         } else {
-                            facing = worldedit::dirToFacing(
-                                player->getViewVector(1.0f));
+                            facing = worldedit::dirToFacing(player->getViewVector(1.0f));
                         }
                         list.push_back(worldedit::facingToPos(facing, l));
                         if (results["numback"].isSet) {
-                            list.push_back(worldedit::facingToPos(
-                                worldedit::invFacing(facing),
-                                results["numback"].get<int>()));
+                            list.push_back(
+                                worldedit::facingToPos(worldedit::invFacing(facing), results["numback"].get<int>()));
                         }
                     }
-                        auto res = mod.playerRegionMap[xuid]->expand(list);
-                        if (res.second) {
-                            output.success(res.first);
-                        } else {
-                            output.error(res.first);
-                        }
+                    auto res = mod.playerRegionMap[xuid]->expand(list);
+                    if (res.second) {
+                        output.success(res.first);
+                    } else {
+                        output.error(res.first);
+                    }
                 } else {
                     output.error("You don't have a region yet");
                 }
@@ -398,43 +334,34 @@ namespace worldedit {
             "shift",         // command name
             "shift region",  // command description
             {
-                {"dir",
-                 {"me", "back", "up", "down", "south", "north", "east",
-                  "west"}},
+                {"dir", {"me", "back", "up", "down", "south", "north", "east", "west"}},
             },
-            {ParamData("dir", ParamType::Enum, true, "dir"),
-             ParamData("num", ParamType::Int, false, "num")},
+            {ParamData("dir", ParamType::Enum, true, "dir"), ParamData("num", ParamType::Int, false, "num")},
             {{"num", "dir"}},
             // dynamic command callback
-            [](DynamicCommand const& command, CommandOrigin const& origin,
-               CommandOutput& output,
-               std::unordered_map<std::string, DynamicCommand::Result>&
-                   results) {
-                auto& mod = worldedit::getMod();
-                auto player = origin.getPlayer();
-                auto xuid = player->getXuid();
-                if (mod.playerRegionMap.find(xuid) !=
-                    mod.playerRegionMap.end()) {
-                    int l = results["num"].get<int>();
+            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+               std::unordered_map<std::string, DynamicCommand::Result>& results) {
+                auto& mod    = worldedit::getMod();
+                auto  player = origin.getPlayer();
+                auto  xuid   = player->getXuid();
+                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
+                    mod.playerRegionMap[xuid]->hasSelected()) {
+                    int               l = results["num"].get<int>();
                     worldedit::FACING facing;
                     if (results["dir"].isSet) {
                         auto str = results["dir"].getRaw<std::string>();
                         if (str == "me") {
-                            facing = worldedit::dirToFacing(
-                                player->getViewVector(1.0f));
+                            facing = worldedit::dirToFacing(player->getViewVector(1.0f));
                         } else if (str == "back") {
-                            facing = worldedit::dirToFacing(
-                                player->getViewVector(1.0f));
+                            facing = worldedit::dirToFacing(player->getViewVector(1.0f));
                             facing = worldedit::invFacing(facing);
                         } else {
                             facing = worldedit::dirStringToFacing(str);
                         }
                     } else {
-                        facing =
-                            worldedit::dirToFacing(player->getViewVector(1.0f));
+                        facing = worldedit::dirToFacing(player->getViewVector(1.0f));
                     }
-                    auto res = mod.playerRegionMap[xuid]->shift(
-                        worldedit::facingToPos(facing, l));
+                    auto res = mod.playerRegionMap[xuid]->shift(worldedit::facingToPos(facing, l));
                     if (res.second) {
                         output.success(res.first);
                     } else {
@@ -449,21 +376,17 @@ namespace worldedit {
         DynamicCommand::setup(
             "outset",                   // command name
             "isotropic expand region",  // command description
-            {},
-            {ParamData("args", ParamType::String, true, "-hv"),
-             ParamData("num", ParamType::Int, false, "num")},
+            {}, {ParamData("args", ParamType::String, true, "-hv"), ParamData("num", ParamType::Int, false, "num")},
             {{"num", "args"}},
             // dynamic command callback
-            [](DynamicCommand const& command, CommandOrigin const& origin,
-               CommandOutput& output,
-               std::unordered_map<std::string, DynamicCommand::Result>&
-                   results) {
-                auto& mod = worldedit::getMod();
-                auto player = origin.getPlayer();
-                auto xuid = player->getXuid();
-                if (mod.playerRegionMap.find(xuid) !=
-                    mod.playerRegionMap.end()) {
-                    int l = results["num"].get<int>();
+            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+               std::unordered_map<std::string, DynamicCommand::Result>& results) {
+                auto& mod    = worldedit::getMod();
+                auto  player = origin.getPlayer();
+                auto  xuid   = player->getXuid();
+                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
+                    mod.playerRegionMap[xuid]->hasSelected()) {
+                    int                   l = results["num"].get<int>();
                     std::vector<BlockPos> list;
                     list.resize(0);
                     if (results["args"].isSet) {
@@ -503,21 +426,17 @@ namespace worldedit {
         DynamicCommand::setup(
             "inset",                      // command name
             "isotropic contract region",  // command description
-            {},
-            {ParamData("args", ParamType::String, true, "-hv"),
-             ParamData("num", ParamType::Int, false, "num")},
+            {}, {ParamData("args", ParamType::String, true, "-hv"), ParamData("num", ParamType::Int, false, "num")},
             {{"num", "args"}},
             // dynamic command callback
-            [](DynamicCommand const& command, CommandOrigin const& origin,
-               CommandOutput& output,
-               std::unordered_map<std::string, DynamicCommand::Result>&
-                   results) {
-                auto& mod = worldedit::getMod();
-                auto player = origin.getPlayer();
-                auto xuid = player->getXuid();
-                if (mod.playerRegionMap.find(xuid) !=
-                    mod.playerRegionMap.end()) {
-                    int l = results["num"].get<int>();
+            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+               std::unordered_map<std::string, DynamicCommand::Result>& results) {
+                auto& mod    = worldedit::getMod();
+                auto  player = origin.getPlayer();
+                auto  xuid   = player->getXuid();
+                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
+                    mod.playerRegionMap[xuid]->hasSelected()) {
+                    int                   l = results["num"].get<int>();
                     std::vector<BlockPos> list;
                     list.resize(0);
                     if (results["args"].isSet) {
