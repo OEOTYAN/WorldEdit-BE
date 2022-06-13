@@ -55,6 +55,32 @@ namespace worldedit {
         return t;
     }
 
+    std::unordered_map<mce::Color, int>& getBlockColorMap() {
+        static std::unordered_map<mce::Color, int> blockColorMap;
+
+        static bool lized = false;
+        if (!lized) {
+            blockColorMap[mce::Color(208, 214, 215)] = 0;
+            blockColorMap[mce::Color(224, 96, 0)]    = 1;
+            blockColorMap[mce::Color(170, 45, 160)]  = 2;
+            blockColorMap[mce::Color(30, 138, 200)]  = 3;
+            blockColorMap[mce::Color(240, 175, 13)]  = 4;
+            blockColorMap[mce::Color(93, 168, 16)]   = 5;
+            blockColorMap[mce::Color(215, 102, 145)] = 6;
+            blockColorMap[mce::Color(52, 56, 60)]    = 7;
+            blockColorMap[mce::Color(125, 125, 125)] = 8;
+            blockColorMap[mce::Color(13, 119, 136)]  = 9;
+            blockColorMap[mce::Color(100, 25, 157)]  = 10;
+            blockColorMap[mce::Color(40, 42, 144)]   = 11;
+            blockColorMap[mce::Color(96, 57, 25)]    = 12;
+            blockColorMap[mce::Color(72, 91, 31)]    = 13;
+            blockColorMap[mce::Color(144, 30, 30)]   = 14;
+            blockColorMap[mce::Color(2, 3, 7)]       = 15;
+            lized                                    = true;
+        }
+        return blockColorMap;
+    }
+
     std::unordered_map<int, std::string>& getBlockNameMap() {
         static std::unordered_map<int, std::string> blockName;
         return blockName;

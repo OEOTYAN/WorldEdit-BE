@@ -24,7 +24,9 @@ namespace cpp_eval {
     number eval(const char* expression, const ::std::unordered_map<::std::string, number>& variables);
 
     template <typename number, typename functions>
-    number eval(const char* expression, const ::std::unordered_map<::std::string, number>& variables, functions& funcs);
+    number eval(const char*                                        expression,
+                const ::std::unordered_map<::std::string, number>& variables,
+                functions const&                                   funcs);
 
     template <typename number>
     class dummy_functions {
@@ -51,7 +53,7 @@ namespace cpp_eval {
     template <typename number, typename functions>
     class evaler {
         const ::std::unordered_map<::std::string, number>& mVariables;
-        functions&                                         mFuncs;
+        functions const&                                         mFuncs;
         const char*                                        mCurrent;
         enum Type {
             LEFT_BRACKET        = '(',
@@ -344,7 +346,7 @@ namespace cpp_eval {
         }
 
        public:
-        evaler(const ::std::unordered_map<::std::string, number>& variables, functions& funcs)
+        evaler(const ::std::unordered_map<::std::string, number>& variables, functions const& funcs)
             : mVariables(variables), mFuncs(funcs) {}
 
         number operator()(const char* expr) {
@@ -360,7 +362,7 @@ namespace cpp_eval {
     template <typename number, typename functions>
     number eval(const char*                                        expression,
                 const ::std::unordered_map<::std::string, number>& variables,
-                functions&                                         funcs) {
+                functions const&                                         funcs) {
         return evaler<number, functions>(variables, funcs)(expression);
     }
 };  // namespace cpp_eval

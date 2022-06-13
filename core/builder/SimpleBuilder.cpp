@@ -36,11 +36,24 @@ namespace worldedit {
         BoundingBox box({pos.x - radius, pos.y, pos.z - radius}, {pos.x + radius, pos.y + height, pos.z + radius});
         long long   i = 0;
 
-        auto&       mod         = worldedit::getMod();
-        auto        blockSource = Level::getBlockSource(dim);
-        std::string gMask       = "";
-        if (mod.playerGMaskMap.find(xuid) != mod.playerGMaskMap.end()) {
-            gMask = mod.playerGMaskMap[xuid];
+        auto& mod         = worldedit::getMod();
+        auto  blockSource = Level::getBlockSource(dim);
+
+        INNERIZE_GMASK
+
+        std::function<void(EvalFunctions const&, std::unordered_map<std::string, double> const&,
+                           std::function<void()> const&)>
+            maskLambda;
+        if (mask != "") {
+            maskLambda = [&](const EvalFunctions& func, const std::unordered_map<std::string, double>& var,
+                             std::function<void()> const& todo) mutable {
+                if (cpp_eval::eval<double>(mask.c_str(), var, func) > 0.5) {
+                    todo();
+                }
+            };
+        } else {
+            maskLambda = [&](const EvalFunctions& func, const std::unordered_map<std::string, double>& var,
+                             std::function<void()> const& todo) mutable { todo(); };
         }
 
         auto          playerPos = Level::getPlayer(xuid)->getPosition();
@@ -76,75 +89,91 @@ namespace worldedit {
                     blockPos += {X, y, Yi};
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-                    if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5)
-                        if (mask == "" || cpp_eval::eval<double>(mask.c_str(), variables, f) > 0.5) {
+
+                    gMaskLambda(f, variables, [&]() mutable {
+                        maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
                             i++;
-                        }
+                        });
+                    });
 
                     blockPos.z = pos.z - Yi;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-                    if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5)
-                        if (mask == "" || cpp_eval::eval<double>(mask.c_str(), variables, f) > 0.5) {
+
+                    gMaskLambda(f, variables, [&]() mutable {
+                        maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
                             i++;
-                        }
+                        });
+                    });
 
                     blockPos.x = pos.x - X;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-                    if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5)
-                        if (mask == "" || cpp_eval::eval<double>(mask.c_str(), variables, f) > 0.5) {
+
+                    gMaskLambda(f, variables, [&]() mutable {
+                        maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
                             i++;
-                        }
+                        });
+                    });
 
                     blockPos.z = pos.z + Yi;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-                    if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5)
-                        if (mask == "" || cpp_eval::eval<double>(mask.c_str(), variables, f) > 0.5) {
+
+                    gMaskLambda(f, variables, [&]() mutable {
+                        maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
                             i++;
-                        }
+                        });
+                    });
 
                     blockPos.x = pos.x + Yi;
                     blockPos.z = pos.z + X;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-                    if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5)
-                        if (mask == "" || cpp_eval::eval<double>(mask.c_str(), variables, f) > 0.5) {
+
+                    gMaskLambda(f, variables, [&]() mutable {
+                        maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
                             i++;
-                        }
+                        });
+                    });
 
                     blockPos.z = pos.z - X;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-                    if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5)
-                        if (mask == "" || cpp_eval::eval<double>(mask.c_str(), variables, f) > 0.5) {
+
+                    gMaskLambda(f, variables, [&]() mutable {
+                        maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
                             i++;
-                        }
+                        });
+                    });
 
                     blockPos.x = pos.x - Yi;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-                    if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5)
-                        if (mask == "" || cpp_eval::eval<double>(mask.c_str(), variables, f) > 0.5) {
+
+                    gMaskLambda(f, variables, [&]() mutable {
+                        maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
                             i++;
-                        }
+                        });
+                    });
 
                     blockPos.z = pos.z + X;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-                    if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5)
-                        if (mask == "" || cpp_eval::eval<double>(mask.c_str(), variables, f) > 0.5) {
+
+                    gMaskLambda(f, variables, [&]() mutable {
+                        maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
                             i++;
-                        }
+                        });
+                    });
                 }
             }
             if (p >= 0) {
@@ -168,11 +197,24 @@ namespace worldedit {
         BoundingBox box(pos - radius, pos + radius);
         long long   i = 0;
 
-        auto&       mod         = worldedit::getMod();
-        auto        blockSource = Level::getBlockSource(dim);
-        std::string gMask       = "";
-        if (mod.playerGMaskMap.find(xuid) != mod.playerGMaskMap.end()) {
-            gMask = mod.playerGMaskMap[xuid];
+        auto& mod         = worldedit::getMod();
+        auto  blockSource = Level::getBlockSource(dim);
+
+        INNERIZE_GMASK
+
+        std::function<void(EvalFunctions const&, std::unordered_map<std::string, double> const&,
+                           std::function<void()> const&)>
+            maskLambda;
+        if (mask != "") {
+            maskLambda = [&](const EvalFunctions& func, const std::unordered_map<std::string, double>& var,
+                             std::function<void()> const& todo) mutable {
+                if (cpp_eval::eval<double>(mask.c_str(), var, func) > 0.5) {
+                    todo();
+                }
+            };
+        } else {
+            maskLambda = [&](const EvalFunctions& func, const std::unordered_map<std::string, double>& var,
+                             std::function<void()> const& todo) mutable { todo(); };
         }
 
         auto          playerPos = Level::getPlayer(xuid)->getPosition();
@@ -220,75 +262,91 @@ namespace worldedit {
                     blockPos += {x, y, z};
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-                    if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5)
-                        if (mask == "" || cpp_eval::eval<double>(mask.c_str(), variables, f) > 0.5) {
+
+                    gMaskLambda(f, variables, [&]() mutable {
+                        maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
                             i++;
-                        }
+                        });
+                    });
 
                     blockPos.y = pos.y - y;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-                    if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5)
-                        if (mask == "" || cpp_eval::eval<double>(mask.c_str(), variables, f) > 0.5) {
+
+                    gMaskLambda(f, variables, [&]() mutable {
+                        maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
                             i++;
-                        }
+                        });
+                    });
 
                     blockPos.z = pos.z - z;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-                    if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5)
-                        if (mask == "" || cpp_eval::eval<double>(mask.c_str(), variables, f) > 0.5) {
+
+                    gMaskLambda(f, variables, [&]() mutable {
+                        maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
                             i++;
-                        }
+                        });
+                    });
 
                     blockPos.x = pos.x - x;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-                    if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5)
-                        if (mask == "" || cpp_eval::eval<double>(mask.c_str(), variables, f) > 0.5) {
+
+                    gMaskLambda(f, variables, [&]() mutable {
+                        maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
                             i++;
-                        }
+                        });
+                    });
 
                     blockPos.y = pos.y + y;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-                    if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5)
-                        if (mask == "" || cpp_eval::eval<double>(mask.c_str(), variables, f) > 0.5) {
+
+                    gMaskLambda(f, variables, [&]() mutable {
+                        maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
                             i++;
-                        }
+                        });
+                    });
 
                     blockPos.x = pos.x + x;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-                    if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5)
-                        if (mask == "" || cpp_eval::eval<double>(mask.c_str(), variables, f) > 0.5) {
+
+                    gMaskLambda(f, variables, [&]() mutable {
+                        maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
                             i++;
-                        }
+                        });
+                    });
 
                     blockPos.x = pos.x - x;
                     blockPos.z = pos.z + z;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-                    if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5)
-                        if (mask == "" || cpp_eval::eval<double>(mask.c_str(), variables, f) > 0.5) {
+
+                    gMaskLambda(f, variables, [&]() mutable {
+                        maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
                             i++;
-                        }
+                        });
+                    });
 
                     blockPos.y = pos.y - y;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-                    if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5)
-                        if (mask == "" || cpp_eval::eval<double>(mask.c_str(), variables, f) > 0.5) {
+
+                    gMaskLambda(f, variables, [&]() mutable {
+                        maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
                             i++;
-                        }
+                        });
+                    });
                 }
             }
         }
@@ -305,11 +363,24 @@ namespace worldedit {
         BoundingBox box(pos - size, pos + size);
         long long   i = 0;
 
-        auto&       mod         = worldedit::getMod();
-        auto        blockSource = Level::getBlockSource(dim);
-        std::string gMask       = "";
-        if (mod.playerGMaskMap.find(xuid) != mod.playerGMaskMap.end()) {
-            gMask = mod.playerGMaskMap[xuid];
+        auto& mod         = worldedit::getMod();
+        auto  blockSource = Level::getBlockSource(dim);
+
+        INNERIZE_GMASK
+
+        std::function<void(EvalFunctions const&, std::unordered_map<std::string, double> const&,
+                           std::function<void()> const&)>
+            maskLambda;
+        if (mask != "") {
+            maskLambda = [&](const EvalFunctions& func, const std::unordered_map<std::string, double>& var,
+                             std::function<void()> const& todo) mutable {
+                if (cpp_eval::eval<double>(mask.c_str(), var, func) > 0.5) {
+                    todo();
+                }
+            };
+        } else {
+            maskLambda = [&](const EvalFunctions& func, const std::unordered_map<std::string, double>& var,
+                             std::function<void()> const& todo) mutable { todo(); };
         }
 
         auto          playerPos = Level::getPlayer(xuid)->getPosition();
@@ -333,11 +404,13 @@ namespace worldedit {
             if (!hollow || (blockPos.x == box.min.x || blockPos.x == box.max.x || blockPos.y == box.min.y ||
                             blockPos.y == box.max.y || blockPos.z == box.min.z || blockPos.z == box.max.z)) {
                 setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-                if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5)
-                    if (mask == "" || cpp_eval::eval<double>(mask.c_str(), variables, f) > 0.5) {
+
+                gMaskLambda(f, variables, [&]() mutable {
+                    maskLambda(f, variables, [&]() mutable {
                         blockPattern->setBlock(variables, f, blockSource, blockPos);
                         i++;
-                    }
+                    });
+                });
             }
         });
         return i;

@@ -54,9 +54,9 @@ namespace worldedit {
         variables["rx"] = pos.x;
         variables["ry"] = pos.y;
         variables["rz"] = pos.z;
-        variables["ox"] = pos.x - floor(playerPos.x);
-        variables["oy"] = pos.y - floor(playerPos.y);
-        variables["oz"] = pos.z - floor(playerPos.z);
+        variables["ox"] = pos.x - playerPos.x;
+        variables["oy"] = pos.y - playerPos.y;
+        variables["oz"] = pos.z - playerPos.z;
         variables["cx"] = pos.x - floor(center.x);
         variables["cy"] = pos.y - floor(center.y);
         variables["cz"] = pos.z - floor(center.z);

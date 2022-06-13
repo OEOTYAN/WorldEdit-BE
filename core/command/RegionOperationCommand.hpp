@@ -15,7 +15,7 @@ namespace worldedit {
     using ParamData = DynamicCommand::ParameterData;
 
     // set rep center stack move gen walls faces overlay naturalize hollow
-    // smooth | deform
+    // smooth image | deform
 
     void regionOperationCommandSetup() {
         DynamicCommand::setup(
@@ -51,10 +51,7 @@ namespace worldedit {
 
                     long long i = 0;
 
-                    std::string gMask = "";
-                    if (mod.playerGMaskMap.find(xuid) != mod.playerGMaskMap.end()) {
-                        gMask = mod.playerGMaskMap[xuid];
-                    }
+                    INNERIZE_GMASK
 
                     auto          playerPos = origin.getPlayer()->getPosition();
                     EvalFunctions f;
@@ -72,10 +69,10 @@ namespace worldedit {
 
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
-                        if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5) {
+                        gMaskLambda(f, variables, [&]() mutable {
                             blockPattern.setBlock(variables, f, blockSource, pos);
                             i++;
-                        }
+                        });
                     });
 
                     output.success(fmt::format("§a{} block(s) placed", i));
@@ -123,10 +120,7 @@ namespace worldedit {
 
                     long long i = 0;
 
-                    std::string gMask = "";
-                    if (mod.playerGMaskMap.find(xuid) != mod.playerGMaskMap.end()) {
-                        gMask = mod.playerGMaskMap[xuid];
-                    }
+                    INNERIZE_GMASK
 
                     auto          playerPos = origin.getPlayer()->getPosition();
                     EvalFunctions f;
@@ -150,11 +144,12 @@ namespace worldedit {
                     BlockPattern blockFilter(bps2);
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
-                        if ((gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5) &&
-                            blockFilter.hasBlock(const_cast<Block*>(&blockSource->getBlock(pos)))) {
-                            blockPattern.setBlock(variables, f, blockSource, pos);
-                            i++;
-                        }
+                        gMaskLambda(f, variables, [&]() mutable {
+                            if (blockFilter.hasBlock(const_cast<Block*>(&blockSource->getBlock(pos)))) {
+                                blockPattern.setBlock(variables, f, blockSource, pos);
+                                i++;
+                            }
+                        });
                     });
 
                     output.success(fmt::format("§a{} block(s) replaced", i));
@@ -300,10 +295,7 @@ namespace worldedit {
 
                     long long i = 0;
 
-                    std::string gMask = "";
-                    if (mod.playerGMaskMap.find(xuid) != mod.playerGMaskMap.end()) {
-                        gMask = mod.playerGMaskMap[xuid];
-                    }
+                    INNERIZE_GMASK
 
                     auto          playerPos = origin.getPlayer()->getPosition();
                     EvalFunctions f;
@@ -315,10 +307,10 @@ namespace worldedit {
                             auto pos = posk + movingVec * j;
                             setFunction(variables, f, boundingBox, playerPos, pos, center);
                             if ((arg_a && (&blockSource->getBlock(posk) != BedrockBlocks::mAir)) || !arg_a)
-                                if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5) {
+                                gMaskLambda(f, variables, [&]() mutable {
                                     setBlockSimple(blockSource, pos, const_cast<Block*>(&blockSource->getBlock(posk)));
                                     i++;
-                                }
+                                });
                         }
                     });
                     if (arg_s) {
@@ -411,10 +403,7 @@ namespace worldedit {
 
                     long long i = 0;
 
-                    std::string gMask = "";
-                    if (mod.playerGMaskMap.find(xuid) != mod.playerGMaskMap.end()) {
-                        gMask = mod.playerGMaskMap[xuid];
-                    }
+                    INNERIZE_GMASK
 
                     auto          playerPos = origin.getPlayer()->getPosition();
                     EvalFunctions f;
@@ -432,10 +421,10 @@ namespace worldedit {
                     region->forEachBlockInRegion([&](const BlockPos& posk) {
                         auto pos = posk + faceVec;
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
-                        if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5) {
+                        gMaskLambda(f, variables, [&]() mutable {
                             blockPattern.setBlock(variables, f, blockSource, posk);
                             i++;
-                        }
+                        });
                     });
 
                     region->forEachBlockInRegion([&](const BlockPos& posk) {
@@ -444,9 +433,7 @@ namespace worldedit {
                         auto block    = history->getSet(localPos).getBlock();
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
                         if ((arg_a && (block != BedrockBlocks::mAir)) || !arg_a)
-                            if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5) {
-                                setBlockSimple(blockSource, pos, block);
-                            }
+                            gMaskLambda(f, variables, [&]() mutable { setBlockSimple(blockSource, pos, block); });
                     });
                     if (arg_s) {
                         mod.playerRegionMap[xuid]->shift(faceVec);
@@ -504,10 +491,7 @@ namespace worldedit {
 
                     long long i = 0;
 
-                    std::string gMask = "";
-                    if (mod.playerGMaskMap.find(xuid) != mod.playerGMaskMap.end()) {
-                        gMask = mod.playerGMaskMap[xuid];
-                    }
+                    INNERIZE_GMASK
 
                     auto genfunc = results["function"].get<std::string>();
 
@@ -526,13 +510,13 @@ namespace worldedit {
 
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
-                        if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5) {
+                        gMaskLambda(f, variables, [&]() mutable {
                             auto localPos = pos - boundingBox.min + 1;
                             if (cpp_eval::eval<double>(genfunc.c_str(), variables, f) > 0.5) {
                                 tmp[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x] = true;
                             }
                             caled[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x] = true;
-                        }
+                        });
                     });
 
                     if (arg_h) {
@@ -618,10 +602,7 @@ namespace worldedit {
 
                     long long i = 0;
 
-                    std::string gMask = "";
-                    if (mod.playerGMaskMap.find(xuid) != mod.playerGMaskMap.end()) {
-                        gMask = mod.playerGMaskMap[xuid];
-                    }
+                    INNERIZE_GMASK
 
                     auto          playerPos = origin.getPlayer()->getPosition();
                     EvalFunctions f;
@@ -638,7 +619,7 @@ namespace worldedit {
                     BlockPattern blockPattern(bps, xuid, region);
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
-                        if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5) {
+                        gMaskLambda(f, variables, [&]() mutable {
                             int counts = 0;
                             for (auto& calPos : pos.getNeighbors()) {
                                 if (calPos.y <= boundingBox.max.y && calPos.y >= boundingBox.min.y) {
@@ -651,7 +632,7 @@ namespace worldedit {
                                 blockPattern.setBlock(variables, f, blockSource, pos);
                                 i++;
                             }
-                        }
+                        });
                     });
 
                     output.success(fmt::format("§a{} block(s) placed", i));
@@ -694,10 +675,7 @@ namespace worldedit {
 
                     long long i = 0;
 
-                    std::string gMask = "";
-                    if (mod.playerGMaskMap.find(xuid) != mod.playerGMaskMap.end()) {
-                        gMask = mod.playerGMaskMap[xuid];
-                    }
+                    INNERIZE_GMASK
 
                     auto          playerPos = origin.getPlayer()->getPosition();
                     EvalFunctions f;
@@ -713,7 +691,7 @@ namespace worldedit {
                     BlockPattern blockPattern(bps, xuid, region);
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
-                        if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5) {
+                        gMaskLambda(f, variables, [&]() mutable {
                             int counts = 0;
                             for (auto& calPos : pos.getNeighbors()) {
                                 counts += region->contains(calPos);
@@ -722,7 +700,7 @@ namespace worldedit {
                                 blockPattern.setBlock(variables, f, blockSource, pos);
                                 i++;
                             }
-                        }
+                        });
                     });
 
                     output.success(fmt::format("§a{} block(s) placed", i));
@@ -765,10 +743,7 @@ namespace worldedit {
 
                     long long i = 0;
 
-                    std::string gMask = "";
-                    if (mod.playerGMaskMap.find(xuid) != mod.playerGMaskMap.end()) {
-                        gMask = mod.playerGMaskMap[xuid];
-                    }
+                    INNERIZE_GMASK
 
                     auto          playerPos = origin.getPlayer()->getPosition();
                     EvalFunctions f;
@@ -784,10 +759,10 @@ namespace worldedit {
                     BlockPattern blockPattern(bps, xuid, region);
                     region->forTopBlockInRegion([&](const BlockPos& pos) {
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
-                        if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5) {
+                        gMaskLambda(f, variables, [&]() mutable {
                             blockPattern.setBlock(variables, f, blockSource, pos);
                             i++;
-                        }
+                        });
                     });
                     output.success(fmt::format("§a{} block(s) placed", i));
                 } else {
@@ -824,10 +799,7 @@ namespace worldedit {
                         history->storeBlock(blockInstance, localPos);
                     });
 
-                    std::string gMask = "";
-                    if (mod.playerGMaskMap.find(xuid) != mod.playerGMaskMap.end()) {
-                        gMask = mod.playerGMaskMap[xuid];
-                    }
+                    INNERIZE_GMASK
 
                     auto          playerPos = origin.getPlayer()->getPosition();
                     EvalFunctions f;
@@ -839,17 +811,16 @@ namespace worldedit {
                         BlockPos pos(posk.x, posk.y - 1, posk.z);
                         if (&blockSource->getBlock(pos) == VanillaBlocks::mStone && region->contains(pos)) {
                             setFunction(variables, f, boundingBox, playerPos, pos, center);
-                            if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5) {
-                                setBlockSimple(blockSource, pos, VanillaBlocks::mGrass);
-                            }
+                            gMaskLambda(f, variables,
+                                        [&]() mutable { setBlockSimple(blockSource, pos, VanillaBlocks::mGrass); });
                         }
                         for (int mY = -2; mY >= -4; mY--) {
                             BlockPos pos(posk.x, posk.y + mY, posk.z);
                             if (&blockSource->getBlock(pos) == VanillaBlocks::mStone && region->contains(pos)) {
                                 setFunction(variables, f, boundingBox, playerPos, pos, center);
-                                if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5) {
+                                gMaskLambda(f, variables, [&]() mutable {
                                     setBlockSimple(blockSource, pos, const_cast<Block*>(VanillaBlocks::mDirt));
-                                }
+                                });
                             }
                         }
                     });
@@ -896,10 +867,7 @@ namespace worldedit {
                         history->storeBlock(blockInstance, localPos);
                     });
 
-                    std::string gMask = "";
-                    if (mod.playerGMaskMap.find(xuid) != mod.playerGMaskMap.end()) {
-                        gMask = mod.playerGMaskMap[xuid];
-                    }
+                    INNERIZE_GMASK
 
                     auto sizeDim = boundingBox.max - boundingBox.min + 3;
 
@@ -954,13 +922,13 @@ namespace worldedit {
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
                         auto localPos = pos - boundingBox.min + 1;
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
-                        if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5) {
+                        gMaskLambda(f, variables, [&]() mutable {
                             auto localPos = pos - boundingBox.min + 1;
                             if (tmp[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x]) {
                                 blockPattern.setBlock(variables, f, blockSource, pos);
                                 i++;
                             }
-                        }
+                        });
                     });
                     output.success(fmt::format("§a{} block(s) hollowed", i));
                 } else {
@@ -1020,7 +988,18 @@ namespace worldedit {
         DynamicCommand::setup(
             "image",      // command name
             "set image",  // command description
-            {}, {ParamData("file", ParamType::String, "file")}, {{"file"}},
+            {
+                {"fliptype", {"none", "flipu", "flipv", "flipuv"}},
+                {"rotation", {"none", "rotate90", "rotate180", "rotate270"}},
+            },
+            {
+                ParamData("file", ParamType::String, "file"),
+                ParamData("fliptype", ParamType::Enum, true, "fliptype"),
+                ParamData("rotation", ParamType::Enum, true, "rotation"),
+            },
+            {
+                {"file"},
+            },
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
@@ -1049,28 +1028,9 @@ namespace worldedit {
                         history->storeBlock(blockInstance, localPos);
                     });
 
-                    std::string gMask = "";
-                    if (mod.playerGMaskMap.find(xuid) != mod.playerGMaskMap.end()) {
-                        gMask = mod.playerGMaskMap[xuid];
-                    }
+                    INNERIZE_GMASK
 
-                    std::unordered_map<mce::Color, int> blockColorMap;
-                    blockColorMap[mce::Color(208, 214, 215)] = 0;
-                    blockColorMap[mce::Color(224, 96, 0)]    = 1;
-                    blockColorMap[mce::Color(170, 45, 160)]  = 2;
-                    blockColorMap[mce::Color(30, 138, 200)]  = 3;
-                    blockColorMap[mce::Color(240, 175, 13)]  = 4;
-                    blockColorMap[mce::Color(93, 168, 16)]   = 5;
-                    blockColorMap[mce::Color(215, 102, 145)] = 6;
-                    blockColorMap[mce::Color(52, 56, 60)]    = 7;
-                    blockColorMap[mce::Color(125, 125, 125)] = 8;
-                    blockColorMap[mce::Color(13, 119, 136)]  = 9;
-                    blockColorMap[mce::Color(100, 25, 157)]  = 10;
-                    blockColorMap[mce::Color(40, 42, 144)]   = 11;
-                    blockColorMap[mce::Color(96, 57, 25)]    = 12;
-                    blockColorMap[mce::Color(72, 91, 31)]    = 13;
-                    blockColorMap[mce::Color(144, 30, 30)]   = 14;
-                    blockColorMap[mce::Color(2, 3, 7)]       = 15;
+                    auto blockColorMap = getBlockColorMap();
 
                     auto          playerPos = origin.getPlayer()->getPosition();
                     EvalFunctions f;
@@ -1080,7 +1040,7 @@ namespace worldedit {
 
                     long long i = 0;
 
-                    auto filename = WE_PNG_DIR + results["file"].get<std::string>();
+                    auto filename = WE_DIR + "image/" + results["file"].get<std::string>();
 
                     auto texture2D = loadpng(filename);
 
@@ -1088,7 +1048,7 @@ namespace worldedit {
 
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
-                        if (gMask == "" || cpp_eval::eval<double>(gMask.c_str(), variables, f) > 0.5) {
+                        gMaskLambda(f, variables, [&]() mutable {
                             auto   localPos = pos - boundingBox.min;
                             double u, v;
                             if (size.x == 0) {
@@ -1121,11 +1081,11 @@ namespace worldedit {
                                     minTile = i.second;
                                 }
                             }
-                            if (uniformRandDouble() <= color.a){
+                            if (uniformRandDouble() <= color.a) {
                                 setBlockSimple(blockSource, pos, Block::create("minecraft:concrete", minTile));
-                            i++;
+                                i++;
                             }
-                        }
+                        });
                     });
 
                     output.success(fmt::format("§apng setted"));
