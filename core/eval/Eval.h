@@ -34,9 +34,10 @@ namespace worldedit {
 
     class LongLong3 {
        public:
-        long long            x = 0;
-        long long            y = 0;
-        long long            z = 0;
+        long long x = 0;
+        long long y = 0;
+        long long z = 0;
+
         constexpr LongLong3& operator+=(LongLong3 const& b) {
             x += b.x;
             y += b.y;
@@ -128,14 +129,14 @@ namespace worldedit {
                         posMap[index].z  = posMap[index].z + posMap[indexf].z;
                     }
         }
-        long long getIndex(const BlockPos& pos) const {
+        long long getIndex(const BlockPos& pos) {
             auto localPos = pos - normalSearchBox.min;
             if (pos.x < normalSearchBox.min.x || pos.y < normalSearchBox.min.y || pos.z < normalSearchBox.min.z ||
                 pos.x > normalSearchBox.max.x || pos.y > normalSearchBox.max.y || pos.z > normalSearchBox.max.z)
                 return size.y * size.z * size.x;
             return (localPos.y + size.y * localPos.z) * size.x + localPos.x;
         }
-        long long getSolidMap(const BlockPos& pos1, const BlockPos& pos2) const {
+        long long getSolidMap(const BlockPos& pos1, const BlockPos& pos2) {
             long long res = 0;
             res           = solidMap[getIndex(pos2)];
             res -= solidMap[getIndex({pos1.x - 1, pos2.y, pos2.z})];
@@ -147,7 +148,7 @@ namespace worldedit {
             res -= solidMap[getIndex(pos1 - 1)];
             return res;
         }
-        LongLong3 getPosMap(const BlockPos& pos1, const BlockPos& pos2) const {
+        LongLong3 getPosMap(const BlockPos& pos1, const BlockPos& pos2) {
             LongLong3 res;
             res = posMap[getIndex(pos2)];
             res -= posMap[getIndex({pos1.x - 1, pos2.y, pos2.z})];
@@ -159,7 +160,7 @@ namespace worldedit {
             res -= posMap[getIndex(pos1 - 1)];
             return res;
         }
-        double operator()(const char* name, const std::vector<double>& params) const {
+        double operator()(const char* name, const std::vector<double>& params) {
             switch (do_hash(name)) {
                 case do_hash("rand"):
                     if (params.size() == 0) {

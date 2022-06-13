@@ -294,7 +294,7 @@ namespace worldedit {
                         auto  heightRange = player->getDimensionConst().getHeightRange();
                         auto* region      = mod.playerRegionMap[xuid];
                         auto  boundingBox = region->getBoundBox();
-                        list.push_back(BlockPos(0, std::min(boundingBox.min.y - heightRange.min, 0), 0));
+                        list.push_back(BlockPos(0, std::min(heightRange.min - boundingBox.min.y, 0), 0));
                         list.push_back(BlockPos(0, std::max(heightRange.max - boundingBox.max.y - 1, 0), 0));
                     } else {
                         int               l = results["num"].get<int>();

@@ -8,14 +8,15 @@
 #include "store/BlockPattern.hpp"
 #include "eval/blur.hpp"
 #include "image/Image.h"
+#include "eval/Bresenham.hpp"
 
 namespace worldedit {
 
     using ParamType = DynamicCommand::ParameterType;
     using ParamData = DynamicCommand::ParameterData;
 
-    // set rep center stack move gen walls faces overlay naturalize hollow
-    // smooth image | deform
+    // set line rep center stack move gen walls faces overlay naturalize hollow
+    // smooth image | deform curve
 
     void regionOperationCommandSetup() {
         DynamicCommand::setup(
@@ -72,6 +73,140 @@ namespace worldedit {
                         gMaskLambda(f, variables, [&]() mutable {
                             blockPattern.setBlock(variables, f, blockSource, pos);
                             i++;
+                        });
+                    });
+
+                    output.success(fmt::format("§a{} block(s) placed", i));
+                } else {
+                    output.error("You don't have a region yet");
+                }
+            },
+            CommandPermissionLevel::GameMasters);
+
+        DynamicCommand::setup(
+            "line",      // command name
+            "set line",  // command description
+            {},
+            {
+                ParamData("block", ParamType::Block, "block"),
+                ParamData("blockPattern", ParamType::String, "blockPattern"),
+                ParamData("radius", ParamType::Int, true, "radius"),
+                ParamData("args", ParamType::String, true, "-h"),
+            },
+            {{"block", "radius", "args"}, {"blockPattern", "radius", "args"}},
+            // dynamic command callback
+            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+               std::unordered_map<std::string, DynamicCommand::Result>& results) {
+                auto& mod  = worldedit::getMod();
+                auto  xuid = origin.getPlayer()->getXuid();
+                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
+                    mod.playerRegionMap[xuid]->hasSelected()) {
+                    auto* region = mod.playerRegionMap[xuid];
+
+                    if (region->regionType != RegionType::CUBOID && region->regionType != CONVEX) {
+                        output.error("You need to select a cuboid or convex region");
+                        return;
+                    }
+
+                    auto center      = region->getCenter();
+                    auto dimID       = region->getDimensionID();
+                    auto boundingBox = region->getBoundBox();
+                    auto blockSource = Level::getBlockSource(dimID);
+
+                    auto radius = 0;
+                    if (results["radius"].isSet) {
+                        radius = results["radius"].get<int>();
+                    }
+
+                    boundingBox.min -= radius;
+                    boundingBox.max += radius;
+
+                    bool arg_h = false;
+                    if (results["args"].isSet) {
+                        auto str = results["args"].getRaw<std::string>();
+                        if (str.find("-") == std::string::npos) {
+                            output.error("wrong args");
+                            return;
+                        }
+                        if (str.find("h") != std::string::npos) {
+                            arg_h = true;
+                        }
+                    }
+
+                    auto history            = mod.getPlayerNextHistory(xuid);
+                    *history                = Clipboard(boundingBox.max - boundingBox.min);
+                    history->playerRelPos.x = dimID;
+                    history->playerPos      = boundingBox.min;
+                    // history->used = true;
+                    boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
+                        auto localPos      = pos - boundingBox.min;
+                        auto blockInstance = blockSource->getBlockInstance(pos);
+                        history->storeBlock(blockInstance, localPos);
+                    });
+
+                    auto sizeDim = boundingBox.max - boundingBox.min + 3;
+
+                    long long size = (sizeDim.x) * (sizeDim.y) * (sizeDim.z);
+
+                    std::vector<bool> tmp(size, false);
+
+                    region->forEachLine([&](const BlockPos& pos1, const BlockPos& pos2) {
+                        plotLine(pos1, pos2, [&](const BlockPos& pos) {
+                            BoundingBox(pos - radius, pos + radius).forEachBlockInBox([&](const BlockPos& posk) {
+                                if ((pos - posk).length() <= 0.5 + radius) {
+                                    auto localPos = posk - boundingBox.min + 1;
+                                    tmp.at((localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x) = true;
+                                }
+                            });
+                        });
+                    });
+
+                    if (arg_h) {
+                        std::vector<bool> tmp2(size, false);
+                        boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
+                            auto localPos = pos - boundingBox.min + 1;
+                            if (tmp[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x]) {
+                                int counts = 0;
+
+                                for (auto& calPos : localPos.getNeighbors()) {
+                                    if (tmp[(calPos.y + sizeDim.y * calPos.z) * sizeDim.x + calPos.x]) {
+                                        counts++;
+                                    }
+                                }
+                                if (counts < 6)
+                                    tmp2[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x] = true;
+                            }
+                        });
+                        tmp.assign(tmp2.begin(), tmp2.end());
+                    }
+
+                    long long i = 0;
+
+                    INNERIZE_GMASK
+
+                    auto playerPos = origin.getPlayer()->getPosition();
+
+                    EvalFunctions f;
+                    f.setbs(blockSource);
+                    f.setbox(boundingBox);
+                    std::unordered_map<std::string, double> variables;
+
+                    std::string bps = "minecraft:air";
+                    if (results["blockPattern"].isSet) {
+                        bps = results["blockPattern"].get<std::string>();
+                    } else if (results["block"].isSet) {
+                        bps = results["block"].get<Block const*>()->getTypeName();
+                    }
+                    BlockPattern blockPattern(bps, xuid, region);
+
+                    boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
+                        setFunction(variables, f, boundingBox, playerPos, pos, center);
+                        gMaskLambda(f, variables, [&]() mutable {
+                            auto localPos = pos - boundingBox.min + 1;
+                            if (tmp[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x]) {
+                                blockPattern.setBlock(variables, f, blockSource, pos);
+                                i++;
+                            }
                         });
                     });
 
@@ -998,7 +1133,7 @@ namespace worldedit {
                 ParamData("rotation", ParamType::Enum, true, "rotation"),
             },
             {
-                {"file"},
+                {"file", "fliptype", "rotation"},
             },
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
@@ -1017,6 +1152,33 @@ namespace worldedit {
                     if (size.x != 0 && size.y != 0 && size.z != 0) {
                         output.error("You need to select a slice");
                     }
+
+                    int flipInt = 0;
+
+                    if (results["fliptype"].isSet) {
+                        auto fliptype = results["fliptype"].getRaw<std::string>();
+                        if (fliptype == "flipu") {
+                            flipInt = 1;
+                        } else if (fliptype == "flipv") {
+                            flipInt = 2;
+                        } else if (fliptype == "flipuv") {
+                            flipInt = 3;
+                        }
+                    }
+
+                    int rotationInt = 0;
+
+                    if (results["rotation"].isSet) {
+                        auto rotation = results["rotation"].getRaw<std::string>();
+                        if (rotation == "rotate90") {
+                            rotationInt = 1;
+                        } else if (rotation == "rotate180") {
+                            rotationInt = 2;
+                        } else if (rotation == "rotate270") {
+                            rotationInt = 3;
+                        }
+                    }
+
                     auto history            = mod.getPlayerNextHistory(xuid);
                     *history                = Clipboard(boundingBox.max - boundingBox.min);
                     history->playerRelPos.x = dimID;
@@ -1067,8 +1229,25 @@ namespace worldedit {
                                 v = localPos.z;
                                 v /= size.z;
                             }
-                            u = 1 - u;
-                            v = 1 - v;
+                            if (flipInt != 3) {
+                                if (flipInt != 1) {
+                                    u = 1 - u;
+                                }
+                                if (flipInt != 2) {
+                                    v = 1 - v;
+                                }
+                            }
+
+                            if (rotationInt == 1) {
+                                std::swap(u, v);
+                                u = 1 - u;
+                            } else if (rotationInt == 2) {
+                                u = 1 - u;
+                                v = 1 - v;
+                            } else if (rotationInt == 3) {
+                                std::swap(u, v);
+                                v = 1 - v;
+                            }
 
                             auto color = texture2D.sample(sampler, u, v);
 

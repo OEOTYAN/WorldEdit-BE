@@ -12,7 +12,15 @@ namespace worldedit {
         rendertick      = 0;
         boundingBox.min = *vertices.begin();
         boundingBox.max = *vertices.begin();
-        for_each(vertices.begin(), vertices.end(), [&](BlockPos value) {
+        for_each(vertices.begin(), vertices.end(), [&](BlockPos const& value) {
+            boundingBox.min.x = std::min(boundingBox.min.x, value.x);
+            boundingBox.min.y = std::max(std::min(boundingBox.min.y, value.y), static_cast<int>(range.min));
+            boundingBox.min.z = std::min(boundingBox.min.z, value.z);
+            boundingBox.max.x = std::max(boundingBox.max.x, value.x);
+            boundingBox.max.y = std::min(std::max(boundingBox.max.y, value.y), static_cast<int>(range.max) - 1);
+            boundingBox.max.z = std::max(boundingBox.max.z, value.z);
+        });
+        for_each(vertexBacklog.begin(), vertexBacklog.end(), [&](BlockPos const& value) {
             boundingBox.min.x = std::min(boundingBox.min.x, value.x);
             boundingBox.min.y = std::max(std::min(boundingBox.min.y, value.y), static_cast<int>(range.min));
             boundingBox.min.z = std::min(boundingBox.min.z, value.z);
@@ -36,6 +44,7 @@ namespace worldedit {
 
     ConvexRegion::ConvexRegion(const BoundingBox& region, const int& dim) : Region(region, dim) {
         vertices.clear();
+        poss.clear();
         triangles.clear();
         vertexBacklog.clear();
         edges.clear();
@@ -76,6 +85,7 @@ namespace worldedit {
             }
             if (containsRaw(vertexD)) {
                 vertexBacklog.insert(vertex);
+                updateBoundingBox();
                 return true;
             }
         }
@@ -140,15 +150,24 @@ namespace worldedit {
         triangles.clear();
         vertexBacklog.clear();
         edges.clear();
+        poss.clear();
         centerAccum = BlockPos(0, 0, 0);
-        return addVertex(pos);
+        bool res    = addVertex(pos);
+        if (res) {
+            poss.push_back(pos);
+        }
+        return res;
     }
 
     bool ConvexRegion::setVicePos(const BlockPos& pos, const int& dim) {
         if (!selecting || dim != dimensionID) {
             return false;
         }
-        return addVertex(pos);
+        bool res = addVertex(pos);
+        if (res) {
+            poss.push_back(pos);
+        }
+        return res;
     }
 
     std::pair<std::string, bool> ConvexRegion::shift(const BlockPos& change) {
@@ -158,6 +177,9 @@ namespace worldedit {
         vertices.clear();
         for (auto vertice : *tmpVertices) {
             vertices.insert(vertice + change);
+        }
+        for (auto& pos : poss) {
+            pos += change;
         }
         delete tmpVertices;
         auto tmpVertexBacklog = new std::unordered_set<BlockPos>(vertexBacklog);
@@ -196,6 +218,14 @@ namespace worldedit {
         }
 
         return containsRaw(pos.toVec3());
+    }
+
+    void ConvexRegion::forEachLine(const std::function<void(const BlockPos&, const BlockPos&)>& todo) {
+        if (poss.size() > 1) {
+            for (int i = 0; i < poss.size() - 1; i++) {
+                todo(poss[i], poss[i + 1]);
+            }
+        }
     }
 
     int ConvexRegion::size() const {

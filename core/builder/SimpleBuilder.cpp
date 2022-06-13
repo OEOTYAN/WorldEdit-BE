@@ -41,18 +41,18 @@ namespace worldedit {
 
         INNERIZE_GMASK
 
-        std::function<void(EvalFunctions const&, std::unordered_map<std::string, double> const&,
+        std::function<void(EvalFunctions&, std::unordered_map<std::string, double> const&,
                            std::function<void()> const&)>
             maskLambda;
         if (mask != "") {
-            maskLambda = [&](const EvalFunctions& func, const std::unordered_map<std::string, double>& var,
+            maskLambda = [&](EvalFunctions& func, const std::unordered_map<std::string, double>& var,
                              std::function<void()> const& todo) mutable {
                 if (cpp_eval::eval<double>(mask.c_str(), var, func) > 0.5) {
                     todo();
                 }
             };
         } else {
-            maskLambda = [&](const EvalFunctions& func, const std::unordered_map<std::string, double>& var,
+            maskLambda = [&](EvalFunctions& func, const std::unordered_map<std::string, double>& var,
                              std::function<void()> const& todo) mutable { todo(); };
         }
 
@@ -202,18 +202,18 @@ namespace worldedit {
 
         INNERIZE_GMASK
 
-        std::function<void(EvalFunctions const&, std::unordered_map<std::string, double> const&,
+        std::function<void(EvalFunctions&, std::unordered_map<std::string, double> const&,
                            std::function<void()> const&)>
             maskLambda;
         if (mask != "") {
-            maskLambda = [&](const EvalFunctions& func, const std::unordered_map<std::string, double>& var,
+            maskLambda = [&]( EvalFunctions& func, const std::unordered_map<std::string, double>& var,
                              std::function<void()> const& todo) mutable {
                 if (cpp_eval::eval<double>(mask.c_str(), var, func) > 0.5) {
                     todo();
                 }
             };
         } else {
-            maskLambda = [&](const EvalFunctions& func, const std::unordered_map<std::string, double>& var,
+            maskLambda = [&]( EvalFunctions& func, const std::unordered_map<std::string, double>& var,
                              std::function<void()> const& todo) mutable { todo(); };
         }
 
@@ -368,18 +368,18 @@ namespace worldedit {
 
         INNERIZE_GMASK
 
-        std::function<void(EvalFunctions const&, std::unordered_map<std::string, double> const&,
+        std::function<void(EvalFunctions &, std::unordered_map<std::string, double> const&,
                            std::function<void()> const&)>
             maskLambda;
         if (mask != "") {
-            maskLambda = [&](const EvalFunctions& func, const std::unordered_map<std::string, double>& var,
+            maskLambda = [&]( EvalFunctions& func, const std::unordered_map<std::string, double>& var,
                              std::function<void()> const& todo) mutable {
                 if (cpp_eval::eval<double>(mask.c_str(), var, func) > 0.5) {
                     todo();
                 }
             };
         } else {
-            maskLambda = [&](const EvalFunctions& func, const std::unordered_map<std::string, double>& var,
+            maskLambda = [&]( EvalFunctions& func, const std::unordered_map<std::string, double>& var,
                              std::function<void()> const& todo) mutable { todo(); };
         }
 

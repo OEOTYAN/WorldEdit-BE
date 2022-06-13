@@ -27,6 +27,8 @@ namespace worldedit {
 
         bool setVicePos(const BlockPos& pos, const int& dim) override;
 
+        void forEachLine(const std::function<void(const BlockPos&, const BlockPos&)>& todo) override;
+
         // void forEachBlockInRegion(const std::function<void(const BlockPos &)>
         // &todo) override;
 

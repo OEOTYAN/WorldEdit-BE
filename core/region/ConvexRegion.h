@@ -62,6 +62,8 @@ namespace worldedit {
         bool hasLast = false;
 
        public:
+        std::vector<BlockPos> poss;
+
         void updateBoundingBox() override;
 
         explicit ConvexRegion(const BoundingBox& region, const int& dim);
@@ -75,6 +77,8 @@ namespace worldedit {
         Vec3 getCenter() const override {
             return centerAccum.toVec3() * (1.0f / vertices.size()) + Vec3(0.5, 0.5, 0.5);
         };
+
+        void forEachLine(const std::function<void(const BlockPos&, const BlockPos&)>& todo) override;
 
         bool setMainPos(const BlockPos& pos, const int& dim) override;
 

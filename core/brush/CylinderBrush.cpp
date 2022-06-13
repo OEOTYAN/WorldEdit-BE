@@ -9,6 +9,6 @@ namespace worldedit {
         : Brush(s, bp), height(h), hollow(a) {}
     long long CylinderBrush::set(Player* player, BlockInstance blockInstance) {
         return SimpleBuilder::buildCylinder(blockInstance.getPosition(), blockInstance.getDimensionId(),
-                                            player->getXuid(), pattern, size, height, hollow);
+                                            player->getXuid(), pattern, size, height, hollow,mask);
     }
 }  // namespace worldedit

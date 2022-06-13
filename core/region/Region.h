@@ -24,12 +24,12 @@ namespace worldedit {
 
     class Region {
        protected:
-        RegionType  regionType  = CUBOID;
         int         rendertick  = 0;
         int         dimensionID = -1;
         BoundingBox boundingBox;
 
        public:
+        RegionType regionType    = CUBOID;
         bool selecting     = false;
         bool needResetVice = true;
         explicit Region(const BoundingBox& b, int dim);
@@ -69,6 +69,8 @@ namespace worldedit {
         virtual void forEachBlockInRegion(const std::function<void(const BlockPos&)>& todo);
 
         virtual void forTopBlockInRegion(const std::function<void(const BlockPos&)>& todo);
+
+        virtual void forEachLine(const std::function<void(const BlockPos&,const BlockPos&)>& todo){};
 
         virtual std::vector<double> getHeightMap();
 

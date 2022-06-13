@@ -15,20 +15,20 @@
 #define WE_DIR (std::string("plugins/WorldEdit/"))
 
 #define INNERIZE_GMASK                                                                                   \
-    std::function<void(EvalFunctions const&, std::unordered_map<std::string, double> const&,             \
+    std::function<void(EvalFunctions&, std::unordered_map<std::string, double> const&,             \
                        std::function<void()> const&)>                                                    \
                 gMaskLambda;                                                                             \
     std::string gMask = "";                                                                              \
     if (mod.playerGMaskMap.find(xuid) != mod.playerGMaskMap.end()) {                                     \
         gMask       = mod.playerGMaskMap[xuid];                                                          \
-        gMaskLambda = [&](const EvalFunctions& func, const std::unordered_map<std::string, double>& var, \
+        gMaskLambda = [&](EvalFunctions& func, const std::unordered_map<std::string, double>& var, \
                           std::function<void()> const& todo) mutable {                                   \
             if (cpp_eval::eval<double>(gMask.c_str(), var, func) > 0.5) {                                \
                 todo();                                                                                  \
             }                                                                                            \
         };                                                                                               \
     } else {                                                                                             \
-        gMaskLambda = [&](const EvalFunctions& func, const std::unordered_map<std::string, double>& var, \
+        gMaskLambda = [&](EvalFunctions& func, const std::unordered_map<std::string, double>& var, \
                           std::function<void()> const& todo) mutable { todo(); };                        \
     }
 

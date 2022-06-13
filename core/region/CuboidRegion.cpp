@@ -159,6 +159,10 @@ namespace worldedit {
         return {"§aThis region has been shifted", true};
     }
 
+    void CuboidRegion::forEachLine(const std::function<void(const BlockPos&, const BlockPos&)>& todo) {
+        todo(mainPos, vicePos);
+    }
+
     CuboidRegion::CuboidRegion() : Region{BoundingBox(), -1} {
         this->regionType    = CUBOID;
         this->needResetVice = false;
