@@ -49,8 +49,8 @@ namespace worldedit {
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "needblockupdate",                        // command name
-            "whether the block needs to be updated",  // command description
+            "needneighberupdate",                              // command name
+            "whether the neighber block needs to be updated",  // command description
             {}, {ParamData("bool", ParamType::Bool, "bool")}, {{"bool"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
@@ -60,25 +60,31 @@ namespace worldedit {
                 auto  xuid   = player->getXuid();
                 if (results["bool"].get<bool>()) {
                     mod.updateArg = 3;
-                    output.success(fmt::format("§aBlock update is now enabled"));
+                    output.success(fmt::format("§aNeighber block update is now enabled"));
                 } else {
                     mod.updateArg = 2;
-                    output.success(fmt::format("§aBlock update is now disabled"));
+                    output.success(fmt::format("§aNeighber block update is now disabled"));
                 }
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "debugblockupdate",           // command name
-            "§cDo not use this command",  // command description
-            {}, {ParamData("int", ParamType::Int, "int")}, {{"int"}},
+            "needblockupdate",                              // command name
+            "whether the block needs to be updated",  // command description
+            {}, {ParamData("bool", ParamType::Bool, "bool")}, {{"bool"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod     = worldedit::getMod();
-                auto  player  = origin.getPlayer();
-                auto  xuid    = player->getXuid();
-                mod.updateArg = results["int"].get<int>();
+                auto& mod = worldedit::getMod();
+                auto player = origin.getPlayer();
+                auto xuid = player->getXuid();
+                if (results["bool"].get<bool>()) {
+                    mod.updateExArg = 1;
+                    output.success(fmt::format("§aBlock update is now enabled"));
+                } else {
+                    mod.updateExArg = 0;
+                    output.success(fmt::format("§aBlock update is now disabled"));
+                }
             },
             CommandPermissionLevel::GameMasters);
     }

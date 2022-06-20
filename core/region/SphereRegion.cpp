@@ -7,9 +7,9 @@
 #include "MC/Dimension.hpp"
 namespace worldedit {
     void SphereRegion::updateBoundingBox() {
-        auto range        = Level::getDimension(dimensionID)->getHeightRange();
-        rendertick        = 0;
-        auto newRadius    = (int)(radius);
+        auto range = Level::getDimension(dimensionID)->getHeightRange();
+        rendertick = 0;
+        auto newRadius = (int)(radius);
         boundingBox.min.x = center.x - newRadius;
         boundingBox.min.y = std::max(center.y - newRadius, static_cast<int>(range.min));
         boundingBox.min.z = center.z - newRadius;
@@ -19,10 +19,10 @@ namespace worldedit {
     }
 
     bool SphereRegion::setMainPos(const BlockPos& pos, const int& dim) {
-        selecting   = true;
+        selecting = true;
         dimensionID = dim;
-        center      = pos;
-        radius      = 0.5;
+        center = pos;
+        radius = 0.5;
         updateBoundingBox();
         return true;
     }
@@ -88,7 +88,7 @@ namespace worldedit {
     }
 
     SphereRegion::SphereRegion(const BoundingBox& region, const int& dim) : Region(region, dim) {
-        this->selecting  = false;
+        this->selecting = false;
         this->regionType = SPHERE;
     }
     void SphereRegion::renderRegion() {
@@ -96,6 +96,12 @@ namespace worldedit {
             rendertick = 40;
             worldedit::spawnCuboidParticle({center.toVec3(), center.toVec3() + Vec3::ONE}, GRAPHIC_COLOR::GREEN,
                                            dimensionID);
+            if (radius > 1.0f) {
+                auto rc = center.toVec3() + 0.5;
+                drawCircle(rc, FACING::POS_Y, radius, GRAPHIC_COLOR::YELLOW, dimensionID);
+                drawCircle(rc, FACING::POS_Z, radius, GRAPHIC_COLOR::YELLOW, dimensionID);
+                drawCircle(rc, FACING::POS_X, radius, GRAPHIC_COLOR::YELLOW, dimensionID);
+            }
         }
         rendertick--;
     };

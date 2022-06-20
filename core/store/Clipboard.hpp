@@ -8,7 +8,7 @@
 #include "pch.h"
 // #include <EventAPI.h>
 // #include <LoggerAPI.h>
-// #include <MC/Level.hpp>
+#include <MC/Level.hpp>
 #include <MC/BlockInstance.hpp>
 // #include <MC/Block.hpp>
 // #include <MC/BlockActor.hpp>
@@ -60,7 +60,12 @@ namespace worldedit {
             used  = true;
             vsize = size.x * size.y * size.z;
             blockslist.clear();
-            blockslist.resize(vsize);
+            try {
+                blockslist.resize(vsize);
+            } catch (std::bad_alloc) {
+                Level::broadcastText("Out of memory", TextType::RAW);
+                return;
+            }
         }
         long long   getIter(const BlockPos& pos);
         long long   getIter2(const BlockPos& pos);
@@ -69,8 +74,8 @@ namespace worldedit {
         void        rotate(Vec3 angle);
         void        flip(enum class FACING facing);
         BlockPos    getPos(const BlockPos& pos);
-        BlockNBTSet getSet(const BlockPos& pos);
-        BlockNBTSet getSet2(const BlockPos& pos);
+        BlockNBTSet& getSet(const BlockPos& pos);
+        BlockNBTSet& getSet2(const BlockPos& pos);
         bool        contains(const BlockPos& pos);
         void        setBlocks(const BlockPos& pos, BlockPos& worldPos, BlockSource* blockSource);
         void        forEachBlockInClipboard(const std::function<void(const BlockPos&)>& todo);

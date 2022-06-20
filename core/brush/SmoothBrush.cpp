@@ -30,12 +30,12 @@ namespace worldedit {
             history->storeBlock(blockInstance, localPos);
         });
 
-        auto heightMap = region.getHeightMap();
+        auto heightMap = region.getHeightMap(mask);
         int  sizex     = box.max.x - box.min.x + 1;
         int  sizez     = box.max.z - box.min.z + 1;
 
         auto smoothedHeightMap = blur2D(heightMap, ksize, sizex, sizez);
-        region.applyHeightMap(smoothedHeightMap);
+        region.applyHeightMap(smoothedHeightMap,mask);
 
         return (size * 2 + 1) * (size * 2 + 1) * (size * 2 + 11);
     }

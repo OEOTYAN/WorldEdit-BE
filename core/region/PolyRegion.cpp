@@ -125,15 +125,17 @@ namespace worldedit {
             for (int i = 0; i < size; i++) {
                 worldedit::spawnCuboidParticle(
                     {Vec3(points[i].x, minY, points[i].z), Vec3(points[i].x, maxY, points[i].z) + Vec3::ONE},
-                    GRAPHIC_COLOR::GREEN, dimensionID);
+                    GRAPHIC_COLOR::YELLOW, dimensionID);
             }
             for (int y : {minY, maxY}) {
                 for (int i = 0; i < size - 1; i++) {
-                    drawOrientedLine(Vec3(points[i].x, y, points[i].z), Vec3(points[i + 1].x, y, points[i + 1].z),
-                                     dimensionID);
+                    drawOrientedLine(Vec3(points[i].x, y, points[i].z) + 0.5,
+                                     Vec3(points[i + 1].x, y, points[i + 1].z) + 0.5, dimensionID,
+                                     GRAPHIC_COLOR::YELLOW);
                 }
-                drawOrientedLine(Vec3(points[0].x, y, points[0].z), Vec3(points[size - 1].x, y, points[size - 1].z),
-                                 dimensionID);
+                drawOrientedLine(Vec3(points[0].x, y, points[0].z) + 0.5,
+                                 Vec3(points[size - 1].x, y, points[size - 1].z) + 0.5, dimensionID,
+                                 GRAPHIC_COLOR::YELLOW);
             }
         }
         rendertick--;

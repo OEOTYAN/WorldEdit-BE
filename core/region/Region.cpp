@@ -18,6 +18,34 @@ namespace worldedit {
                     }
                 }
     }
+    void Region::forEachBlockUVInRegion(const std::function<void(const BlockPos&, double, double)>& todo) {
+        auto size = boundingBox.max - boundingBox.min;
+        for (int y = boundingBox.min.y; y <= boundingBox.max.y; y++)
+            for (int x = boundingBox.min.x; x <= boundingBox.max.x; x++)
+                for (int z = boundingBox.min.z; z <= boundingBox.max.z; z++) {
+                    if (contains({x, y, z})) {
+                        auto localPos = BlockPos(x, y, z) - boundingBox.min;
+                        double u, v;
+                        if (size.x == 0) {
+                            u = localPos.z;
+                            u /= size.z;
+                            v = localPos.y;
+                            v /= size.y;
+                        } else if (size.z == 0) {
+                            u = localPos.x;
+                            u /= size.x;
+                            v = localPos.y;
+                            v /= size.y;
+                        } else {
+                            u = localPos.x;
+                            u /= size.x;
+                            v = localPos.z;
+                            v /= size.z;
+                        }
+                        todo({x, y, z},u,v);
+                    }
+                }
+    }
     void Region::forTopBlockInRegion(const std::function<void(const BlockPos&)>& todo) {
         auto blockSource = Level::getBlockSource(dimensionID);
         for (int x = boundingBox.min.x; x <= boundingBox.max.x; x++)
@@ -43,48 +71,58 @@ namespace worldedit {
             }
     }
 
-    std::vector<double> Region::getHeightMap() {
-        int                 sizex = boundingBox.max.x - boundingBox.min.x + 1;
-        int                 sizez = boundingBox.max.z - boundingBox.min.z + 1;
+    int Region::getHeighest(int x, int z) {
+        for (int y = boundingBox.max.y; y >= boundingBox.min.y; y--) {
+            if (contains({x, y, z})) {
+                return y;
+            }
+        }
+        return boundingBox.min.y - 1;
+    }
+
+    std::vector<double> Region::getHeightMap(std::string mask) {
+        int sizex = boundingBox.max.x - boundingBox.min.x + 1;
+        int sizez = boundingBox.max.z - boundingBox.min.z + 1;
         std::vector<double> res(sizex * sizez, -1e200);
 
         auto blockSource = Level::getBlockSource(dimensionID);
         for (int x = boundingBox.min.x; x <= boundingBox.max.x; x++)
             for (int z = boundingBox.min.z; z <= boundingBox.max.z; z++) {
-                auto topy = blockSource->getHeightmap(x, z) - 1;
-                if (topy <= boundingBox.max.y && topy >= boundingBox.min.y) {
-                    int cx               = x - boundingBox.min.x;
-                    int cz               = z - boundingBox.min.z;
+                auto topy = getHighestTerrainBlock(blockSource, x, z, boundingBox.min.y, getHeighest(x, z), mask);
+                if (topy >= boundingBox.min.y) {
+                    int cx = x - boundingBox.min.x;
+                    int cz = z - boundingBox.min.z;
                     res[cx * sizez + cz] = topy + 0.5;
                 }
             }
         return res;
     }
 
-    void Region::applyHeightMap(const std::vector<double>& data) {
-        int  sizex       = boundingBox.max.x - boundingBox.min.x + 1;
-        int  sizez       = boundingBox.max.z - boundingBox.min.z + 1;
+    void Region::applyHeightMap(const std::vector<double>& data, std::string mask) {
+        int sizex = boundingBox.max.x - boundingBox.min.x + 1;
+        int sizez = boundingBox.max.z - boundingBox.min.z + 1;
         auto blockSource = Level::getBlockSource(dimensionID);
         for (int posx = boundingBox.min.x; posx <= boundingBox.max.x; posx++)
             for (int posz = boundingBox.min.z; posz <= boundingBox.max.z; posz++) {
-                BlockPos pos = {posx, blockSource->getHeightmap(posx, posz), posz};
-                pos.y -= 1;
-                if (pos.y > boundingBox.max.y || pos.y < boundingBox.min.y) {
+                auto topy = getHighestTerrainBlock(blockSource, posx, posz, boundingBox.min.y,
+                                                   getHeighest(posx, posz) + 1, mask);
+                BlockPos pos = {posx, topy, posz};
+                if (!contains(pos)) {
                     continue;
                 }
-                int x     = pos.x - boundingBox.min.x;
-                int z     = pos.z - boundingBox.min.z;
+                int x = pos.x - boundingBox.min.x;
+                int z = pos.z - boundingBox.min.z;
                 int index = x * sizez + z;
 
                 if (data[index] < -1e150) {
                     return;
                 }
 
-                int    curHeight = pos.y;
-                int    newHeight = std::min(boundingBox.max.y, static_cast<int>(floor(data[index])));
-                int    xr        = pos.x;
-                int    zr        = pos.z;
-                double scale     = static_cast<double>(curHeight - boundingBox.min.y) /
+                int curHeight = pos.y;
+                int newHeight = std::min(boundingBox.max.y, static_cast<int>(floor(data[index])));
+                int xr = pos.x;
+                int zr = pos.z;
+                double scale = static_cast<double>(curHeight - boundingBox.min.y) /
                                static_cast<double>(newHeight - boundingBox.min.y);
 
                 if (newHeight > curHeight) {
@@ -140,7 +178,8 @@ namespace worldedit {
                 return new ConvexRegion(box, dim);
             case CYLINDER:
                 return new CylinderRegion(box, dim);
-                // return new CuboidRegion(box, dim);
+            case LOFT:
+                return new LoftRegion(box, dim);
             default:
                 return new CuboidRegion(box, dim);
         }

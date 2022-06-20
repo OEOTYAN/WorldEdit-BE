@@ -44,6 +44,8 @@ namespace worldedit {
     };
 
     Texture2D loadpng(const std::string& filename);
+
+    double colorToHeight(const mce::Color& color);
 }  // namespace worldedit
 
 #endif  // WORLDEDIT_IMAGE_H 

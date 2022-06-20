@@ -51,8 +51,10 @@ namespace worldedit {
 
     std::string facingToDirString(FACING facing);
 
-    void drawLine(const Vec3& originPoint, FACING direction, float length, GRAPHIC_COLOR color, int dimType = 0);
-    void drawOrientedLine(Vec3 start, Vec3 end, int dimType);
+    void drawLine(const Vec3& originPoint, FACING direction, float length, GRAPHIC_COLOR color, int dimType);
+    void drawOrientedLine(const Vec3& start, const Vec3& end, int dimType, GRAPHIC_COLOR color);
+    void drawCircle(const Vec3& originPoint, FACING direction, float radius, GRAPHIC_COLOR color, int dimType);
+    void drawCurve(class KochanekBartelsInterpolation const& curve, GRAPHIC_COLOR color, int dimType);
 }  // namespace worldedit
 
 #endif  // WORLDEDIT_GRAPHICS_H

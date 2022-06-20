@@ -23,7 +23,6 @@ namespace worldedit {
     };
 
     mce::Color Texture2D::load(const Sampler& sampler, double u, double v, double offsetu, double offsetv) const {
-
         if (width > 1)
             u += offsetu / (width - 1);
         if (height > 1)
@@ -93,6 +92,18 @@ namespace worldedit {
                 res.rawColor[k].a = image[4 * k + 3] / 255.0f;
             }
         return res;
+    }
+
+    double colorToHeight(const mce::Color& color) {
+        if (color > 0) {
+            if (color.r == color.g && color.g == color.b) {
+                return color.r;
+            } else {
+                auto colorLinear = color.sRGBToLinear();
+                return colorLinear.r * 0.299 + colorLinear.g * 0.587 + colorLinear.b * 0.114;
+            }
+        }
+        return 0;
     }
 
 }  // namespace worldedit

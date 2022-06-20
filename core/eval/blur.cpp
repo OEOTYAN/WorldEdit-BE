@@ -2,6 +2,7 @@
 // Created by OEOTYAN on 2022/05/30.
 //
 #include "blur.hpp"
+#include "MC/Level.hpp"
 
 namespace worldedit{
 
@@ -37,7 +38,12 @@ namespace worldedit{
     }
     std::vector<double> blur2D(std::vector<double> heightMap, int ksize, int sizex, int sizez) {
         std::vector<double> res;
+        try{
         res.resize(heightMap.size());
+        }catch(std::bad_alloc){
+            Level::broadcastText("Out of memory", TextType::RAW);
+            return std::vector<double>(0);
+        }
         auto kernel = gaussianKernel(ksize);
         for (int x = 0; x < sizex; x++)
             for (int z = 0; z < sizez; z++) {

@@ -13,5 +13,6 @@
 #include "CylinderRegion.h"
 #include "PolyRegion.h"
 #include "ConvexRegion.h"
+#include "LoftRegion.h"
 
 #endif  // WORLDEDIT_REGIONS_H

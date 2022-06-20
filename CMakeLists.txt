@@ -25,6 +25,7 @@ include_directories(pcg)
 include_directories(lodepng)
 include_directories(SDK/Header)
 include_directories(SDK/Header/third-party)
+include_directories(httplib)
 include_directories(Template)
 
 link_directories(.)

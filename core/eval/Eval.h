@@ -11,7 +11,7 @@
 #include <MC/Block.hpp>
 #include <MC/BedrockBlocks.hpp>
 #include <MC/BlockSource.hpp>
-// #include <MC/Actor.hpp>
+#include <MC/Level.hpp>
 // #include <MC/Player.hpp>
 // #include <MC/ServerPlayer.hpp>
 // #include <MC/Dimension.hpp>
@@ -30,7 +30,10 @@
 #endif
 
 namespace worldedit {
+
     double posfmod(double x, double y);
+
+    int getHighestTerrainBlock(class BlockSource* blockSource, int x, int z, int minY, int maxY, std::string filter);
 
     class LongLong3 {
        public:
@@ -54,20 +57,20 @@ namespace worldedit {
     };
     double uniformRandDouble();
     class EvalFunctions {
-        int                    normalSearchDis = 4;
-        BlockPos               here;
-        BlockPos               size;
-        BlockSource*           blockSource;
-        BoundingBox            normalSearchBox;
+        int normalSearchDis = 4;
+        BlockPos here;
+        BlockPos size;
+        BlockSource* blockSource;
+        BoundingBox normalSearchBox;
         std::vector<LongLong3> posMap;
         std::vector<long long> solidMap;
-        bool                   searchBoxInitialized = false;
-        bool                   blockdataInitialized = false;
+        bool searchBoxInitialized = false;
+        bool blockdataInitialized = false;
 
        public:
         void setPos(const BlockPos& pos) { here = pos; }
         void setbs(BlockSource* bs) {
-            blockSource          = bs;
+            blockSource = bs;
             blockdataInitialized = true;
         }
         void setbox(BoundingBox box) {
@@ -77,17 +80,22 @@ namespace worldedit {
             size = normalSearchBox.max - normalSearchBox.min + 1;
             posMap.clear();
             solidMap.clear();
-            posMap.resize(size.x * size.y * size.z + 1);
-            solidMap                           = std::vector<long long>(size.x * size.y * size.z + 1, 0);
-            posMap[size.x * size.y * size.z]   = {0, 0, 0};
+            try {
+                posMap.resize(size.x * size.y * size.z + 1);
+                solidMap = std::vector<long long>(size.x * size.y * size.z + 1, 0);
+            } catch (std::bad_alloc) {
+                Level::broadcastText("Out of memory", TextType::RAW);
+                return;
+            }
+            posMap[size.x * size.y * size.z] = {0, 0, 0};
             solidMap[size.x * size.y * size.z] = 0;
-            searchBoxInitialized               = true;
+            searchBoxInitialized = true;
             normalSearchBox.forEachBlockInBox([&](const BlockPos& pos) {
                 if (&blockSource->getBlock(pos) == BedrockBlocks::mAir) {
                     return;
                 }
-                auto index  = getIndex(pos);
-                int  counts = 0;
+                auto index = getIndex(pos);
+                int counts = 0;
                 for (auto& calPos : pos.getNeighbors()) {
                     counts += &blockSource->getBlock(calPos) != BedrockBlocks::mAir;
                 }
@@ -101,32 +109,32 @@ namespace worldedit {
             for (int x = 1; x < size.x; x++)
                 for (int y = 0; y < size.y; y++)
                     for (int z = 0; z < size.z; z++) {
-                        long long index  = (y + size.y * z) * size.x + x;
+                        long long index = (y + size.y * z) * size.x + x;
                         long long indexf = (y + size.y * z) * size.x + (x - 1);
-                        solidMap[index]  = solidMap[index] + solidMap[indexf];
-                        posMap[index].x  = posMap[index].x + posMap[indexf].x;
-                        posMap[index].y  = posMap[index].y + posMap[indexf].y;
-                        posMap[index].z  = posMap[index].z + posMap[indexf].z;
+                        solidMap[index] = solidMap[index] + solidMap[indexf];
+                        posMap[index].x = posMap[index].x + posMap[indexf].x;
+                        posMap[index].y = posMap[index].y + posMap[indexf].y;
+                        posMap[index].z = posMap[index].z + posMap[indexf].z;
                     }
             for (int y = 1; y < size.y; y++)
                 for (int x = 0; x < size.x; x++)
                     for (int z = 0; z < size.z; z++) {
-                        long long index  = (y + size.y * z) * size.x + x;
+                        long long index = (y + size.y * z) * size.x + x;
                         long long indexf = ((y - 1) + size.y * z) * size.x + x;
-                        solidMap[index]  = solidMap[index] + solidMap[indexf];
-                        posMap[index].x  = posMap[index].x + posMap[indexf].x;
-                        posMap[index].y  = posMap[index].y + posMap[indexf].y;
-                        posMap[index].z  = posMap[index].z + posMap[indexf].z;
+                        solidMap[index] = solidMap[index] + solidMap[indexf];
+                        posMap[index].x = posMap[index].x + posMap[indexf].x;
+                        posMap[index].y = posMap[index].y + posMap[indexf].y;
+                        posMap[index].z = posMap[index].z + posMap[indexf].z;
                     }
             for (int z = 1; z < size.z; z++)
                 for (int x = 0; x < size.x; x++)
                     for (int y = 0; y < size.y; y++) {
-                        long long index  = (y + size.y * z) * size.x + x;
+                        long long index = (y + size.y * z) * size.x + x;
                         long long indexf = (y + size.y * (z - 1)) * size.x + x;
-                        solidMap[index]  = solidMap[index] + solidMap[indexf];
-                        posMap[index].x  = posMap[index].x + posMap[indexf].x;
-                        posMap[index].y  = posMap[index].y + posMap[indexf].y;
-                        posMap[index].z  = posMap[index].z + posMap[indexf].z;
+                        solidMap[index] = solidMap[index] + solidMap[indexf];
+                        posMap[index].x = posMap[index].x + posMap[indexf].x;
+                        posMap[index].y = posMap[index].y + posMap[indexf].y;
+                        posMap[index].z = posMap[index].z + posMap[indexf].z;
                     }
         }
         long long getIndex(const BlockPos& pos) {
@@ -138,7 +146,7 @@ namespace worldedit {
         }
         long long getSolidMap(const BlockPos& pos1, const BlockPos& pos2) {
             long long res = 0;
-            res           = solidMap[getIndex(pos2)];
+            res = solidMap[getIndex(pos2)];
             res -= solidMap[getIndex({pos1.x - 1, pos2.y, pos2.z})];
             res -= solidMap[getIndex({pos2.x, pos1.y - 1, pos2.z})];
             res -= solidMap[getIndex({pos2.x, pos2.y, pos1.z - 1})];
@@ -259,9 +267,9 @@ namespace worldedit {
                     break;
                 case do_hash("isslimechunk"):
                     if (params.size() == 2) {
-                        int          x    = static_cast<int>(round(params[0]));
-                        int          z    = static_cast<int>(round(params[1]));
-                        auto         seed = (x * 0x1f1f1f1fu) ^ (uint32_t)z;
+                        int x = static_cast<int>(round(params[0]));
+                        int z = static_cast<int>(round(params[1]));
+                        auto seed = (x * 0x1f1f1f1fu) ^ (uint32_t)z;
                         std::mt19937 mt(seed);
                         return mt() % 10 == 0;
                     }
@@ -376,14 +384,14 @@ namespace worldedit {
                 case do_hash("normalx"):
                     if (searchBoxInitialized) {
                         if (params.size() == 0) {
-                            auto   solid  = getSolidMap(here - normalSearchDis, here + normalSearchDis);
-                            auto   posSum = getPosMap(here - normalSearchDis, here + normalSearchDis);
-                            double sumx   = 0;
-                            double sumy   = 0;
-                            double sumz   = 0;
-                            sumx          = static_cast<double>(solid * here.x - posSum.x);
-                            sumy          = static_cast<double>(solid * here.y - posSum.y);
-                            sumz          = static_cast<double>(solid * here.z - posSum.z);
+                            auto solid = getSolidMap(here - normalSearchDis, here + normalSearchDis);
+                            auto posSum = getPosMap(here - normalSearchDis, here + normalSearchDis);
+                            double sumx = 0;
+                            double sumy = 0;
+                            double sumz = 0;
+                            sumx = static_cast<double>(solid * here.x - posSum.x);
+                            sumy = static_cast<double>(solid * here.y - posSum.y);
+                            sumz = static_cast<double>(solid * here.z - posSum.z);
                             double length = sqrt(sumx * sumx + sumy * sumy + sumz * sumz);
                             return sumx / length;
                         }
@@ -393,14 +401,14 @@ namespace worldedit {
                 case do_hash("normaly"):
                     if (searchBoxInitialized) {
                         if (params.size() == 0) {
-                            auto   solid  = getSolidMap(here - normalSearchDis, here + normalSearchDis);
-                            auto   posSum = getPosMap(here - normalSearchDis, here + normalSearchDis);
-                            double sumx   = 0;
-                            double sumy   = 0;
-                            double sumz   = 0;
-                            sumx          = static_cast<double>(solid * here.x - posSum.x);
-                            sumy          = static_cast<double>(solid * here.y - posSum.y);
-                            sumz          = static_cast<double>(solid * here.z - posSum.z);
+                            auto solid = getSolidMap(here - normalSearchDis, here + normalSearchDis);
+                            auto posSum = getPosMap(here - normalSearchDis, here + normalSearchDis);
+                            double sumx = 0;
+                            double sumy = 0;
+                            double sumz = 0;
+                            sumx = static_cast<double>(solid * here.x - posSum.x);
+                            sumy = static_cast<double>(solid * here.y - posSum.y);
+                            sumz = static_cast<double>(solid * here.z - posSum.z);
                             double length = sqrt(sumx * sumx + sumy * sumy + sumz * sumz);
                             return sumy / length;
                         }
@@ -410,14 +418,14 @@ namespace worldedit {
                 case do_hash("normalz"):
                     if (searchBoxInitialized) {
                         if (params.size() == 0) {
-                            auto   solid  = getSolidMap(here - normalSearchDis, here + normalSearchDis);
-                            auto   posSum = getPosMap(here - normalSearchDis, here + normalSearchDis);
-                            double sumx   = 0;
-                            double sumy   = 0;
-                            double sumz   = 0;
-                            sumx          = static_cast<double>(solid * here.x - posSum.x);
-                            sumy          = static_cast<double>(solid * here.y - posSum.y);
-                            sumz          = static_cast<double>(solid * here.z - posSum.z);
+                            auto solid = getSolidMap(here - normalSearchDis, here + normalSearchDis);
+                            auto posSum = getPosMap(here - normalSearchDis, here + normalSearchDis);
+                            double sumx = 0;
+                            double sumy = 0;
+                            double sumz = 0;
+                            sumx = static_cast<double>(solid * here.x - posSum.x);
+                            sumy = static_cast<double>(solid * here.y - posSum.y);
+                            sumz = static_cast<double>(solid * here.z - posSum.z);
                             double length = sqrt(sumx * sumx + sumy * sumy + sumz * sumz);
                             return sumz / length;
                         }
@@ -427,14 +435,14 @@ namespace worldedit {
                 case do_hash("angle"):
                     if (searchBoxInitialized) {
                         if (params.size() == 0) {
-                            auto   solid  = getSolidMap(here - normalSearchDis, here + normalSearchDis);
-                            auto   posSum = getPosMap(here - normalSearchDis, here + normalSearchDis);
-                            double sumx   = 0;
-                            double sumy   = 0;
-                            double sumz   = 0;
-                            sumx          = static_cast<double>(solid * here.x - posSum.x);
-                            sumy          = static_cast<double>(solid * here.y - posSum.y);
-                            sumz          = static_cast<double>(solid * here.z - posSum.z);
+                            auto solid = getSolidMap(here - normalSearchDis, here + normalSearchDis);
+                            auto posSum = getPosMap(here - normalSearchDis, here + normalSearchDis);
+                            double sumx = 0;
+                            double sumy = 0;
+                            double sumz = 0;
+                            sumx = static_cast<double>(solid * here.x - posSum.x);
+                            sumy = static_cast<double>(solid * here.y - posSum.y);
+                            sumz = static_cast<double>(solid * here.z - posSum.z);
                             double length = sqrt(sumx * sumx + sumy * sumy + sumz * sumz);
                             return acos(sumy / length) / __M__PI__ * 180.0;
                         }
@@ -442,13 +450,19 @@ namespace worldedit {
                     return 0;
                     break;
                 case do_hash("issurface"):
-                    if (searchBoxInitialized) {
+                    if (blockdataInitialized) {
                         BlockPos tmp = here;
                         if (params.size() == 3) {
                             tmp = tmp + BlockPos(static_cast<int>(floor(params[0])), static_cast<int>(floor(params[1])),
                                                  static_cast<int>(floor(params[2])));
                         }
-                        return (1.0 - getSolidMap(tmp, tmp)) * (&blockSource->getBlock(here) != BedrockBlocks::mAir);
+                        if (&blockSource->getBlock(tmp) != BedrockBlocks::mAir) {
+                            int counts = 0;
+                            for (auto& calPos : tmp.getNeighbors()) {
+                                counts += &blockSource->getBlock(calPos) == BedrockBlocks::mAir;
+                            }
+                            return counts > 0;
+                        }
                     }
                     return 0;
                     break;

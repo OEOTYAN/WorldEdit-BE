@@ -61,14 +61,14 @@ namespace worldedit {
                     i++;
                 }
                 form += string("num") + str[i];
-                raw.emplace_back(str.substr(head, i - head));
+                raw.push_back(str.substr(head, i - head));
             } else if (str[i] == '\'') {
                 i++;
                 auto head = i;
                 while (i < str.size() && (str[i] != '\'')) {
                     i++;
                 }
-                raw.emplace_back(str.substr(head, i - head));
+                raw.push_back(str.substr(head, i - head));
                 i++;
                 form += string("funciton") + str[i];
             } else if (isalpha(str[i])) {
@@ -79,7 +79,7 @@ namespace worldedit {
                     i++;
                 }
                 form += string("block") + str[i];
-                raw.emplace_back(str.substr(head, i - head));
+                raw.push_back(str.substr(head, i - head));
             } else if (str[i] == '{') {
                 auto head    = i;
                 int  bracket = -1;
@@ -93,7 +93,7 @@ namespace worldedit {
                     i++;
                 }
                 form += string("SNBT") + str[i];
-                raw.emplace_back(str.substr(head, i - head));
+                raw.push_back(str.substr(head, i - head));
             }
             i++;
         }
@@ -135,12 +135,13 @@ namespace worldedit {
                 std::string tmpSNBT       = raw[rawPtr];
                 if (tmpSNBT[0] == '{' && tmpSNBT[1] == '{') {
                     size_t                   i2       = 1;
-                    int                      bracket2 = -1;
                     std::vector<std::string> tmpSNBTs;
                     tmpSNBTs.clear();
                     while (i2 < tmpSNBT.size() - 1) {
+                        int bracket2 = -1;
                         if (tmpSNBT[i2] == '{') {
                             auto head2 = i2;
+                            i2++;
                             while (i2 < tmpSNBT.size() && bracket2 < 0) {
                                 if (tmpSNBT[i2] == '{') {
                                     bracket2--;
@@ -149,7 +150,8 @@ namespace worldedit {
                                 }
                                 i2++;
                             }
-                            tmpSNBTs.emplace_back(tmpSNBT.substr(head2, i2 - head2));
+                            tmpSNBTs.push_back(tmpSNBT.substr(head2, i2 - head2));
+                            std::cout << tmpSNBT.substr(head2, i2 - head2) << std::endl;
                         }
                         i2++;
                     }

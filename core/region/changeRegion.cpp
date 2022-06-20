@@ -3,6 +3,7 @@
 //
 #include "ChangeRegion.hpp"
 #include "WorldEdit.h"
+#include <ScheduleAPI.h>
 
 #define MINIMUM__RESPONSE_TICK 3
 
@@ -11,21 +12,30 @@ namespace worldedit {
     void setBlockSimple(BlockSource* blockSource, const BlockPos& pos, Block* block, Block* exblock) {
         auto& mod = worldedit::getMod();
         CommandUtils::clearBlockEntityContents(*blockSource, pos);
-        blockSource->setExtraBlock(pos, *BedrockBlocks::mAir, mod.updateArg);
-        blockSource->setBlock(pos, *block, mod.updateArg, nullptr, nullptr);
-        if (block != VanillaBlocks::mBubbleColumn) {
-            if (exblock != BedrockBlocks::mAir)
-                blockSource->setExtraBlock(pos, *exblock, 2);
+        blockSource->setExtraBlock(pos, *BedrockBlocks::mAir, 16 + mod.updateArg);
+        if (mod.updateExArg % 2 == 1) {
+            blockSource->setBlock(pos, *block, mod.updateArg, nullptr, nullptr);
         } else {
-            blockSource->setExtraBlock(pos, *VanillaBlocks::mFlowingWater, 2);
-            blockSource->setBlock(pos, *block, 2, nullptr, nullptr);
+            blockSource->setBlockNoUpdate(pos.x, pos.y, pos.z, *block);
+        }
+        if (block != VanillaBlocks::mBubbleColumn) {
+            if (exblock != BedrockBlocks::mAir) {
+                blockSource->setExtraBlock(pos, *exblock, 16 + mod.updateArg);
+            }
+        } else {
+            blockSource->setExtraBlock(pos, *VanillaBlocks::mFlowingWater, 16 + mod.updateArg);
+            if (mod.updateExArg % 2 == 1) {
+                blockSource->setBlock(pos, *block, mod.updateArg, nullptr, nullptr);
+            } else {
+                blockSource->setBlockNoUpdate(pos.x, pos.y, pos.z, *block);
+            }
         }
     }
 
     bool changeVicePos(Player* player, BlockInstance blockInstance, bool output) {
         static std::unordered_map<std::string, long long> tickMap;
 
-        auto      xuid = player->getXuid();
+        auto xuid = player->getXuid();
         long long tick = player->getLevel().getCurrentServerTick().t;
         if (tickMap.find(xuid) != tickMap.end()) {
             if (abs(tick - tickMap[xuid]) < MINIMUM__RESPONSE_TICK)
@@ -49,8 +59,8 @@ namespace worldedit {
         if (mod.playerRegionMap[xuid]->setVicePos(pos, player->getDimensionId())) {
             if (output)
                 player->sendFormattedText("§aSecond position set to ({}, {}, {})", pos.x, pos.y, pos.z);
-            mod.playerVicePosMap[xuid].first         = pos;
-            mod.playerVicePosMap[xuid].second.first  = 0;
+            mod.playerVicePosMap[xuid].first = pos;
+            mod.playerVicePosMap[xuid].second.first = 0;
             mod.playerVicePosMap[xuid].second.second = player->getDimensionId();
             return true;
         } else {
@@ -63,7 +73,7 @@ namespace worldedit {
     bool changeMainPos(Player* player, BlockInstance blockInstance, bool output) {
         static std::unordered_map<std::string, long long> tickMap;
 
-        auto      xuid = player->getXuid();
+        auto xuid = player->getXuid();
         long long tick = player->getLevel().getCurrentServerTick().t;
         if (tickMap.find(xuid) != tickMap.end()) {
             if (abs(tick - tickMap[xuid]) < MINIMUM__RESPONSE_TICK)
@@ -87,8 +97,8 @@ namespace worldedit {
         if (mod.playerRegionMap[xuid]->setMainPos(pos, player->getDimensionId())) {
             if (output)
                 player->sendFormattedText("§aFirst position set to ({}, {}, {})", pos.x, pos.y, pos.z);
-            mod.playerMainPosMap[xuid].first         = pos;
-            mod.playerMainPosMap[xuid].second.first  = 0;
+            mod.playerMainPosMap[xuid].first = pos;
+            mod.playerMainPosMap[xuid].second.first = 0;
             mod.playerMainPosMap[xuid].second.second = player->getDimensionId();
             if (mod.playerRegionMap[xuid]->needResetVice) {
                 mod.playerVicePosMap.erase(xuid);

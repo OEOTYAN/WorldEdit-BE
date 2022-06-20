@@ -33,10 +33,10 @@
 namespace worldedit {
     class Percents {
        public:
-        bool        isNum    = true;
-        double      value    = 1;
+        bool isNum = true;
+        double value = 1;
         std::string function = "1";
-        Percents()           = default;
+        Percents() = default;
         template <typename functions>
         double getPercents(const std::unordered_map<::std::string, double>& variables, functions& funcs) {
             if (isNum) {
@@ -47,16 +47,16 @@ namespace worldedit {
     };
     class RawBlock {
        public:
-        bool        constBlock    = true;
-        Block*      block         = const_cast<Block*>(BedrockBlocks::mAir);
-        Block*      exBlock       = const_cast<Block*>(BedrockBlocks::mAir);
-        bool        hasBE         = false;
-        std::string blockEntity   = "";
-        int         blockId       = -2140000000;
-        int         blockData     = -2140000000;
-        std::string blockIdfunc   = "0";
+        bool constBlock = true;
+        Block* block = const_cast<Block*>(BedrockBlocks::mAir);
+        Block* exBlock = const_cast<Block*>(BedrockBlocks::mAir);
+        bool hasBE = false;
+        std::string blockEntity = "";
+        int blockId = -2140000000;
+        int blockData = -2140000000;
+        std::string blockIdfunc = "0";
         std::string blockDatafunc = "0";
-        RawBlock()                = default;
+        RawBlock() = default;
         template <typename functions>
         Block* getBlock(const std::unordered_map<::std::string, double>& variables, functions& funcs) {
             if (constBlock) {
@@ -80,23 +80,26 @@ namespace worldedit {
     };
     class BlockPattern {
        public:
-        size_t                blockNum = 0;
+        size_t blockNum = 0;
         std::vector<Percents> percents;
         std::vector<RawBlock> rawBlocks;
-        Clipboard*            clipboard = nullptr;
-        BlockPos              bias      = {0, 0, 0};
+        Clipboard* clipboard = nullptr;
+        BlockPos bias = {0, 0, 0};
         BlockPattern(std::string str, std::string xuid = "", Region* region = nullptr);
         template <typename functions>
         RawBlock* getRawBlock(const std::unordered_map<::std::string, double>& variables, functions& funcs) {
             std::vector<double> weights;
-            double              total = 0;
+            double total = 0;
             weights.resize(blockNum);
             for (int i = 0; i < blockNum; i++) {
                 weights[i] = std::max(percents[i].getPercents(variables, funcs), 0.0);
                 total += weights[i];
             }
+            if (total < 1e-32) {
+                return nullptr;
+            }
             double random = uniformRandDouble() * total;
-            double sum    = 0;
+            double sum = 0;
             for (int i = 0; i < blockNum - 1; i++) {
                 sum += weights[i];
                 if (random <= sum) {
@@ -112,16 +115,19 @@ namespace worldedit {
         bool hasBlock(Block* block);
         template <typename functions>
         void setBlock(const std::unordered_map<::std::string, double>& variables,
-                      functions&                                       funcs,
-                      BlockSource*                                     blockSource,
-                      const BlockPos&                                  pos) {
+                      functions& funcs,
+                      BlockSource* blockSource,
+                      const BlockPos& pos) {
             if (clipboard != nullptr) {
                 clipboard->getSet2(pos - bias).setBlock(pos, blockSource);
                 return;
             }
-            auto  blockInstance = blockSource->getBlockInstance(pos);
-            auto* rawBlock      = getRawBlock(variables, funcs);
-            auto* block         = rawBlock->getBlock(variables, funcs);
+            auto blockInstance = blockSource->getBlockInstance(pos);
+            auto* rawBlock = getRawBlock(variables, funcs);
+            if (rawBlock == nullptr) {
+                return;
+            }
+            auto* block = rawBlock->getBlock(variables, funcs);
             setBlockSimple(blockSource, pos, block, rawBlock->exBlock);
             if (rawBlock->hasBE && blockInstance.hasBlockEntity()) {
                 blockInstance.getBlockEntity()->setNbt(CompoundTag::fromBinaryNBT(rawBlock->blockEntity).get());

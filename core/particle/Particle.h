@@ -14,7 +14,7 @@ namespace worldedit {
 
     enum class GRAPHIC_COLOR { WHITE = 0, RED = 1, YELLOW = 2, BLUE = 3, GREEN = 4 };
 
-    void spawnParticle(Vec3 p, std::string& type, int dimType);
+    void spawnParticle(Vec3 const& p, std::string const& type, int dimType);
 
     void spawnCuboidParticle(const AABB& aabb, GRAPHIC_COLOR color, int dimType = 0);
 

@@ -8,16 +8,17 @@
 #include "Graphics.h"
 // #include <string>
 #include "MC/Player.hpp"
+#include "MC/Dimension.hpp"
 #include "MC/Level.hpp"
 
 namespace worldedit {
 
-    void spawnParticle(Vec3 p, std::string& type, int dimType) {
-        auto allPlayers = Level::getAllPlayers();
-        for (auto& player : allPlayers) {
-            if (player->getDimensionId() == dimType)
-                player->sendSpawnParticleEffectPacket(p, dimType, type);
-        }
+    void spawnParticle(Vec3 const& p, std::string const& type, int dimType) {
+        auto diminsion = Level::getDimension(dimType);
+        diminsion->forEachPlayer([&](Player& player) {
+                player.sendSpawnParticleEffectPacket(p, dimType, type);
+                return true;
+        });
     }
 
     void spawnCuboidParticle(const AABB& aabb, GRAPHIC_COLOR color, int dimType) {
@@ -36,7 +37,6 @@ namespace worldedit {
         drawLine(p4, FACING::NEG_X, dx, color, dimType);
         drawLine(p4, FACING::NEG_Y, dy, color, dimType);
         drawLine(p4, FACING::POS_Z, dz, color, dimType);
-
         Vec3 p5{p1.x, p2.y, p2.z};
         drawLine(p5, FACING::POS_X, dx, color, dimType);
         drawLine(p5, FACING::NEG_Y, dy, color, dimType);

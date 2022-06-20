@@ -7,13 +7,13 @@
 namespace worldedit {
     class Brush {
        public:
-        unsigned short      size    = 0;
+        unsigned short size = 0;
         class BlockPattern* pattern = nullptr;
-        bool                setted  = false;
-        std::string         mask    = "";
-        Brush()                     = default;
+        bool setted = false;
+        std::string mask = "";
+        Brush() = default;
         Brush(unsigned short, BlockPattern*);
-        void              setMask(std::string const& str = "") { mask = str; };
+        void setMask(std::string const& str = "") { mask = str; };
         virtual long long set(class Player*, class ::BlockInstance);
         ~Brush();
     };

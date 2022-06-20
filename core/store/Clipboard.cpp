@@ -179,10 +179,10 @@ namespace worldedit {
         }
         return res;
     }
-    BlockNBTSet Clipboard::getSet(const BlockPos& pos) {
+    BlockNBTSet& Clipboard::getSet(const BlockPos& pos) {
         return blockslist[getIter(pos)];
     }
-    BlockNBTSet Clipboard::getSet2(const BlockPos& pos) {
+    BlockNBTSet& Clipboard::getSet2(const BlockPos& pos) {
         return blockslist[getIter2(pos)];
     }
     bool Clipboard::contains(const BlockPos& pos) {

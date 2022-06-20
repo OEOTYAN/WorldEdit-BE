@@ -42,8 +42,8 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod  = worldedit::getMod();
-                auto  xuid = origin.getPlayer()->getXuid();
+                auto& mod = worldedit::getMod();
+                auto xuid = origin.getPlayer()->getXuid();
                 mod.playerClipboardMap.erase(xuid);
                 output.success(fmt::format("§aclipboard cleared"));
             },
@@ -56,21 +56,20 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod  = worldedit::getMod();
-                auto  xuid = origin.getPlayer()->getXuid();
+                auto& mod = worldedit::getMod();
+                auto xuid = origin.getPlayer()->getXuid();
                 if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
                     mod.playerRegionMap[xuid]->hasSelected()) {
-                    auto* region                           = mod.playerRegionMap[xuid];
-                    auto  boundingBox                      = region->getBoundBox();
-                    mod.playerClipboardMap[xuid]           = Clipboard(boundingBox.max - boundingBox.min);
-                    auto pPos                              = origin.getPlayer()->getPosition();
-                    mod.playerClipboardMap[xuid].playerPos = BlockPos(floor(pPos.x), floor(pPos.y), floor(pPos.z));
-                    mod.playerClipboardMap[xuid].playerRelPos =
-                        BlockPos(floor(pPos.x), floor(pPos.y), floor(pPos.z)) - boundingBox.min;
-                    auto dimID       = mod.playerRegionMap[xuid]->getDimensionID();
+                    auto* region = mod.playerRegionMap[xuid];
+                    auto boundingBox = region->getBoundBox();
+                    mod.playerClipboardMap[xuid] = Clipboard(boundingBox.max - boundingBox.min);
+                    auto pPos = origin.getPlayer()->getPosition() - Vec3(0, 1, 0);
+                    mod.playerClipboardMap[xuid].playerPos = pPos.toBlockPos();
+                    mod.playerClipboardMap[xuid].playerRelPos = pPos.toBlockPos() - boundingBox.min;
+                    auto dimID = mod.playerRegionMap[xuid]->getDimensionID();
                     auto blockSource = Level::getBlockSource(dimID);
                     mod.playerRegionMap[xuid]->forEachBlockInRegion([&](const BlockPos& pos) {
-                        auto localPos      = pos - boundingBox.min;
+                        auto localPos = pos - boundingBox.min;
                         auto blockInstance = blockSource->getBlockInstance(pos);
                         mod.playerClipboardMap[xuid].storeBlock(blockInstance, localPos);
                     });
@@ -88,34 +87,33 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod  = worldedit::getMod();
-                auto  xuid = origin.getPlayer()->getXuid();
+                auto& mod = worldedit::getMod();
+                auto xuid = origin.getPlayer()->getXuid();
                 if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
                     mod.playerRegionMap[xuid]->hasSelected()) {
-                    auto* region      = mod.playerRegionMap[xuid];
-                    auto  dimID       = region->getDimensionID();
-                    auto  boundingBox = region->getBoundBox();
-                    auto  blockSource = Level::getBlockSource(dimID);
+                    auto* region = mod.playerRegionMap[xuid];
+                    auto dimID = region->getDimensionID();
+                    auto boundingBox = region->getBoundBox();
+                    auto blockSource = Level::getBlockSource(dimID);
 
-                    auto history            = mod.getPlayerNextHistory(xuid);
-                    *history                = Clipboard(boundingBox.max - boundingBox.min);
+                    auto history = mod.getPlayerNextHistory(xuid);
+                    *history = Clipboard(boundingBox.max - boundingBox.min);
                     history->playerRelPos.x = dimID;
-                    history->playerPos      = boundingBox.min;
-                    // history->used = true;
+                    history->playerPos = boundingBox.min;
+
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
-                        auto localPos      = pos - boundingBox.min;
+                        auto localPos = pos - boundingBox.min;
                         auto blockInstance = blockSource->getBlockInstance(pos);
                         history->storeBlock(blockInstance, localPos);
                     });
 
-                    auto pPos                              = origin.getPlayer()->getPosition();
-        
-                    mod.playerClipboardMap[xuid]           = Clipboard(boundingBox.max - boundingBox.min);
-                    mod.playerClipboardMap[xuid].playerPos = BlockPos(floor(pPos.x), floor(pPos.y), floor(pPos.z));
-                    mod.playerClipboardMap[xuid].playerRelPos =
-                        BlockPos(floor(pPos.x), floor(pPos.y), floor(pPos.z)) - boundingBox.min;
+                    auto pPos = origin.getPlayer()->getPosition() - Vec3(0, 1, 0);
+
+                    mod.playerClipboardMap[xuid] = Clipboard(boundingBox.max - boundingBox.min);
+                    mod.playerClipboardMap[xuid].playerPos =pPos.toBlockPos();
+                    mod.playerClipboardMap[xuid].playerRelPos = pPos.toBlockPos() - boundingBox.min;
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
-                        auto localPos      = pos - boundingBox.min;
+                        auto localPos = pos - boundingBox.min;
                         auto blockInstance = blockSource->getBlockInstance(pos);
                         mod.playerClipboardMap[xuid].storeBlock(blockInstance, localPos);
                     });
@@ -134,11 +132,11 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod  = worldedit::getMod();
-                auto  xuid = origin.getPlayer()->getXuid();
+                auto& mod = worldedit::getMod();
+                auto xuid = origin.getPlayer()->getXuid();
                 if (mod.playerClipboardMap.find(xuid) != mod.playerClipboardMap.end()) {
                     auto* clipboard = &mod.playerClipboardMap[xuid];
-                    bool  arg_a = false, arg_n = false, arg_o = false, arg_s = false;
+                    bool arg_a = false, arg_n = false, arg_o = false, arg_s = false;
                     if (results["args"].isSet) {
                         auto str = results["args"].getRaw<std::string>();
                         if (str.find("-") == std::string::npos) {
@@ -162,12 +160,12 @@ namespace worldedit {
                     if (arg_o) {
                         pbPos = clipboard->playerPos;
                     } else {
-                        auto pPos = origin.getPlayer()->getPosition();
-                        pbPos     = BlockPos(floor(pPos.x), floor(pPos.y), floor(pPos.z));
+                        auto pPos = origin.getPlayer()->getPosition() - Vec3(0, 1, 0);
+                        pbPos =pPos.toBlockPos();
                     }
 
                     BlockInstance blockInstance;
-                    BoundingBox   box = clipboard->getBoundingBox() + pbPos;
+                    BoundingBox box = clipboard->getBoundingBox() + pbPos;
 
                     if (arg_n || arg_s) {
                         blockInstance = Level::getBlockInstance(box.min, origin.getPlayer()->getDimensionId());
@@ -178,14 +176,14 @@ namespace worldedit {
 
                     auto dimID = origin.getPlayer()->getDimensionId();
                     if (!arg_n) {
-                        auto blockSource        = Level::getBlockSource(dimID);
-                        auto history            = mod.getPlayerNextHistory(xuid);
-                        *history                = Clipboard(box.max - box.min);
+                        auto blockSource = Level::getBlockSource(dimID);
+                        auto history = mod.getPlayerNextHistory(xuid);
+                        *history = Clipboard(box.max - box.min);
                         history->playerRelPos.x = dimID;
-                        history->playerPos      = box.min;
-                        // history->used = true;
+                        history->playerPos = box.min;
+
                         box.forEachBlockInBox([&](const BlockPos& pos) {
-                            auto localPos      = pos - box.min;
+                            auto localPos = pos - box.min;
                             auto blockInstance = blockSource->getBlockInstance(pos);
                             history->storeBlock(blockInstance, localPos);
                         });
@@ -223,9 +221,9 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod    = worldedit::getMod();
-                auto  player = origin.getPlayer();
-                auto  xuid   = player->getXuid();
+                auto& mod = worldedit::getMod();
+                auto player = origin.getPlayer();
+                auto xuid = player->getXuid();
                 if (mod.playerClipboardMap.find(xuid) != mod.playerClipboardMap.end()) {
                     worldedit::FACING facing;
                     if (results["dir"].isSet) {
@@ -257,9 +255,9 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod    = worldedit::getMod();
-                auto  player = origin.getPlayer();
-                auto  xuid   = player->getXuid();
+                auto& mod = worldedit::getMod();
+                auto player = origin.getPlayer();
+                auto xuid = player->getXuid();
                 if (mod.playerClipboardMap.find(xuid) != mod.playerClipboardMap.end()) {
                     Vec3 angle(0, 0, 0);
                     if (results["angleY"].isSet) {

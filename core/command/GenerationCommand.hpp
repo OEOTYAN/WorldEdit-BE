@@ -31,7 +31,7 @@ namespace worldedit {
                 auto  player = origin.getPlayer();
                 auto  xuid   = player->getXuid();
                 auto  dimID  = player->getDimensionId();
-                auto  pos    = player->getPosition().toBlockPos();
+                auto  pos    = (player->getPosition() - Vec3(0, 1, 0)).toBlockPos();
                 pos.y -= 1;
 
                 bool arg_h = false;
@@ -82,7 +82,7 @@ namespace worldedit {
                 auto  player = origin.getPlayer();
                 auto  xuid   = player->getXuid();
                 auto  dimID  = player->getDimensionId();
-                auto  pos    = player->getPosition().toBlockPos();
+                auto pos = (player->getPosition() - Vec3(0, 1, 0)).toBlockPos();
                 pos.y -= 1;
 
                 bool           arg_h  = true;
@@ -124,7 +124,7 @@ namespace worldedit {
                 auto  player = origin.getPlayer();
                 auto  xuid   = player->getXuid();
                 auto  dimID  = player->getDimensionId();
-                auto  pos    = player->getPosition().toBlockPos();
+                auto pos = (player->getPosition() - Vec3(0, 1, 0)).toBlockPos();
                 pos.y -= 1;
 
                 bool arg_h = false;
@@ -171,7 +171,7 @@ namespace worldedit {
                 auto  player = origin.getPlayer();
                 auto  xuid   = player->getXuid();
                 auto  dimID  = player->getDimensionId();
-                auto  pos    = player->getPosition().toBlockPos();
+                auto pos = (player->getPosition() - Vec3(0, 1, 0)).toBlockPos();
                 pos.y -= 1;
 
                 bool           arg_h  = true;

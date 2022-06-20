@@ -8,8 +8,8 @@
 #include "MC/Dimension.hpp"
 namespace worldedit {
     void ConvexRegion::updateBoundingBox() {
-        auto range      = Level::getDimension(dimensionID)->getHeightRange();
-        rendertick      = 0;
+        auto range = Level::getDimension(dimensionID)->getHeightRange();
+        rendertick = 0;
         boundingBox.min = *vertices.begin();
         boundingBox.max = *vertices.begin();
         for_each(vertices.begin(), vertices.end(), [&](BlockPos const& value) {
@@ -48,8 +48,8 @@ namespace worldedit {
         triangles.clear();
         vertexBacklog.clear();
         edges.clear();
-        hasLast          = false;
-        centerAccum      = BlockPos(0, 0, 0);
+        hasLast = false;
+        centerAccum = BlockPos(0, 0, 0);
         this->regionType = CONVEX;
     }
 
@@ -64,7 +64,7 @@ namespace worldedit {
             }
 
             if (triangle.above(pt)) {
-                hasLast      = true;
+                hasLast = true;
                 lastTriangle = triangle;
                 return false;
             }
@@ -144,15 +144,15 @@ namespace worldedit {
 
     bool ConvexRegion::setMainPos(const BlockPos& pos, const int& dim) {
         dimensionID = dim;
-        selecting   = 1;
-        hasLast     = false;
+        selecting = 1;
+        hasLast = false;
         vertices.clear();
         triangles.clear();
         vertexBacklog.clear();
         edges.clear();
         poss.clear();
         centerAccum = BlockPos(0, 0, 0);
-        bool res    = addVertex(pos);
+        bool res = addVertex(pos);
         if (res) {
             poss.push_back(pos);
         }
@@ -171,8 +171,8 @@ namespace worldedit {
     }
 
     std::pair<std::string, bool> ConvexRegion::shift(const BlockPos& change) {
-        boundingBox.min  = boundingBox.min + change;
-        boundingBox.max  = boundingBox.max + change;
+        boundingBox.min = boundingBox.min + change;
+        boundingBox.max = boundingBox.max + change;
         auto tmpVertices = new std::unordered_set<BlockPos>(vertices);
         vertices.clear();
         for (auto vertice : *tmpVertices) {
@@ -203,7 +203,7 @@ namespace worldedit {
         }
         delete tmpEdges;
         centerAccum = centerAccum + change * (int)vertices.size();
-        hasLast     = false;
+        hasLast = false;
 
         return {"§aThis region has been shifted", true};
     }
@@ -239,12 +239,20 @@ namespace worldedit {
     void ConvexRegion::renderRegion() {
         if (selecting && dimensionID >= 0 && rendertick <= 0) {
             rendertick = 40;
-            auto size  = vertices.size();
-            for (auto vertice : vertices)
+            auto size = vertices.size();
+            for (auto& vertice : vertices) {
                 worldedit::spawnCuboidParticle({vertice.toVec3(), vertice.toVec3() + Vec3::ONE}, GRAPHIC_COLOR::GREEN,
                                                dimensionID);
-            for (auto edge : edges)
-                drawOrientedLine(edge.start, edge.end, dimensionID);
+            }
+            for (auto& pos : poss) {
+                if (vertices.find(pos) == vertices.end()) {
+                    worldedit::spawnCuboidParticle({pos.toVec3(), pos.toVec3() + Vec3::ONE}, GRAPHIC_COLOR::WHITE,
+                                                   dimensionID);
+                }
+            }
+            for (auto& edge : edges) {
+                drawOrientedLine(edge.start + 0.5, edge.end + 0.5, dimensionID, GRAPHIC_COLOR::YELLOW);
+            }
         }
         rendertick--;
     };
@@ -258,10 +266,10 @@ namespace worldedit {
     }
 
     Triangle::Triangle(const Vec3& v0, const Vec3& v1, const Vec3& v2) {
-        vertices[0]   = v0;
-        vertices[1]   = v1;
-        vertices[2]   = v2;
-        normal        = ((v1 - v0).cross(v2 - v0)).normalize();
+        vertices[0] = v0;
+        vertices[1] = v1;
+        vertices[2] = v2;
+        normal = ((v1 - v0).cross(v2 - v0)).normalize();
         maxDotProduct = std::max(std::max(normal.dot(v0), normal.dot(v1)), normal.dot(v2));
     }
     bool Triangle::operator==(const Triangle& v) const {

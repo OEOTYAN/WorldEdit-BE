@@ -21,8 +21,18 @@ namespace worldedit {
         changeVicePos(player, blockInstance);
         return true;
     }
+    bool AirWand::leftClick(Player* player, BlockInstance blockInstance) {
+        auto bs = Level::getBlockSource(player);
+        changeMainPos(player, bs->getBlockInstance((player->getPosition() - Vec3(0, 1, 0)).toBlockPos()));
+        return true;
+    }
+    bool AirWand::rightClick(Player* player, BlockInstance blockInstance) {
+        auto bs = Level::getBlockSource(player);
+        changeVicePos(player, bs->getBlockInstance((player->getPosition() - Vec3(0, 1, 0)).toBlockPos()));
+        return true;
+    }
     bool InfoTool::rightClick(Player* player, BlockInstance blockInstance) {
-        auto  block   = blockInstance.getBlock();
+        auto block = blockInstance.getBlock();
         auto& exblock = const_cast<Block&>(blockInstance.getBlockSource()->getExtraBlock(blockInstance.getPosition()));
         std::cout << "block: (" << getBlockId(block->getTypeName()) << ":" << block->getTileData() << ")\n"
                   << block->getNbt()->toPrettySNBT() << std::endl;

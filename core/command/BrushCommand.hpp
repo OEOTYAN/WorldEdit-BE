@@ -30,6 +30,8 @@ namespace worldedit {
                 {"gravity", {"gravity"}},
                 {"heightmap", {"heightmap"}},
                 {"none", {"none"}},
+                {"file", {"file"}},
+                {"link", {"link"}},
             },
             {
                 // parameters(type, name, [optional], [enumOptions(also
@@ -51,6 +53,10 @@ namespace worldedit {
                 ParamData("radius", ParamType::Int, true, "radius"),
                 ParamData("kernelsize", ParamType::Int, true, "kernelsize"),
                 ParamData("height", ParamType::Int, true, "height"),
+                ParamData("filename", ParamType::String, "filename"),
+                ParamData("url", ParamType::String, "url"),
+                ParamData("file", ParamType::Enum, "file"),
+                ParamData("link", ParamType::Enum, "link"),
             },
             {
                 // overloads{ (type == Enum ? enumOptions : name) ...}
@@ -62,19 +68,20 @@ namespace worldedit {
                 {"cyl", "block", "radius", "height", "args"},
                 {"cyl", "blockPattern", "radius", "height", "args"},
                 {"smooth", "radius", "kernelsize"},
-                {"gravity"},
-                {"heightmap"},
+                {"gravity", "args"},
+                {"heightmap", "file", "filename", "radius", "height", "args"},
+                {"heightmap", "link", "url", "radius", "height", "args"},
                 {"none"},
             },
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto&       mod       = worldedit::getMod();
-                auto        player    = origin.getPlayer();
+                auto& mod = worldedit::getMod();
+                auto player = origin.getPlayer();
                 std::string brushName = player->getHandSlot()->getNbt()->toBinaryNBT();
                 if (brushName == "") {
                     output.error("You need to select an item");
-                    return; 
+                    return;
                 }
                 auto xuid = player->getXuid();
                 if (mod.playerBrushMap.find(xuid) != mod.playerBrushMap.end() &&
@@ -83,8 +90,8 @@ namespace worldedit {
                 }
 
                 unsigned short radius = 2;
-                int            ksize  = 5;
-                int            height = 1;
+                int ksize = 5;
+                int height = 1;
                 if (results["radius"].isSet) {
                     radius = (unsigned short)(results["radius"].get<int>());
                 }
@@ -95,7 +102,7 @@ namespace worldedit {
                     ksize = results["kernelsize"].get<int>();
                 }
 
-                bool arg_a = false, arg_h = false, arg_o = true;
+                bool arg_a = false, arg_h = false, arg_o = true, arg_r = false;
                 if (results["args"].isSet) {
                     auto str = results["args"].getRaw<std::string>();
                     if (str.find("-") == std::string::npos) {
@@ -110,6 +117,9 @@ namespace worldedit {
                     }
                     if (str.find("h") != std::string::npos) {
                         arg_h = true;
+                    }
+                    if (str.find("r") != std::string::npos) {
+                        arg_r = true;
                     }
                 }
 
@@ -153,12 +163,74 @@ namespace worldedit {
                     output.success("§aBrush set to gravity");
                     return;
                 } else if (results["heightmap"].isSet) {
+                    auto filename = results["filename"].get<std::string>();
+
+                    if (filename.find(".png") == std::string::npos) {
+                        filename += ".png";
+                    }
+
+                    filename = WE_DIR + "image/" + filename;
+
+                    mod.playerBrushMap[xuid][brushName] =
+                        new ImageHeightmapBrush(radius, height, loadpng(filename), arg_r);
+
                     output.success("§aBrush set to image heightmap");
                     return;
                 } else if (results["none"].isSet) {
                     mod.playerBrushMap[xuid].erase(brushName);
                     output.success("§aBrush unbinded");
                     return;
+                }
+            },
+            CommandPermissionLevel::GameMasters);
+
+        DynamicCommand::setup(
+            "bmask",                  // command name
+            "set your brush's mask",  // command description
+            {}, {ParamData("mask", ParamType::String, true, "mask")}, {{"mask"}},
+            // dynamic command callback
+            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+               std::unordered_map<std::string, DynamicCommand::Result>& results) {
+                auto& mod = worldedit::getMod();
+                auto player = origin.getPlayer();
+                std::string brushName = player->getHandSlot()->getNbt()->toBinaryNBT();
+                auto xuid = player->getXuid();
+                if (mod.playerBrushMap.find(xuid) != mod.playerBrushMap.end() &&
+                    mod.playerBrushMap[xuid].find(brushName) != mod.playerBrushMap[xuid].end()) {
+                    auto* brush = mod.playerBrushMap[xuid][brushName];
+                    if (results["mask"].isSet) {
+                        auto tmp = results["mask"].get<std::string>();
+                        brush->mask = tmp;
+                        output.success("§aBrush mask set to §g" + tmp);
+                    } else {
+                        brush->mask = "";
+                        output.success("§aBrush mask disabled");
+                    }
+                } else {
+                    output.error("You need to choose a brush first");
+                }
+            },
+            CommandPermissionLevel::GameMasters);
+
+        DynamicCommand::setup(
+            "bsize",                  // command name
+            "set your brush's size",  // command description
+            {}, {ParamData("size", ParamType::Int, "size")}, {{"size"}},
+            // dynamic command callback
+            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+               std::unordered_map<std::string, DynamicCommand::Result>& results) {
+                auto& mod = worldedit::getMod();
+                auto player = origin.getPlayer();
+                std::string brushName = player->getHandSlot()->getNbt()->toBinaryNBT();
+                auto xuid = player->getXuid();
+                if (mod.playerBrushMap.find(xuid) != mod.playerBrushMap.end() &&
+                    mod.playerBrushMap[xuid].find(brushName) != mod.playerBrushMap[xuid].end()) {
+                    auto* brush = mod.playerBrushMap[xuid][brushName];
+                    auto size = results["size"].get<int>();
+                    brush->size = size;
+                    output.success("§aBrush size set to " + std::to_string(size));
+                } else {
+                    output.error("You need to choose a brush first");
                 }
             },
             CommandPermissionLevel::GameMasters);

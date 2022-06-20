@@ -23,6 +23,12 @@ namespace worldedit {
         bool leftClick(Player* player, BlockInstance blockInstance) override;
         bool rightClick(Player* player, BlockInstance blockInstance) override;
     };
+    class AirWand : public Tool {
+       public:
+        AirWand() = default;
+        bool leftClick(Player* player, BlockInstance blockInstance) override;
+        bool rightClick(Player* player, BlockInstance blockInstance) override;
+    };
     class InfoTool : public Tool {
        public:
         InfoTool() = default;

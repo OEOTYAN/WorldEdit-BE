@@ -29,8 +29,6 @@
 namespace worldedit {
     void serverSubscribe() {
         Event::ServerStartedEvent::subscribe([](const Event::ServerStartedEvent) {
-            // Logger logger("MyPlugin");
-            // logger.warn << "Warning! Fail to do sth." << logger.endl;
             auto& mod = worldedit::getMod();
             Schedule::repeat(
                 [&]() {
@@ -42,6 +40,7 @@ namespace worldedit {
                             mod.playerRegionMap[xuid]->renderRegion();
                         }
                     }
+
                     mod.renderMVpos();
                 },
                 1);

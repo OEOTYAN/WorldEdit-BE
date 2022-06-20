@@ -14,29 +14,30 @@ namespace worldedit {
     }
 
     enum RegionType {
-        CUBOID   = 0,
-        EXPAND   = 1,
-        SPHERE   = 2,
-        POLY     = 3,
-        CONVEX   = 4,
+        CUBOID = 0,
+        EXPAND = 1,
+        SPHERE = 2,
+        POLY = 3,
+        CONVEX = 4,
         CYLINDER = 5,
+        LOFT = 6,
     };
 
     class Region {
        protected:
-        int         rendertick  = 0;
-        int         dimensionID = -1;
+        int rendertick = 0;
+        int dimensionID = -1;
         BoundingBox boundingBox;
 
        public:
-        RegionType regionType    = CUBOID;
-        bool selecting     = false;
+        RegionType regionType = CUBOID;
+        bool selecting = false;
         bool needResetVice = true;
         explicit Region(const BoundingBox& b, int dim);
 
-        BoundingBox getBoundBox() const { return this->boundingBox; }
-        RegionType  getRegionType() const { return this->regionType; }
-        int         getDimensionID() const { return this->dimensionID; }
+        virtual BoundingBox getBoundBox() { return this->boundingBox; }
+        RegionType getRegionType() const { return this->regionType; }
+        int getDimensionID() const { return this->dimensionID; }
 
         virtual ~Region() = default;
 
@@ -68,15 +69,21 @@ namespace worldedit {
 
         virtual void forEachBlockInRegion(const std::function<void(const BlockPos&)>& todo);
 
+        virtual void forEachBlockUVInRegion(const std::function<void(const BlockPos&, double, double)>& todo);
+
         virtual void forTopBlockInRegion(const std::function<void(const BlockPos&)>& todo);
 
-        virtual void forEachLine(const std::function<void(const BlockPos&,const BlockPos&)>& todo){};
+        virtual void forEachLine(const std::function<void(const BlockPos&, const BlockPos&)>& todo){};
 
-        virtual std::vector<double> getHeightMap();
+        virtual std::vector<double> getHeightMap(std::string mask = "");
 
-        virtual void applyHeightMap(const std::vector<double>& data);
+        virtual bool removePoint(int dim, const BlockPos& pos = BlockPos::MIN) { return false; };
+
+        virtual void applyHeightMap(const std::vector<double>& data, std::string mask = "");
 
         virtual void renderRegion();
+
+        int getHeighest(int x, int z);
 
         inline bool hasSelected() { return this->selecting; }
 

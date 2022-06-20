@@ -12,14 +12,14 @@
 #include "region/ChangeRegion.hpp"
 namespace worldedit {
 
-    long long SimpleBuilder::buildCylinder(BlockPos       pos,
-                                           int            dim,
-                                           std::string    xuid,
-                                           BlockPattern*  blockPattern,
+    long long SimpleBuilder::buildCylinder(BlockPos pos,
+                                           int dim,
+                                           std::string xuid,
+                                           BlockPattern* blockPattern,
                                            unsigned short radius,
-                                           int            height,
-                                           bool           hollow,
-                                           std::string    mask) {
+                                           int height,
+                                           bool hollow,
+                                           std::string mask) {
         if (height == 0) {
             return -1;
         } else if (height < 0) {
@@ -34,10 +34,10 @@ namespace worldedit {
             height = range.max - pos.y + 1;
         }
         BoundingBox box({pos.x - radius, pos.y, pos.z - radius}, {pos.x + radius, pos.y + height, pos.z + radius});
-        long long   i = 0;
+        long long i = 0;
 
-        auto& mod         = worldedit::getMod();
-        auto  blockSource = Level::getBlockSource(dim);
+        auto& mod = worldedit::getMod();
+        auto blockSource = Level::getBlockSource(dim);
 
         INNERIZE_GMASK
 
@@ -56,19 +56,20 @@ namespace worldedit {
                              std::function<void()> const& todo) mutable { todo(); };
         }
 
-        auto          playerPos = Level::getPlayer(xuid)->getPosition();
+        auto playerPos = Level::getPlayer(xuid)->getPosition() - Vec3(0, 1, 0);
+        auto playerRot = Level::getPlayer(xuid)->getRotation();
         EvalFunctions f;
         f.setbs(blockSource);
         f.setbox(box);
         std::unordered_map<std::string, double> variables;
 
-        auto history            = mod.getPlayerNextHistory(xuid);
-        *history                = Clipboard(box.max - box.min);
+        auto history = mod.getPlayerNextHistory(xuid);
+        *history = Clipboard(box.max - box.min);
         history->playerRelPos.x = dim;
-        history->playerPos      = box.min;
-        // history->used = true;
+        history->playerPos = box.min;
+
         box.forEachBlockInBox([&](const BlockPos& blockPos) {
-            auto localPos      = blockPos - box.min;
+            auto localPos = blockPos - box.min;
             auto blockInstance = blockSource->getBlockInstance(blockPos);
             history->storeBlock(blockInstance, localPos);
         });
@@ -88,7 +89,7 @@ namespace worldedit {
                     blockPos = pos;
                     blockPos += {X, y, Yi};
 
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -99,7 +100,7 @@ namespace worldedit {
 
                     blockPos.z = pos.z - Yi;
 
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -110,7 +111,7 @@ namespace worldedit {
 
                     blockPos.x = pos.x - X;
 
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -121,7 +122,7 @@ namespace worldedit {
 
                     blockPos.z = pos.z + Yi;
 
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -133,7 +134,7 @@ namespace worldedit {
                     blockPos.x = pos.x + Yi;
                     blockPos.z = pos.z + X;
 
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -144,7 +145,7 @@ namespace worldedit {
 
                     blockPos.z = pos.z - X;
 
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -155,7 +156,7 @@ namespace worldedit {
 
                     blockPos.x = pos.x - Yi;
 
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -166,7 +167,7 @@ namespace worldedit {
 
                     blockPos.z = pos.z + X;
 
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -187,18 +188,18 @@ namespace worldedit {
         return i;
     }
 
-    long long SimpleBuilder::buildSphere(BlockPos       pos,
-                                         int            dim,
-                                         std::string    xuid,
-                                         BlockPattern*  blockPattern,
+    long long SimpleBuilder::buildSphere(BlockPos pos,
+                                         int dim,
+                                         std::string xuid,
+                                         BlockPattern* blockPattern,
                                          unsigned short radius,
-                                         bool           hollow,
-                                         std::string    mask) {
+                                         bool hollow,
+                                         std::string mask) {
         BoundingBox box(pos - radius, pos + radius);
-        long long   i = 0;
+        long long i = 0;
 
-        auto& mod         = worldedit::getMod();
-        auto  blockSource = Level::getBlockSource(dim);
+        auto& mod = worldedit::getMod();
+        auto blockSource = Level::getBlockSource(dim);
 
         INNERIZE_GMASK
 
@@ -206,49 +207,50 @@ namespace worldedit {
                            std::function<void()> const&)>
             maskLambda;
         if (mask != "") {
-            maskLambda = [&]( EvalFunctions& func, const std::unordered_map<std::string, double>& var,
+            maskLambda = [&](EvalFunctions& func, const std::unordered_map<std::string, double>& var,
                              std::function<void()> const& todo) mutable {
                 if (cpp_eval::eval<double>(mask.c_str(), var, func) > 0.5) {
                     todo();
                 }
             };
         } else {
-            maskLambda = [&]( EvalFunctions& func, const std::unordered_map<std::string, double>& var,
+            maskLambda = [&](EvalFunctions& func, const std::unordered_map<std::string, double>& var,
                              std::function<void()> const& todo) mutable { todo(); };
         }
 
-        auto          playerPos = Level::getPlayer(xuid)->getPosition();
+        auto playerPos = Level::getPlayer(xuid)->getPosition() - Vec3(0, 1, 0);
+        auto playerRot = Level::getPlayer(xuid)->getRotation();
         EvalFunctions f;
         f.setbs(blockSource);
         f.setbox(box);
         std::unordered_map<std::string, double> variables;
 
-        auto history            = mod.getPlayerNextHistory(xuid);
-        *history                = Clipboard(box.max - box.min);
+        auto history = mod.getPlayerNextHistory(xuid);
+        *history = Clipboard(box.max - box.min);
         history->playerRelPos.x = dim;
-        history->playerPos      = box.min;
-        // history->used = true;
+        history->playerPos = box.min;
+
         box.forEachBlockInBox([&](const BlockPos& blockPos) {
-            auto localPos      = blockPos - box.min;
+            auto localPos = blockPos - box.min;
             auto blockInstance = blockSource->getBlockInstance(blockPos);
             history->storeBlock(blockInstance, localPos);
         });
 
         BlockPos blockPos;
 
-        double R      = radius + 0.5;
+        double R = radius + 0.5;
         double nextXn = 0;
         for (int x = 0; x <= radius; ++x) {
-            double xn     = nextXn;
-            nextXn        = (x + 1) / R;
+            double xn = nextXn;
+            nextXn = (x + 1) / R;
             double nextYn = 0;
             for (int y = 0; y <= radius; ++y) {
-                double yn     = nextYn;
-                nextYn        = (y + 1) / R;
+                double yn = nextYn;
+                nextYn = (y + 1) / R;
                 double nextZn = 0;
                 for (int z = 0; z <= radius; ++z) {
                     double zn = nextZn;
-                    nextZn    = (z + 1) / R;
+                    nextZn = (z + 1) / R;
                     if (xn * xn + yn * yn + zn * zn > 1) {
                         continue;
                     }
@@ -261,7 +263,7 @@ namespace worldedit {
                     blockPos = pos;
                     blockPos += {x, y, z};
 
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -272,7 +274,7 @@ namespace worldedit {
 
                     blockPos.y = pos.y - y;
 
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -283,7 +285,7 @@ namespace worldedit {
 
                     blockPos.z = pos.z - z;
 
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -294,7 +296,7 @@ namespace worldedit {
 
                     blockPos.x = pos.x - x;
 
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -305,7 +307,7 @@ namespace worldedit {
 
                     blockPos.y = pos.y + y;
 
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -316,7 +318,7 @@ namespace worldedit {
 
                     blockPos.x = pos.x + x;
 
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -328,7 +330,7 @@ namespace worldedit {
                     blockPos.x = pos.x - x;
                     blockPos.z = pos.z + z;
 
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -339,7 +341,7 @@ namespace worldedit {
 
                     blockPos.y = pos.y - y;
 
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -353,49 +355,50 @@ namespace worldedit {
         return i;
     }
 
-    long long SimpleBuilder::buildCube(BlockPos       pos,
-                                       int            dim,
-                                       std::string    xuid,
-                                       BlockPattern*  blockPattern,
+    long long SimpleBuilder::buildCube(BlockPos pos,
+                                       int dim,
+                                       std::string xuid,
+                                       BlockPattern* blockPattern,
                                        unsigned short size,
-                                       bool           hollow,
-                                       std::string    mask) {
+                                       bool hollow,
+                                       std::string mask) {
         BoundingBox box(pos - size, pos + size);
-        long long   i = 0;
+        long long i = 0;
 
-        auto& mod         = worldedit::getMod();
-        auto  blockSource = Level::getBlockSource(dim);
+        auto& mod = worldedit::getMod();
+        auto blockSource = Level::getBlockSource(dim);
 
         INNERIZE_GMASK
 
-        std::function<void(EvalFunctions &, std::unordered_map<std::string, double> const&,
+        std::function<void(EvalFunctions&, std::unordered_map<std::string, double> const&,
                            std::function<void()> const&)>
             maskLambda;
         if (mask != "") {
-            maskLambda = [&]( EvalFunctions& func, const std::unordered_map<std::string, double>& var,
+            maskLambda = [&](EvalFunctions& func, const std::unordered_map<std::string, double>& var,
                              std::function<void()> const& todo) mutable {
                 if (cpp_eval::eval<double>(mask.c_str(), var, func) > 0.5) {
                     todo();
                 }
             };
         } else {
-            maskLambda = [&]( EvalFunctions& func, const std::unordered_map<std::string, double>& var,
+            maskLambda = [&](EvalFunctions& func, const std::unordered_map<std::string, double>& var,
                              std::function<void()> const& todo) mutable { todo(); };
         }
 
-        auto          playerPos = Level::getPlayer(xuid)->getPosition();
+        auto playerPos = Level::getPlayer(xuid)->getPosition() - Vec3(0, 1, 0);
+        auto playerRot = Level::getPlayer(xuid)->getRotation();
         EvalFunctions f;
         f.setbs(blockSource);
         f.setbox(box);
         std::unordered_map<std::string, double> variables;
 
-        auto history            = mod.getPlayerNextHistory(xuid);
-        *history                = Clipboard(box.max - box.min);
+        auto history = mod.getPlayerNextHistory(xuid);
+        *history = Clipboard(box.max - box.min);
         history->playerRelPos.x = dim;
-        history->playerPos      = box.min;
-        // history->used = true;
+        history->playerPos = box.min;
+
         box.forEachBlockInBox([&](const BlockPos& blockPos) {
-            auto localPos      = blockPos - box.min;
+            auto localPos = blockPos - box.min;
             auto blockInstance = blockSource->getBlockInstance(blockPos);
             history->storeBlock(blockInstance, localPos);
         });
@@ -403,7 +406,7 @@ namespace worldedit {
         box.forEachBlockInBox([&](const BlockPos blockPos) {
             if (!hollow || (blockPos.x == box.min.x || blockPos.x == box.max.x || blockPos.y == box.min.y ||
                             blockPos.y == box.max.y || blockPos.z == box.min.z || blockPos.z == box.max.z)) {
-                setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
+                setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
 
                 gMaskLambda(f, variables, [&]() mutable {
                     maskLambda(f, variables, [&]() mutable {

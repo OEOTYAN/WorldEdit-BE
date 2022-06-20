@@ -29,18 +29,19 @@
 
 namespace worldedit {
 
-    void setBlockSimple(BlockSource*    blockSource,
+    void setBlockSimple(BlockSource* blockSource,
                         const BlockPos& pos,
-                        Block*          block   = const_cast<Block*>(BedrockBlocks::mAir),
-                        Block*          exblock = const_cast<Block*>(BedrockBlocks::mAir));
+                        Block* block = const_cast<Block*>(BedrockBlocks::mAir),
+                        Block* exblock = const_cast<Block*>(BedrockBlocks::mAir));
 
     template <typename functions>
     void setFunction(std::unordered_map<::std::string, double>& variables,
-                     functions&                                 funcs,
-                     const BoundingBox&                         boundingBox,
-                     const Vec3&                                playerPos,
-                     const BlockPos&                            pos,
-                     const Vec3&                                center) {
+                     functions& funcs,
+                     const BoundingBox& boundingBox,
+                     const Vec3& playerPos,
+                     const Vec2& playerRot,
+                     const BlockPos& pos,
+                     const Vec3& center) {
         double lengthx = (boundingBox.max.x - boundingBox.min.x) * 0.5;
         double lengthy = (boundingBox.max.y - boundingBox.min.y) * 0.5;
         double lengthz = (boundingBox.max.z - boundingBox.min.z) * 0.5;
@@ -48,12 +49,14 @@ namespace worldedit {
         double centery = (boundingBox.max.y + boundingBox.min.y) * 0.5;
         double centerz = (boundingBox.max.z + boundingBox.min.z) * 0.5;
         funcs.setPos(pos);
-        variables["x"]  = (pos.x - centerx) / lengthx;
-        variables["y"]  = (pos.y - centery) / lengthy;
-        variables["z"]  = (pos.z - centerz) / lengthz;
+        variables["x"] = (pos.x - centerx) / lengthx;
+        variables["y"] = (pos.y - centery) / lengthy;
+        variables["z"] = (pos.z - centerz) / lengthz;
         variables["rx"] = pos.x;
         variables["ry"] = pos.y;
         variables["rz"] = pos.z;
+        variables["px"] = playerRot.x;
+        variables["py"] = playerRot.y;
         variables["ox"] = pos.x - playerPos.x;
         variables["oy"] = pos.y - playerPos.y;
         variables["oz"] = pos.z - playerPos.z;
