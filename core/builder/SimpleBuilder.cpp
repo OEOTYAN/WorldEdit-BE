@@ -56,7 +56,7 @@ namespace worldedit {
                              std::function<void()> const& todo) mutable { todo(); };
         }
 
-        auto playerPos = Level::getPlayer(xuid)->getPosition() - Vec3(0, 1, 0);
+        auto playerPos = Level::getPlayer(xuid)->getPosition() - Vec3(0.0, 1.79, 0.0);
         auto playerRot = Level::getPlayer(xuid)->getRotation();
         EvalFunctions f;
         f.setbs(blockSource);
@@ -218,7 +218,7 @@ namespace worldedit {
                              std::function<void()> const& todo) mutable { todo(); };
         }
 
-        auto playerPos = Level::getPlayer(xuid)->getPosition() - Vec3(0, 1, 0);
+        auto playerPos = Level::getPlayer(xuid)->getPosition() - Vec3(0.0, 1.79, 0.0);
         auto playerRot = Level::getPlayer(xuid)->getRotation();
         EvalFunctions f;
         f.setbs(blockSource);
@@ -385,7 +385,7 @@ namespace worldedit {
                              std::function<void()> const& todo) mutable { todo(); };
         }
 
-        auto playerPos = Level::getPlayer(xuid)->getPosition() - Vec3(0, 1, 0);
+        auto playerPos = Level::getPlayer(xuid)->getPosition() - Vec3(0.0, 1.79, 0.0);
         auto playerRot = Level::getPlayer(xuid)->getRotation();
         EvalFunctions f;
         f.setbs(blockSource);

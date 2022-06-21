@@ -63,7 +63,7 @@ namespace worldedit {
                     auto* region = mod.playerRegionMap[xuid];
                     auto boundingBox = region->getBoundBox();
                     mod.playerClipboardMap[xuid] = Clipboard(boundingBox.max - boundingBox.min);
-                    auto pPos = origin.getPlayer()->getPosition() - Vec3(0, 1, 0);
+                    auto pPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
                     mod.playerClipboardMap[xuid].playerPos = pPos.toBlockPos();
                     mod.playerClipboardMap[xuid].playerRelPos = pPos.toBlockPos() - boundingBox.min;
                     auto dimID = mod.playerRegionMap[xuid]->getDimensionID();
@@ -107,10 +107,10 @@ namespace worldedit {
                         history->storeBlock(blockInstance, localPos);
                     });
 
-                    auto pPos = origin.getPlayer()->getPosition() - Vec3(0, 1, 0);
+                    auto pPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
 
                     mod.playerClipboardMap[xuid] = Clipboard(boundingBox.max - boundingBox.min);
-                    mod.playerClipboardMap[xuid].playerPos =pPos.toBlockPos();
+                    mod.playerClipboardMap[xuid].playerPos = pPos.toBlockPos();
                     mod.playerClipboardMap[xuid].playerRelPos = pPos.toBlockPos() - boundingBox.min;
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
                         auto localPos = pos - boundingBox.min;
@@ -160,8 +160,8 @@ namespace worldedit {
                     if (arg_o) {
                         pbPos = clipboard->playerPos;
                     } else {
-                        auto pPos = origin.getPlayer()->getPosition() - Vec3(0, 1, 0);
-                        pbPos =pPos.toBlockPos();
+                        auto pPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
+                        pbPos = pPos.toBlockPos();
                     }
 
                     BlockInstance blockInstance;

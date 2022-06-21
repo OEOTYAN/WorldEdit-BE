@@ -27,11 +27,11 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod    = worldedit::getMod();
-                auto  player = origin.getPlayer();
-                auto  xuid   = player->getXuid();
-                auto  dimID  = player->getDimensionId();
-                auto  pos    = (player->getPosition() - Vec3(0, 1, 0)).toBlockPos();
+                auto& mod = worldedit::getMod();
+                auto player = origin.getPlayer();
+                auto xuid = player->getXuid();
+                auto dimID = player->getDimensionId();
+                auto pos = (player->getPosition() - Vec3(0.0, 1.79, 0.0)).toBlockPos();
                 pos.y -= 1;
 
                 bool arg_h = false;
@@ -62,8 +62,8 @@ namespace worldedit {
                 }
                 CuboidRegion region(BoundingBox(pos, pos), dimID);
                 BlockPattern blockPattern(bps, xuid, &region);
-                long long    i = SimpleBuilder::buildCylinder(pos, dimID, xuid, &blockPattern, radius, height, arg_h);
-                i              = std::max(0ll, i);
+                long long i = SimpleBuilder::buildCylinder(pos, dimID, xuid, &blockPattern, radius, height, arg_h);
+                i = std::max(0ll, i);
                 output.success(fmt::format("§a{} block(s) placed", i));
             },
             CommandPermissionLevel::GameMasters);
@@ -78,14 +78,14 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod    = worldedit::getMod();
-                auto  player = origin.getPlayer();
-                auto  xuid   = player->getXuid();
-                auto  dimID  = player->getDimensionId();
-                auto pos = (player->getPosition() - Vec3(0, 1, 0)).toBlockPos();
+                auto& mod = worldedit::getMod();
+                auto player = origin.getPlayer();
+                auto xuid = player->getXuid();
+                auto dimID = player->getDimensionId();
+                auto pos = (player->getPosition() - Vec3(0.0, 1.79, 0.0)).toBlockPos();
                 pos.y -= 1;
 
-                bool           arg_h  = true;
+                bool arg_h = true;
                 unsigned short radius = 0;
                 if (results["radius"].isSet) {
                     radius = (unsigned short)(results["radius"].get<int>());
@@ -103,8 +103,8 @@ namespace worldedit {
                 }
                 CuboidRegion region(BoundingBox(pos, pos), dimID);
                 BlockPattern blockPattern(bps, xuid, &region);
-                long long    i = SimpleBuilder::buildCylinder(pos, dimID, xuid, &blockPattern, radius, height, arg_h);
-                i              = std::max(0ll, i);
+                long long i = SimpleBuilder::buildCylinder(pos, dimID, xuid, &blockPattern, radius, height, arg_h);
+                i = std::max(0ll, i);
                 output.success(fmt::format("§a{} block(s) placed", i));
             },
             CommandPermissionLevel::GameMasters);
@@ -120,11 +120,11 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod    = worldedit::getMod();
-                auto  player = origin.getPlayer();
-                auto  xuid   = player->getXuid();
-                auto  dimID  = player->getDimensionId();
-                auto pos = (player->getPosition() - Vec3(0, 1, 0)).toBlockPos();
+                auto& mod = worldedit::getMod();
+                auto player = origin.getPlayer();
+                auto xuid = player->getXuid();
+                auto dimID = player->getDimensionId();
+                auto pos = (player->getPosition() - Vec3(0.0, 1.79, 0.0)).toBlockPos();
                 pos.y -= 1;
 
                 bool arg_h = false;
@@ -151,8 +151,8 @@ namespace worldedit {
                 }
                 CuboidRegion region(BoundingBox(pos, pos), dimID);
                 BlockPattern blockPattern(bps, xuid, &region);
-                long long    i = SimpleBuilder::buildSphere(pos, dimID, xuid, &blockPattern, radius, arg_h);
-                i              = std::max(0ll, i);
+                long long i = SimpleBuilder::buildSphere(pos, dimID, xuid, &blockPattern, radius, arg_h);
+                i = std::max(0ll, i);
                 output.success(fmt::format("§a{} block(s) placed", i));
             },
             CommandPermissionLevel::GameMasters);
@@ -167,14 +167,14 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod    = worldedit::getMod();
-                auto  player = origin.getPlayer();
-                auto  xuid   = player->getXuid();
-                auto  dimID  = player->getDimensionId();
-                auto pos = (player->getPosition() - Vec3(0, 1, 0)).toBlockPos();
+                auto& mod = worldedit::getMod();
+                auto player = origin.getPlayer();
+                auto xuid = player->getXuid();
+                auto dimID = player->getDimensionId();
+                auto pos = (player->getPosition() - Vec3(0.0, 1.79, 0.0)).toBlockPos();
                 pos.y -= 1;
 
-                bool           arg_h  = true;
+                bool arg_h = true;
                 unsigned short radius = 0;
                 if (results["radius"].isSet) {
                     radius = (unsigned short)(results["radius"].get<int>());
@@ -188,8 +188,8 @@ namespace worldedit {
                 }
                 CuboidRegion region(BoundingBox(pos, pos), dimID);
                 BlockPattern blockPattern(bps, xuid, &region);
-                long long    i = SimpleBuilder::buildSphere(pos, dimID, xuid, &blockPattern, radius, arg_h);
-                i              = std::max(0ll, i);
+                long long i = SimpleBuilder::buildSphere(pos, dimID, xuid, &blockPattern, radius, arg_h);
+                i = std::max(0ll, i);
                 output.success(fmt::format("§a{} block(s) placed", i));
             },
             CommandPermissionLevel::GameMasters);

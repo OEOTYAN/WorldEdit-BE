@@ -81,8 +81,8 @@ namespace worldedit {
                             return;
                         }
                     } else {
-                        if (mod.playerRegionMap[xuid]->removePoint(dimID,
-                                                                  ( origin.getPlayer()->getPosition() - Vec3(0, 1, 0)).toBlockPos())) {
+                        if (mod.playerRegionMap[xuid]->removePoint(
+                                dimID, (origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0)).toBlockPos())) {
                             output.success("§aRemoved point near your position");
                             return;
                         } else {
@@ -164,7 +164,7 @@ namespace worldedit {
                     auto pos = results["pos"].get<BlockPos>();
                     blockInstance = Level::getBlockInstance(pos, player->getDimensionId());
                 } else {
-                    blockInstance = Level::getBlockInstance((player->getPosition() - Vec3(0, 1, 0)).toBlockPos(),
+                    blockInstance = Level::getBlockInstance((player->getPosition() - Vec3(0.0, 1.79, 0.0)).toBlockPos(),
                                                             player->getDimensionId());
                 }
                 changeMainPos(player, blockInstance);
@@ -185,7 +185,7 @@ namespace worldedit {
                     auto pos = results["pos"].get<BlockPos>();
                     blockInstance = Level::getBlockInstance(pos, player->getDimensionId());
                 } else {
-                    blockInstance = Level::getBlockInstance((player->getPosition() - Vec3(0, 1, 0)).toBlockPos(),
+                    blockInstance = Level::getBlockInstance((player->getPosition() - Vec3(0.0, 1.79, 0.0)).toBlockPos(),
                                                             player->getDimensionId());
                 }
                 changeVicePos(player, blockInstance);
@@ -236,7 +236,7 @@ namespace worldedit {
                     delete mod.playerRegionMap[xuid];
                 }
                 mod.playerRegionMap.erase(xuid);
-                BlockPos pos = (player->getPosition() - Vec3(0, 1, 0)).toBlockPos();
+                BlockPos pos = (player->getPosition() - Vec3(0.0, 1.79, 0.0)).toBlockPos();
                 pos.x = (pos.x >> 4) << 4;
                 pos.z = (pos.z >> 4) << 4;
                 pos.y = heightRange.min;
@@ -532,7 +532,7 @@ namespace worldedit {
                     }
                     bool arg = results["bool"].get<bool>();
                     static_cast<LoftRegion*>(region)->setCircle(arg);
-                    output.success("§aLoft circle set to " + arg ? "true" : "false");
+                    output.success(std::string("§aLoft circle set to ") + (arg ? "true" : "false"));
                 } else {
                     output.error("You don't have a region yet");
                 }

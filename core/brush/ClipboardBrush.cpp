@@ -22,7 +22,7 @@ namespace worldedit {
         }
         auto dimID = player->getDimensionId();
 
-        auto playerPos = player->getPosition()-Vec3(0,1,0);
+        auto playerPos = player->getPosition() - Vec3(0.0, 1.79, 0.0);
         auto playerRot = player->getRotation();
         auto blockSource = Level::getBlockSource(dimID);
         auto history = mod.getPlayerNextHistory(xuid);

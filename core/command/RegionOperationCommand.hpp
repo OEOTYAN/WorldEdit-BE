@@ -9,6 +9,7 @@
 #include "eval/blur.hpp"
 #include "image/Image.h"
 #include "eval/Bresenham.hpp"
+#include "filesys/download.h"
 
 namespace worldedit {
 
@@ -54,7 +55,7 @@ namespace worldedit {
 
                     INNERIZE_GMASK
 
-                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0, 1, 0);
+                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
                     auto playerRot = origin.getPlayer()->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
@@ -184,7 +185,7 @@ namespace worldedit {
 
                         INNERIZE_GMASK
 
-                        auto playerPos = origin.getPlayer()->getPosition() - Vec3(0, 1, 0);
+                        auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
                         auto playerRot = origin.getPlayer()->getRotation();
 
                         EvalFunctions f;
@@ -279,7 +280,7 @@ namespace worldedit {
 
                     INNERIZE_GMASK
 
-                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0, 1, 0);
+                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
                     auto playerRot = origin.getPlayer()->getRotation();
 
                     std::string bps = "minecraft:air";
@@ -577,7 +578,7 @@ namespace worldedit {
 
                         INNERIZE_GMASK
 
-                        auto playerPos = origin.getPlayer()->getPosition() - Vec3(0, 1, 0);
+                        auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
                         auto playerRot = origin.getPlayer()->getRotation();
 
                         EvalFunctions f;
@@ -656,7 +657,7 @@ namespace worldedit {
 
                     INNERIZE_GMASK
 
-                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0, 1, 0);
+                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
                     auto playerRot = origin.getPlayer()->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
@@ -731,7 +732,7 @@ namespace worldedit {
                         history->storeBlock(blockInstance, localPos);
                     });
 
-                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0, 1, 0);
+                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
                     auto playerRot = origin.getPlayer()->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
@@ -841,7 +842,7 @@ namespace worldedit {
 
                     INNERIZE_GMASK
 
-                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0, 1, 0);
+                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
                     auto playerRot = origin.getPlayer()->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
@@ -955,7 +956,7 @@ namespace worldedit {
 
                     INNERIZE_GMASK
 
-                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0, 1, 0);
+                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
                     auto playerRot = origin.getPlayer()->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
@@ -1052,7 +1053,7 @@ namespace worldedit {
 
                     auto genfunc = results["function"].get<std::string>();
 
-                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0, 1, 0);
+                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
                     auto playerRot = origin.getPlayer()->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
@@ -1167,7 +1168,7 @@ namespace worldedit {
 
                     INNERIZE_GMASK
 
-                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0, 1, 0);
+                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
                     auto playerRot = origin.getPlayer()->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
@@ -1261,7 +1262,7 @@ namespace worldedit {
 
                     INNERIZE_GMASK
 
-                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0, 1, 0);
+                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
                     auto playerRot = origin.getPlayer()->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
@@ -1330,7 +1331,7 @@ namespace worldedit {
 
                     INNERIZE_GMASK
 
-                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0, 1, 0);
+                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
                     auto playerRot = origin.getPlayer()->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
@@ -1387,7 +1388,7 @@ namespace worldedit {
 
                     INNERIZE_GMASK
 
-                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0, 1, 0);
+                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
                     auto playerRot = origin.getPlayer()->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
@@ -1492,7 +1493,7 @@ namespace worldedit {
                             tmp.assign(tmp2.begin(), tmp2.end());
                         }
 
-                        auto playerPos = origin.getPlayer()->getPosition() - Vec3(0, 1, 0);
+                        auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
                         auto playerRot = origin.getPlayer()->getRotation();
                         EvalFunctions f;
                         f.setbs(blockSource);
@@ -1593,7 +1594,7 @@ namespace worldedit {
                 {"link", {"link"}},
             },
             {
-                ParamData("filename", ParamType::String, "filename"),
+                ParamData("filename", ParamType::SoftEnum, "filename"),
                 ParamData("url", ParamType::String, "url"),
                 ParamData("fliptype", ParamType::Enum, true, "fliptype"),
                 ParamData("rotation", ParamType::Enum, true, "rotation"),
@@ -1618,7 +1619,7 @@ namespace worldedit {
                     auto size = boundingBox.max - boundingBox.min;
                     auto blockSource = Level::getBlockSource(dimID);
 
-                    if (region->regionType!=RegionType::LOFT &&size.x != 0 && size.y != 0 && size.z != 0) {
+                    if (region->regionType != RegionType::LOFT && size.x != 0 && size.y != 0 && size.z != 0) {
                         output.error("You need to select a slice");
                         return;
                     }
@@ -1664,7 +1665,7 @@ namespace worldedit {
 
                     auto blockColorMap = getBlockColorMap();
 
-                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0, 1, 0);
+                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
                     auto playerRot = origin.getPlayer()->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
@@ -1673,13 +1674,23 @@ namespace worldedit {
 
                     long long i = 0;
 
-                    auto filename = results["filename"].get<std::string>();
+                    std::string filename;
+                    if (results["filename"].isSet) {
+                        filename = results["filename"].get<std::string>();
 
-                    if (filename.find(".png") == std::string::npos) {
-                        filename += ".png";
+                        if (filename.find(".png") == std::string::npos) {
+                            filename += ".png";
+                        }
+
+                        filename = WE_DIR + "image/" + filename;
+                    } else /* if (results["link"].isSet)*/ {
+                        if(downloadImage(results["url"].get<std::string>())){
+                            filename = WE_DIR + "imgtemp/0.png";
+                        }else{
+                            output.error("Failed to download image");
+                            return;
+                        }
                     }
-
-                    filename = WE_DIR + "image/" + filename;
 
                     auto texture2D = loadpng(filename);
 
@@ -1710,7 +1721,7 @@ namespace worldedit {
                             rotate = [&](double& u, double& v) {};
                     }
 
-                    region->forEachBlockUVInRegion([&](const BlockPos& pos,double u,double v) {
+                    region->forEachBlockUVInRegion([&](const BlockPos& pos, double u, double v) {
                         setFunction(variables, f, boundingBox, playerPos, playerRot, pos, center);
                         gMaskLambda(f, variables, [&]() mutable {
                             if (flipInt != 3) {

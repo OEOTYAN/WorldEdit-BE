@@ -83,8 +83,10 @@ namespace worldedit {
                     return;
                 }
                 if (results["tree"].isSet) {
+                    mod.playerHandToolMap[xuid][toolName] = new TreeTool();
                     output.success(fmt::format("§aTree tool bound to {}", toolrName));
                 } else if (results["deltree"].isSet) {
+                    mod.playerHandToolMap[xuid][toolName] = new DelTreeTool();
                     output.success(fmt::format("§aDeltree tool bound to {}", toolrName));
                 } else if (results["farwand"].isSet) {
                     mod.playerHandToolMap[xuid][toolName] = new FarWand();
@@ -93,11 +95,14 @@ namespace worldedit {
                     mod.playerHandToolMap[xuid][toolName] = new AirWand();
                     output.success(fmt::format("§aAir wand tool bound to {}", toolrName));
                 } else if (results["cycler"].isSet) {
+                    mod.playerHandToolMap[xuid][toolName] = new CyclerTool();
                     output.success(fmt::format("§aCycler tool bound to {}", toolrName));
                 } else if (results["info"].isSet) {
                     mod.playerHandToolMap[xuid][toolName] = new InfoTool();
                     output.success(fmt::format("§aBlock info tool bound to {}", toolrName));
                 } else if (results["flood"].isSet) {
+                    mod.playerHandToolMap[xuid][toolName] = new FloodFillTool();
+                    output.success(fmt::format("§aFlood fill tool bound to {}", toolrName));
                 } else if (results["none"].isSet) {
                     delete mod.playerHandToolMap[xuid][toolName];
                     mod.playerHandToolMap[xuid].erase(toolName);

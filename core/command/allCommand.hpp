@@ -4,6 +4,7 @@
 #pragma once
 #ifndef WORLDEDIT_ALLCOMMAND_H
 #define WORLDEDIT_ALLCOMMAND_H
+#include "filesys/file.h"
 #include "command/BrushCommand.hpp"
 #include "command/RegionCommand.hpp"
 #include "command/HistoryCommand.hpp"
@@ -18,6 +19,14 @@ namespace worldedit {
     using ParamType = DynamicCommand::ParameterType;
     using ParamData = DynamicCommand::ParameterData;
     void commandsSetup() {
+        Schedule::delay(
+            [&]() {
+                std::vector<std::string> test;
+                getImageFiles(WE_DIR + "image", test);
+                Global<CommandRegistry>->setSoftEnumValues("filename", test);
+            },
+            20);
+
         brushCommandSetup();
         regionCommandSetup();
         historyCommandSetup();
@@ -28,17 +37,31 @@ namespace worldedit {
         regionOperationCommandSetup();
 
         DynamicCommand::setup(
+            "updateimage",             // command name
+            "update image file enum",  // command description
+            {}, {}, {{}},
+            // dynamic command callback
+            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+               std::unordered_map<std::string, DynamicCommand::Result>& results) {
+                std::vector<std::string> test;
+                getImageFiles(WE_DIR + "image", test);
+                Global<CommandRegistry>->setSoftEnumValues("filename", test);
+                output.success("§aUpdate image file enum success");
+            },
+            CommandPermissionLevel::GameMasters);
+
+        DynamicCommand::setup(
             "gmask",            // command name
             "set global mask",  // command description
             {}, {ParamData("mask", ParamType::String, true, "mask")}, {{"mask"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod    = worldedit::getMod();
-                auto  player = origin.getPlayer();
-                auto  xuid   = player->getXuid();
+                auto& mod = worldedit::getMod();
+                auto player = origin.getPlayer();
+                auto xuid = player->getXuid();
                 if (results["mask"].isSet) {
-                    auto str                 = results["mask"].getRaw<std::string>();
+                    auto str = results["mask"].getRaw<std::string>();
                     mod.playerGMaskMap[xuid] = str;
                     output.success(fmt::format("§aglobal mask set to: §g{}", str));
                 } else {
@@ -55,9 +78,9 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod    = worldedit::getMod();
-                auto  player = origin.getPlayer();
-                auto  xuid   = player->getXuid();
+                auto& mod = worldedit::getMod();
+                auto player = origin.getPlayer();
+                auto xuid = player->getXuid();
                 if (results["bool"].get<bool>()) {
                     mod.updateArg = 3;
                     output.success(fmt::format("§aNeighber block update is now enabled"));
@@ -69,7 +92,7 @@ namespace worldedit {
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "needblockupdate",                              // command name
+            "needblockupdate",                        // command name
             "whether the block needs to be updated",  // command description
             {}, {ParamData("bool", ParamType::Bool, "bool")}, {{"bool"}},
             // dynamic command callback

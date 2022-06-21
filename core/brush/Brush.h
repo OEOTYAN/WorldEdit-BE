@@ -15,6 +15,6 @@ namespace worldedit {
         Brush(unsigned short, BlockPattern*);
         void setMask(std::string const& str = "") { mask = str; };
         virtual long long set(class Player*, class ::BlockInstance);
-        ~Brush();
+        virtual ~Brush();
     };
 }  // namespace worldedit

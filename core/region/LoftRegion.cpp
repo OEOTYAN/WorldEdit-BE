@@ -206,7 +206,7 @@ namespace worldedit {
             for (int i = 0; i < num; i++) {
                 std::vector<Node> nodes2;
                 nodes2.clear();
-                double t = i / (double)(num - 1);
+                double t = i / (double)(num - 1 + circle);
                 for (int j = 0; j < cache1.size(); j += 2) {
                     auto& curve = cache1[j];
                     nodes2.push_back(Node(curve.getPosition(t)));

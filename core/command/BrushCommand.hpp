@@ -9,6 +9,7 @@
 #include "brush/Brushs.h"
 #include <MC/ItemStack.hpp>
 #include "store/BlockPattern.hpp"
+#include "filesys/download.h"
 
 namespace worldedit {
     using ParamType = DynamicCommand::ParameterType;
@@ -53,7 +54,7 @@ namespace worldedit {
                 ParamData("radius", ParamType::Int, true, "radius"),
                 ParamData("kernelsize", ParamType::Int, true, "kernelsize"),
                 ParamData("height", ParamType::Int, true, "height"),
-                ParamData("filename", ParamType::String, "filename"),
+                ParamData("filename", ParamType::SoftEnum, "filename"),
                 ParamData("url", ParamType::String, "url"),
                 ParamData("file", ParamType::Enum, "file"),
                 ParamData("link", ParamType::Enum, "link"),
@@ -163,13 +164,23 @@ namespace worldedit {
                     output.success("§aBrush set to gravity");
                     return;
                 } else if (results["heightmap"].isSet) {
-                    auto filename = results["filename"].get<std::string>();
+                    std::string filename;
+                    if (results["filename"].isSet) {
+                        filename = results["filename"].get<std::string>();
 
-                    if (filename.find(".png") == std::string::npos) {
-                        filename += ".png";
+                        if (filename.find(".png") == std::string::npos) {
+                            filename += ".png";
+                        }
+
+                        filename = WE_DIR + "image/" + filename;
+                    } else /* if (results["link"].isSet)*/ {
+                        if (downloadImage(results["url"].get<std::string>())) {
+                            filename = WE_DIR + "imgtemp/0.png";
+                        } else {
+                            output.error("Failed to download image");
+                            return;
+                        }
                     }
-
-                    filename = WE_DIR + "image/" + filename;
 
                     mod.playerBrushMap[xuid][brushName] =
                         new ImageHeightmapBrush(radius, height, loadpng(filename), arg_r);
