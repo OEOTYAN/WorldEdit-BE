@@ -739,6 +739,8 @@ namespace worldedit {
                     f.setbox(boundingBox);
                     std::unordered_map<std::string, double> variables;
 
+                    INNERIZE_GMASK
+
                     std::string bps = "minecraft:air";
                     if (results["blockPattern"].isSet) {
                         bps = results["blockPattern"].get<std::string>();
@@ -748,7 +750,9 @@ namespace worldedit {
                     BlockPattern blockPattern(bps, xuid, region);
                     boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
                         setFunction(variables, f, boundingBox, playerPos, playerRot, pos, center);
-                        blockPattern.setBlock(variables, f, blockSource, pos);
+                        
+                        gMaskLambda(f, variables, [&]() mutable {
+                        blockPattern.setBlock(variables, f, blockSource, pos); });
                     });
 
                     output.success(fmt::format("§acenter placed"));
@@ -764,7 +768,7 @@ namespace worldedit {
             {
                 {"dir", {"me", "back", "up", "down", "south", "north", "east", "west"}},
             },
-            {ParamData("times", ParamType::Int, "times"), ParamData("dir", ParamType::Enum, true, "dir"),
+            {ParamData("times", ParamType::Int, true, "times"), ParamData("dir", ParamType::Enum, true, "dir"),
              ParamData("args", ParamType::String, true, "-sal")},
             {{"times", "dir", "args"}},
             // dynamic command callback
@@ -775,7 +779,10 @@ namespace worldedit {
                 auto xuid = origin.getPlayer()->getXuid();
                 if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
                     mod.playerRegionMap[xuid]->hasSelected()) {
-                    auto times = results["times"].get<int>();
+                    auto times = 1;
+                    if (results["times"].isSet) {
+                        times = results["times"].get<int>();
+                    }
                     bool arg_a = false, arg_s = false, arg_l = false;
                     if (results["args"].isSet) {
                         auto str = results["args"].getRaw<std::string>();
@@ -880,7 +887,7 @@ namespace worldedit {
             {
                 {"dir", {"me", "back", "up", "down", "south", "north", "east", "west"}},
             },
-            {ParamData("dis", ParamType::Int, "dis"), ParamData("dir", ParamType::Enum, true, "dir"),
+            {ParamData("dis", ParamType::Int, true, "dis"), ParamData("dir", ParamType::Enum, true, "dir"),
              ParamData("args", ParamType::String, true, "-sa"), ParamData("block", ParamType::Block, true, "block"),
              ParamData("blockPattern", ParamType::String, true, "blockPattern")},
             {{"dis", "dir", "block", "args"}, {"dis", "dir", "blockPattern", "args"}},
@@ -892,7 +899,10 @@ namespace worldedit {
                 auto xuid = origin.getPlayer()->getXuid();
                 if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
                     mod.playerRegionMap[xuid]->hasSelected()) {
-                    auto dis = results["dis"].get<int>();
+                    auto dis = 1;
+                    if (results["dis"].isSet) {
+                        dis = results["dis"].get<int>();
+                    }
                     bool arg_a = false, arg_s = false;
                     if (results["args"].isSet) {
                         auto str = results["args"].getRaw<std::string>();
@@ -1070,13 +1080,11 @@ namespace worldedit {
 
                         region->forEachBlockInRegion([&](const BlockPos& pos) {
                             setFunction(variables, f, boundingBox, playerPos, playerRot, pos, center);
-                            gMaskLambda(f, variables, [&]() mutable {
-                                auto localPos = pos - boundingBox.min + 1;
-                                if (cpp_eval::eval<double>(genfunc.c_str(), variables, f) > 0.5) {
-                                    tmp[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x] = true;
-                                }
-                                caled[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x] = true;
-                            });
+                            auto localPos = pos - boundingBox.min + 1;
+                            if (cpp_eval::eval<double>(genfunc.c_str(), variables, f) > 0.5) {
+                                tmp[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x] = true;
+                            }
+                            caled[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x] = true;
                         });
 
                         if (arg_h) {
@@ -1116,9 +1124,11 @@ namespace worldedit {
                         region->forEachBlockInRegion([&](const BlockPos& pos) {
                             auto localPos = pos - boundingBox.min + 1;
                             if (tmp[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x]) {
-                                setFunction(variables, f, boundingBox, playerPos, playerRot, pos, center);
-                                blockPattern.setBlock(variables, f, blockSource, pos);
-                                i++;
+                                gMaskLambda(f, variables, [&]() mutable {
+                                    setFunction(variables, f, boundingBox, playerPos, playerRot, pos, center);
+                                    blockPattern.setBlock(variables, f, blockSource, pos);
+                                    i++;
+                                });
                             }
                         });
 
@@ -1684,9 +1694,9 @@ namespace worldedit {
 
                         filename = WE_DIR + "image/" + filename;
                     } else /* if (results["link"].isSet)*/ {
-                        if(downloadImage(results["url"].get<std::string>())){
+                        if (downloadImage(results["url"].get<std::string>())) {
                             filename = WE_DIR + "imgtemp/0.png";
-                        }else{
+                        } else {
                             output.error("Failed to download image");
                             return;
                         }
