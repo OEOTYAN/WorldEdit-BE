@@ -7,11 +7,12 @@
 #include "MC/Dimension.hpp"
 namespace worldedit {
     void PolyRegion::updateBoundingBox() {
-        auto range        = Level::getDimension(dimensionID)->getHeightRange();
-        rendertick        = 0;
-        boundingBox.min.y = std::max(minY, static_cast<int>(range.min));
-        boundingBox.max.y = std::min(maxY, static_cast<int>(range.max) - 1);
-        ;
+        auto range = Global<Level>->getDimension(dimensionID)->getHeightRange();
+        rendertick = 0;
+        minY = std::max(minY, static_cast<int>(range.min));
+        maxY = std::min(maxY, static_cast<int>(range.max) - 1);
+        boundingBox.min.y = minY;
+        boundingBox.max.y = maxY;
         boundingBox.min.x = points[0].x;
         boundingBox.min.z = points[0].z;
         boundingBox.max.x = points[0].x;
@@ -28,11 +29,11 @@ namespace worldedit {
         this->regionType = POLY;
     }
     bool PolyRegion::setMainPos(const BlockPos& pos, const int& dim) {
-        mainPos     = pos;
+        mainPos = pos;
         dimensionID = dim;
-        selecting   = 1;
-        minY        = pos.y;
-        maxY        = pos.y;
+        selecting = 1;
+        minY = pos.y;
+        maxY = pos.y;
         points.clear();
         points.push_back({pos.x, 0, pos.z});
         updateBoundingBox();
@@ -107,7 +108,7 @@ namespace worldedit {
 
     int PolyRegion::size() const {
         int area = 0;
-        int j    = (int)points.size() - 1;
+        int j = (int)points.size() - 1;
         for (int i = 0; i < points.size(); ++i) {
             int x = points[j].x + points[i].x;
             int z = points[j].z - points[i].z;
@@ -121,7 +122,7 @@ namespace worldedit {
     void PolyRegion::renderRegion() {
         if (selecting && dimensionID >= 0 && rendertick <= 0) {
             rendertick = 40;
-            auto size  = points.size();
+            auto size = points.size();
             for (int i = 0; i < size; i++) {
                 worldedit::spawnCuboidParticle(
                     {Vec3(points[i].x, minY, points[i].z), Vec3(points[i].x, maxY, points[i].z) + Vec3::ONE},
@@ -145,13 +146,13 @@ namespace worldedit {
         if (points.size() < 3 || pos.y < minY || pos.y > maxY) {
             return false;
         }
-        bool      inside = false;
-        int       x1;
-        int       z1;
-        int       x2;
-        int       z2;
+        bool inside = false;
+        int x1;
+        int z1;
+        int x2;
+        int z2;
         long long crossproduct;
-        BlockPos  point = points.back();
+        BlockPos point = points.back();
 
         for (auto iter = points.cbegin(); iter != points.cend(); iter++) {
             auto value = *iter;

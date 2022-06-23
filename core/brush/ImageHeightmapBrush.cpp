@@ -16,7 +16,7 @@ namespace worldedit {
         auto dimID = player->getDimensionId();
         auto blockSource = Level::getBlockSource(dimID);
         auto history = mod.getPlayerNextHistory(xuid);
-        auto range = Level::getDimension(dimID)->getHeightRange();
+        auto range = Global<Level>->getDimension(dimID)->getHeightRange();
         int minY = 2147483647;
         int maxY = -2147483648;
         int volume = (size * 2 + 1) * (size * 2 + 1);

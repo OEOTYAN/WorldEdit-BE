@@ -7,7 +7,7 @@
 #include "MC/Dimension.hpp"
 namespace worldedit {
     void CuboidRegion::updateBoundingBox() {
-        auto range = Level::getDimension(dimensionID)->getHeightRange();
+        auto range = Global<Level>->getDimension(dimensionID)->getHeightRange();
         rendertick = 0;
         boundingBox.min.x = std::min(mainPos.x, vicePos.x);
         boundingBox.min.y = std::max(std::min(mainPos.y, vicePos.y), static_cast<int>(range.min));
@@ -16,6 +16,10 @@ namespace worldedit {
         boundingBox.max.y = std::min(std::max(mainPos.y, vicePos.y), static_cast<int>(range.max) - 1);
         boundingBox.max.z = std::max(mainPos.z, vicePos.z);
         boundingBox.max.x = std::max(mainPos.x, vicePos.x);
+        vicePos.y = std::max(vicePos.y, static_cast<int>(range.min));
+        vicePos.y = std::min(vicePos.y, static_cast<int>(range.max) - 1);
+        mainPos.y = std::max(mainPos.y, static_cast<int>(range.min));
+        mainPos.y = std::min(mainPos.y, static_cast<int>(range.max) - 1);
     }
 
     bool CuboidRegion::setMainPos(const BlockPos& pos, const int& dim) {

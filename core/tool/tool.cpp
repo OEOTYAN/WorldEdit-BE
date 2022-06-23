@@ -82,7 +82,7 @@ namespace worldedit {
         pos.y += 1;
         setBlockSimple(bs, pos, const_cast<Block*>(VanillaBlocks::mSapling));
         auto& legacyBlock = blockInstance.getBlock()->getLegacyBlock();
-        return ((Sapling&)legacyBlock).pgrowTree(*bs, pos, Global<Level>->getRandom(), false);
+        return ((Sapling&)legacyBlock)._growTree(*bs, pos, Global<Level>->getRandom(), false);
     }
 
     ////////

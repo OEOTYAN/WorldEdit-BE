@@ -26,7 +26,7 @@ namespace worldedit {
             pos.y += height;
             height = -height;
         }
-        auto range = Level::getDimension(dim)->getHeightRange();
+        auto range = Global<Level>->getDimension(dim)->getHeightRange();
 
         if (pos.y < range.min) {
             pos.y = range.min;
@@ -56,8 +56,10 @@ namespace worldedit {
                              std::function<void()> const& todo) mutable { todo(); };
         }
 
-        auto playerPos = Level::getPlayer(xuid)->getPosition() - Vec3(0.0, 1.79, 0.0);
-        auto playerRot = Level::getPlayer(xuid)->getRotation();
+        auto* player = Global<Level>->getPlayer(xuid);
+
+        auto playerPos =player->getPosition() - Vec3(0.0, 1.79, 0.0);
+        auto playerRot =player->getRotation();
         EvalFunctions f;
         f.setbs(blockSource);
         f.setbox(box);
@@ -218,8 +220,10 @@ namespace worldedit {
                              std::function<void()> const& todo) mutable { todo(); };
         }
 
-        auto playerPos = Level::getPlayer(xuid)->getPosition() - Vec3(0.0, 1.79, 0.0);
-        auto playerRot = Level::getPlayer(xuid)->getRotation();
+        auto* player = Global<Level>->getPlayer(xuid);
+
+        auto playerPos = player->getPosition() - Vec3(0.0, 1.79, 0.0);
+        auto playerRot = player->getRotation();
         EvalFunctions f;
         f.setbs(blockSource);
         f.setbox(box);
@@ -385,8 +389,10 @@ namespace worldedit {
                              std::function<void()> const& todo) mutable { todo(); };
         }
 
-        auto playerPos = Level::getPlayer(xuid)->getPosition() - Vec3(0.0, 1.79, 0.0);
-        auto playerRot = Level::getPlayer(xuid)->getRotation();
+        auto* player = Global<Level>->getPlayer(xuid);
+
+        auto playerPos = player->getPosition() - Vec3(0.0, 1.79, 0.0);
+        auto playerRot = player->getRotation();
         EvalFunctions f;
         f.setbs(blockSource);
         f.setbox(box);

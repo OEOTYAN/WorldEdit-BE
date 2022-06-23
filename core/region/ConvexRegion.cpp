@@ -8,7 +8,7 @@
 #include "MC/Dimension.hpp"
 namespace worldedit {
     void ConvexRegion::updateBoundingBox() {
-        auto range = Level::getDimension(dimensionID)->getHeightRange();
+        auto range = Global<Level>->getDimension(dimensionID)->getHeightRange();
         rendertick = 0;
         boundingBox.min = *vertices.begin();
         boundingBox.max = *vertices.begin();

@@ -7,21 +7,25 @@
 #include "MC/Dimension.hpp"
 namespace worldedit {
     void ExpandRegion::updateBoundingBox() {
-        auto range        = Level::getDimension(dimensionID)->getHeightRange();
-        rendertick        = 0;
+        auto range = Global<Level>->getDimension(dimensionID)->getHeightRange();
+        rendertick = 0;
         boundingBox.min.x = std::min(mainPos.x, vicePos.x);
         boundingBox.min.y = std::max(std::min(mainPos.y, vicePos.y), static_cast<int>(range.min));
         boundingBox.min.z = std::min(mainPos.z, vicePos.z);
         boundingBox.max.x = std::max(mainPos.x, vicePos.x);
         boundingBox.max.y = std::min(std::max(mainPos.y, vicePos.y), static_cast<int>(range.max) - 1);
         boundingBox.max.z = std::max(mainPos.z, vicePos.z);
+        vicePos.y = std::max(vicePos.y, static_cast<int>(range.min));
+        vicePos.y = std::min(vicePos.y, static_cast<int>(range.max) - 1);
+        mainPos.y = std::max(mainPos.y, static_cast<int>(range.min));
+        mainPos.y = std::min(mainPos.y, static_cast<int>(range.max) - 1);
     }
 
     bool ExpandRegion::setMainPos(const BlockPos& pos, const int& dim) {
-        selecting   = true;
+        selecting = true;
         dimensionID = dim;
-        mainPos     = pos;
-        vicePos     = pos;
+        mainPos = pos;
+        vicePos = pos;
         updateBoundingBox();
         return true;
     }
@@ -153,6 +157,6 @@ namespace worldedit {
     ExpandRegion::ExpandRegion(const BoundingBox& region, const int& dim)
         : Region(region, dim), mainPos(region.min), vicePos(region.max) {
         this->regionType = EXPAND;
-        this->selecting  = true;
+        this->selecting = true;
     }
 }  // namespace worldedit

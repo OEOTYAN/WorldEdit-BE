@@ -13,7 +13,7 @@ namespace worldedit {
 
     void CylinderRegion::updateBoundingBox() {
         if (hasY) {
-            auto range = Level::getDimension(dimensionID)->getHeightRange();
+            auto range = Global<Level>->getDimension(dimensionID)->getHeightRange();
             rendertick = 0;
             auto newRadius = (int)(radius);
             boundingBox.min.x = center.x - newRadius;

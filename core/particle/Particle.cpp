@@ -14,10 +14,10 @@
 namespace worldedit {
 
     void spawnParticle(Vec3 const& p, std::string const& type, int dimType) {
-        auto diminsion = Level::getDimension(dimType);
+        auto diminsion = Global<Level>->getDimension(dimType);
         diminsion->forEachPlayer([&](Player& player) {
-                player.sendSpawnParticleEffectPacket(p, dimType, type);
-                return true;
+            player.sendSpawnParticleEffectPacket(p, dimType, type);
+            return true;
         });
     }
 
