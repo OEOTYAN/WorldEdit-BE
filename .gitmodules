@@ -1,3 +1,4 @@
 [submodule "SDK"]
 	path = SDK
-	url = https://github.com/LiteLDev/LiteLoaderSDK/tree/beta
+	url = https://github.com/LiteLDev/LiteLoaderSDK.git
+	branch = beta
