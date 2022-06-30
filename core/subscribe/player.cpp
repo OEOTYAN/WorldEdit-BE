@@ -7,7 +7,7 @@ namespace worldedit {
 
     void playerSubscribe() {
         Event::PlayerUseItemOnEvent::subscribe([](const Event::PlayerUseItemOnEvent& ev) {
-            if ((!ev.mPlayer.isOP()) || (!ev.mPlayer.isCreative())) {
+            if ((!ev.mPlayer->isOP()) || (!ev.mPlayer->isCreative())) {
                 return true;
             }
             auto itemName = ev.mItemStack->getNbt()->toBinaryNBT();
@@ -27,7 +27,7 @@ namespace worldedit {
             return true;
         });
         Event::PlayerUseItemEvent::subscribe([](const Event::PlayerUseItemEvent& ev) {
-            if ((!ev.mPlayer.isOP()) || (!ev.mPlayer.isCreative())) {
+            if ((!ev.mPlayer->isOP()) || (!ev.mPlayer->isCreative())) {
                 return true;
             }
             // std::cout << ev.mPlayer->getRotation().toString() << std::endl;
@@ -63,7 +63,7 @@ namespace worldedit {
         });
 
         Event::PlayerDestroyBlockEvent::subscribe([](const Event::PlayerDestroyBlockEvent& ev) {
-            if ((!ev.mPlayer.isOP()) || (!ev.mPlayer.isCreative())) {
+            if ((!ev.mPlayer->isOP()) || (!ev.mPlayer->isCreative())) {
                 return true;
             }
             auto itemStack = ev.mPlayer->getHandSlot();
@@ -87,7 +87,7 @@ namespace worldedit {
         });
 
         Event::PlayerOpenContainerEvent::subscribe([](const Event::PlayerOpenContainerEvent& ev) {
-            if ((!ev.mPlayer.isOP()) || (!ev.mPlayer.isCreative())) {
+            if ((!ev.mPlayer->isOP()) || (!ev.mPlayer->isCreative())) {
                 return true;
             }
             auto itemStack = ev.mPlayer->getHandSlot();
@@ -106,7 +106,7 @@ namespace worldedit {
         });
 
         Event::PlayerPlaceBlockEvent::subscribe([](const Event::PlayerPlaceBlockEvent& ev) {
-            if ((!ev.mPlayer.isOP()) || (!ev.mPlayer.isCreative())) {
+            if ((!ev.mPlayer->isOP()) || (!ev.mPlayer->isCreative())) {
                 return true;
             }
             auto itemStack = ev.mPlayer->getHandSlot();
@@ -134,8 +134,8 @@ THook(void,
       AnimatePacket const& animatePacket) {
     if (animatePacket.mAction == AnimatePacket::Action::Swing) {
         Player* player = serverNetworkHandler->getServerPlayer(networkIdentifier);
-        if ((!player.isOP()) || (!player.isCreative())) {
-            return true;
+        if ((!player->isOP()) || (!player->isCreative())) {
+            return original(serverNetworkHandler, networkIdentifier, animatePacket);
         }
         auto& mod = worldedit::getMod();
         auto itemName = player->getHandSlot()->getNbt()->toBinaryNBT();
