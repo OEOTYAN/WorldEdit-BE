@@ -22,7 +22,7 @@ namespace worldedit {
             {ParamData("block", ParamType::Block, "block"),
              ParamData("blockPattern", ParamType::String, "blockPattern"),
              ParamData("radius", ParamType::Int, "radius"), ParamData("height", ParamType::Int, true, "height"),
-             ParamData("args", ParamType::String, true, "-h")},
+             ParamData("args", ParamType::SoftEnum, true, "-h", "-h")},
             {{"block", "radius", "height", "args"}, {"blockPattern", "radius", "height", "args"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
@@ -31,7 +31,7 @@ namespace worldedit {
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
                 auto dimID = player->getDimensionId();
-                auto pos = (player->getPosition() - Vec3(0.0, 1.79, 0.0)).toBlockPos();
+                auto pos = (player->getPosition() - Vec3(0.0, 1.62, 0.0)).toBlockPos();
                 pos.y -= 1;
 
                 bool arg_h = false;
@@ -82,7 +82,7 @@ namespace worldedit {
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
                 auto dimID = player->getDimensionId();
-                auto pos = (player->getPosition() - Vec3(0.0, 1.79, 0.0)).toBlockPos();
+                auto pos = (player->getPosition() - Vec3(0.0, 1.62, 0.0)).toBlockPos();
                 pos.y -= 1;
 
                 bool arg_h = true;
@@ -115,7 +115,7 @@ namespace worldedit {
             {},
             {ParamData("block", ParamType::Block, "block"),
              ParamData("blockPattern", ParamType::String, "blockPattern"),
-             ParamData("radius", ParamType::Int, "radius"), ParamData("args", ParamType::String, true, "-h")},
+             ParamData("radius", ParamType::Int, "radius"), ParamData("args", ParamType::SoftEnum, true, "-h", "-h")},
             {{"block", "radius", "args"}, {"blockPattern", "radius", "args"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
@@ -124,7 +124,7 @@ namespace worldedit {
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
                 auto dimID = player->getDimensionId();
-                auto pos = (player->getPosition() - Vec3(0.0, 1.79, 0.0)).toBlockPos();
+                auto pos = (player->getPosition() - Vec3(0.0, 1.62, 0.0)).toBlockPos();
                 pos.y -= 1;
 
                 bool arg_h = false;
@@ -162,8 +162,8 @@ namespace worldedit {
             {},
             {ParamData("block", ParamType::Block, "block"),
              ParamData("blockPattern", ParamType::String, "blockPattern"),
-             ParamData("radius", ParamType::Int, "radius"), ParamData("args", ParamType::String, true, "-h")},
-            {{"block", "radius", "args"}, {"blockPattern", "radius", "args"}},
+             ParamData("radius", ParamType::Int, "radius")},
+            {{"block", "radius"}, {"blockPattern", "radius"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
@@ -171,7 +171,7 @@ namespace worldedit {
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
                 auto dimID = player->getDimensionId();
-                auto pos = (player->getPosition() - Vec3(0.0, 1.79, 0.0)).toBlockPos();
+                auto pos = (player->getPosition() - Vec3(0.0, 1.62, 0.0)).toBlockPos();
                 pos.y -= 1;
 
                 bool arg_h = true;

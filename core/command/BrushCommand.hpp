@@ -48,7 +48,7 @@ namespace worldedit {
                 ParamData("gravity", ParamType::Enum, "gravity"),
                 ParamData("heightmap", ParamType::Enum, "heightmap"),
                 ParamData("none", ParamType::Enum, "none"),
-                ParamData("args", ParamType::String, true, "-aho"),
+                ParamData("args", ParamType::SoftEnum, true, "-aho", "-aho"),
                 ParamData("block", ParamType::Block, "block"),
                 ParamData("blockPattern", ParamType::String, "blockPattern"),
                 ParamData("radius", ParamType::Int, true, "radius"),

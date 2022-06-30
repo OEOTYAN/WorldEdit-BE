@@ -34,17 +34,17 @@ namespace worldedit {
         DynamicCommand::setup(
             "size",                   // command name
             "calculate region size",  // command description
-            {}, {ParamData("args", ParamType::String, true, "-ca")}, {{"args"}},
+            {}, {ParamData("args", ParamType::SoftEnum, true, "-ca", "-ca")}, {{"args"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod    = worldedit::getMod();
-                auto  player = origin.getPlayer();
-                auto  xuid   = player->getXuid();
+                auto& mod = worldedit::getMod();
+                auto player = origin.getPlayer();
+                auto xuid = player->getXuid();
                 if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
                     mod.playerRegionMap[xuid]->hasSelected()) {
-                    long long size  = 0;
-                    bool      arg_a = false, arg_c = false;
+                    long long size = 0;
+                    bool arg_a = false, arg_c = false;
                     if (results["args"].isSet) {
                         auto str = results["args"].getRaw<std::string>();
                         if (str.find("-") == std::string::npos) {
@@ -85,17 +85,17 @@ namespace worldedit {
             {
                 {"-c", {"-c"}},
             },
-            {ParamData("args", ParamType::Enum, true, "-c"), ParamData("block", ParamType::Block, "block"),
+            {ParamData("args", ParamType::SoftEnum, true, "-c", "-c"), ParamData("block", ParamType::Block, "block"),
              ParamData("data", ParamType::Int, true, "data")},
             {{"block", "data", "args"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod       = worldedit::getMod();
-                auto  player    = origin.getPlayer();
-                auto  xuid      = player->getXuid();
-                int   data      = -1;
-                auto  blockname = results["block"].get<Block const*>()->getTypeName();
+                auto& mod = worldedit::getMod();
+                auto player = origin.getPlayer();
+                auto xuid = player->getXuid();
+                int data = -1;
+                auto blockname = results["block"].get<Block const*>()->getTypeName();
                 if (results["data"].isSet) {
                     data = results["data"].getRaw<int>();
                 }
@@ -124,14 +124,14 @@ namespace worldedit {
         DynamicCommand::setup(
             "distr",                         // command name
             "block distribution in region",  // command description
-            {}, {ParamData("args", ParamType::String, true, "-cd")}, {{"args"}},
+            {}, {ParamData("args", ParamType::SoftEnum, true, "-cd", "-cd")}, {{"args"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod    = worldedit::getMod();
-                auto  player = origin.getPlayer();
-                auto  xuid   = player->getXuid();
-                bool  arg_d = false, arg_c = false;
+                auto& mod = worldedit::getMod();
+                auto player = origin.getPlayer();
+                auto xuid = player->getXuid();
+                bool arg_d = false, arg_c = false;
                 if (results["args"].isSet) {
                     auto str = results["args"].getRaw<std::string>();
                     if (str.find("-") == std::string::npos) {
@@ -148,7 +148,7 @@ namespace worldedit {
 
                 if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
                     mod.playerRegionMap[xuid]->hasSelected()) {
-                    std::unordered_map<std::string, long long>     blocksMap;
+                    std::unordered_map<std::string, long long> blocksMap;
                     std::vector<std::pair<std::string, long long>> blocksMap2;
                     blocksMap2.resize(0);
                     long long all = 0;
@@ -159,7 +159,7 @@ namespace worldedit {
                         if (arg_d) {
                             mod.playerRegionMap[xuid]->forEachBlockInRegion([&](const BlockPos& pos) {
                                 all++;
-                                auto        block     = Level::getBlock(pos, dimID);
+                                auto block = Level::getBlock(pos, dimID);
                                 std::string blockName = block->getTypeName();
                                 blockName += " " + worldedit::fto_string(block->getTileData(), 0);
                                 if (blocksMap.find(blockName) != blocksMap.end()) {
@@ -171,7 +171,7 @@ namespace worldedit {
                         } else {
                             mod.playerRegionMap[xuid]->forEachBlockInRegion([&](const BlockPos& pos) {
                                 all++;
-                                auto        block     = Level::getBlock(pos, dimID);
+                                auto block = Level::getBlock(pos, dimID);
                                 std::string blockName = block->getTypeName();
                                 if (blocksMap.find(blockName) != blocksMap.end()) {
                                     blocksMap[blockName] += 1;

@@ -7,9 +7,13 @@ namespace worldedit {
 
     void playerSubscribe() {
         Event::PlayerUseItemOnEvent::subscribe([](const Event::PlayerUseItemOnEvent& ev) {
+            if ((!ev.mPlayer.isOP()) || (!ev.mPlayer.isCreative())) {
+                return true;
+            }
             auto itemName = ev.mItemStack->getNbt()->toBinaryNBT();
             // std::cout << ev.mItemStack->toString() << std::endl;
             // std::cout << ev.mItemStack->toDebugString() << std::endl;
+            std::cout << ev.mPlayer->getPosition().toString() << std::endl;
             if (ev.mItemStack->getTypeName() == "minecraft:wooden_axe") {
                 changeVicePos(ev.mPlayer, ev.mBlockInstance);
                 return false;
@@ -23,7 +27,11 @@ namespace worldedit {
             return true;
         });
         Event::PlayerUseItemEvent::subscribe([](const Event::PlayerUseItemEvent& ev) {
+            if ((!ev.mPlayer.isOP()) || (!ev.mPlayer.isCreative())) {
+                return true;
+            }
             // std::cout << ev.mPlayer->getRotation().toString() << std::endl;
+            std::cout << (ev.mPlayer->getPosition() - Vec3(0.0, 1.62, 0.0)).toString() << std::endl;
             auto itemName = ev.mItemStack->getNbt()->toBinaryNBT();
             auto& mod = worldedit::getMod();
             auto xuid = ev.mPlayer->getXuid();
@@ -55,6 +63,9 @@ namespace worldedit {
         });
 
         Event::PlayerDestroyBlockEvent::subscribe([](const Event::PlayerDestroyBlockEvent& ev) {
+            if ((!ev.mPlayer.isOP()) || (!ev.mPlayer.isCreative())) {
+                return true;
+            }
             auto itemStack = ev.mPlayer->getHandSlot();
             auto itemName = itemStack->getNbt()->toBinaryNBT();
             // std::cout << itemStack->getTypeName() << std::endl;
@@ -76,6 +87,9 @@ namespace worldedit {
         });
 
         Event::PlayerOpenContainerEvent::subscribe([](const Event::PlayerOpenContainerEvent& ev) {
+            if ((!ev.mPlayer.isOP()) || (!ev.mPlayer.isCreative())) {
+                return true;
+            }
             auto itemStack = ev.mPlayer->getHandSlot();
             auto itemName = itemStack->getNbt()->toBinaryNBT();
             auto& mod = worldedit::getMod();
@@ -92,6 +106,9 @@ namespace worldedit {
         });
 
         Event::PlayerPlaceBlockEvent::subscribe([](const Event::PlayerPlaceBlockEvent& ev) {
+            if ((!ev.mPlayer.isOP()) || (!ev.mPlayer.isCreative())) {
+                return true;
+            }
             auto itemStack = ev.mPlayer->getHandSlot();
             auto itemName = itemStack->getNbt()->toBinaryNBT();
             auto& mod = worldedit::getMod();
@@ -117,14 +134,16 @@ THook(void,
       AnimatePacket const& animatePacket) {
     if (animatePacket.mAction == AnimatePacket::Action::Swing) {
         Player* player = serverNetworkHandler->getServerPlayer(networkIdentifier);
+        if ((!player.isOP()) || (!player.isCreative())) {
+            return true;
+        }
         auto& mod = worldedit::getMod();
         auto itemName = player->getHandSlot()->getNbt()->toBinaryNBT();
         auto xuid = player->getXuid();
         if (mod.playerHandToolMap.find(xuid) != mod.playerHandToolMap.end() &&
             mod.playerHandToolMap[xuid].find(itemName) != mod.playerHandToolMap[xuid].end()) {
             bool requiereWater = true;
-            if (Level::getBlock(player->getPosition().toBlockPos(), player->getDimensionId()) !=
-                BedrockBlocks::mAir) {
+            if (Level::getBlock(player->getPosition().toBlockPos(), player->getDimensionId()) != BedrockBlocks::mAir) {
                 requiereWater = false;
             }
             BlockInstance blockInstance = player->getBlockFromViewVector(requiereWater, false, 2048.0f, true, false);

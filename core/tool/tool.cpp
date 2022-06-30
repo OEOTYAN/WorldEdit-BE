@@ -28,12 +28,12 @@ namespace worldedit {
     ////////
     bool AirWand::leftClick(Player* player, BlockInstance& blockInstance) {
         auto bs = Level::getBlockSource(player);
-        changeMainPos(player, bs->getBlockInstance((player->getPosition() - Vec3(0.0, 1.79, 0.0)).toBlockPos()));
+        changeMainPos(player, bs->getBlockInstance((player->getPosition() - Vec3(0.0, 1.62, 0.0)).toBlockPos()));
         return true;
     }
     bool AirWand::rightClick(Player* player, BlockInstance& blockInstance) {
         auto bs = Level::getBlockSource(player);
-        changeVicePos(player, bs->getBlockInstance((player->getPosition() - Vec3(0.0, 1.79, 0.0)).toBlockPos()));
+        changeVicePos(player, bs->getBlockInstance((player->getPosition() - Vec3(0.0, 1.62, 0.0)).toBlockPos()));
         return true;
     }
 

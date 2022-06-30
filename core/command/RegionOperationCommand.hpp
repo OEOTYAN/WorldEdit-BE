@@ -55,7 +55,7 @@ namespace worldedit {
 
                     INNERIZE_GMASK
 
-                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
+                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.62, 0.0);
                     auto playerRot = origin.getPlayer()->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
@@ -93,7 +93,7 @@ namespace worldedit {
                 ParamData("block", ParamType::Block, "block"),
                 ParamData("blockPattern", ParamType::String, "blockPattern"),
                 ParamData("radius", ParamType::Int, true, "radius"),
-                ParamData("args", ParamType::String, true, "-h"),
+                ParamData("args", ParamType::SoftEnum, true, "-h", "-h"),
             },
             {{"block", "radius", "args"}, {"blockPattern", "radius", "args"}},
             // dynamic command callback
@@ -185,7 +185,7 @@ namespace worldedit {
 
                         INNERIZE_GMASK
 
-                        auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
+                        auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.62, 0.0);
                         auto playerRot = origin.getPlayer()->getRotation();
 
                         EvalFunctions f;
@@ -232,7 +232,7 @@ namespace worldedit {
                 ParamData("block", ParamType::Block, "block"),
                 ParamData("blockPattern", ParamType::String, "blockPattern"),
                 ParamData("radius", ParamType::Int, true, "radius"),
-                ParamData("args", ParamType::String, true, "-hcr"),
+                ParamData("args", ParamType::SoftEnum, true, "-hcr", "-hcr"),
             },
             {{"block", "radius", "args"}, {"blockPattern", "radius", "args"}},
             // dynamic command callback
@@ -280,7 +280,7 @@ namespace worldedit {
 
                     INNERIZE_GMASK
 
-                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
+                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.62, 0.0);
                     auto playerRot = origin.getPlayer()->getRotation();
 
                     std::string bps = "minecraft:air";
@@ -428,7 +428,7 @@ namespace worldedit {
                 ParamData("radius1", ParamType::Int, false, "radius1"),
                 ParamData("radius2", ParamType::Int, false, "radius2"),
                 ParamData("radius3", ParamType::Int, true, "radius3"),
-                ParamData("args", ParamType::String, true, "-hcr"),
+                ParamData("args", ParamType::SoftEnum, true, "-hcr", "-hcr"),
             },
             {
                 {"block", "radius1", "radius2", "radius3", "args"},
@@ -578,7 +578,7 @@ namespace worldedit {
 
                         INNERIZE_GMASK
 
-                        auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
+                        auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.62, 0.0);
                         auto playerRot = origin.getPlayer()->getRotation();
 
                         EvalFunctions f;
@@ -657,7 +657,7 @@ namespace worldedit {
 
                     INNERIZE_GMASK
 
-                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
+                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.62, 0.0);
                     auto playerRot = origin.getPlayer()->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
@@ -732,7 +732,7 @@ namespace worldedit {
                         history->storeBlock(blockInstance, localPos);
                     });
 
-                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
+                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.62, 0.0);
                     auto playerRot = origin.getPlayer()->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
@@ -750,9 +750,9 @@ namespace worldedit {
                     BlockPattern blockPattern(bps, xuid, region);
                     boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
                         setFunction(variables, f, boundingBox, playerPos, playerRot, pos, center);
-                        
-                        gMaskLambda(f, variables, [&]() mutable {
-                        blockPattern.setBlock(variables, f, blockSource, pos); });
+
+                        gMaskLambda(f, variables,
+                                    [&]() mutable { blockPattern.setBlock(variables, f, blockSource, pos); });
                     });
 
                     output.success(fmt::format("§acenter placed"));
@@ -769,7 +769,7 @@ namespace worldedit {
                 {"dir", {"me", "back", "up", "down", "south", "north", "east", "west"}},
             },
             {ParamData("times", ParamType::Int, true, "times"), ParamData("dir", ParamType::Enum, true, "dir"),
-             ParamData("args", ParamType::String, true, "-sal")},
+             ParamData("args", ParamType::SoftEnum, true, "-sal", "-sal")},
             {{"times", "dir", "args"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
@@ -849,7 +849,7 @@ namespace worldedit {
 
                     INNERIZE_GMASK
 
-                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
+                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.62, 0.0);
                     auto playerRot = origin.getPlayer()->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
@@ -888,7 +888,8 @@ namespace worldedit {
                 {"dir", {"me", "back", "up", "down", "south", "north", "east", "west"}},
             },
             {ParamData("dis", ParamType::Int, true, "dis"), ParamData("dir", ParamType::Enum, true, "dir"),
-             ParamData("args", ParamType::String, true, "-sa"), ParamData("block", ParamType::Block, true, "block"),
+             ParamData("args", ParamType::SoftEnum, true, "-sa", "-sa"),
+             ParamData("block", ParamType::Block, true, "block"),
              ParamData("blockPattern", ParamType::String, true, "blockPattern")},
             {{"dis", "dir", "block", "args"}, {"dis", "dir", "blockPattern", "args"}},
             // dynamic command callback
@@ -966,7 +967,7 @@ namespace worldedit {
 
                     INNERIZE_GMASK
 
-                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
+                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.62, 0.0);
                     auto playerRot = origin.getPlayer()->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
@@ -1019,7 +1020,8 @@ namespace worldedit {
             {},
             {ParamData("block", ParamType::Block, "block"),
              ParamData("blockPattern", ParamType::String, "blockPattern"),
-             ParamData("function", ParamType::String, "function"), ParamData("args", ParamType::String, true, "-h")},
+             ParamData("function", ParamType::String, "function"),
+             ParamData("args", ParamType::SoftEnum, true, "-h", "-h")},
             {{"block", "function", "args"}, {"blockPattern", "function", "args"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
@@ -1063,7 +1065,7 @@ namespace worldedit {
 
                     auto genfunc = results["function"].get<std::string>();
 
-                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
+                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.62, 0.0);
                     auto playerRot = origin.getPlayer()->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
@@ -1178,7 +1180,7 @@ namespace worldedit {
 
                     INNERIZE_GMASK
 
-                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
+                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.62, 0.0);
                     auto playerRot = origin.getPlayer()->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
@@ -1272,7 +1274,7 @@ namespace worldedit {
 
                     INNERIZE_GMASK
 
-                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
+                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.62, 0.0);
                     auto playerRot = origin.getPlayer()->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
@@ -1341,7 +1343,7 @@ namespace worldedit {
 
                     INNERIZE_GMASK
 
-                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
+                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.62, 0.0);
                     auto playerRot = origin.getPlayer()->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
@@ -1398,7 +1400,7 @@ namespace worldedit {
 
                     INNERIZE_GMASK
 
-                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
+                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.62, 0.0);
                     auto playerRot = origin.getPlayer()->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
@@ -1503,7 +1505,7 @@ namespace worldedit {
                             tmp.assign(tmp2.begin(), tmp2.end());
                         }
 
-                        auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
+                        auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.62, 0.0);
                         auto playerRot = origin.getPlayer()->getRotation();
                         EvalFunctions f;
                         f.setbs(blockSource);
@@ -1675,7 +1677,7 @@ namespace worldedit {
 
                     auto blockColorMap = getBlockColorMap();
 
-                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
+                    auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.62, 0.0);
                     auto playerRot = origin.getPlayer()->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);

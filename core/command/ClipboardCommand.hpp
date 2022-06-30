@@ -63,7 +63,7 @@ namespace worldedit {
                     auto* region = mod.playerRegionMap[xuid];
                     auto boundingBox = region->getBoundBox();
                     mod.playerClipboardMap[xuid] = Clipboard(boundingBox.max - boundingBox.min);
-                    auto pPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
+                    auto pPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.62, 0.0);
                     mod.playerClipboardMap[xuid].playerPos = pPos.toBlockPos();
                     mod.playerClipboardMap[xuid].playerRelPos = pPos.toBlockPos() - boundingBox.min;
                     auto dimID = mod.playerRegionMap[xuid]->getDimensionID();
@@ -107,7 +107,7 @@ namespace worldedit {
                         history->storeBlock(blockInstance, localPos);
                     });
 
-                    auto pPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
+                    auto pPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.62, 0.0);
 
                     mod.playerClipboardMap[xuid] = Clipboard(boundingBox.max - boundingBox.min);
                     mod.playerClipboardMap[xuid].playerPos = pPos.toBlockPos();
@@ -128,7 +128,7 @@ namespace worldedit {
         DynamicCommand::setup(
             "paste",                 // command name
             "paste your clipboard",  // command description
-            {}, {ParamData("args", ParamType::String, true, "-anos")}, {{"args"}},
+            {}, {ParamData("args", ParamType::SoftEnum, true, "-anos", "-anos")}, {{"args"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
@@ -160,7 +160,7 @@ namespace worldedit {
                     if (arg_o) {
                         pbPos = clipboard->playerPos;
                     } else {
-                        auto pPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.79, 0.0);
+                        auto pPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.62, 0.0);
                         pbPos = pPos.toBlockPos();
                     }
 

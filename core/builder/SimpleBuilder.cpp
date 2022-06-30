@@ -58,8 +58,8 @@ namespace worldedit {
 
         auto* player = Global<Level>->getPlayer(xuid);
 
-        auto playerPos =player->getPosition() - Vec3(0.0, 1.79, 0.0);
-        auto playerRot =player->getRotation();
+        auto playerPos = player->getPosition() - Vec3(0.0, 1.62, 0.0);
+        auto playerRot = player->getRotation();
         EvalFunctions f;
         f.setbs(blockSource);
         f.setbox(box);
@@ -222,7 +222,7 @@ namespace worldedit {
 
         auto* player = Global<Level>->getPlayer(xuid);
 
-        auto playerPos = player->getPosition() - Vec3(0.0, 1.79, 0.0);
+        auto playerPos = player->getPosition() - Vec3(0.0, 1.62, 0.0);
         auto playerRot = player->getRotation();
         EvalFunctions f;
         f.setbs(blockSource);
@@ -391,7 +391,7 @@ namespace worldedit {
 
         auto* player = Global<Level>->getPlayer(xuid);
 
-        auto playerPos = player->getPosition() - Vec3(0.0, 1.79, 0.0);
+        auto playerPos = player->getPosition() - Vec3(0.0, 1.62, 0.0);
         auto playerRot = player->getRotation();
         EvalFunctions f;
         f.setbs(blockSource);
