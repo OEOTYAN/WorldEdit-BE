@@ -15,7 +15,7 @@ namespace worldedit {
         }
     }
 
-    void BlockNBTSet::setBlock(const BlockPos& pos, BlockSource* blockSource) const {
+    bool BlockNBTSet::setBlock(const BlockPos& pos, BlockSource* blockSource) const {
         setBlockSimple(blockSource, pos, block, exblock);
         if (hasBlockEntity) {
             auto blockInstance = blockSource->getBlockInstance(pos);
@@ -23,8 +23,9 @@ namespace worldedit {
                 blockInstance.getBlockEntity()->setNbt(CompoundTag::fromBinaryNBT(blockEntity).get());
             }
         }
+        return true;
     }
-    void BlockNBTSet::setBlock(const BlockPos& pos, BlockSource* blockSource, Rotation rotation, Mirror mirror) const {
+    bool BlockNBTSet::setBlock(const BlockPos& pos, BlockSource* blockSource, Rotation rotation, Mirror mirror) const {
         setBlockSimple(blockSource, pos,
                        const_cast<Block*>(VanillaBlockStateTransformUtils::transformBlock(*block, rotation, mirror)),
                        const_cast<Block*>(VanillaBlockStateTransformUtils::transformBlock(*exblock, rotation, mirror)));
@@ -34,5 +35,6 @@ namespace worldedit {
                 blockInstance.getBlockEntity()->setNbt(CompoundTag::fromBinaryNBT(blockEntity).get());
             }
         }
+        return true;
     }
 }  // namespace worldedit

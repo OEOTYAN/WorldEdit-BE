@@ -151,7 +151,7 @@ namespace worldedit {
                                 i2++;
                             }
                             tmpSNBTs.push_back(tmpSNBT.substr(head2, i2 - head2));
-                            std::cout << tmpSNBT.substr(head2, i2 - head2) << std::endl;
+                            //std::cout << tmpSNBT.substr(head2, i2 - head2) << std::endl;
                         }
                         i2++;
                     }

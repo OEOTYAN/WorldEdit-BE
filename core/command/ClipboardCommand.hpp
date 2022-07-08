@@ -7,6 +7,7 @@
 
 // #include "pch.h"
 #include <MC/CommandUtils.hpp>
+#include "MC/StructureTemplate.hpp"
 // #include <MC/BlockInstance.hpp>
 // #include <MC/Block.hpp>
 // #include <MC/BlockActor.hpp>
@@ -62,17 +63,36 @@ namespace worldedit {
                     mod.playerRegionMap[xuid]->hasSelected()) {
                     auto* region = mod.playerRegionMap[xuid];
                     auto boundingBox = region->getBoundBox();
-                    mod.playerClipboardMap[xuid] = Clipboard(boundingBox.max - boundingBox.min);
+                    auto* clipboard = &mod.playerClipboardMap[xuid];
+                    *clipboard = Clipboard(boundingBox.max - boundingBox.min);
                     auto pPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.62, 0.0);
-                    mod.playerClipboardMap[xuid].playerPos = pPos.toBlockPos();
-                    mod.playerClipboardMap[xuid].playerRelPos = pPos.toBlockPos() - boundingBox.min;
+                    clipboard->playerPos = pPos.toBlockPos();
+                    clipboard->playerRelPos = pPos.toBlockPos() - boundingBox.min;
                     auto dimID = mod.playerRegionMap[xuid]->getDimensionID();
                     auto blockSource = Level::getBlockSource(dimID);
                     mod.playerRegionMap[xuid]->forEachBlockInRegion([&](const BlockPos& pos) {
                         auto localPos = pos - boundingBox.min;
                         auto blockInstance = blockSource->getBlockInstance(pos);
-                        mod.playerClipboardMap[xuid].storeBlock(blockInstance, localPos);
+                        clipboard->storeBlock(blockInstance, localPos);
                     });
+                    if (true) {
+                        auto st = StructureTemplate("worldedit_copy_cmd_tmp");
+                        auto setting = StructureSettings();
+                        setting.setIgnoreBlocks(true);
+                        setting.setIgnoreEntities(false);
+                        setting.setMirror(Mirror::None_15);
+                        setting.setStructureSize(boundingBox.max - boundingBox.min + 1);
+                        setting.setRotation(Rotation::None_14);
+                        st.fillFromWorld(*blockSource, boundingBox.min + BlockPos(0, 1, 0), setting);
+                        // auto structure = st.toTag()->toBinaryNBT();
+                        // std::cout << structure << std::endl;
+                        boundingBox += BlockPos(0, 1, 0);
+                        clipboard->entityStr =
+                            //  StructureTemplate::fromWorld("worldedit_copy_cmd_tmp", dimID,
+                            //                                                     boundingBox.min, boundingBox.max,
+                            //                                                     false, true)
+                            st.toTag()->toBinaryNBT();
+                    }
                     output.success(fmt::format("§aregion copied"));
                 } else {
                     output.error("You don't have a region yet");
@@ -109,13 +129,14 @@ namespace worldedit {
 
                     auto pPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.62, 0.0);
 
-                    mod.playerClipboardMap[xuid] = Clipboard(boundingBox.max - boundingBox.min);
-                    mod.playerClipboardMap[xuid].playerPos = pPos.toBlockPos();
-                    mod.playerClipboardMap[xuid].playerRelPos = pPos.toBlockPos() - boundingBox.min;
+                    auto* clipboard = &mod.playerClipboardMap[xuid];
+                    *clipboard = Clipboard(boundingBox.max - boundingBox.min);
+                    clipboard->playerPos = pPos.toBlockPos();
+                    clipboard->playerRelPos = pPos.toBlockPos() - boundingBox.min;
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
                         auto localPos = pos - boundingBox.min;
                         auto blockInstance = blockSource->getBlockInstance(pos);
-                        mod.playerClipboardMap[xuid].storeBlock(blockInstance, localPos);
+                        clipboard->storeBlock(blockInstance, localPos);
                     });
                     region->forEachBlockInRegion([&](const BlockPos& pos) { setBlockSimple(blockSource, pos); });
                     output.success(fmt::format("§aregion cutted"));
@@ -128,7 +149,7 @@ namespace worldedit {
         DynamicCommand::setup(
             "paste",                 // command name
             "paste your clipboard",  // command description
-            {}, {ParamData("args", ParamType::SoftEnum, true, "-anos", "-anos")}, {{"args"}},
+            {}, {ParamData("args", ParamType::SoftEnum, true, "-anose", "-anose")}, {{"args"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
@@ -136,7 +157,7 @@ namespace worldedit {
                 auto xuid = origin.getPlayer()->getXuid();
                 if (mod.playerClipboardMap.find(xuid) != mod.playerClipboardMap.end()) {
                     auto* clipboard = &mod.playerClipboardMap[xuid];
-                    bool arg_a = false, arg_n = false, arg_o = false, arg_s = false;
+                    bool arg_a = false, arg_n = false, arg_o = false, arg_s = false, arg_e = false;
                     if (results["args"].isSet) {
                         auto str = results["args"].getRaw<std::string>();
                         if (str.find("-") == std::string::npos) {
@@ -154,6 +175,9 @@ namespace worldedit {
                         }
                         if (str.find("s") != std::string::npos) {
                             arg_s = true;
+                        }
+                        if (str.find("e") != std::string::npos) {
+                            arg_e = true;
                         }
                     }
                     BlockPos pbPos;
@@ -203,7 +227,20 @@ namespace worldedit {
                                 clipboard->setBlocks(pos, worldPos, blockSource);
                             });
                         }
+                        if (arg_e && !clipboard->entityStr.empty()) {
+                            auto st = StructureTemplate("worldedit_copy_cmd_tmp");
+                            st.getData()->load(*(CompoundTag::fromBinaryNBT(clipboard->entityStr).get()));
+                            auto& palette = Global<Level>->getBlockPalette();
+                            auto setting = StructureSettings();
+                            setting.setMirror(clipboard->mirror);
+                            setting.setStructureSize(st.getSize());
+                            setting.setRotation(clipboard->rotation);
+                            st.placeInWorld(*blockSource, palette,
+                                            clipboard->getPos({0, 0, 0}) + pbPos + BlockPos(0, 1, 0), setting, nullptr,
+                                            false);
+                        }
                     }
+
                     output.success(fmt::format("§aclipboard pasted"));
                 } else {
                     output.error("You don't have a clipboard yet");

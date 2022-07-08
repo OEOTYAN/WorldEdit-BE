@@ -78,7 +78,7 @@ namespace worldedit {
         unsigned width, height;
         unsigned error = lodepng::decode(image, width, height, filename);
         if (error != 0) {
-            std::cout << "error " << error << ": " << lodepng_error_text(error) << std::endl;
+            //std::cout << "error " << error << ": " << lodepng_error_text(error) << std::endl;
             Level::broadcastText("§c" + std::string(lodepng_error_text(error)), TextType::RAW);
             return Texture2D(0, 0);
         }

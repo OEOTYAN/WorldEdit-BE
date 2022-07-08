@@ -114,24 +114,24 @@ namespace worldedit {
         }
         bool hasBlock(Block* block);
         template <typename functions>
-        void setBlock(const std::unordered_map<::std::string, double>& variables,
+        bool setBlock(const std::unordered_map<::std::string, double>& variables,
                       functions& funcs,
                       BlockSource* blockSource,
                       const BlockPos& pos) {
             if (clipboard != nullptr) {
-                clipboard->getSet2(pos - bias).setBlock(pos, blockSource);
-                return;
+                return clipboard->getSet2(pos - bias).setBlock(pos, blockSource);
             }
             auto blockInstance = blockSource->getBlockInstance(pos);
             auto* rawBlock = getRawBlock(variables, funcs);
             if (rawBlock == nullptr) {
-                return;
+                return false;
             }
             auto* block = rawBlock->getBlock(variables, funcs);
             setBlockSimple(blockSource, pos, block, rawBlock->exBlock);
             if (rawBlock->hasBE && blockInstance.hasBlockEntity()) {
                 blockInstance.getBlockEntity()->setNbt(CompoundTag::fromBinaryNBT(rawBlock->blockEntity).get());
             }
+            return true;
         }
     };
 }  // namespace worldedit

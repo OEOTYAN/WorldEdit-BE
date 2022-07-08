@@ -13,7 +13,7 @@ namespace worldedit {
             auto itemName = ev.mItemStack->getNbt()->toBinaryNBT();
             // std::cout << ev.mItemStack->toString() << std::endl;
             // std::cout << ev.mItemStack->toDebugString() << std::endl;
-            std::cout << ev.mPlayer->getPosition().toString() << std::endl;
+            //std::cout << ev.mPlayer->getPosition().toString() << std::endl;
             if (ev.mItemStack->getTypeName() == "minecraft:wooden_axe") {
                 changeVicePos(ev.mPlayer, ev.mBlockInstance);
                 return false;
@@ -22,6 +22,26 @@ namespace worldedit {
             auto xuid = ev.mPlayer->getXuid();
             if (mod.playerHandToolMap.find(xuid) != mod.playerHandToolMap.end() &&
                 mod.playerHandToolMap[xuid].find(itemName) != mod.playerHandToolMap[xuid].end()) {
+                bool requiereWater = true;
+                if (Level::getBlock(ev.mPlayer->getPosition().toBlockPos(), ev.mPlayer->getDimensionId()) !=
+                    BedrockBlocks::mAir) {
+                    requiereWater = false;
+                }
+                BlockInstance blockInstance =
+                    ev.mPlayer->getBlockFromViewVector(requiereWater, false, 2048.0f, true, false);
+                mod.playerHandToolMap[xuid][itemName]->rightClick(ev.mPlayer, blockInstance);
+                return false;
+            }
+            if (mod.playerBrushMap.find(xuid) != mod.playerBrushMap.end() &&
+                mod.playerBrushMap[xuid].find(itemName) != mod.playerBrushMap[xuid].end()) {
+                bool requiereWater = true;
+                if (Level::getBlock(ev.mPlayer->getPosition().toBlockPos(), ev.mPlayer->getDimensionId()) !=
+                    BedrockBlocks::mAir) {
+                    requiereWater = false;
+                }
+                BlockInstance blockInstance =
+                    ev.mPlayer->getBlockFromViewVector(requiereWater, false, 2048.0f, true, false);
+                mod.playerBrushMap[xuid][itemName]->set(ev.mPlayer, blockInstance);
                 return false;
             }
             return true;
@@ -31,7 +51,7 @@ namespace worldedit {
                 return true;
             }
             // std::cout << ev.mPlayer->getRotation().toString() << std::endl;
-            std::cout << (ev.mPlayer->getPosition() - Vec3(0.0, 1.62, 0.0)).toString() << std::endl;
+            //std::cout << (ev.mPlayer->getPosition() - Vec3(0.0, 1.62, 0.0)).toString() << std::endl;
             auto itemName = ev.mItemStack->getNbt()->toBinaryNBT();
             auto& mod = worldedit::getMod();
             auto xuid = ev.mPlayer->getXuid();
@@ -96,10 +116,26 @@ namespace worldedit {
             auto xuid = ev.mPlayer->getXuid();
             if (mod.playerHandToolMap.find(xuid) != mod.playerHandToolMap.end() &&
                 mod.playerHandToolMap[xuid].find(itemName) != mod.playerHandToolMap[xuid].end()) {
+                bool requiereWater = true;
+                if (Level::getBlock(ev.mPlayer->getPosition().toBlockPos(), ev.mPlayer->getDimensionId()) !=
+                    BedrockBlocks::mAir) {
+                    requiereWater = false;
+                }
+                BlockInstance blockInstance =
+                    ev.mPlayer->getBlockFromViewVector(requiereWater, false, 2048.0f, true, false);
+                mod.playerHandToolMap[xuid][itemName]->rightClick(ev.mPlayer, blockInstance);
                 return false;
             }
             if (mod.playerBrushMap.find(xuid) != mod.playerBrushMap.end() &&
                 mod.playerBrushMap[xuid].find(itemName) != mod.playerBrushMap[xuid].end()) {
+                bool requiereWater = true;
+                if (Level::getBlock(ev.mPlayer->getPosition().toBlockPos(), ev.mPlayer->getDimensionId()) !=
+                    BedrockBlocks::mAir) {
+                    requiereWater = false;
+                }
+                BlockInstance blockInstance =
+                    ev.mPlayer->getBlockFromViewVector(requiereWater, false, 2048.0f, true, false);
+                mod.playerBrushMap[xuid][itemName]->set(ev.mPlayer, blockInstance);
                 return false;
             }
             return true;
@@ -115,10 +151,26 @@ namespace worldedit {
             auto xuid = ev.mPlayer->getXuid();
             if (mod.playerHandToolMap.find(xuid) != mod.playerHandToolMap.end() &&
                 mod.playerHandToolMap[xuid].find(itemName) != mod.playerHandToolMap[xuid].end()) {
+                bool requiereWater = true;
+                if (Level::getBlock(ev.mPlayer->getPosition().toBlockPos(), ev.mPlayer->getDimensionId()) !=
+                    BedrockBlocks::mAir) {
+                    requiereWater = false;
+                }
+                BlockInstance blockInstance =
+                    ev.mPlayer->getBlockFromViewVector(requiereWater, false, 2048.0f, true, false);
+                mod.playerHandToolMap[xuid][itemName]->rightClick(ev.mPlayer, blockInstance);
                 return false;
             }
             if (mod.playerBrushMap.find(xuid) != mod.playerBrushMap.end() &&
                 mod.playerBrushMap[xuid].find(itemName) != mod.playerBrushMap[xuid].end()) {
+                bool requiereWater = true;
+                if (Level::getBlock(ev.mPlayer->getPosition().toBlockPos(), ev.mPlayer->getDimensionId()) !=
+                    BedrockBlocks::mAir) {
+                    requiereWater = false;
+                }
+                BlockInstance blockInstance =
+                    ev.mPlayer->getBlockFromViewVector(requiereWater, false, 2048.0f, true, false);
+                mod.playerBrushMap[xuid][itemName]->set(ev.mPlayer, blockInstance);
                 return false;
             }
             return true;

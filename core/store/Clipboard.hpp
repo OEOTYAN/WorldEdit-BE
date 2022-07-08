@@ -38,18 +38,19 @@ namespace worldedit {
 
     class Clipboard {
        public:
-        BlockPos                       size;
-        BlockPos                       playerRelPos;
-        BlockPos                       playerPos;
-        BlockPos                       board;
-        Rotation                       rotation;
-        Mirror                         mirror;
-        Vec3                           rotationAngle;
-        bool                           flipY = false;
-        bool                           used  = false;
-        long long                      vsize;
+        std::string entityStr;
+        BlockPos size;
+        BlockPos playerRelPos;
+        BlockPos playerPos;
+        BlockPos board;
+        Rotation rotation;
+        Mirror mirror;
+        Vec3 rotationAngle;
+        bool flipY = false;
+        bool used = false;
+        long long vsize;
         std::vector<class BlockNBTSet> blockslist;
-        explicit Clipboard()                 = default;
+        explicit Clipboard() = default;
         explicit Clipboard(const Clipboard&) = default;
         explicit Clipboard(const BlockPos& sizes)
             : size(sizes + 1),
@@ -57,7 +58,7 @@ namespace worldedit {
               rotation(Rotation::None_14),
               mirror(Mirror::None_15),
               rotationAngle({0, 0, 0}) {
-            used  = true;
+            used = true;
             vsize = size.x * size.y * size.z;
             blockslist.clear();
             try {
@@ -67,18 +68,18 @@ namespace worldedit {
                 return;
             }
         }
-        long long   getIter(const BlockPos& pos);
-        long long   getIter2(const BlockPos& pos);
-        void        storeBlock(BlockInstance& blockInstance, const BlockPos& pos);
+        long long getIter(const BlockPos& pos);
+        long long getIter2(const BlockPos& pos);
+        void storeBlock(BlockInstance& blockInstance, const BlockPos& pos);
         BoundingBox getBoundingBox();
-        void        rotate(Vec3 angle);
-        void        flip(enum class FACING facing);
-        BlockPos    getPos(const BlockPos& pos);
+        void rotate(Vec3 angle);
+        void flip(enum class FACING facing);
+        BlockPos getPos(const BlockPos& pos);
         BlockNBTSet& getSet(const BlockPos& pos);
         BlockNBTSet& getSet2(const BlockPos& pos);
-        bool        contains(const BlockPos& pos);
-        void        setBlocks(const BlockPos& pos, BlockPos& worldPos, BlockSource* blockSource);
-        void        forEachBlockInClipboard(const std::function<void(const BlockPos&)>& todo);
+        bool contains(const BlockPos& pos);
+        void setBlocks(const BlockPos& pos, BlockPos& worldPos, BlockSource* blockSource);
+        void forEachBlockInClipboard(const std::function<void(const BlockPos&)>& todo);
     };
 }  // namespace worldedit
 

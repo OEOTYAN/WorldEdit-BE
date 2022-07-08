@@ -14,22 +14,21 @@
 
 #define WE_DIR (std::string("plugins/WorldEdit/"))
 
-#define INNERIZE_GMASK                                                                                   \
-    std::function<void(EvalFunctions&, std::unordered_map<std::string, double> const&,             \
-                       std::function<void()> const&)>                                                    \
-                gMaskLambda;                                                                             \
-    std::string gMask = "";                                                                              \
-    if (mod.playerGMaskMap.find(xuid) != mod.playerGMaskMap.end()) {                                     \
-        gMask       = mod.playerGMaskMap[xuid];                                                          \
-        gMaskLambda = [&](EvalFunctions& func, const std::unordered_map<std::string, double>& var, \
-                          std::function<void()> const& todo) mutable {                                   \
-            if (cpp_eval::eval<double>(gMask.c_str(), var, func) > 0.5) {                                \
-                todo();                                                                                  \
-            }                                                                                            \
-        };                                                                                               \
-    } else {                                                                                             \
-        gMaskLambda = [&](EvalFunctions& func, const std::unordered_map<std::string, double>& var, \
-                          std::function<void()> const& todo) mutable { todo(); };                        \
+#define INNERIZE_GMASK                                                                                                \
+    std::function<void(EvalFunctions&, std::unordered_map<std::string, double> const&, std::function<void()> const&)> \
+        gMaskLambda;                                                                                                  \
+    std::string gMask = "";                                                                                           \
+    if (mod.playerGMaskMap.find(xuid) != mod.playerGMaskMap.end()) {                                                  \
+        gMask = mod.playerGMaskMap[xuid];                                                                             \
+        gMaskLambda = [&](EvalFunctions& func, const std::unordered_map<std::string, double>& var,                    \
+                          std::function<void()> const& todo) mutable {                                                \
+            if (cpp_eval::eval<double>(gMask.c_str(), var, func) > 0.5) {                                             \
+                todo();                                                                                               \
+            }                                                                                                         \
+        };                                                                                                            \
+    } else {                                                                                                          \
+        gMaskLambda = [&](EvalFunctions& func, const std::unordered_map<std::string, double>& var,                    \
+                          std::function<void()> const& todo) mutable { todo(); };                                     \
     }
 
 namespace worldedit {
@@ -39,22 +38,13 @@ namespace worldedit {
         int updateArg = 2;
         int updateExArg = 1;
         std::unordered_map<std::string, Region*> playerRegionMap;
-        std::unordered_map<std::string,
-                           std::pair<BlockPos, std::pair<int, int>>>
-            playerMainPosMap;
-        std::unordered_map<std::string,
-                           std::pair<BlockPos, std::pair<int, int>>>
-            playerVicePosMap;
+        std::unordered_map<std::string, std::pair<BlockPos, std::pair<int, int>>> playerMainPosMap;
+        std::unordered_map<std::string, std::pair<BlockPos, std::pair<int, int>>> playerVicePosMap;
         std::unordered_map<std::string, Clipboard> playerClipboardMap;
-        std::unordered_map<std::string, std::unordered_map<std::string, Tool*>>
-            playerHandToolMap;
-        std::unordered_map<std::string, std::unordered_map<std::string,Brush*>>
-            playerBrushMap;
+        std::unordered_map<std::string, std::unordered_map<std::string, Tool*>> playerHandToolMap;
+        std::unordered_map<std::string, std::unordered_map<std::string, Brush*>> playerBrushMap;
         std::unordered_map<std::string, std::string> playerGMaskMap;
-        std::unordered_map<
-            std::string,
-            std::pair<std::vector<Clipboard>, std::pair<int, int>>>
-            playerHistoryMap;
+        std::unordered_map<std::string, std::pair<std::vector<Clipboard>, std::pair<int, int>>> playerHistoryMap;
 
         void renderMVpos();
         Clipboard* getPlayerNextHistory(std::string xuid);
@@ -64,7 +54,7 @@ namespace worldedit {
     WE& getMod();
     std::unordered_map<int, std::string>& getBlockNameMap();
     std::unordered_map<std::string, int>& getBlockIdMap();
-    std::unordered_map<mce::Color, int>&  getBlockColorMap();
+    std::unordered_map<mce::Color, int>& getBlockColorMap();
     Block* getBlock(int id);
     std::string getBlockName(int id);
     int getBlockId(const std::string& name);

@@ -43,8 +43,8 @@ namespace worldedit {
         BlockNBTSet(BlockInstance& blockInstance);
         Block* getBlock() const { return block; }
         Block* getExBlock() const { return exblock; }
-        void   setBlock(const BlockPos& pos, BlockSource* blockSource) const;
-        void   setBlock(const BlockPos& pos, BlockSource* blockSource, Rotation rotation, Mirror mirror) const;
+        bool   setBlock(const BlockPos& pos, BlockSource* blockSource) const;
+        bool setBlock(const BlockPos& pos, BlockSource* blockSource, Rotation rotation, Mirror mirror) const;
     };
 }  // namespace worldedit
 
