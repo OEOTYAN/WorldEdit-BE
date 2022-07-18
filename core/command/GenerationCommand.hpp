@@ -32,7 +32,6 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto dimID = player->getDimensionId();
                 auto pos = (player->getPosition() - Vec3(0.0, 1.62, 0.0)).toBlockPos();
-                pos.y -= 1;
 
                 bool arg_h = false;
                 if (results["args"].isSet) {
@@ -83,7 +82,6 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto dimID = player->getDimensionId();
                 auto pos = (player->getPosition() - Vec3(0.0, 1.62, 0.0)).toBlockPos();
-                pos.y -= 1;
 
                 bool arg_h = true;
                 unsigned short radius = 0;
@@ -125,7 +123,6 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto dimID = player->getDimensionId();
                 auto pos = (player->getPosition() - Vec3(0.0, 1.62, 0.0)).toBlockPos();
-                pos.y -= 1;
 
                 bool arg_h = false;
                 if (results["args"].isSet) {
@@ -172,7 +169,6 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto dimID = player->getDimensionId();
                 auto pos = (player->getPosition() - Vec3(0.0, 1.62, 0.0)).toBlockPos();
-                pos.y -= 1;
 
                 bool arg_h = true;
                 unsigned short radius = 0;

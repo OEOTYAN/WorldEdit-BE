@@ -15,7 +15,7 @@ namespace worldedit {
     using ParamType = DynamicCommand::ParameterType;
     using ParamData = DynamicCommand::ParameterData;
 
-    // brush
+    // brush bmask bsize
 
     void brushCommandSetup() {
         DynamicCommand::setup(
@@ -79,11 +79,13 @@ namespace worldedit {
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
-                std::string brushName = player->getHandSlot()->getNbt()->toBinaryNBT();
+                auto* item = player->getHandSlot();
+                std::string brushName = item->getTypeName();
                 if (brushName == "") {
                     output.error("You need to select an item");
                     return;
                 }
+                brushName += std::to_string(item->getAuxValue());
                 auto xuid = player->getXuid();
                 if (mod.playerBrushMap.find(xuid) != mod.playerBrushMap.end() &&
                     mod.playerBrushMap[xuid].find(brushName) != mod.playerBrushMap[xuid].end()) {
@@ -204,7 +206,8 @@ namespace worldedit {
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
-                std::string brushName = player->getHandSlot()->getNbt()->toBinaryNBT();
+                auto* item = player->getHandSlot();
+                std::string brushName = item->getTypeName() + std::to_string(item->getAuxValue());
                 auto xuid = player->getXuid();
                 if (mod.playerBrushMap.find(xuid) != mod.playerBrushMap.end() &&
                     mod.playerBrushMap[xuid].find(brushName) != mod.playerBrushMap[xuid].end()) {
@@ -232,7 +235,8 @@ namespace worldedit {
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
-                std::string brushName = player->getHandSlot()->getNbt()->toBinaryNBT();
+                auto* item = player->getHandSlot();
+                std::string brushName = item->getTypeName() + std::to_string(item->getAuxValue());
                 auto xuid = player->getXuid();
                 if (mod.playerBrushMap.find(xuid) != mod.playerBrushMap.end() &&
                     mod.playerBrushMap[xuid].find(brushName) != mod.playerBrushMap[xuid].end()) {

@@ -991,11 +991,10 @@ namespace worldedit {
                         bps = results["block"].get<Block const*>()->getTypeName();
                     }
                     BlockPattern blockPattern(bps, xuid, region);
-                    region->forEachBlockInRegion([&](const BlockPos& posk) {
-                        auto pos = posk + faceVec;
+                    region->forEachBlockInRegion([&](const BlockPos& pos) {
                         setFunction(variables, f, boundingBox, playerPos, playerRot, pos, center);
                         gMaskLambda(f, variables,
-                                    [&]() mutable { i += blockPattern.setBlock(variables, f, blockSource, pos); });
+                                    [&]() mutable {blockPattern.setBlock(variables, f, blockSource, pos); });
                     });
 
                     region->forEachBlockInRegion([&](const BlockPos& posk) {

@@ -176,8 +176,7 @@ namespace worldedit {
                                     auto* item = ItemStack::create(std::move(itemQueue.front()));
                                     itemQueue.pop();
                                     auto count = item->getCount();
-                                    if (count <= 0) {
-                                        continue;
+                                    if (count > 0) {
                                     all += count;
                                     std::string name;
                                     if (item->isBlock()) {

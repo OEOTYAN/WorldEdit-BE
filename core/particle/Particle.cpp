@@ -22,7 +22,7 @@ namespace worldedit {
     }
 
     void spawnCuboidParticle(const AABB& aabb, GRAPHIC_COLOR color, int dimType) {
-        auto p1 = aabb.pointA, p2 = aabb.pointB;
+        auto p1 = aabb.min, p2 = aabb.max;
         auto dx = p2.x - p1.x;
         auto dy = p2.y - p1.y;
         auto dz = p2.z - p1.z;

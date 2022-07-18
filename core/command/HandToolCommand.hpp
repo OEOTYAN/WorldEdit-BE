@@ -75,8 +75,9 @@ namespace worldedit {
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto& mod = worldedit::getMod();
                 auto xuid = origin.getPlayer()->getXuid();
-                std::string toolName = origin.getPlayer()->getHandSlot()->getNbt()->toBinaryNBT();
-                std::string toolrName = origin.getPlayer()->getHandSlot()->getTypeName();
+                auto* item = origin.getPlayer()->getHandSlot();
+                std::string toolrName = item->getTypeName();
+                std::string toolName = toolrName + std::to_string(item->getAuxValue());
                 stringReplace(toolrName, "minecraft:", "");
                 if (toolName == "") {
                     output.error("You need to select an item");
