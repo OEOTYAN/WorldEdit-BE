@@ -18,32 +18,29 @@
 
 namespace cpp_eval {
     template <typename number>
-    number eval(const char* expression);
+    number eval(std::string const& expression);
 
     template <typename number>
-    number eval(const char* expression, const ::std::unordered_map<::std::string, number>& variables);
+    number eval(std::string const& expression, const ::std::unordered_map<::std::string, number>& variables);
 
     template <typename number, typename functions>
-    number eval(const char* expression, const ::std::unordered_map<::std::string, number>& variables, functions& funcs);
+    number eval(std::string const& expression, const ::std::unordered_map<::std::string, number>& variables, functions& funcs);
 
     template <typename number>
     class dummy_functions {
        public:
-        number operator()(const char*, const ::std::vector<number>& params) {
-            return 0;
-            //        return number();
-        }
+        number operator()(std::string const&, const ::std::vector<number>& params) { return 0; }
     };
 
     template <typename number>
-    number eval(const char* expression) {
+    number eval(std::string const& expression) {
         ::std::unordered_map<::std::string, number> variables;
-        dummy_functions<number>                     funcs;
+        dummy_functions<number> funcs;
         return eval(expression, variables, funcs);
     }
 
     template <typename number>
-    number eval(const char* expression, const ::std::unordered_map<::std::string, number>& variables) {
+    number eval(std::string const& expression, const ::std::unordered_map<::std::string, number>& variables) {
         dummy_functions<number> funcs;
         return eval(expression, variables, funcs);
     }
@@ -51,43 +48,43 @@ namespace cpp_eval {
     template <typename number, typename functions>
     class evaler {
         const ::std::unordered_map<::std::string, number>& mVariables;
-        functions&                                         mFuncs;
-        const char*                                        mCurrent;
+        functions& mFuncs;
+        const char* mCurrent;
         enum Type {
-            LEFT_BRACKET        = '(',
-            RIGHT_BRACKET       = ')',
+            LEFT_BRACKET = '(',
+            RIGHT_BRACKET = ')',
             PARAMETER_SEPERATOR = ',',
-            IDENTIFIER          = 257,
-            NUMBER              = 258,
-            FINISHED            = 259,
+            IDENTIFIER = 257,
+            NUMBER = 258,
+            FINISHED = 259,
 
             POWER = '^',  //**
 
             MULTIPLY = '*',
-            DIVIDE   = '/',
-            MOD      = '%',
+            DIVIDE = '/',
+            MOD = '%',
 
-            ADD_OR_POSITIVE      = '+',
+            ADD_OR_POSITIVE = '+',
             SUBTRACT_OR_NEGATIVE = '-',
 
-            LESS_THAN             = '<',  //<
-            LESS_THAN_OR_EQUAL    = 262,  //<=
-            GREATER_THAN          = '>',  //>
+            LESS_THAN = '<',              //<
+            LESS_THAN_OR_EQUAL = 262,     //<=
+            GREATER_THAN = '>',           //>
             GREATER_THAN_OR_EQUAL = 264,  //>=
 
-            EQUAL     = '=',  //==
+            EQUAL = '=',      //==
             NOT_EQUAL = 266,  //!=
 
             AND = '&',
             XOR = 267,  //^^
-            OR  = '|',
+            OR = '|',
 
             LOGIC_AND = 268,  //&&
-            LOGIC_OR  = 269   //||
+            LOGIC_OR = 269    //||
         };
-        Type        mType;
+        Type mType;
         std::string mIdentifier;
-        number      mValue;
+        number mValue;
 
         void look_ahead() {
             for (;;) {
@@ -306,19 +303,43 @@ namespace cpp_eval {
             if (mType == LEFT_BRACKET) {
                 match(LEFT_BRACKET);
                 std::vector<number> param = parameter_list();
-                result                    = mFuncs(id.c_str(), param);
+                result = mFuncs(id, param);
             } else {
-                if (id == "pi" || id == "π")
-                    return 3.141592653589793238462643383279;
-                if (id == "phi" || id == "φ")
-                    return 0.618033988749894848204586834365;
-                if (id == "γ")
-                    return 0.577215664901532860606512090082;
-                if (id == "e")
-                    return 2.718281828459045235360287471352;
-                if (mVariables.find(id) == mVariables.end())
-                    return 0;
-                result = mVariables.find(id)->second;
+                switch (do_hash(id.c_str())) {
+                    case do_hash("pi"):
+                    case do_hash("π"):
+                        return 3.141592653589793238462643383279;
+                    case do_hash("phi"):
+                    case do_hash("φ"):
+                        return 0.618033988749894848204586834365;
+                    case do_hash("γ"):
+                        return 0.577215664901532860606512090082;
+                    case do_hash("e"):
+                        return 2.718281828459045235360287471352;
+                    case do_hash("sqrted"):
+                        return 0;
+                    case do_hash("fbm"):
+                    case do_hash("square"):
+                        return 1;
+                    case do_hash("ridged"):
+                    case do_hash("manhattan"):
+                        return 2;
+                    case do_hash("pingpong"):
+                    case do_hash("hybird"):
+                        return 3;
+                    case do_hash("value"):
+                        return 4;
+                        // simplex(x,y,z,seed,fractaltype,octaves,lacunarity,gain,weighted,ppStrength)
+                        // perlin(x,y,z,seed,fractaltype,octaves,lacunarity,gain,weighted,ppStrength)
+                        // cubic(x,y,z,seed,fractaltype,octaves,lacunarity,gain,weighted,ppStrength)
+                        // value(x,y,z,seed,fractaltype,octaves,lacunarity,gain,weighted,ppStrength)
+                        // cellular(x,y,z,seed,disFunc,returnType,jitter,fractaltype,octaves,lacunarity,gain,weighted,ppStrength)
+                    default:
+                        if (mVariables.find(id) == mVariables.end())
+                            return 0;
+                        result = mVariables.find(id)->second;
+                        break;
+                }
             }
             return result;
         }
@@ -358,10 +379,10 @@ namespace cpp_eval {
     };
 
     template <typename number, typename functions>
-    number eval(const char*                                        expression,
+    number eval(std::string const& expression,
                 const ::std::unordered_map<::std::string, number>& variables,
-                functions&                                         funcs) {
-        return evaler<number, functions>(variables, funcs)(expression);
+                functions& funcs) {
+        return evaler<number, functions>(variables, funcs)(expression.c_str());
     }
 };  // namespace cpp_eval
 

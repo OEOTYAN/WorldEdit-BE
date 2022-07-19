@@ -42,7 +42,7 @@ namespace worldedit {
             if (isNum) {
                 return value;
             }
-            return cpp_eval::eval<double>(function.c_str(), variables, funcs);
+            return cpp_eval::eval<double>(function, variables, funcs);
         }
     };
     class RawBlock {
@@ -64,13 +64,13 @@ namespace worldedit {
             }
             int mId = blockId;
             if (mId == -1) {
-                mId = static_cast<int>(round(cpp_eval::eval<double>(blockIdfunc.c_str(), variables, funcs)));
+                mId = static_cast<int>(round(cpp_eval::eval<double>(blockIdfunc, variables, funcs)));
             } else if (mId == -2140000000) {
                 mId = 0;
             }
             int mData = blockData;
             if (mData == -1) {
-                mData = static_cast<int>(round(cpp_eval::eval<double>(blockDatafunc.c_str(), variables, funcs)));
+                mData = static_cast<int>(round(cpp_eval::eval<double>(blockDatafunc, variables, funcs)));
             } else if (mData == -2140000000) {
                 mData = 0;
             }

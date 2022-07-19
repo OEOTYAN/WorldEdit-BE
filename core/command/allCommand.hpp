@@ -4,6 +4,7 @@
 #pragma once
 #ifndef WORLDEDIT_ALLCOMMAND_H
 #define WORLDEDIT_ALLCOMMAND_H
+#include <ScheduleAPI.h>
 #include "filesys/file.h"
 #include "command/BrushCommand.hpp"
 #include "command/RegionCommand.hpp"
@@ -139,10 +140,37 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
+                auto player = origin.getPlayer();
+                Level::runcmdAs(player, "give @s wooden_axe");
+                output.success("");
+            },
+            CommandPermissionLevel::GameMasters);
+
+        DynamicCommand::setup(
+            "cl",                    // command name
+            "calculate expression",  // command description
+            {}, {ParamData("exp", ParamType::Message, "exp")}, {{"exp"}},
+            // dynamic command callback
+            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+               std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
-                auto xuid = player->getXuid();
-                Level::runcmdAs(player, "give @s wooden_axe");
+                auto dimID = player->getDimensionId();
+                auto blockSource = Level::getBlockSource(dimID);
+                EvalFunctions f;
+                f.setbs(blockSource);
+                std::unordered_map<std::string, double> variables;
+                auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.62, 0.0);
+                auto playerRot = origin.getPlayer()->getRotation();
+                variables["px"] = playerRot.x;
+                variables["py"] = playerRot.y;
+                variables["ox"] = playerPos.x;
+                variables["oy"] = playerPos.y;
+                variables["oz"] = playerPos.z;
+                auto func = results["exp"].getRaw<CommandMessage>().getMessage(origin);
+                Level::broadcastText(
+                    fmt::format("§g{}§f = §b{}", func, cpp_eval::eval<double>(func, variables, f)),
+                    TextType::RAW);
                 output.success("");
             },
             CommandPermissionLevel::GameMasters);

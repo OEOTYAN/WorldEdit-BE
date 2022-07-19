@@ -1089,7 +1089,7 @@ namespace worldedit {
                         region->forEachBlockInRegion([&](const BlockPos& pos) {
                             setFunction(variables, f, boundingBox, playerPos, playerRot, pos, center);
                             auto localPos = pos - boundingBox.min + 1;
-                            if (cpp_eval::eval<double>(genfunc.c_str(), variables, f) > 0.5) {
+                            if (cpp_eval::eval<double>(genfunc, variables, f) > 0.5) {
                                 tmp[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x] = true;
                             }
                             caled[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x] = true;
@@ -1107,7 +1107,7 @@ namespace worldedit {
                                             setFunction(variables, f, boundingBox, playerPos, playerRot,
                                                         calPos + boundingBox.min - 1, center);
                                             tmp[(calPos.y + sizeDim.y * calPos.z) * sizeDim.x + calPos.x] =
-                                                cpp_eval::eval<double>(genfunc.c_str(), variables, f) > 0.5;
+                                                cpp_eval::eval<double>(genfunc, variables, f) > 0.5;
 
                                             caled[(calPos.y + sizeDim.y * calPos.z) * sizeDim.x + calPos.x] = true;
                                         }
@@ -1405,16 +1405,18 @@ namespace worldedit {
                     f.setbox(boundingBox);
                     std::unordered_map<std::string, double> variables;
 
+                    auto* mStone = Block::create("minecraft:stone",0);
+
                     region->forTopBlockInRegion([&](const BlockPos& posk) {
                         BlockPos pos(posk.x, posk.y - 1, posk.z);
-                        if (&blockSource->getBlock(pos) == VanillaBlocks::mStone && region->contains(pos)) {
+                        if (&blockSource->getBlock(pos) == mStone && region->contains(pos)) {
                             setFunction(variables, f, boundingBox, playerPos, playerRot, pos, center);
                             gMaskLambda(f, variables,
                                         [&]() mutable { setBlockSimple(blockSource, pos, VanillaBlocks::mGrass); });
                         }
                         for (int mY = -2; mY >= -4; mY--) {
                             BlockPos pos(posk.x, posk.y + mY, posk.z);
-                            if (&blockSource->getBlock(pos) == VanillaBlocks::mStone && region->contains(pos)) {
+                            if (&blockSource->getBlock(pos) == mStone && region->contains(pos)) {
                                 setFunction(variables, f, boundingBox, playerPos, playerRot, pos, center);
                                 gMaskLambda(f, variables, [&]() mutable {
                                     setBlockSimple(blockSource, pos, const_cast<Block*>(VanillaBlocks::mDirt));

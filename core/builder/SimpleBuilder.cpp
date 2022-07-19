@@ -47,7 +47,7 @@ namespace worldedit {
         if (mask != "") {
             maskLambda = [&](EvalFunctions& func, const std::unordered_map<std::string, double>& var,
                              std::function<void()> const& todo) mutable {
-                if (cpp_eval::eval<double>(mask.c_str(), var, func) > 0.5) {
+                if (cpp_eval::eval<double>(mask, var, func) > 0.5) {
                     todo();
                 }
             };
@@ -211,7 +211,7 @@ namespace worldedit {
         if (mask != "") {
             maskLambda = [&](EvalFunctions& func, const std::unordered_map<std::string, double>& var,
                              std::function<void()> const& todo) mutable {
-                if (cpp_eval::eval<double>(mask.c_str(), var, func) > 0.5) {
+                if (cpp_eval::eval<double>(mask, var, func) > 0.5) {
                     todo();
                 }
             };
@@ -380,7 +380,7 @@ namespace worldedit {
         if (mask != "") {
             maskLambda = [&](EvalFunctions& func, const std::unordered_map<std::string, double>& var,
                              std::function<void()> const& todo) mutable {
-                if (cpp_eval::eval<double>(mask.c_str(), var, func) > 0.5) {
+                if (cpp_eval::eval<double>(mask, var, func) > 0.5) {
                     todo();
                 }
             };

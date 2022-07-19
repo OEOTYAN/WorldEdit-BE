@@ -22,7 +22,7 @@
         gMask = mod.playerGMaskMap[xuid];                                                                             \
         gMaskLambda = [&](EvalFunctions& func, const std::unordered_map<std::string, double>& var,                    \
                           std::function<void()> const& todo) mutable {                                                \
-            if (cpp_eval::eval<double>(gMask.c_str(), var, func) > 0.5) {                                             \
+            if (cpp_eval::eval<double>(gMask, var, func) > 0.5) {                                             \
                 todo();                                                                                               \
             }                                                                                                         \
         };                                                                                                            \

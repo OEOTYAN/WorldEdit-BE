@@ -114,7 +114,7 @@ namespace worldedit {
                         region->forEachBlockInRegion([&](const BlockPos& pos) {
                             auto block = const_cast<Block*>(&blockSource->getBlock(pos));
                             if (block->getTypeName() == blockname) {
-                                if (data == -1 || data == (int)(block->getTileData()))
+                                if (data == -1 || data == (int)(block->tryGetTileData()))
                                     count++;
                             }
                         });
@@ -177,43 +177,44 @@ namespace worldedit {
                                     itemQueue.pop();
                                     auto count = item->getCount();
                                     if (count > 0) {
-                                    all += count;
-                                    std::string name;
-                                    if (item->isBlock()) {
-                                        auto block = const_cast<Block*>(item->getBlock());
-                                        name = block->getTypeName();
-                                        if (arg_d) {
-                                            auto states = block->getNbt()->value().at("states").asCompoundTag()->toSNBT(
-                                                0, SnbtFormat::Minimize);
-                                            name += " [" + states.substr(1, states.length() - 2) + "]";
-                                        }
-                                    } else {
-                                        name = item->getTypeName();
-                                        if (arg_d) {
-                                            name += " [";
-                                            auto customName = item->getCustomName();
-                                            if (customName != "") {
-                                                name += "\"name\":\"" + customName+"\"";
+                                        all += count;
+                                        std::string name;
+                                        if (item->isBlock()) {
+                                            auto block = const_cast<Block*>(item->getBlock());
+                                            name = block->getTypeName();
+                                            if (arg_d) {
+                                                auto states =
+                                                    block->getNbt()->value().at("states").asCompoundTag()->toSNBT(
+                                                        0, SnbtFormat::Minimize);
+                                                name += " [" + states.substr(1, states.length() - 2) + "]";
                                             }
-                                            name += "]";
+                                        } else {
+                                            name = item->getTypeName();
+                                            if (arg_d) {
+                                                name += " [";
+                                                auto customName = item->getCustomName();
+                                                if (customName != "") {
+                                                    name += "\"name\":\"" + customName + "\"";
+                                                }
+                                                name += "]";
+                                            }
                                         }
-                                    }
-                                    if (blocksMap.find(name) == blocksMap.end()) {
-                                        blocksMap[name] = 0;
-                                    }
-                                    blocksMap[name] += count;
+                                        if (blocksMap.find(name) == blocksMap.end()) {
+                                            blocksMap[name] = 0;
+                                        }
+                                        blocksMap[name] += count;
 
-                                    auto iNbt = item->getNbt();
-                                    auto* vmap = &iNbt->value();
-                                    if (vmap->find("tag") != vmap->end()) {
-                                        auto* imap = &vmap->at("tag").asCompoundTag()->value();
-                                        if (imap->find("Items") != imap->end()) {
-                                            auto* cmap = &imap->at("Items").asListTag()->value();
-                                            for (auto& mItem : *cmap) {
-                                                itemQueue.emplace(mItem->asCompoundTag()->clone());
+                                        auto iNbt = item->getNbt();
+                                        auto* vmap = &iNbt->value();
+                                        if (vmap->find("tag") != vmap->end()) {
+                                            auto* imap = &vmap->at("tag").asCompoundTag()->value();
+                                            if (imap->find("Items") != imap->end()) {
+                                                auto* cmap = &imap->at("Items").asListTag()->value();
+                                                for (auto& mItem : *cmap) {
+                                                    itemQueue.emplace(mItem->asCompoundTag()->clone());
+                                                }
                                             }
                                         }
-                                    }
                                     }
                                     delete item;
                                 }

@@ -168,8 +168,8 @@ namespace worldedit {
             res -= posMap[getIndex(pos1 - 1)];
             return res;
         }
-        double operator()(const char* name, const std::vector<double>& params) {
-            switch (do_hash(name)) {
+        double operator()(std::string const& name, const std::vector<double>& params) {
+            switch (do_hash(name.c_str())) {
                 case do_hash("rand"):
                     if (params.size() == 0) {
                         return uniformRandDouble();
@@ -314,13 +314,13 @@ namespace worldedit {
                 case do_hash("data"):
                     if (blockdataInitialized) {
                         if (params.size() == 0) {
-                            return (const_cast<Block&>(blockSource->getBlock(here))).getTileData();
+                            return (const_cast<Block&>(blockSource->getBlock(here))).tryGetTileData();
                         } else if (params.size() == 3) {
                             return (const_cast<Block&>(
                                         blockSource->getBlock(here + BlockPos(static_cast<int>(floor(params[0])),
                                                                               static_cast<int>(floor(params[1])),
                                                                               static_cast<int>(floor(params[2]))))))
-                                .getTileData();
+                                .tryGetTileData();
                         }
                     }
                     return 0;

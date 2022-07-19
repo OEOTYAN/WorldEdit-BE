@@ -26,7 +26,7 @@ namespace worldedit {
                     variables["rx"] = pos.x;
                     variables["ry"] = pos.y;
                     variables["rz"] = pos.z;
-                    if (cpp_eval::eval<double>(filter.c_str(), variables, f) > 0.5) {
+                    if (cpp_eval::eval<double>(filter, variables, f) > 0.5) {
                         return y;
                     }
                 }
