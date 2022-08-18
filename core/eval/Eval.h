@@ -314,13 +314,13 @@ namespace worldedit {
                 case do_hash("data"):
                     if (blockdataInitialized) {
                         if (params.size() == 0) {
-                            return (const_cast<Block&>(blockSource->getBlock(here))).tryGetTileData();
+                            return (const_cast<Block&>(blockSource->getBlock(here))).getTileData();
                         } else if (params.size() == 3) {
                             return (const_cast<Block&>(
                                         blockSource->getBlock(here + BlockPos(static_cast<int>(floor(params[0])),
                                                                               static_cast<int>(floor(params[1])),
                                                                               static_cast<int>(floor(params[2]))))))
-                                .tryGetTileData();
+                                .getTileData();
                         }
                     }
                     return 0;

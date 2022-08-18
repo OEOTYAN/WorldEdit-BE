@@ -10,6 +10,7 @@
 #include "store/BlockNBTSet.hpp"
 #include "store/Clipboard.hpp"
 #include "tool/tool.h"
+#include "tool/VanillaFuckMojangBlocks.h"
 #include "brush/Brush.h"
 
 #define WE_DIR (std::string("plugins/WorldEdit/"))
@@ -60,4 +61,5 @@ namespace worldedit {
     int getBlockId(const std::string& name);
 }  // namespace worldedit
 
+// std::unordered_map<std::string, std::string>& getBlockColorssMap();
 #endif  // WORLDEDIT_WORLDEDIT_H

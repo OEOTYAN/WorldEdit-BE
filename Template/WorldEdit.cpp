@@ -40,13 +40,30 @@
 //               << std::endl;
 //     return original(networkPacketEventCoordinator, packetHeader, packet);
 // }
+
+// std::unordered_map<std::string, std::string>& getBlockColorssMap() {
+//     static std::unordered_map<std::string, std::string> sb;
+//     return sb;
+// }
+
 THook(void, "?setRuntimeId@Block@@IEBAXAEBI@Z", Block* block, unsigned int const& id) {
     auto& blockName               = worldedit::getBlockNameMap();
     auto& blockId                 = worldedit::getBlockIdMap();
     auto  blockid                 = block->getId();
     blockName[blockid]            = block->getTypeName();
     blockId[block->getTypeName()] = blockid;
+    // auto color = block->getLegacyBlock().getMapColor().toHexString();
+    // if (getBlockColorssMap().find(color) != getBlockColorssMap().end()) {
+    //     getBlockColorssMap()[color] += ",\n" + block->getNbt()->toSNBT(0, SnbtFormat::Minimize);
+    // } else {
+    //     getBlockColorssMap()[color] = block->getNbt()->toSNBT(0, SnbtFormat::Minimize);
+    // }
     return original(block, id);
+}
+
+THook(void, "?assignBlocks@VanillaBlocks@@YAXAEBVExperiments@@@Z", class Experiments const& exp) {
+    VanillaFuckMojangBlocks::assignBlocks();
+    return original(exp);
 }
 
 namespace worldedit {

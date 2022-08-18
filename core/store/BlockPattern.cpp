@@ -186,7 +186,7 @@ namespace worldedit {
     bool BlockPattern::hasBlock(Block* block) {
         for (auto& rawBlock : rawBlocks) {
             if (block->getTypeName() == getBlockName(rawBlock.blockId) &&
-                (rawBlock.blockData < 0 || rawBlock.blockData == block->tryGetTileData())) {
+                (rawBlock.blockData < 0 || rawBlock.blockData == block->getTileData())) {
                 return true;
             }
         }

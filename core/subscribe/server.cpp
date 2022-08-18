@@ -5,7 +5,6 @@
 #include "WorldEdit.h"
 #include <EventAPI.h>
 #include <ScheduleAPI.h>
-#include <MC/VanillaBlocks.hpp>
 
 namespace worldedit {
     void serverSubscribe() {
@@ -25,6 +24,12 @@ namespace worldedit {
                     mod.renderMVpos();
                 },
                 1);
+            // auto mapm = getBlockColorssMap();
+            // std::ofstream outStr(WE_DIR + "structures/" + "filename" + ".txt", std::ios::out);
+            // for(auto aa : mapm) {
+            //     outStr << "\"" << aa.first << "\" : {\n" << aa.second << "\n},\n";
+            // }
+            // outStr.close();
             return true;
         });
     }

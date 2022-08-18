@@ -41,15 +41,15 @@ namespace worldedit {
     bool InfoTool::rightClick(Player* player, BlockInstance& blockInstance) {
         auto block = blockInstance.getBlock();
         auto& exblock = const_cast<Block&>(blockInstance.getBlockSource()->getExtraBlock(blockInstance.getPosition()));
-        std::cout << "block: (" << getBlockId(block->getTypeName()) << ":" << block->tryGetTileData() << ")\n"
+        std::cout << "block: (" << getBlockId(block->getTypeName()) << ":" << block->getTileData() << ")\n"
                   << block->getNbt()->toPrettySNBT() << std::endl;
         player->sendText("block: (" + fto_string(getBlockId(block->getTypeName())) + ":" +
-                         fto_string(block->tryGetTileData()) + ")\n" + block->getNbt()->toPrettySNBT(true));
+                         fto_string(block->getTileData()) + ")\n" + block->getNbt()->toPrettySNBT(true));
         if (&exblock != BedrockBlocks::mAir) {
-            std::cout << "exBlock: (" << getBlockId(exblock.getTypeName()) << ":" << exblock.tryGetTileData() << ")\n"
+            std::cout << "exBlock: (" << getBlockId(exblock.getTypeName()) << ":" << exblock.getTileData() << ")\n"
                       << exblock.getNbt()->toPrettySNBT() << std::endl;
             player->sendText("block: (" + fto_string(getBlockId(exblock.getTypeName())) + ":" +
-                             fto_string(exblock.tryGetTileData()) + ")\n" + exblock.getNbt()->toPrettySNBT(true));
+                             fto_string(exblock.getTileData()) + ")\n" + exblock.getNbt()->toPrettySNBT(true));
         }
         if (blockInstance.hasBlockEntity()) {
             std::cout << "blockEntity:\n" << blockInstance.getBlockEntity()->getNbt()->toPrettySNBT() << std::endl;
@@ -78,9 +78,9 @@ namespace worldedit {
     bool TreeTool::rightClick(Player* player, BlockInstance& blockInstance) {
         auto bs = Level::getBlockSource(player);
         auto pos = blockInstance.getPosition();
-        setBlockSimple(bs, pos, VanillaBlocks::mGrass);
+        setBlockSimple(bs, pos, const_cast<Block*>(VanillaFuckMojangBlocks::mGrass));
         pos.y += 1;
-        setBlockSimple(bs, pos, const_cast<Block*>(VanillaBlocks::mSapling));
+        setBlockSimple(bs, pos, const_cast<Block*>(VanillaFuckMojangBlocks::mSapling));
         auto& legacyBlock = blockInstance.getBlock()->getLegacyBlock();
         return ((Sapling&)legacyBlock)._growTree(*bs, pos, Global<Level>->getRandom(), false);
     }

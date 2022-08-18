@@ -1405,21 +1405,21 @@ namespace worldedit {
                     f.setbox(boundingBox);
                     std::unordered_map<std::string, double> variables;
 
-                    auto* mStone = Block::create("minecraft:stone",0);
+                    // auto* mStone = Block::create("minecraft:stone",0);
 
                     region->forTopBlockInRegion([&](const BlockPos& posk) {
                         BlockPos pos(posk.x, posk.y - 1, posk.z);
-                        if (&blockSource->getBlock(pos) == mStone && region->contains(pos)) {
+                        if (&blockSource->getBlock(pos) == VanillaFuckMojangBlocks::mStone && region->contains(pos)) {
                             setFunction(variables, f, boundingBox, playerPos, playerRot, pos, center);
                             gMaskLambda(f, variables,
-                                        [&]() mutable { setBlockSimple(blockSource, pos, VanillaBlocks::mGrass); });
+                                        [&]() mutable { setBlockSimple(blockSource, pos, const_cast<Block*>(VanillaFuckMojangBlocks::mGrass)); });
                         }
                         for (int mY = -2; mY >= -4; mY--) {
                             BlockPos pos(posk.x, posk.y + mY, posk.z);
-                            if (&blockSource->getBlock(pos) == mStone && region->contains(pos)) {
+                            if (&blockSource->getBlock(pos) == VanillaFuckMojangBlocks::mStone && region->contains(pos)) {
                                 setFunction(variables, f, boundingBox, playerPos, playerRot, pos, center);
                                 gMaskLambda(f, variables, [&]() mutable {
-                                    setBlockSimple(blockSource, pos, const_cast<Block*>(VanillaBlocks::mDirt));
+                                    setBlockSimple(blockSource, pos, const_cast<Block*>(VanillaFuckMojangBlocks::mDirt));
                                 });
                             }
                         }

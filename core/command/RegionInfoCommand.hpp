@@ -114,7 +114,7 @@ namespace worldedit {
                         region->forEachBlockInRegion([&](const BlockPos& pos) {
                             auto block = const_cast<Block*>(&blockSource->getBlock(pos));
                             if (block->getTypeName() == blockname) {
-                                if (data == -1 || data == (int)(block->tryGetTileData()))
+                                if (data == -1 || data == (int)(block->getTileData()))
                                     count++;
                             }
                         });

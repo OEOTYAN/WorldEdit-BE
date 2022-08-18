@@ -10,7 +10,6 @@
 // #include <LoggerAPI.h>
 // #include <MC/Level.hpp>
 #include <MC/BlockInstance.hpp>
-#include <MC/VanillaBlocks.hpp>
 // #include <MC/Block.hpp>
 // #include <MC/BlockSource.hpp>
 // #include <MC/Actor.hpp>

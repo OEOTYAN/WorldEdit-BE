@@ -18,12 +18,12 @@ namespace worldedit {
         } else {
             blockSource->setBlockNoUpdate(pos.x, pos.y, pos.z, *block);
         }
-        if (block != VanillaBlocks::mBubbleColumn) {
+        if (block != VanillaFuckMojangBlocks::mBubbleColumn) {
             if (exblock != BedrockBlocks::mAir) {
                 blockSource->setExtraBlock(pos, *exblock, 16 + mod.updateArg);
             }
         } else {
-            blockSource->setExtraBlock(pos, *VanillaBlocks::mFlowingWater, 16 + mod.updateArg);
+            blockSource->setExtraBlock(pos, *VanillaFuckMojangBlocks::mFlowingWater, 16 + mod.updateArg);
             if (mod.updateExArg % 2 == 1) {
                 blockSource->setBlock(pos, *block, mod.updateArg, nullptr, nullptr);
             } else {
