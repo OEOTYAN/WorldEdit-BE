@@ -5,7 +5,7 @@
 #ifndef WORLDEDIT_CHANGEREGION_H
 #define WORLDEDIT_CHANGEREGION_H
 
-#include "pch.h"
+#include "Global.h"
 // #include <EventAPI.h>
 // #include <LoggerAPI.h>
 // #include <MC/Level.hpp>

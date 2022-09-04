@@ -1,7 +1,7 @@
 //
 // Created by OEOTYAN on 2022/06/10.
 //
-#include "pch.h"
+#include "Global.h"
 #include "MC/BlockPos.hpp"
 #include <MC/Player.hpp>
 #include "SimpleBuilder.h"
@@ -96,7 +96,7 @@ namespace worldedit {
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            i++;
+                            ++i;
                         });
                     });
 
@@ -107,7 +107,7 @@ namespace worldedit {
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            i++;
+                            ++i;
                         });
                     });
 
@@ -118,7 +118,7 @@ namespace worldedit {
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            i++;
+                            ++i;
                         });
                     });
 
@@ -129,7 +129,7 @@ namespace worldedit {
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            i++;
+                            ++i;
                         });
                     });
 
@@ -141,7 +141,7 @@ namespace worldedit {
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            i++;
+                            ++i;
                         });
                     });
 
@@ -152,7 +152,7 @@ namespace worldedit {
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            i++;
+                            ++i;
                         });
                     });
 
@@ -163,7 +163,7 @@ namespace worldedit {
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            i++;
+                            ++i;
                         });
                     });
 
@@ -174,7 +174,7 @@ namespace worldedit {
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            i++;
+                            ++i;
                         });
                     });
                 }
@@ -272,7 +272,7 @@ namespace worldedit {
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            i++;
+                            ++i;
                         });
                     });
 
@@ -283,7 +283,7 @@ namespace worldedit {
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            i++;
+                            ++i;
                         });
                     });
 
@@ -294,7 +294,7 @@ namespace worldedit {
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            i++;
+                            ++i;
                         });
                     });
 
@@ -305,7 +305,7 @@ namespace worldedit {
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            i++;
+                            ++i;
                         });
                     });
 
@@ -316,7 +316,7 @@ namespace worldedit {
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            i++;
+                            ++i;
                         });
                     });
 
@@ -327,7 +327,7 @@ namespace worldedit {
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            i++;
+                            ++i;
                         });
                     });
 
@@ -339,7 +339,7 @@ namespace worldedit {
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            i++;
+                            ++i;
                         });
                     });
 
@@ -350,7 +350,7 @@ namespace worldedit {
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
                             blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            i++;
+                            ++i;
                         });
                     });
                 }
@@ -417,7 +417,7 @@ namespace worldedit {
                 gMaskLambda(f, variables, [&]() mutable {
                     maskLambda(f, variables, [&]() mutable {
                         blockPattern->setBlock(variables, f, blockSource, blockPos);
-                        i++;
+                        ++i;
                     });
                 });
             }

@@ -4,7 +4,7 @@
 #pragma once
 #ifndef WORLDEDIT_CYLINDERREGION_H
 #define WORLDEDIT_CYLINDERREGION_H
-#include "pch.h"
+#include "Global.h"
 #include "Region.h"
 #ifndef __M__PI__
 #define __M__PI__ 3.141592653589793238462643383279
@@ -14,10 +14,10 @@ namespace worldedit {
     class CylinderRegion : public Region {
        private:
         BlockPos center = BlockPos::MIN;
-        float    radius = 0.5;
-        int      minY = 0, maxY = 0;
-        bool     hasY = false, selectedCenter = false, selectedRadius = false;
-        int      checkChanges(const std::vector<BlockPos>& changes);
+        float radius = 0.5;
+        int minY = 0, maxY = 0;
+        bool hasY = false, selectedCenter = false, selectedRadius = false;
+        int checkChanges(const std::vector<BlockPos>& changes);
 
        public:
         explicit CylinderRegion(const BoundingBox& region, const int& dim);

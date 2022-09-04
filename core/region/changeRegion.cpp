@@ -18,12 +18,12 @@ namespace worldedit {
         } else {
             blockSource->setBlockNoUpdate(pos.x, pos.y, pos.z, *block);
         }
-        if (block != VanillaFuckMojangBlocks::mBubbleColumn) {
+        if (block != StaticVanillaBlocks::mBubbleColumn) {
             if (exblock != BedrockBlocks::mAir) {
                 blockSource->setExtraBlock(pos, *exblock, 16 + mod.updateArg);
             }
         } else {
-            blockSource->setExtraBlock(pos, *VanillaFuckMojangBlocks::mFlowingWater, 16 + mod.updateArg);
+            blockSource->setExtraBlock(pos, *StaticVanillaBlocks::mFlowingWater, 16 + mod.updateArg);
             if (mod.updateExArg % 2 == 1) {
                 blockSource->setBlock(pos, *block, mod.updateArg, nullptr, nullptr);
             } else {
@@ -34,7 +34,9 @@ namespace worldedit {
 
     bool changeVicePos(Player* player, BlockInstance blockInstance, bool output) {
         static std::unordered_map<std::string, long long> tickMap;
-
+        if (blockInstance == BlockInstance::Null) {
+            return false;
+        }
         auto xuid = player->getXuid();
         long long tick = player->getLevel().getCurrentServerTick().t;
         if (tickMap.find(xuid) != tickMap.end()) {
@@ -72,7 +74,9 @@ namespace worldedit {
 
     bool changeMainPos(Player* player, BlockInstance blockInstance, bool output) {
         static std::unordered_map<std::string, long long> tickMap;
-
+        if (blockInstance == BlockInstance::Null) {
+            return false;
+        }
         auto xuid = player->getXuid();
         long long tick = player->getLevel().getCurrentServerTick().t;
         if (tickMap.find(xuid) != tickMap.end()) {

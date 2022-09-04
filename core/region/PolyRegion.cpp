@@ -108,8 +108,8 @@ namespace worldedit {
 
     int PolyRegion::size() const {
         int area = 0;
-        int j = (int)points.size() - 1;
-        for (int i = 0; i < points.size(); ++i) {
+        auto j = points.size() - 1;
+        for (int i = 0; i <= j; ++i) {
             int x = points[j].x + points[i].x;
             int z = points[j].z - points[i].z;
             area += x * z;
@@ -123,20 +123,20 @@ namespace worldedit {
         if (selecting && dimensionID >= 0 && rendertick <= 0) {
             rendertick = 40;
             auto size = points.size();
-            for (int i = 0; i < size; i++) {
-                worldedit::spawnCuboidParticle(
-                    {Vec3(points[i].x, minY, points[i].z), Vec3(points[i].x, maxY, points[i].z) + Vec3::ONE},
-                    GRAPHIC_COLOR::YELLOW, dimensionID);
+            for (int i = 0; i < size; ++i) {
+                globalPT().drawCuboid(
+                    AABB(Vec3(points[i].x, minY, points[i].z), Vec3(points[i].x, maxY, points[i].z) + Vec3::ONE),
+                    dimensionID, mce::ColorPalette::YELLOW);
             }
             for (int y : {minY, maxY}) {
-                for (int i = 0; i < size - 1; i++) {
-                    drawOrientedLine(Vec3(points[i].x, y, points[i].z) + 0.5,
-                                     Vec3(points[i + 1].x, y, points[i + 1].z) + 0.5, dimensionID,
-                                     GRAPHIC_COLOR::YELLOW);
+                for (int i = 0; i < size - 1; ++i) {
+                    globalPT().drawOrientedLine(BlockPos(points[i].x, y, points[i].z),
+                                                BlockPos(points[i + 1].x, y, points[i + 1].z), dimensionID,
+                                                ParticleCUI::PointSize::PX4, 1, 64, mce::ColorPalette::YELLOW);
                 }
-                drawOrientedLine(Vec3(points[0].x, y, points[0].z) + 0.5,
-                                 Vec3(points[size - 1].x, y, points[size - 1].z) + 0.5, dimensionID,
-                                 GRAPHIC_COLOR::YELLOW);
+                globalPT().drawOrientedLine(BlockPos(points[0].x, y, points[0].z),
+                                            BlockPos(points[size - 1].x, y, points[size - 1].z), dimensionID,
+                                            ParticleCUI::PointSize::PX4, 1, 64, mce::ColorPalette::YELLOW);
             }
         }
         rendertick--;

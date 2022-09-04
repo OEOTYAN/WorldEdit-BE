@@ -5,15 +5,15 @@
 #ifndef WORLDEDIT_POLYREGION_H
 #define WORLDEDIT_POLYREGION_H
 
-#include "pch.h"
+#include "Global.h"
 #include "Region.h"
 namespace worldedit {
     class PolyRegion : public Region {
        public:
         std::vector<BlockPos> points;
-        int                   minY = -2100000000;
-        int                   maxY = -2100000000;
-        BlockPos              mainPos{-2100000000, -2100000000, -2100000000};
+        int minY = -2100000000;
+        int maxY = -2100000000;
+        BlockPos mainPos{-2100000000, -2100000000, -2100000000};
 
         void updateBoundingBox() override;
 
@@ -34,8 +34,9 @@ namespace worldedit {
             for (auto& point : points) {
                 tmp = tmp + point;
             }
-            return Vec3(static_cast<double>(tmp.x) / points.size() + 0.5, static_cast<double>(maxY + minY) * 0.5 + 0.5,
-                        static_cast<double>(tmp.z) / points.size() + 0.5);
+            auto size = points.size();
+            return Vec3(static_cast<double>(tmp.x) / size + 0.5, static_cast<double>(maxY + minY) * 0.5 + 0.5,
+                        static_cast<double>(tmp.z) / size + 0.5);
         };
 
         bool setMainPos(const BlockPos& pos, const int& dim) override;

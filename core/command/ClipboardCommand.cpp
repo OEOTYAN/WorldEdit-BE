@@ -1,33 +1,12 @@
 //
 // Created by OEOTYAN on 2022/05/20.
 //
-#pragma once
-#ifndef WORLDEDIT_CLIPBOARDCOMMAND_H
-#define WORLDEDIT_CLIPBOARDCOMMAND_H
-
-// #include "pch.h"
+// #include "Global.h"
+#include "allCommand.hpp"
 #include <MC/CommandUtils.hpp>
 #include "MC/StructureTemplate.hpp"
-// #include <MC/BlockInstance.hpp>
-// #include <MC/Block.hpp>
-// #include <MC/BlockActor.hpp>
-// #include <MC/BedrockBlocks.hpp>
-// #include <MC/BlockSource.hpp>
-// #include <MC/CompoundTag.hpp>
-// #include <MC/Actor.hpp>
-// #include <MC/Player.hpp>
-// #include <MC/ServerPlayer.hpp>
-// #include <MC/Dimension.hpp>
-// #include <MC/ItemStack.hpp>
-// #include "Version.h"
-// #include "string/StringTool.h"
-// #include <LLAPI.h>
-// #include <ServerAPI.h>
-// #include <EventAPI.h>
-// #include <ScheduleAPI.h>
-// #include <DynamicCommandAPI.h>
-// #include "store/Clipboard.hpp"
-// #include "WorldEdit.h"
+#include "region/ChangeRegion.hpp"
+#include "WorldEdit.h"
 
 namespace worldedit {
     using ParamType = DynamicCommand::ParameterType;
@@ -315,5 +294,3 @@ namespace worldedit {
             CommandPermissionLevel::GameMasters);
     }
 }  // namespace worldedit
-
-#endif  // WORLDEDIT_CLIPBOARDCOMMAND_H

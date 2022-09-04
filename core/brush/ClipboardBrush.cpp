@@ -57,7 +57,7 @@ namespace worldedit {
                 setFunction(variables, f, box, playerPos, playerRot, worldPos, box.toAABB().getCenter());
                 gMaskLambda(f, variables, [&]() mutable {
                     clipboard.setBlocks(pos, worldPos, blockSource);
-                    i++;
+                    ++i;
                 });
             });
         } else {
@@ -66,7 +66,7 @@ namespace worldedit {
                 setFunction(variables, f, box, playerPos, playerRot, worldPos, box.toAABB().getCenter());
                 gMaskLambda(f, variables, [&]() mutable {
                     clipboard.setBlocks(pos, worldPos, blockSource);
-                    i++;
+                    ++i;
                 });
             });
         }

@@ -94,13 +94,15 @@ namespace worldedit {
     void SphereRegion::renderRegion() {
         if (selecting && dimensionID >= 0 && rendertick <= 0) {
             rendertick = 40;
-            worldedit::spawnCuboidParticle({center.toVec3(), center.toVec3() + Vec3::ONE}, GRAPHIC_COLOR::GREEN,
-                                           dimensionID);
+            globalPT().drawCuboid(AABB(center.toVec3(), center.toVec3() + Vec3::ONE), dimensionID,
+                                  mce::ColorPalette::GREEN);
             if (radius > 1.0f) {
-                auto rc = center.toVec3() + 0.5;
-                drawCircle(rc, FACING::POS_Y, radius, GRAPHIC_COLOR::YELLOW, dimensionID);
-                drawCircle(rc, FACING::POS_Z, radius, GRAPHIC_COLOR::YELLOW, dimensionID);
-                drawCircle(rc, FACING::POS_X, radius, GRAPHIC_COLOR::YELLOW, dimensionID);
+                globalPT().drawCircle(center, ParticleCUI::Direction::POS_Y, radius, dimensionID,
+                                      ParticleCUI::PointSize::PX4, 1, 64, mce::ColorPalette::YELLOW);
+                globalPT().drawCircle(center, ParticleCUI::Direction::POS_Z, radius, dimensionID,
+                                      ParticleCUI::PointSize::PX4, 1, 64, mce::ColorPalette::YELLOW);
+                globalPT().drawCircle(center, ParticleCUI::Direction::POS_X, radius, dimensionID,
+                                      ParticleCUI::PointSize::PX4, 1, 64, mce::ColorPalette::YELLOW);
             }
         }
         rendertick--;

@@ -5,12 +5,12 @@
 #ifndef WORLDEDIT_WORLDEDIT_H
 #define WORLDEDIT_WORLDEDIT_H
 
-#include "pch.h"
+#include "Global.h"
 #include "region/Regions.h"
 #include "store/BlockNBTSet.hpp"
 #include "store/Clipboard.hpp"
 #include "tool/tool.h"
-#include "tool/VanillaFuckMojangBlocks.h"
+#include <MC/StaticVanillaBlocks.hpp>
 #include "brush/Brush.h"
 
 #define WE_DIR (std::string("plugins/WorldEdit/"))
@@ -23,7 +23,7 @@
         gMask = mod.playerGMaskMap[xuid];                                                                             \
         gMaskLambda = [&](EvalFunctions& func, const std::unordered_map<std::string, double>& var,                    \
                           std::function<void()> const& todo) mutable {                                                \
-            if (cpp_eval::eval<double>(gMask, var, func) > 0.5) {                                             \
+            if (cpp_eval::eval<double>(gMask, var, func) > 0.5) {                                                     \
                 todo();                                                                                               \
             }                                                                                                         \
         };                                                                                                            \

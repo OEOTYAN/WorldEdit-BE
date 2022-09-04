@@ -4,6 +4,7 @@
 #include "CylinderRegion.h"
 #include "MC/Level.hpp"
 #include "MC/Dimension.hpp"
+#include "ParticleAPI.h"
 namespace worldedit {
     CylinderRegion::CylinderRegion(const BoundingBox& region, const int& dim) : Region(region, dim) {
         this->selecting = false;
@@ -144,31 +145,27 @@ namespace worldedit {
             rendertick = 40;
             BlockPos centery = center;
             centery.y = minY;
-            worldedit::spawnCuboidParticle({centery.toVec3(), centery.toVec3() + Vec3::ONE + Vec3(0, maxY - minY, 0)},
-                                           GRAPHIC_COLOR::GREEN, dimensionID);
+            globalPT().drawCuboid(AABB(centery.toVec3(), centery.toVec3() + Vec3(1, 1 + maxY - minY, 1)), dimensionID,
+                                  mce::ColorPalette::GREEN);
             if (radius > 1.0f) {
                 centery.x = center.x - (int)radius;
-                worldedit::spawnCuboidParticle(
-                    {centery.toVec3(), centery.toVec3() + Vec3::ONE + Vec3(0, maxY - minY, 0)}, GRAPHIC_COLOR::YELLOW,
-                    dimensionID);
+                globalPT().drawCuboid(AABB(centery.toVec3(), centery.toVec3() + Vec3(1, 1 + maxY - minY, 1)),
+                                      dimensionID, mce::ColorPalette::YELLOW);
                 centery.x = center.x + (int)radius;
-                worldedit::spawnCuboidParticle(
-                    {centery.toVec3(), centery.toVec3() + Vec3::ONE + Vec3(0, maxY - minY, 0)}, GRAPHIC_COLOR::YELLOW,
-                    dimensionID);
+                globalPT().drawCuboid(AABB(centery.toVec3(), centery.toVec3() + Vec3(1, 1 + maxY - minY, 1)),
+                                      dimensionID, mce::ColorPalette::YELLOW);
                 centery.x = center.x;
                 centery.z = center.z - (int)radius;
-                worldedit::spawnCuboidParticle(
-                    {centery.toVec3(), centery.toVec3() + Vec3::ONE + Vec3(0, maxY - minY, 0)}, GRAPHIC_COLOR::YELLOW,
-                    dimensionID);
+                globalPT().drawCuboid(AABB(centery.toVec3(), centery.toVec3() + Vec3(1, 1 + maxY - minY, 1)),
+                                      dimensionID, mce::ColorPalette::YELLOW);
                 centery.z = center.z + (int)radius;
-                worldedit::spawnCuboidParticle(
-                    {centery.toVec3(), centery.toVec3() + Vec3::ONE + Vec3(0, maxY - minY, 0)}, GRAPHIC_COLOR::YELLOW,
-                    dimensionID);
-                drawCircle(Vec3(center.x, maxY, center.z) + 0.5, FACING::POS_Y, radius, GRAPHIC_COLOR::YELLOW,
-                           dimensionID);
+                globalPT().drawCuboid(AABB(centery.toVec3(), centery.toVec3() + Vec3(1, 1 + maxY - minY, 1)), dimensionID,
+                                      mce::ColorPalette::YELLOW);
+                globalPT().drawCircle(BlockPos(center.x, maxY, center.z), ParticleCUI::Direction::POS_Y, radius,
+                                      dimensionID, ParticleCUI::PointSize::PX4, 1, 64, mce::ColorPalette::YELLOW);
                 if (minY != maxY) {
-                    drawCircle(Vec3(center.x, minY, center.z) + 0.5, FACING::POS_Y, radius, GRAPHIC_COLOR::YELLOW,
-                               dimensionID);
+                    globalPT().drawCircle(BlockPos(center.x, minY, center.z), ParticleCUI::Direction::POS_Y, radius,
+                                          dimensionID, ParticleCUI::PointSize::PX4, 1, 64, mce::ColorPalette::YELLOW);
                 }
             }
         }

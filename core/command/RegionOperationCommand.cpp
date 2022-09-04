@@ -1,10 +1,7 @@
 //
 // Created by OEOTYAN on 2022/05/27.
 //
-#pragma once
-#ifndef WORLDEDIT_REGIONOPERATIONCOMMAND_H
-#define WORLDEDIT_REGIONOPERATIONCOMMAND_H
-
+#include "allCommand.hpp"
 #include "store/BlockPattern.hpp"
 #include "eval/blur.hpp"
 #include "image/Image.h"
@@ -12,6 +9,11 @@
 #include "filesys/download.h"
 #include "MC/StructureTemplate.hpp"
 #include "MC/ItemInstance.hpp"
+#include "MC/Container.hpp"
+#include "MC/ItemStack.hpp"
+#include "MC/CompoundTag.hpp"
+#include "MC/ListTag.hpp"
+#include "WorldEdit.h"
 
 namespace worldedit {
 
@@ -324,8 +326,8 @@ namespace worldedit {
                         nodes.clear();
                         if (arg_r) {
                             for (auto& pos : static_cast<ConvexRegion*>(region)->poss) {
-                                nodes.push_back(Node(pos, uniformRandDouble() * 2 - 1, uniformRandDouble() * 2 - 1,
-                                                     uniformRandDouble() * 2 - 1));
+                                nodes.push_back(Node(pos, RNG::rand<double>() * 2 - 1, RNG::rand<double>() * 2 - 1,
+                                                     RNG::rand<double>() * 2 - 1));
                             }
                         } else {
                             for (auto& pos : static_cast<ConvexRegion*>(region)->poss) {
@@ -498,8 +500,8 @@ namespace worldedit {
                     nodes.clear();
                     if (arg_r) {
                         for (auto& pos : static_cast<ConvexRegion*>(region)->poss) {
-                            nodes.push_back(Node(pos, uniformRandDouble() * 2 - 1, uniformRandDouble() * 2 - 1,
-                                                 uniformRandDouble() * 2 - 1));
+                            nodes.push_back(Node(pos, RNG::rand<double>() * 2 - 1, RNG::rand<double>() * 2 - 1,
+                                                 RNG::rand<double>() * 2 - 1));
                         }
                     } else {
                         for (auto& pos : static_cast<ConvexRegion*>(region)->poss) {
@@ -855,7 +857,7 @@ namespace worldedit {
                     std::unordered_map<std::string, double> variables;
                     region->forEachBlockInRegion([&](const BlockPos& posk) {
                         auto localPos = posk - boundingBoxHistory.min;
-                        for (int j = 1; j <= times; j++) {
+                        for (int j = 1; j <= times; ++j) {
                             auto pos = posk + movingVec * j;
                             setFunction(variables, f, boundingBox, playerPos, playerRot, pos, center);
                             if ((arg_a && (&blockSource->getBlock(posk) != BedrockBlocks::mAir)) || !arg_a)
@@ -876,7 +878,7 @@ namespace worldedit {
                         setting.setStructureSize(boundingBox.max - boundingBox.min + 1);
                         st.fillFromWorld(*blockSource, boundingBox.min + BlockPos(0, 1, 0), setting);
                         auto& palette = Global<Level>->getBlockPalette();
-                        for (int j = 1; j <= times; j++) {
+                        for (int j = 1; j <= times; ++j) {
                             auto pos = boundingBox.min + BlockPos(0, 1, 0) + movingVec * j;
                             st.placeInWorld(*blockSource, palette, pos, setting, nullptr, false);
                         }
@@ -994,7 +996,7 @@ namespace worldedit {
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
                         setFunction(variables, f, boundingBox, playerPos, playerRot, pos, center);
                         gMaskLambda(f, variables,
-                                    [&]() mutable {blockPattern.setBlock(variables, f, blockSource, pos); });
+                                    [&]() mutable { blockPattern.setBlock(variables, f, blockSource, pos); });
                     });
 
                     region->forEachBlockInRegion([&](const BlockPos& posk) {
@@ -1409,17 +1411,18 @@ namespace worldedit {
 
                     region->forTopBlockInRegion([&](const BlockPos& posk) {
                         BlockPos pos(posk.x, posk.y - 1, posk.z);
-                        if (&blockSource->getBlock(pos) == VanillaFuckMojangBlocks::mStone && region->contains(pos)) {
+                        if (&blockSource->getBlock(pos) == StaticVanillaBlocks::mStone && region->contains(pos)) {
                             setFunction(variables, f, boundingBox, playerPos, playerRot, pos, center);
-                            gMaskLambda(f, variables,
-                                        [&]() mutable { setBlockSimple(blockSource, pos, const_cast<Block*>(VanillaFuckMojangBlocks::mGrass)); });
+                            gMaskLambda(f, variables, [&]() mutable {
+                                setBlockSimple(blockSource, pos, const_cast<Block*>(StaticVanillaBlocks::mGrass));
+                            });
                         }
                         for (int mY = -2; mY >= -4; mY--) {
                             BlockPos pos(posk.x, posk.y + mY, posk.z);
-                            if (&blockSource->getBlock(pos) == VanillaFuckMojangBlocks::mStone && region->contains(pos)) {
+                            if (&blockSource->getBlock(pos) == StaticVanillaBlocks::mStone && region->contains(pos)) {
                                 setFunction(variables, f, boundingBox, playerPos, playerRot, pos, center);
                                 gMaskLambda(f, variables, [&]() mutable {
-                                    setBlockSimple(blockSource, pos, const_cast<Block*>(VanillaFuckMojangBlocks::mDirt));
+                                    setBlockSimple(blockSource, pos, const_cast<Block*>(StaticVanillaBlocks::mDirt));
                                 });
                             }
                         }
@@ -1628,7 +1631,8 @@ namespace worldedit {
                     st.fillFromWorld(*blockSource, boundingBox.min + BlockPos(0, 1, 0), setting);
                     auto structure = st.toTag()->toBinaryNBT();
 
-                    std::ofstream outStr(WE_DIR + "structures/" + filename + ".mcstructure", std::ios::out | std::ios::binary);
+                    std::ofstream outStr(WE_DIR + "structures/" + filename + ".mcstructure",
+                                         std::ios::out | std::ios::binary);
                     outStr << structure;
                     outStr.close();
                     output.success(fmt::format("§aStructure exported"));
@@ -1645,44 +1649,45 @@ namespace worldedit {
                         }
                     }
 
-                    if(arg_l){
-                    std::unordered_map<std::string, long long> blocksMap;
-                    std::vector<std::pair<std::string, long long>> blocksMap2;
-                    blocksMap2.resize(0);
-                region->forEachBlockInRegion([&](const BlockPos& pos) {
+                    if (arg_l) {
+                        std::unordered_map<std::string, long long> blocksMap;
+                        std::vector<std::pair<std::string, long long>> blocksMap2;
+                        blocksMap2.resize(0);
+                        region->forEachBlockInRegion([&](const BlockPos& pos) {
                             auto block = const_cast<Block*>(&blockSource->getBlock(pos));
                             std::string blockName;
                             if (!(block == BedrockBlocks::mAir)) {
-                             blockName = block->getTypeName();
+                                blockName = block->getTypeName();
 
                                 auto states = block->getNbt()->value().at("states").asCompoundTag()->toSNBT(
                                     0, SnbtFormat::Minimize);
-                                blockName += " [" + states.substr(1, states.length() - 2) + "]";}
-                            
+                                blockName += " [" + states.substr(1, states.length() - 2) + "]";
+                            }
+
                             auto exBlock = const_cast<Block*>(&blockSource->getExtraBlock(pos));
                             std::string exBlockName;
                             if (!(exBlock == BedrockBlocks::mAir)) {
                                 exBlockName = exBlock->getTypeName();
 
-                                    auto exStates = exBlock->getNbt()->value().at("states").asCompoundTag()->toSNBT(
-                                        0, SnbtFormat::Minimize);
-                                    exBlockName += " [" + exStates.substr(1, exStates.length() - 2) + "]";
-                                
+                                auto exStates = exBlock->getNbt()->value().at("states").asCompoundTag()->toSNBT(
+                                    0, SnbtFormat::Minimize);
+                                exBlockName += " [" + exStates.substr(1, exStates.length() - 2) + "]";
                             }
-                            if(blockName!="") {
-                            if (blocksMap.find(blockName) != blocksMap.end()) {
-                                blocksMap[blockName] += 1;
-                            } else {
-                                blocksMap[blockName] = 1;
-                            }}
-                            if(exBlockName!=""){
-                            if(blocksMap.find(exBlockName) != blocksMap.end()){
-                                blocksMap[exBlockName] += 1;
-                            } else {
-                                blocksMap[exBlockName] = 1;
+                            if (blockName != "") {
+                                if (blocksMap.find(blockName) != blocksMap.end()) {
+                                    blocksMap[blockName] += 1;
+                                } else {
+                                    blocksMap[blockName] = 1;
+                                }
                             }
-}
-                        auto blockInstance = blockSource->getBlockInstance(pos);
+                            if (exBlockName != "") {
+                                if (blocksMap.find(exBlockName) != blocksMap.end()) {
+                                    blocksMap[exBlockName] += 1;
+                                } else {
+                                    blocksMap[exBlockName] = 1;
+                                }
+                            }
+                            auto blockInstance = blockSource->getBlockInstance(pos);
 
                             if (blockInstance.hasContainer()) {
                                 auto container = blockInstance.getContainer();
@@ -1697,63 +1702,61 @@ namespace worldedit {
                                     itemQueue.pop();
                                     auto count = item->getCount();
                                     if (count > 0) {
-                                    
-                                    std::string name;
-                                    if (item->isBlock()) {
-                                        auto block = const_cast<Block*>(item->getBlock());
-                                        name = block->getTypeName();
+                                        std::string name;
+                                        if (item->isBlock()) {
+                                            auto block = const_cast<Block*>(item->getBlock());
+                                            name = block->getTypeName();
 
                                             auto states = block->getNbt()->value().at("states").asCompoundTag()->toSNBT(
                                                 0, SnbtFormat::Minimize);
                                             name += " [" + states.substr(1, states.length() - 2) + "]";
-                                        
-                                    } else {
-                                        name = item->getTypeName();
-                                       
+
+                                        } else {
+                                            name = item->getTypeName();
+
                                             name += " [";
                                             auto customName = item->getCustomName();
                                             if (customName != "") {
-                                                name += "\"name\":\"" + customName+"\"";
+                                                name += "\"name\":\"" + customName + "\"";
                                             }
                                             name += "]";
-                                        
-                                    }
-                                    if (blocksMap.find(name) == blocksMap.end()) {
-                                        blocksMap[name] = count;
-                                    }else{
-                                    blocksMap[name] += count;}
+                                        }
+                                        if (blocksMap.find(name) == blocksMap.end()) {
+                                            blocksMap[name] = count;
+                                        } else {
+                                            blocksMap[name] += count;
+                                        }
 
-                                    auto iNbt = item->getNbt();
-                                    auto* vmap = &iNbt->value();
-                                    if (vmap->find("tag") != vmap->end()) {
-                                        auto* imap = &vmap->at("tag").asCompoundTag()->value();
-                                        if (imap->find("Items") != imap->end()) {
-                                            auto* cmap = &imap->at("Items").asListTag()->value();
-                                            for (auto& mItem : *cmap) {
-                                                itemQueue.emplace(mItem->asCompoundTag()->clone());
+                                        auto iNbt = item->getNbt();
+                                        auto* vmap = &iNbt->value();
+                                        if (vmap->find("tag") != vmap->end()) {
+                                            auto* imap = &vmap->at("tag").asCompoundTag()->value();
+                                            if (imap->find("Items") != imap->end()) {
+                                                auto* cmap = &imap->at("Items").asListTag()->value();
+                                                for (auto& mItem : *cmap) {
+                                                    itemQueue.emplace(mItem->asCompoundTag()->clone());
+                                                }
                                             }
                                         }
-                                    }
                                     }
                                     delete item;
                                 }
                             }
                         });
 
-                    
-                    for (auto& block : blocksMap) {
-                        std::string name = block.first;
-                        blocksMap2.emplace_back(std::pair<std::string, long long>(name, block.second));
-                    }
-                    std::sort(blocksMap2.begin(), blocksMap2.end(),
-                              [](const std::pair<std::string, long long>& a,
-                                 const std::pair<std::string, long long>& b) { return a.second > b.second; });
-                    std::ofstream outStr(WE_DIR + "structures/" + filename + "_list.txt", std::ios::out); 
+                        for (auto& block : blocksMap) {
+                            std::string name = block.first;
+                            blocksMap2.emplace_back(std::pair<std::string, long long>(name, block.second));
+                        }
+                        std::sort(blocksMap2.begin(), blocksMap2.end(),
+                                  [](const std::pair<std::string, long long>& a,
+                                     const std::pair<std::string, long long>& b) { return a.second > b.second; });
+                        std::ofstream outStr(WE_DIR + "structures/" + filename + "_list.txt", std::ios::out);
                         for (auto& block : blocksMap2) {
-                        outStr <<fmt::format("{} {}\n", block.second, block.first);
-                    }
-                    outStr.close();
-                    output.success(fmt::format("§aMaterial list exported"));
+                            outStr << fmt::format("{} {}\n", block.second, block.first);
+                        }
+                        outStr.close();
+                        output.success(fmt::format("§aMaterial list exported"));
                     }
                 } else {
                     output.error("You don't have a region yet");
@@ -1923,9 +1926,9 @@ namespace worldedit {
                                     minTile = i.second;
                                 }
                             }
-                            if (uniformRandDouble() <= color.a) {
+                            if (RNG::rand<double>() <= color.a) {
                                 setBlockSimple(blockSource, pos, Block::create("minecraft:concrete", minTile));
-                                i++;
+                                ++i;
                             }
                         });
                     });
@@ -2073,5 +2076,3 @@ namespace worldedit {
             CommandPermissionLevel::GameMasters);
     }
 }  // namespace worldedit
-
-#endif  // WORLDEDIT_REGIONOPERATIONCOMMAND_H

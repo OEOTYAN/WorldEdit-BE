@@ -5,7 +5,7 @@
 #ifndef WORLDEDIT_BLOCKNBTSET_H
 #define WORLDEDIT_BLOCKNBTSET_H
 
-#include "pch.h"
+#include "Global.h"
 #include <MC/Level.hpp>
 // #include <MC/BlockInstance.hpp>
 #include <MC/Block.hpp>
@@ -33,17 +33,17 @@ namespace worldedit {
 
     class BlockNBTSet {
        public:
-        Block*      block   = const_cast<Block*>(BedrockBlocks::mAir);
-        Block*      exblock = const_cast<Block*>(BedrockBlocks::mAir);
+        Block* block = const_cast<Block*>(BedrockBlocks::mAir);
+        Block* exblock = const_cast<Block*>(BedrockBlocks::mAir);
         std::string blockEntity;
-        bool        hasBlock       = false;
-        bool        hasBlockEntity = false;
-        BlockNBTSet()              = default;
+        bool hasBlock = false;
+        bool hasBlockEntity = false;
+        BlockNBTSet() = default;
         // BlockNBTSet& operator=(BlockNBTSet const&) = delete;
         BlockNBTSet(BlockInstance& blockInstance);
         Block* getBlock() const { return block; }
         Block* getExBlock() const { return exblock; }
-        bool   setBlock(const BlockPos& pos, BlockSource* blockSource) const;
+        bool setBlock(const BlockPos& pos, BlockSource* blockSource) const;
         bool setBlock(const BlockPos& pos, BlockSource* blockSource, Rotation rotation, Mirror mirror) const;
     };
 }  // namespace worldedit

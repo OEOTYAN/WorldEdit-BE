@@ -10,6 +10,7 @@ namespace worldedit {
     };
 
     BlockPattern::BlockPattern(std::string str, std::string xuid, Region* region) {
+        auto strSize = str.size();
         if (str.find("#clipboard") != std::string::npos) {
             auto& mod = worldedit::getMod();
             if (mod.playerClipboardMap.find(xuid) == mod.playerClipboardMap.end()) {
@@ -27,24 +28,25 @@ namespace worldedit {
             size_t mi = 0;
             std::vector<int> poslist;
             poslist.clear();
-            while (mi < str.size()) {
+            while (mi < strSize) {
                 if (str[mi] == '-' || isdigit(str[mi])) {
                     auto head7 = mi;
                     mi++;
-                    while (mi < str.size() && (isdigit(str[mi]))) {
+                    while (mi < strSize && (isdigit(str[mi]))) {
                         mi++;
                     }
                     poslist.push_back(std::stoi(str.substr(head7, mi - head7)));
                 }
                 mi++;
             }
-            if (poslist.size() > 0) {
+            auto poslistSize = poslist.size();
+            if (poslistSize > 0) {
                 bias.x -= poslist[0];
             }
-            if (poslist.size() > 1) {
+            if (poslistSize > 1) {
                 bias.y -= poslist[1];
             }
-            if (poslist.size() > 2) {
+            if (poslistSize > 2) {
                 bias.z -= poslist[2];
             }
             return;
@@ -53,49 +55,49 @@ namespace worldedit {
         raw.clear();
         string form = "";
         size_t i = 0;
-        while (i < str.size()) {
+        while (i < strSize) {
             if (str[i] == '-' || isdigit(str[i])) {
                 auto head = i;
-                i++;
-                while (i < str.size() && (str[i] == '.' || isdigit(str[i]))) {
-                    i++;
+                ++i;
+                while (i < strSize && (str[i] == '.' || isdigit(str[i]))) {
+                    ++i;
                 }
                 form += string("num") + str[i];
                 raw.push_back(str.substr(head, i - head));
             } else if (str[i] == '\'') {
-                i++;
+                ++i;
                 auto head = i;
-                while (i < str.size() && (str[i] != '\'')) {
-                    i++;
+                while (i < strSize && (str[i] != '\'')) {
+                    ++i;
                 }
                 raw.push_back(str.substr(head, i - head));
-                i++;
+                ++i;
                 form += string("funciton") + str[i];
             } else if (isalpha(str[i])) {
                 auto head = i;
-                i++;
-                while (i < str.size() && (isalpha(str[i]) || str[i] == '_' || isdigit(str[i]) ||
-                                          (str[i] == ':' && i + 1 < str.size() && isalpha(str[i + 1])))) {
-                    i++;
+                ++i;
+                while (i < strSize && (isalpha(str[i]) || str[i] == '_' || isdigit(str[i]) ||
+                                       (str[i] == ':' && i + 1 < strSize && isalpha(str[i + 1])))) {
+                    ++i;
                 }
                 form += string("block") + str[i];
                 raw.push_back(str.substr(head, i - head));
             } else if (str[i] == '{') {
                 auto head = i;
                 int bracket = -1;
-                i++;
-                while (i < str.size() && bracket < 0) {
+                ++i;
+                while (i < strSize && bracket < 0) {
                     if (str[i] == '{') {
                         bracket--;
                     } else if (str[i] == '}') {
                         bracket++;
                     }
-                    i++;
+                    ++i;
                 }
                 form += string("SNBT") + str[i];
                 raw.push_back(str.substr(head, i - head));
             }
-            i++;
+            ++i;
         }
         auto blockList = SplitStrWithPattern(form, ",");
         blockNum = blockList.size();

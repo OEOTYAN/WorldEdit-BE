@@ -5,21 +5,11 @@
 #ifndef WORLDEDIT_GRAPHICS_H
 #define WORLDEDIT_GRAPHICS_H
 
-#include "pch.h"
-#include "Particle.h"
-// #include "string/StringTool.h"
-// #include "WorldEdit.h"
+#include "Global.h"
+#include "ParticleAPI.h"
 
 namespace worldedit {
 
-    enum class DIRECTION {
-        NEG_Y = 0,
-        POS_Y = 1,
-        NEG_Z = 2,
-        POS_Z = 3,
-        NEG_X = 4,
-        POS_X = 5,
-    };
     enum class FACING {
         NEG_Y = 0,
         POS_Y = 1,
@@ -51,10 +41,9 @@ namespace worldedit {
 
     std::string facingToDirString(FACING facing);
 
-    void drawLine(const Vec3& originPoint, FACING direction, float length, GRAPHIC_COLOR color, int dimType);
-    void drawOrientedLine(const Vec3& start, const Vec3& end, int dimType, GRAPHIC_COLOR color);
-    void drawCircle(const Vec3& originPoint, FACING direction, float radius, GRAPHIC_COLOR color, int dimType);
-    void drawCurve(class KochanekBartelsInterpolation const& curve, GRAPHIC_COLOR color, int dimType);
+    void drawCurve(class KochanekBartelsInterpolation const& curve, enum mce::ColorPalette color, int dimType);
+
+    class ::ParticleCUI& globalPT();
 }  // namespace worldedit
 
 #endif  // WORLDEDIT_GRAPHICS_H

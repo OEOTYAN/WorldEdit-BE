@@ -2,7 +2,6 @@
 // Created by OEOTYAN on 2022/06/20.
 //
 #include "download.h"
-#include "httplib.h"
 #include <windows.h>
 #include <wininet.h>
 #include <urlmon.h>

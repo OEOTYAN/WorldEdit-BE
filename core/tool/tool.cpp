@@ -39,6 +39,9 @@ namespace worldedit {
 
     ////////
     bool InfoTool::rightClick(Player* player, BlockInstance& blockInstance) {
+        if (blockInstance == BlockInstance::Null) {
+            return false;
+        }
         auto block = blockInstance.getBlock();
         auto& exblock = const_cast<Block&>(blockInstance.getBlockSource()->getExtraBlock(blockInstance.getPosition()));
         std::cout << "block: (" << getBlockId(block->getTypeName()) << ":" << block->getTileData() << ")\n"
@@ -60,33 +63,48 @@ namespace worldedit {
 
     ////////
     bool CyclerTool::leftClick(Player* player, BlockInstance& blockInstance) {
+        if (blockInstance == BlockInstance::Null) {
+            return false;
+        }
         // auto bs = Level::getBlockSource(player);
         return false;
     }
     bool CyclerTool::rightClick(Player* player, BlockInstance& blockInstance) {
+        if (blockInstance == BlockInstance::Null) {
+            return false;
+        }
         // auto bs = Level::getBlockSource(player);
         return false;
     }
 
     ////////
     bool FloodFillTool::rightClick(Player* player, BlockInstance& blockInstance) {
+        if (blockInstance == BlockInstance::Null) {
+            return false;
+        }
         // auto bs = Level::getBlockSource(player);
         return false;
     }
 
     ////////
     bool TreeTool::rightClick(Player* player, BlockInstance& blockInstance) {
+        if (blockInstance == BlockInstance::Null) {
+            return false;
+        }
         auto bs = Level::getBlockSource(player);
         auto pos = blockInstance.getPosition();
-        setBlockSimple(bs, pos, const_cast<Block*>(VanillaFuckMojangBlocks::mGrass));
+        setBlockSimple(bs, pos, const_cast<Block*>(StaticVanillaBlocks::mGrass));
         pos.y += 1;
-        setBlockSimple(bs, pos, const_cast<Block*>(VanillaFuckMojangBlocks::mSapling));
+        setBlockSimple(bs, pos, const_cast<Block*>(StaticVanillaBlocks::mSapling));
         auto& legacyBlock = blockInstance.getBlock()->getLegacyBlock();
         return ((Sapling&)legacyBlock)._growTree(*bs, pos, Global<Level>->getRandom(), false);
     }
 
     ////////
     bool DelTreeTool::rightClick(Player* player, BlockInstance& blockInstance) {
+        if (blockInstance == BlockInstance::Null) {
+            return false;
+        }
         return false;
     }
 

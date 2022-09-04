@@ -5,7 +5,7 @@
 #pragma once
 #ifndef WORLDEDIT_REGION_H
 #define WORLDEDIT_REGION_H
-#include "pch.h"
+#include "Global.h"
 #include "particle/Graphics.h"
 
 namespace worldedit {

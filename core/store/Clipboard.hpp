@@ -5,7 +5,7 @@
 #ifndef WORLDEDIT_CLIPBOARD_H
 #define WORLDEDIT_CLIPBOARD_H
 
-#include "pch.h"
+#include "Global.h"
 // #include <EventAPI.h>
 // #include <LoggerAPI.h>
 #include <MC/Level.hpp>

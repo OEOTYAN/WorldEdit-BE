@@ -35,7 +35,7 @@ namespace worldedit {
                 interpolations.push_back(KochanekBartelsInterpolation(nodes));
             }
 
-            for (int i = 0; i < maxPointCount * 2 - 1; i++) {
+            for (int i = 0; i < maxPointCount * 2 - 1; ++i) {
                 std::vector<Node> nodes2;
                 nodes2.clear();
                 double t = i / (double)((maxPointCount - 1) * 2);
@@ -44,11 +44,12 @@ namespace worldedit {
                 }
                 cache1.push_back(KochanekBartelsInterpolation(nodes2, circle));
             }
-            for (int i = 1; i < loftPoints.size() + circle; i++) {
+            auto rSize = loftPoints.size() + circle - 1;
+            for (int i = 1; i <= rSize; ++i) {
                 std::vector<Node> nodes2;
                 nodes2.clear();
-                for (int j = 0; j < maxPointCount; j++) {
-                    double t = (i * 2 - 1) / (double)((loftPoints.size() + circle - 1) * 2);
+                for (int j = 0; j < maxPointCount; ++j) {
+                    double t = (i * 2 - 1) / (rSize * 2.0);
                     nodes2.push_back(Node(cache1[j * 2].getPosition(t)));
                 }
                 cache2.push_back(KochanekBartelsInterpolation(nodes2));
@@ -85,8 +86,8 @@ namespace worldedit {
         } else {
             double minDis = DBL_MAX;
             int pi = 0, pj = 0;
-            for (int i = 0; i < loftPoints.size(); i++) {
-                for (int j = 0; j < loftPoints[i].size(); j++) {
+            for (size_t endi = loftPoints.size(),i=0 ; i < endi; ++i) {
+                for (size_t endj = loftPoints[i].size(), j = 0; j < endj; ++j) {
                     auto length = (loftPoints[i][j] - pos).length();
                     if (length <= minDis) {
                         minDis = length;
@@ -106,9 +107,12 @@ namespace worldedit {
     }
 
     void LoftRegion::buildCache() {
-        if (!selecting) {
+        if (posCached){
             return;
         }
+            if (!selecting) {
+                return;
+            }
         if (interpolations.size() == 0) {
             return;
         }
@@ -138,25 +142,19 @@ namespace worldedit {
     }
 
     BoundingBox LoftRegion::getBoundBox() {
-        if (!posCached) {
             buildCache();
-        }
         return this->boundingBox;
     }
 
     void LoftRegion::forEachBlockInRegion(const std::function<void(const BlockPos&)>& todo) {
-        if (!posCached) {
-            buildCache();
-        }
+        buildCache();
         for (auto& pos : posCache) {
             todo(pos.getBlockPos());
         }
     }
 
     void LoftRegion::forEachBlockUVInRegion(const std::function<void(const BlockPos&, double, double)>& todo) {
-        if (!posCached) {
-            buildCache();
-        }
+        buildCache();
         for (auto& pos : posCache) {
             todo(pos.getBlockPos(), pos.u, pos.v);
         }
@@ -169,9 +167,7 @@ namespace worldedit {
         if (num < 2) {
             return;
         }
-        if (!posCached) {
-            buildCache();
-        }
+        buildCache();
         if (isX) {
             if (loftPoints.size() == 1) {
                 for (auto& pos : posCache) {
@@ -180,7 +176,7 @@ namespace worldedit {
                 return;
             } else {
                 std::unordered_set<BlockPos> posCache2;
-                for (int i = 0; i < num; i++) {
+                for (int i = 0; i < num; ++i) {
                     std::vector<Node> nodes2;
                     nodes2.clear();
                     double t = i / (double)(num - 1);
@@ -203,11 +199,11 @@ namespace worldedit {
         } else {
             std::unordered_set<BlockPos> posCache2;
 
-            for (int i = 0; i < num; i++) {
+            for (int i = 0; i < num; ++i) {
                 std::vector<Node> nodes2;
                 nodes2.clear();
                 double t = i / (double)(num - 1 + circle);
-                for (int j = 0; j < cache1.size(); j += 2) {
+                for (size_t endj = cache1.size(),j=0; j < endj; j += 2) {
                     auto& curve = cache1[j];
                     nodes2.push_back(Node(curve.getPosition(t)));
                 }
@@ -230,21 +226,19 @@ namespace worldedit {
         if (selecting && dimensionID >= 0 && rendertick <= 0) {
             rendertick = 40;
             for (auto& point : loftPoints) {
-                worldedit::spawnCuboidParticle({point[0].toVec3(), point[0].toVec3() + Vec3::ONE}, GRAPHIC_COLOR::BLUE,
-                                               dimensionID);
-                for (int i = 1; i < point.size(); i++) {
-                    worldedit::spawnCuboidParticle({point[i].toVec3(), point[i].toVec3() + Vec3::ONE},
-                                                   GRAPHIC_COLOR::GREEN, dimensionID);
+                globalPT().drawCuboid(point[0], dimensionID, mce::ColorPalette::SLATE);
+                for (size_t endi = point.size(), i = 1; i < endi; ++i) {
+                    globalPT().drawCuboid(point[i], dimensionID, mce::ColorPalette::GREEN);
                 }
             }
             for (auto& curve : interpolations) {
-                drawCurve(curve, GRAPHIC_COLOR::YELLOW, dimensionID);
+                drawCurve(curve, mce::ColorPalette::YELLOW, dimensionID);
             }
             for (auto& curve : cache1) {
-                drawCurve(curve, GRAPHIC_COLOR::YELLOW, dimensionID);
+                drawCurve(curve, mce::ColorPalette::YELLOW, dimensionID);
             }
             for (auto& curve : cache2) {
-                drawCurve(curve, GRAPHIC_COLOR::YELLOW, dimensionID);
+                drawCurve(curve, mce::ColorPalette::YELLOW, dimensionID);
             }
         }
         rendertick--;

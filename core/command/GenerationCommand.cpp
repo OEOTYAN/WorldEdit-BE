@@ -1,12 +1,10 @@
 //
 // Created by OEOTYAN on 2022/06/10.
 //
-#pragma once
-#ifndef WORLDEDIT_GENERATIONCOMMAND_H
-#define WORLDEDIT_GENERATIONCOMMAND_H
-
+#include "allCommand.hpp"
 #include "builder/SimpleBuilder.h"
 #include "store/BlockPattern.hpp"
+#include "WorldEdit.h"
 
 namespace worldedit {
     using ParamType = DynamicCommand::ParameterType;
@@ -191,5 +189,3 @@ namespace worldedit {
             CommandPermissionLevel::GameMasters);
     }
 }  // namespace worldedit
-
-#endif  // WORLDEDIT_GENERATIONCOMMAND_H

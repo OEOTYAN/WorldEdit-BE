@@ -10,9 +10,9 @@
 #include <MC/BedrockBlocks.hpp>
 namespace worldedit {
     void Region::forEachBlockInRegion(const std::function<void(const BlockPos&)>& todo) {
-        for (int y = boundingBox.min.y; y <= boundingBox.max.y; y++)
-            for (int x = boundingBox.min.x; x <= boundingBox.max.x; x++)
-                for (int z = boundingBox.min.z; z <= boundingBox.max.z; z++) {
+        for (int y = boundingBox.min.y; y <= boundingBox.max.y; ++y)
+            for (int x = boundingBox.min.x; x <= boundingBox.max.x; ++x)
+                for (int z = boundingBox.min.z; z <= boundingBox.max.z; ++z) {
                     if (contains({x, y, z})) {
                         todo({x, y, z});
                     }
@@ -20,9 +20,9 @@ namespace worldedit {
     }
     void Region::forEachBlockUVInRegion(const std::function<void(const BlockPos&, double, double)>& todo) {
         auto size = boundingBox.max - boundingBox.min;
-        for (int y = boundingBox.min.y; y <= boundingBox.max.y; y++)
-            for (int x = boundingBox.min.x; x <= boundingBox.max.x; x++)
-                for (int z = boundingBox.min.z; z <= boundingBox.max.z; z++) {
+        for (int y = boundingBox.min.y; y <= boundingBox.max.y; ++y)
+            for (int x = boundingBox.min.x; x <= boundingBox.max.x; ++x)
+                for (int z = boundingBox.min.z; z <= boundingBox.max.z; ++z) {
                     if (contains({x, y, z})) {
                         auto localPos = BlockPos(x, y, z) - boundingBox.min;
                         double u, v;
@@ -42,17 +42,17 @@ namespace worldedit {
                             v = localPos.z;
                             v /= size.z;
                         }
-                        todo({x, y, z},u,v);
+                        todo({x, y, z}, u, v);
                     }
                 }
     }
     void Region::forTopBlockInRegion(const std::function<void(const BlockPos&)>& todo) {
         auto blockSource = Level::getBlockSource(dimensionID);
-        for (int x = boundingBox.min.x; x <= boundingBox.max.x; x++)
-            for (int z = boundingBox.min.z; z <= boundingBox.max.z; z++) {
+        for (int x = boundingBox.min.x; x <= boundingBox.max.x; ++x)
+            for (int z = boundingBox.min.z; z <= boundingBox.max.z; ++z) {
                 auto topy = blockSource->getHeightmap(x, z);
                 if (topy < boundingBox.max.y) {
-                    for (int y = std::max(static_cast<int>(topy), boundingBox.min.y + 1); y <= boundingBox.max.y; y++) {
+                    for (int y = std::max(static_cast<int>(topy), boundingBox.min.y + 1); y <= boundingBox.max.y; ++y) {
                         if (&blockSource->getBlock({x, y, z}) == BedrockBlocks::mAir &&
                             &blockSource->getBlock({x, y - 1, z}) != BedrockBlocks::mAir && contains({x, y, z})) {
                             todo({x, y, z});
@@ -86,8 +86,8 @@ namespace worldedit {
         std::vector<double> res(sizex * sizez, -1e200);
 
         auto blockSource = Level::getBlockSource(dimensionID);
-        for (int x = boundingBox.min.x; x <= boundingBox.max.x; x++)
-            for (int z = boundingBox.min.z; z <= boundingBox.max.z; z++) {
+        for (int x = boundingBox.min.x; x <= boundingBox.max.x; ++x)
+            for (int z = boundingBox.min.z; z <= boundingBox.max.z; ++z) {
                 auto topy = getHighestTerrainBlock(blockSource, x, z, boundingBox.min.y, getHeighest(x, z), mask);
                 if (topy >= boundingBox.min.y) {
                     int cx = x - boundingBox.min.x;
@@ -137,7 +137,7 @@ namespace worldedit {
                             const_cast<Block*>(&blockSource->getBlock({xr, boundingBox.min.y + copyFrom, zr})));
                     }
                 } else if (curHeight > newHeight) {
-                    for (int y = 0; y < newHeight - boundingBox.min.y; y++) {
+                    for (int y = 0; y < newHeight - boundingBox.min.y; ++y) {
                         int copyFrom = static_cast<int>(floor(y * scale));
                         setBlockSimple(
                             blockSource, {xr, boundingBox.min.y + y, zr},
@@ -147,7 +147,7 @@ namespace worldedit {
                     setBlockSimple(blockSource, {xr, newHeight, zr},
                                    const_cast<Block*>(&blockSource->getBlock({xr, curHeight, zr})));
 
-                    for (int y = newHeight + 1; y <= curHeight; y++) {
+                    for (int y = newHeight + 1; y <= curHeight; ++y) {
                         setBlockSimple(blockSource, {xr, y, zr});
                     }
                 }
@@ -156,7 +156,7 @@ namespace worldedit {
 
     void Region::renderRegion() {
         if (selecting && dimensionID >= 0 && rendertick <= 0) {
-            worldedit::spawnCuboidParticle(toRealAABB(this->getBoundBox()), GRAPHIC_COLOR::YELLOW, dimensionID);
+            globalPT().drawCuboid(this->getBoundBox(), dimensionID, mce::ColorPalette::YELLOW);
             rendertick = 40;
         }
         rendertick--;

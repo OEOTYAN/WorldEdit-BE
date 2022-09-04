@@ -5,14 +5,14 @@
 #ifndef WORLDEDIT_CUBOIDREGION_H
 #define WORLDEDIT_CUBOIDREGION_H
 
-#include "pch.h"
+#include "Global.h"
 #include "Region.h"
 namespace worldedit {
     class CuboidRegion : public Region {
        public:
         BlockPos mainPos = BlockPos::MIN;
         BlockPos vicePos = BlockPos::MIN;
-        void     updateBoundingBox() override;
+        void updateBoundingBox() override;
 
         explicit CuboidRegion(const BoundingBox& region, const int& dim);
         explicit CuboidRegion();

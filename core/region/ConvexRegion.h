@@ -5,7 +5,7 @@
 #ifndef WORLDEDIT_CONVEXREGION_H
 #define WORLDEDIT_CONVEXREGION_H
 
-#include "pch.h"
+#include "Global.h"
 #include "Region.h"
 namespace worldedit {
     class Triangle;
@@ -15,7 +15,7 @@ namespace worldedit {
         Vec3 end;
 
         explicit Edge(const Vec3& _start, const Vec3& _end) : start(_start), end(_end){};
-        bool     operator==(const Edge& other) const;
+        bool operator==(const Edge& other) const;
         Triangle createTriangle(const Vec3&);
     };
     class _hash {
@@ -24,8 +24,8 @@ namespace worldedit {
     };
     class Triangle {
        public:
-        Vec3  vertices[3];
-        Vec3  normal;
+        Vec3 vertices[3];
+        Vec3 normal;
         float maxDotProduct;
 
         Triangle() = default;

@@ -1,15 +1,13 @@
 //
 // Created by OEOTYAN on 2022/06/10.
 //
-#pragma once
-#ifndef WORLDEDIT_BRUSHCOMMAND_H
-#define WORLDEDIT_BRUSHCOMMAND_H
-
+#include "allCommand.hpp"
 #include <DynamicCommandAPI.h>
 #include "brush/Brushs.h"
 #include <MC/ItemStack.hpp>
 #include "store/BlockPattern.hpp"
 #include "filesys/download.h"
+#include "WorldEdit.h"
 
 namespace worldedit {
     using ParamType = DynamicCommand::ParameterType;
@@ -251,5 +249,3 @@ namespace worldedit {
             CommandPermissionLevel::GameMasters);
     }
 }  // namespace worldedit
-
-#endif  // WORLDEDIT_BRUSHCOMMAND_H

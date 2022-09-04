@@ -5,7 +5,7 @@
 #ifndef WORLDEDIT_FILE_H
 #define WORLDEDIT_FILE_H
 
-#include "pch.h"
+#include "Global.h"
 namespace worldedit {
     void getFiles(std::string path, std::vector<std::string>& files);
     void getImageFiles(std::string path, std::vector<std::string>& files);

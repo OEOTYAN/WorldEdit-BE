@@ -26,8 +26,6 @@ namespace worldedit {
 
         if (!(player->isOP() && player->isCreative())) {
             return true;
-        } else if (blockInstance == BlockInstance::Null) {
-            return false;
         } else if (itemName == "minecraft:wooden_axe") {
             if (!isLong) {
                 if (!needDiscard) {
@@ -69,9 +67,7 @@ namespace worldedit {
 
         if (!(player->isOP() && player->isCreative())) {
             return true;
-        } else if (blockInstance == BlockInstance::Null) {
-            return true;
-        } else if (item->getTypeName() == "minecraft:wooden_axe") {
+        }else if (item->getTypeName() == "minecraft:wooden_axe") {
             if (!isLong) {
                 if (!needDiscard) {
                     changeVicePos(player, blockInstance);

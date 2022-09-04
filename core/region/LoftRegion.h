@@ -5,7 +5,7 @@
 #ifndef WORLDEDIT_LOFTREGION_H
 #define WORLDEDIT_LOFTREGION_H
 
-#include "pch.h"
+#include "Global.h"
 #include "Region.h"
 #include "eval/Bresenham.hpp"
 

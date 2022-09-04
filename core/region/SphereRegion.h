@@ -5,7 +5,7 @@
 #ifndef WORLDEDIT_SPHEREREGION_H
 #define WORLDEDIT_SPHEREREGION_H
 
-#include "pch.h"
+#include "Global.h"
 #include "Region.h"
 #ifndef __M__PI__
 #define __M__PI__ 3.141592653589793238462643383279
@@ -14,8 +14,8 @@ namespace worldedit {
     class SphereRegion : public Region {
        private:
         BlockPos center = BlockPos::MIN;
-        float    radius = 0.5;
-        int      checkChanges(const std::vector<BlockPos>& changes);
+        float radius = 0.5;
+        int checkChanges(const std::vector<BlockPos>& changes);
 
        public:
         void updateBoundingBox() override;

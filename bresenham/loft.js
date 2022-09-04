@@ -348,9 +348,9 @@ var loadConfigFromRegion = function (region, flag, symetry) {
     var y2 = region.getMaximumPoint().getY();
     var z2 = region.getMaximumPoint().getZ();
     var locator;
-    for (var x = x1 - 1; x <= x2 + 1; x++) {
+    for (var x = x1 - 1; x <= x2 + 1; ++x) {
         for (var y = y1; y <= y2; y++) {
-            for (var z = z1 - 1; z <= z2 + 1; z++) {
+            for (var z = z1 - 1; z <= z2 + 1; ++z) {
                 if ((x == x1 - 1 || x == x2 + 1 || z == z1 - 1 || z == z2 + 1) && String(blocks.getBlock(BlockVector3.at(x, y, z))).indexOf("minecraft:structure_block") == 0) {
                     if (!locator) {
                         locator = {
@@ -391,9 +391,9 @@ var loadConfigFromRegion = function (region, flag, symetry) {
             } else {
                 road_type.base_material.push([y - locator.y]);
             }
-            for (var z = locator.z; z <= z2; z++) {
+            for (var z = locator.z; z <= z2; ++z) {
                 var arr = [];
-                for (var x = x1; x <= x2; x++) {
+                for (var x = x1; x <= x2; ++x) {
                     var block = String(blocks.getBlock(BlockVector3.at(x, y, z)));
                     if (block == "minecraft:air") block = "void";
                     if (block == "minecraft:structure_void") block = "air";
@@ -422,7 +422,7 @@ var loadConfigFromRegion = function (region, flag, symetry) {
             }
             for (var z = locator.z; z >= z1; z--) {
                 var arr = [];
-                for (var x = x1; x <= x2; x++) {
+                for (var x = x1; x <= x2; ++x) {
                     var block = String(blocks.getBlock(BlockVector3.at(x, y, z)));
                     if (block == "minecraft:air") block = "void";
                     if (block == "minecraft:structure_void") block = "air";
@@ -457,9 +457,9 @@ var loadConfigFromRegion = function (region, flag, symetry) {
         var yidx = 0;
         for (var y = y1; y <= y2; y++, yidx++) {
             road_type.base_material.push([y - locator.y]);
-            for (var x = locator.x; x <= x2; x++) {
+            for (var x = locator.x; x <= x2; ++x) {
                 var arr = [];
-                for (var z = z1; z <= z2; z++) {
+                for (var z = z1; z <= z2; ++z) {
                     var block = String(blocks.getBlock(BlockVector3.at(x, y, z)));
                     if (block == "minecraft:air") block = "void";
                     if (block == "minecraft:structure_void") block = "air";
@@ -490,7 +490,7 @@ var loadConfigFromRegion = function (region, flag, symetry) {
             }
             for (var x = locator.x; x >= x1; x--) {
                 var arr = [];
-                for (var z = z1; z <= z2; z++) {
+                for (var z = z1; z <= z2; ++z) {
                     var block = String(blocks.getBlock(BlockVector3.at(x, y, z)));
                     if (block == "minecraft:air") block = "void";
                     if (block == "minecraft:structure_void") block = "air";
@@ -539,7 +539,7 @@ var search_line = function (origin) {
     }
     var dx = 0, dy = 0, dz = 0;
     var total_length = 0;
-    for (var i = 0; i < config.max_distance; i++) {
+    for (var i = 0; i < config.max_distance; ++i) {
         total_length += [0, 1, 1.4142, 1.732][Math.abs(dx) + Math.abs(dy) + Math.abs(dz)];
         lines.push({ pos: origin, distance: total_length });
         lines_string.push(String(origin));
@@ -626,7 +626,7 @@ var compute_roadmap = function (lines, max_width, seg_num, symetry) {
     // 计算路径周围路面
     max_width = Math.min(config.max_width, max_width) + 1;
     var sqrt_table = {};
-    for (var x = -max_width; x <= max_width; x++) {
+    for (var x = -max_width; x <= max_width; ++x) {
         for (var y = -max_width; y <= max_width; y++) {
             sqrt_table[x + "," + y] = Math.sqrt(x * x + y * y);
         }
@@ -638,8 +638,8 @@ var compute_roadmap = function (lines, max_width, seg_num, symetry) {
         var dx = lines[l].smooth_pos ? lines[l].smooth_pos.getX() - ox : 0;
         var dz = lines[l].smooth_pos ? lines[l].smooth_pos.getZ() - oz : 0;
         // player.printError([dx, dz]);
-        for (var x = -max_width; x <= max_width; x++) {
-            for (var z = -max_width; z <= max_width; z++) {
+        for (var x = -max_width; x <= max_width; ++x) {
+            for (var z = -max_width; z <= max_width; ++z) {
                 var index = (ox + x) + "," + (oz + z);
                 var distance2 = (x - dx) * (x - dx) + (z - dz) * (z - dz);
                 var distance = sqrt_table[x + "," + z];
@@ -760,7 +760,7 @@ var parse_and_set_block_patern = function (pos, str, l_index, line, symetry, map
                 var blc_type = info[0];
                 var count = Number(info[1]) || 1;
                 period += count;
-                for (var i = 0; i < count; i++) {
+                for (var i = 0; i < count; ++i) {
                     pattern.push(blc_type == "void" ? null : context.getBlock(blc_type));
                 }
             });

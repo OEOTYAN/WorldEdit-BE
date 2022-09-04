@@ -86,7 +86,7 @@ namespace worldedit {
         double tensionB = nodeB.tension;
         double biasB = nodeB.bias;
         double continuityB = nodeB.continuity;
-        for (int i = 0; i < nNodes; i++) {
+        for (int i = 0; i < nNodes; ++i) {
             const double tensionA = tensionB;
             const double biasA = biasB;
             const double continuityA = continuityB;
@@ -182,7 +182,7 @@ namespace worldedit {
         const int nPoints = 8;
 
         double accum = ((a * (float)remainderLeft + b) * (float)remainderLeft + c).length() * 0.5;
-        for (int i = 0; i < nPoints - 1; i++) {
+        for (int i = 0; i < nPoints - 1; ++i) {
             float t = (float)((double)i / (double)nPoints);
             t = (float)((remainderRight - remainderLeft) * t + remainderLeft);
             accum += ((a * t + b) * t + c).length();

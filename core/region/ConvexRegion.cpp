@@ -3,7 +3,7 @@
 //
 
 #include "ConvexRegion.h"
-#include "pch.h"
+#include "Global.h"
 #include "MC/Level.hpp"
 #include "MC/Dimension.hpp"
 namespace worldedit {
@@ -222,7 +222,7 @@ namespace worldedit {
 
     void ConvexRegion::forEachLine(const std::function<void(const BlockPos&, const BlockPos&)>& todo) {
         if (poss.size() > 1) {
-            for (int i = 0; i < poss.size() - 1; i++) {
+            for (int i = 0; i < poss.size() - 1; ++i) {
                 todo(poss[i], poss[i + 1]);
             }
         }
@@ -241,17 +241,16 @@ namespace worldedit {
             rendertick = 40;
             auto size = vertices.size();
             for (auto& vertice : vertices) {
-                worldedit::spawnCuboidParticle({vertice.toVec3(), vertice.toVec3() + Vec3::ONE}, GRAPHIC_COLOR::GREEN,
-                                               dimensionID);
+                globalPT().drawCuboid(vertice, dimensionID, mce::ColorPalette::GREEN);
             }
             for (auto& pos : poss) {
                 if (vertices.find(pos) == vertices.end()) {
-                    worldedit::spawnCuboidParticle({pos.toVec3(), pos.toVec3() + Vec3::ONE}, GRAPHIC_COLOR::WHITE,
-                                                   dimensionID);
+                    globalPT().drawCuboid(pos, dimensionID, mce::ColorPalette::WHITE);
                 }
             }
             for (auto& edge : edges) {
-                drawOrientedLine(edge.start + 0.5, edge.end + 0.5, dimensionID, GRAPHIC_COLOR::YELLOW);
+                globalPT().drawOrientedLine(edge.start, edge.end, dimensionID, ParticleCUI::PointSize::PX4, 1, 64,
+                                            mce::ColorPalette::YELLOW);
             }
         }
         rendertick--;
@@ -273,7 +272,8 @@ namespace worldedit {
         maxDotProduct = std::max(std::max(normal.dot(v0), normal.dot(v1)), normal.dot(v2));
     }
     bool Triangle::operator==(const Triangle& v) const {
-        return (v.maxDotProduct == maxDotProduct) && (v.normal == normal) && (v.vertices == vertices);
+        return (v.maxDotProduct == maxDotProduct) && (v.normal == normal) && (v.vertices[0] == vertices[0]) &&
+               (v.vertices[1] == vertices[1]) && (v.vertices[2] == vertices[2]);
     }
     Edge Triangle::getEdge(const int& index) {
         if (index == 2)

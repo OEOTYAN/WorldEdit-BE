@@ -4,7 +4,7 @@
 #pragma once
 #ifndef WORLDEDIT_PLAYER_H
 #define WORLDEDIT_PLAYER_H
-#include "pch.h"
+#include "Global.h"
 #include <EventAPI.h>
 // #include <LoggerAPI.h>
 // #include <MC/Level.hpp>

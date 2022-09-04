@@ -5,7 +5,7 @@
 #ifndef WORLDEDIT_STRINGTOOL_H
 #define WORLDEDIT_STRINGTOOL_H
 
-//#include "pch.h"
+//#include "Global.h"
 
 namespace worldedit {
 
@@ -35,8 +35,8 @@ namespace worldedit {
 
         void stringReplace(std::string& str, const std::string& fstr, const std::string& rep) {
             std::string::size_type pos = 0;
-            std::string::size_type a   = fstr.length();
-            std::string::size_type b   = rep.length();
+            std::string::size_type a = fstr.length();
+            std::string::size_type b = rep.length();
             if (b == 0)
                 while ((pos = str.find(fstr, pos)) != std::string::npos) {
                     str.erase(pos, a);

@@ -1,29 +1,12 @@
 //
 // Created by OEOTYAN on 2022/05/18.
 //
-#pragma once
-#ifndef WORLDEDIT_REGIONINFOCOMMAND_H
-#define WORLDEDIT_REGIONINFOCOMMAND_H
-// #include "pch.h"
-// #include <MC/Level.hpp>
+#include "allCommand.hpp"
 #include <MC/Container.hpp>
 #include <MC/ListTag.hpp>
-// #include <MC/Block.hpp>
-// #include <MC/BlockSource.hpp>
-// #include <MC/Actor.hpp>
-// #include <MC/Player.hpp>
-// #include <MC/ServerPlayer.hpp>
-// #include <MC/Dimension.hpp>
-// #include <MC/ItemStack.hpp>
-// #include "Version.h"
-// #include "eval/Eval.h"
-// #include "string/StringTool.h"
-// #include <LLAPI.h>
-// #include <ServerAPI.h>
-// #include <EventAPI.h>
-// #include <ScheduleAPI.h>
-// #include <DynamicCommandAPI.h>
-// #include "WorldEdit.h"
+#include "string/StringTool.h"
+#include "MC/ItemStack.hpp"
+#include "WorldEdit.h"
 namespace worldedit {
     using ParamType = DynamicCommand::ParameterType;
     using ParamData = DynamicCommand::ParameterData;
@@ -271,5 +254,3 @@ namespace worldedit {
             CommandPermissionLevel::GameMasters);
     }
 }  // namespace worldedit
-
-#endif  // WORLDEDIT_REGIONINFOCOMMAND_H

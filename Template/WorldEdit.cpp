@@ -4,6 +4,7 @@
 #pragma once
 #include "WorldEdit.h"
 #include "HookAPI.h"
+#include "ParticleAPI.h"
 #include <MC/Block.hpp>
 #include <MC/BlockLegacy.hpp>
 #include <MC/ServerNetworkHandler.hpp>
@@ -47,10 +48,10 @@
 // }
 
 THook(void, "?setRuntimeId@Block@@IEBAXAEBI@Z", Block* block, unsigned int const& id) {
-    auto& blockName               = worldedit::getBlockNameMap();
-    auto& blockId                 = worldedit::getBlockIdMap();
-    auto  blockid                 = block->getId();
-    blockName[blockid]            = block->getTypeName();
+    auto& blockName = worldedit::getBlockNameMap();
+    auto& blockId = worldedit::getBlockIdMap();
+    auto blockid = block->getId();
+    blockName[blockid] = block->getTypeName();
     blockId[block->getTypeName()] = blockid;
     // auto color = block->getLegacyBlock().getMapColor().toHexString();
     // if (getBlockColorssMap().find(color) != getBlockColorssMap().end()) {
@@ -59,11 +60,6 @@ THook(void, "?setRuntimeId@Block@@IEBAXAEBI@Z", Block* block, unsigned int const
     //     getBlockColorssMap()[color] = block->getNbt()->toSNBT(0, SnbtFormat::Minimize);
     // }
     return original(block, id);
-}
-
-THook(void, "?assignBlocks@VanillaBlocks@@YAXAEBVExperiments@@@Z", class Experiments const& exp) {
-    VanillaFuckMojangBlocks::assignBlocks();
-    return original(exp);
 }
 
 namespace worldedit {
@@ -78,22 +74,22 @@ namespace worldedit {
         static bool lized = false;
         if (!lized) {
             blockColorMap[mce::Color(208, 214, 215)] = 0;
-            blockColorMap[mce::Color(224, 96, 0)]    = 1;
-            blockColorMap[mce::Color(170, 45, 160)]  = 2;
-            blockColorMap[mce::Color(30, 138, 200)]  = 3;
-            blockColorMap[mce::Color(240, 175, 13)]  = 4;
-            blockColorMap[mce::Color(93, 168, 16)]   = 5;
+            blockColorMap[mce::Color(224, 96, 0)] = 1;
+            blockColorMap[mce::Color(170, 45, 160)] = 2;
+            blockColorMap[mce::Color(30, 138, 200)] = 3;
+            blockColorMap[mce::Color(240, 175, 13)] = 4;
+            blockColorMap[mce::Color(93, 168, 16)] = 5;
             blockColorMap[mce::Color(215, 102, 145)] = 6;
-            blockColorMap[mce::Color(52, 56, 60)]    = 7;
+            blockColorMap[mce::Color(52, 56, 60)] = 7;
             blockColorMap[mce::Color(125, 125, 125)] = 8;
-            blockColorMap[mce::Color(13, 119, 136)]  = 9;
-            blockColorMap[mce::Color(100, 25, 157)]  = 10;
-            blockColorMap[mce::Color(40, 42, 144)]   = 11;
-            blockColorMap[mce::Color(96, 57, 25)]    = 12;
-            blockColorMap[mce::Color(72, 91, 31)]    = 13;
-            blockColorMap[mce::Color(144, 30, 30)]   = 14;
-            blockColorMap[mce::Color(2, 3, 7)]       = 15;
-            lized                                    = true;
+            blockColorMap[mce::Color(13, 119, 136)] = 9;
+            blockColorMap[mce::Color(100, 25, 157)] = 10;
+            blockColorMap[mce::Color(40, 42, 144)] = 11;
+            blockColorMap[mce::Color(96, 57, 25)] = 12;
+            blockColorMap[mce::Color(72, 91, 31)] = 13;
+            blockColorMap[mce::Color(144, 30, 30)] = 14;
+            blockColorMap[mce::Color(2, 3, 7)] = 15;
+            lized = true;
         }
         return blockColorMap;
     }
@@ -127,9 +123,9 @@ namespace worldedit {
                 auto& PosPair = playerMainPosMap[xuid];
                 if (PosPair.second.first <= 0) {
                     PosPair.second.first = 40;
-                    worldedit::spawnCuboidParticle(AABB(Vec3(PosPair.first) - Vec3(0.07f, 0.07f, 0.07f),
-                                                        Vec3(PosPair.first) + Vec3(1.07f, 1.07f, 1.07f)),
-                                                   GRAPHIC_COLOR::RED, PosPair.second.second);
+                    globalPT().drawCuboid(AABB(Vec3(PosPair.first) - Vec3(0.07f, 0.07f, 0.07f),
+                                               Vec3(PosPair.first) + Vec3(1.07f, 1.07f, 1.07f)),
+                                          PosPair.second.second, mce::ColorPalette::RED);
                 }
                 PosPair.second.first--;
             }
@@ -137,9 +133,9 @@ namespace worldedit {
                 auto& PosPair = playerVicePosMap[xuid];
                 if (PosPair.second.first <= 0) {
                     PosPair.second.first = 40;
-                    worldedit::spawnCuboidParticle(AABB(Vec3(PosPair.first) - Vec3(0.06f, 0.06f, 0.06f),
-                                                        Vec3(PosPair.first) + Vec3(1.06f, 1.06f, 1.06f)),
-                                                   GRAPHIC_COLOR::BLUE, PosPair.second.second);
+                    globalPT().drawCuboid(AABB(Vec3(PosPair.first) - Vec3(0.06f, 0.06f, 0.06f),
+                                               Vec3(PosPair.first) + Vec3(1.06f, 1.06f, 1.06f)),
+                                          PosPair.second.second, mce::ColorPalette::VATBLUE);
                 }
                 PosPair.second.first--;
             }
@@ -199,7 +195,7 @@ namespace worldedit {
                 result.second = 0;
                 return result;
             }
-            result.second                       = 1;
+            result.second = 1;
             playerHistoryMap[xuid].second.first = current;
             return result;
         }

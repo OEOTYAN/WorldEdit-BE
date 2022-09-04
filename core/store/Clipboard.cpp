@@ -46,7 +46,7 @@ namespace worldedit {
         return res;
     }
     void Clipboard::rotate(Vec3 angle) {
-        rotationAngle   = rotationAngle + angle;
+        rotationAngle = rotationAngle + angle;
         rotationAngle.y = static_cast<float>(posfmod(rotationAngle.y, 360.0f));
         if (rotationAngle.y > 315 || rotationAngle.y <= 45) {
             rotation = Rotation::None_14;
@@ -97,22 +97,22 @@ namespace worldedit {
             res.y = -res.y;
         }
         Vec3 angle = rotationAngle;
-        angle.x    = static_cast<float>(posfmod(angle.x, 360.0f));
-        angle.y    = static_cast<float>(posfmod(angle.y, 360.0f));
-        angle.z    = static_cast<float>(posfmod(angle.z, 360.0f));
+        angle.x = static_cast<float>(posfmod(angle.x, 360.0f));
+        angle.y = static_cast<float>(posfmod(angle.y, 360.0f));
+        angle.z = static_cast<float>(posfmod(angle.z, 360.0f));
 
         if (abs(posfmod(angle.y, 90.0f)) < 0.01f) {
             if (abs(angle.y - 90) < 0.01f) {
                 int tmp = res.x;
-                res.x   = -res.z;
-                res.z   = tmp;
+                res.x = -res.z;
+                res.z = tmp;
             } else if (abs(angle.y - 180) < 0.01f) {
                 res.x = -res.x;
                 res.z = -res.z;
             } else if (abs(angle.y - 270) < 0.01f) {
                 int tmp = res.x;
-                res.x   = res.z;
-                res.z   = -tmp;
+                res.x = res.z;
+                res.z = -tmp;
             }
         } else {
             if (angle.y > 90 && angle.y < 270) {
@@ -120,25 +120,25 @@ namespace worldedit {
                 res.x = -res.x;
                 res.z = -res.z;
             }
-            angle.y   = angle.y * static_cast<float>(__M__PI__ / 180.0);
+            angle.y = angle.y * static_cast<float>(__M__PI__ / 180.0);
             auto tanY = tan(angle.y * 0.5);
-            res.x     = static_cast<int>(floor(res.x + 0.5 - (res.z + 0.5) * tanY));
-            res.z     = static_cast<int>(floor((res.x + 0.5) * sin(angle.y) + res.z + 0.5));
-            res.x     = static_cast<int>(floor(res.x + 0.5 - (res.z + 0.5) * tanY));
+            res.x = static_cast<int>(floor(res.x + 0.5 - (res.z + 0.5) * tanY));
+            res.z = static_cast<int>(floor((res.x + 0.5) * sin(angle.y) + res.z + 0.5));
+            res.x = static_cast<int>(floor(res.x + 0.5 - (res.z + 0.5) * tanY));
         }
 
         if (abs(posfmod(angle.x, 90.0f)) < 0.01f) {
             if (abs(angle.x - 90) < 0.01f) {
                 int tmp = res.y;
-                res.y   = -res.z;
-                res.z   = tmp;
+                res.y = -res.z;
+                res.z = tmp;
             } else if (abs(angle.x - 180) < 0.01f) {
                 res.y = -res.y;
                 res.z = -res.z;
             } else if (abs(angle.x - 270) < 0.01f) {
                 int tmp = res.y;
-                res.y   = res.z;
-                res.z   = -tmp;
+                res.y = res.z;
+                res.z = -tmp;
             }
         } else {
             if (angle.x > 90 && angle.x < 270) {
@@ -146,24 +146,24 @@ namespace worldedit {
                 res.y = -res.y;
                 res.z = -res.z;
             }
-            angle.x   = angle.x * static_cast<float>(__M__PI__ / 180.0);
+            angle.x = angle.x * static_cast<float>(__M__PI__ / 180.0);
             auto tanX = tan(angle.x * 0.5);
-            res.y     = static_cast<int>(floor(res.y + 0.5 - (res.z + 0.5) * tanX));
-            res.z     = static_cast<int>(floor((res.y + 0.5) * sin(angle.x) + res.z + 0.5));
-            res.y     = static_cast<int>(floor(res.y + 0.5 - (res.z + 0.5) * tanX));
+            res.y = static_cast<int>(floor(res.y + 0.5 - (res.z + 0.5) * tanX));
+            res.z = static_cast<int>(floor((res.y + 0.5) * sin(angle.x) + res.z + 0.5));
+            res.y = static_cast<int>(floor(res.y + 0.5 - (res.z + 0.5) * tanX));
         }
         if (abs(posfmod(angle.z, 90.0f)) < 0.01f) {
             if (abs(angle.z - 90) < 0.01f) {
                 int tmp = res.x;
-                res.x   = -res.y;
-                res.y   = tmp;
+                res.x = -res.y;
+                res.y = tmp;
             } else if (abs(angle.z - 180) < 0.01f) {
                 res.x = -res.x;
                 res.y = -res.y;
             } else if (abs(angle.z - 270) < 0.01f) {
                 int tmp = res.x;
-                res.x   = res.y;
-                res.y   = -tmp;
+                res.x = res.y;
+                res.y = -tmp;
             }
         } else {
             if (angle.z > 90 && angle.z < 270) {
@@ -171,11 +171,11 @@ namespace worldedit {
                 res.x = -res.x;
                 res.y = -res.y;
             }
-            angle.z   = angle.z * static_cast<float>(__M__PI__ / 180.0);
+            angle.z = angle.z * static_cast<float>(__M__PI__ / 180.0);
             auto tanZ = tan(angle.z * 0.5);
-            res.x     = static_cast<int>(floor(res.x + 0.5 - (res.y + 0.5) * tanZ));
-            res.y     = static_cast<int>(floor((res.x + 0.5) * sin(angle.z) + res.y + 0.5));
-            res.x     = static_cast<int>(floor(res.x + 0.5 - (res.y + 0.5) * tanZ));
+            res.x = static_cast<int>(floor(res.x + 0.5 - (res.y + 0.5) * tanZ));
+            res.y = static_cast<int>(floor((res.x + 0.5) * sin(angle.z) + res.y + 0.5));
+            res.x = static_cast<int>(floor(res.x + 0.5 - (res.y + 0.5) * tanZ));
         }
         return res;
     }
@@ -193,8 +193,8 @@ namespace worldedit {
     }
     void Clipboard::forEachBlockInClipboard(const std::function<void(const BlockPos&)>& todo) {
         for (int y = 0; y < size.y; y++)
-            for (int x = 0; x < size.x; x++)
-                for (int z = 0; z < size.z; z++) {
+            for (int x = 0; x < size.x; ++x)
+                for (int z = 0; z < size.z; ++z) {
                     if (contains({x, y, z})) {
                         todo({x, y, z});
                     }

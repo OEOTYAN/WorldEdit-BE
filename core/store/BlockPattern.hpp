@@ -5,7 +5,7 @@
 #ifndef WORLDEDIT_BLOCKPATTERN_H
 #define WORLDEDIT_BLOCKPATTERN_H
 
-#include "pch.h"
+#include "Global.h"
 #include "Utils/StringHelper.h"
 #include <MC/Block.hpp>
 #include <MC/BedrockBlocks.hpp>
@@ -91,16 +91,16 @@ namespace worldedit {
             std::vector<double> weights;
             double total = 0;
             weights.resize(blockNum);
-            for (int i = 0; i < blockNum; i++) {
+            for (int i = 0; i < blockNum; ++i) {
                 weights[i] = std::max(percents[i].getPercents(variables, funcs), 0.0);
                 total += weights[i];
             }
             if (total < 1e-32) {
                 return nullptr;
             }
-            double random = uniformRandDouble() * total;
+            double random = RNG::rand<double>() * total;
             double sum = 0;
-            for (int i = 0; i < blockNum - 1; i++) {
+            for (int i = 0; i < blockNum - 1; ++i) {
                 sum += weights[i];
                 if (random <= sum) {
                     return &rawBlocks[i];

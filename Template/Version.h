@@ -15,10 +15,6 @@
 #define PLUGIN_VERSION_BUILD        1
 #define PLUGIN_VERSION_STATUS PLUGIN_VERSION_BETA
 
-//#define TARGET_BDS_PROTOCOL_VERSION 503
-// used by github actions(TODO)
-//#define TARGET_BDS_VERSION          1.18.30.04
-
 // File Version Information, used in Resource.rc
 #define __TO_VERSION_STRING(ver) #ver
 #define TO_VERSION_STRING(ver) __TO_VERSION_STRING(ver)

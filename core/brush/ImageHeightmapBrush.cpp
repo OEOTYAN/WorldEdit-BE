@@ -96,12 +96,12 @@ namespace worldedit {
                 posk.y = std::min(posk.y, (int)range.max - 1);
                 if (posk.y > originY) {
                     auto* block = &blockSource->getBlock({posk.x, originY, posk.z});
-                    for (int i = originY + 1; i <= posk.y; i++) {
+                    for (int i = originY + 1; i <= posk.y; ++i) {
                         setBlockSimple(blockSource, {posk.x, i, posk.z}, const_cast<Block*>(block));
                         iter++;
                     }
                 } else if (posk.y < originY) {
-                    for (int i = posk.y; i <= originY; i++) {
+                    for (int i = posk.y; i <= originY; ++i) {
                         setBlockSimple(blockSource, {posk.x, i, posk.z});
                         iter++;
                     }

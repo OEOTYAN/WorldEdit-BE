@@ -4,7 +4,7 @@
 #pragma once
 #ifndef WORLDEDIT_BRESENHAM_H
 #define WORLDEDIT_BRESENHAM_H
-#include "pch.h"
+#include "Global.h"
 namespace worldedit {
     void plotLine(BlockPos const& pos0, BlockPos const& pos1, std::function<void(class BlockPos const&)> const& todo);
     class Node : public Vec3 {
