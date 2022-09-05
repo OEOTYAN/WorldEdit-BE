@@ -7,14 +7,12 @@
 
 #include "Global.h"
 #include "Region.h"
-#ifndef __M__PI__
-#define __M__PI__ 3.141592653589793238462643383279
-#endif
+
 namespace worldedit {
     class SphereRegion : public Region {
        private:
         BlockPos center = BlockPos::MIN;
-        float radius = 0.5;
+        double radius = 0.5;
         int checkChanges(const std::vector<BlockPos>& changes);
 
        public:
@@ -31,8 +29,10 @@ namespace worldedit {
         Vec3 getCenter() const override { return center.toVec3() + 0.5f; };
 
         int size() const override {
-            return (int)std::round(4.0 / 3.0 * __M__PI__ * (double)radius * (double)radius * (double)radius);
+            return (int)std::round(4.0 / 3.0 * M_PI * radius * radius * radius);
         };
+
+        void forEachBlockUVInRegion(const std::function<void(const BlockPos&, double, double)>& todo) override;
 
         void renderRegion() override;
 

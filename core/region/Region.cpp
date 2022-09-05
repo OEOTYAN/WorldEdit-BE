@@ -20,31 +20,35 @@ namespace worldedit {
     }
     void Region::forEachBlockUVInRegion(const std::function<void(const BlockPos&, double, double)>& todo) {
         auto size = boundingBox.max - boundingBox.min;
-        for (int y = boundingBox.min.y; y <= boundingBox.max.y; ++y)
-            for (int x = boundingBox.min.x; x <= boundingBox.max.x; ++x)
+
+        if (size.x == 0) {
+            for (int y = boundingBox.min.y; y <= boundingBox.max.y; ++y)
                 for (int z = boundingBox.min.z; z <= boundingBox.max.z; ++z) {
-                    if (contains({x, y, z})) {
-                        auto localPos = BlockPos(x, y, z) - boundingBox.min;
-                        double u, v;
-                        if (size.x == 0) {
-                            u = localPos.z;
-                            u /= size.z;
-                            v = localPos.y;
-                            v /= size.y;
-                        } else if (size.z == 0) {
-                            u = localPos.x;
-                            u /= size.x;
-                            v = localPos.y;
-                            v /= size.y;
-                        } else {
-                            u = localPos.x;
-                            u /= size.x;
-                            v = localPos.z;
-                            v /= size.z;
-                        }
-                        todo({x, y, z}, u, v);
+                    BlockPos pos(boundingBox.max.x, y, z);
+                    if (contains(pos)) {
+                        auto localPos = pos - boundingBox.min;
+                        todo(pos, static_cast<double>(localPos.z) / size.z, static_cast<double>(localPos.y) / size.y);
                     }
                 }
+        } else if (size.z == 0) {
+            for (int y = boundingBox.min.y; y <= boundingBox.max.y; ++y)
+                for (int x = boundingBox.min.x; x <= boundingBox.max.x; ++x) {
+                    BlockPos pos(x, y, boundingBox.max.z);
+                    if (contains(pos)) {
+                        auto localPos = pos - boundingBox.min;
+                        todo(pos, static_cast<double>(localPos.x) / size.x, static_cast<double>(localPos.y) / size.y);
+                    }
+                }
+        } else {
+            for (int z = boundingBox.min.z; z <= boundingBox.max.z; ++z)
+                for (int x = boundingBox.min.x; x <= boundingBox.max.x; ++x) {
+                    BlockPos pos(x, boundingBox.max.y, z);
+                    if (contains(pos)) {
+                        auto localPos = pos - boundingBox.min;
+                        todo(pos, static_cast<double>(localPos.x) / size.x, static_cast<double>(localPos.z) / size.z);
+                    }
+                }
+        }
     }
     void Region::forTopBlockInRegion(const std::function<void(const BlockPos&)>& todo) {
         auto blockSource = Level::getBlockSource(dimensionID);

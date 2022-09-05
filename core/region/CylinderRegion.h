@@ -6,9 +6,6 @@
 #define WORLDEDIT_CYLINDERREGION_H
 #include "Global.h"
 #include "Region.h"
-#ifndef __M__PI__
-#define __M__PI__ 3.141592653589793238462643383279
-#endif
 
 namespace worldedit {
     class CylinderRegion : public Region {
@@ -27,7 +24,7 @@ namespace worldedit {
         bool setY(int y);
 
         int size() const override {
-            return (int)std::round(__M__PI__ * (double)radius * (double)radius * (maxY - minY + 1));
+            return (int)std::round(M_PI * (double)radius * (double)radius * (maxY - minY + 1));
         };
 
         std::pair<std::string, bool> expand(const std::vector<BlockPos>& changes) override;
@@ -35,6 +32,8 @@ namespace worldedit {
         std::pair<std::string, bool> contract(const std::vector<BlockPos>& changes) override;
 
         std::pair<std::string, bool> shift(const BlockPos& change) override;
+
+        void forEachBlockUVInRegion(const std::function<void(const BlockPos&, double, double)>& todo) override;
 
         void renderRegion() override;
 

@@ -12,24 +12,76 @@
 #include <MC/BedrockBlocks.hpp>
 #include <MC/BlockSource.hpp>
 #include <MC/Level.hpp>
-// #include <MC/Player.hpp>
-// #include <MC/ServerPlayer.hpp>
-// #include <MC/Dimension.hpp>
-// #include <MC/ItemStack.hpp>
-// #include "string/StringTool.h"
-// #include <LLAPI.h>
-// #include <ServerAPI.h>
-// #include <EventAPI.h>
-// #include <ScheduleAPI.h>
-// #include <DynamicCommandAPI.h>
 #include "CppEval.h"
 #include "FastNoiseLite.h"
 
-#ifndef __M__PI__
-#define __M__PI__ 3.141592653589793238462643383279
-#endif
-
 namespace worldedit {
+
+    template <class T>
+    constexpr T binpow(T const& a, uint64_t const& b) {
+        if (b == 0)
+            return 1;
+        T res = binpow(a, b / 2);
+        if (b % 2)
+            return res * res * a;
+        else
+            return res * res;
+    }
+
+    template <class T>
+    constexpr T pow2(T const& a) {
+        return pow(a, 2);
+    }
+
+    template <class T>
+    constexpr T pow3(T const& a) {
+        return pow(a, 3);
+    }
+
+    template <class T>
+    constexpr T pow4(T const& a) {
+        return pow(a, 4);
+    }
+
+    template <class T>
+    constexpr T pow5(T const& a) {
+        return pow(a, 5);
+    }
+
+    template <class T>
+    constexpr T pow6(T const& a) {
+        return pow(a, 6);
+    }
+
+    template <class T>
+    constexpr T pow7(T const& a) {
+        return pow(a, 7);
+    }
+
+    template <class T>
+    constexpr T pow8(T const& a) {
+        return pow(a, 8);
+    }
+
+    template <class T>
+    inline T clamp(T const& a, T const& min, T const& max) {
+        return std::min(max, std::max(a, min));
+    }
+
+    template <class T>
+    inline T saturate(T const& a) {
+        return std::min(static_cast<T>(1), std::max(a, static_cast<T>(0)));
+    }
+
+    template <class T>
+    inline T sign(T const& a) {
+        return 1 - std::signbit(a) * 2;
+    }
+
+    template <class T>
+    inline T signedSqrt(T const& a) {
+        return sign(a) * std::sqrt(std::abs(a));
+    }
 
     double posfmod(double x, double y);
 

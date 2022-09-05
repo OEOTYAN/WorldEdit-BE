@@ -44,16 +44,18 @@ namespace worldedit {
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = Level::getBlockSource(dimID);
 
-                    auto history = mod.getPlayerNextHistory(xuid);
-                    *history = Clipboard(boundingBox.max - boundingBox.min);
-                    history->playerRelPos.x = dimID;
-                    history->playerPos = boundingBox.min;
+                    if (mod.maxHistoryLength > 0) {
+                        auto history = mod.getPlayerNextHistory(xuid);
+                        *history = Clipboard(boundingBox.max - boundingBox.min);
+                        history->playerRelPos.x = dimID;
+                        history->playerPos = boundingBox.min;
 
-                    region->forEachBlockInRegion([&](const BlockPos& pos) {
-                        auto localPos = pos - boundingBox.min;
-                        auto blockInstance = blockSource->getBlockInstance(pos);
-                        history->storeBlock(blockInstance, localPos);
-                    });
+                        region->forEachBlockInRegion([&](const BlockPos& pos) {
+                            auto localPos = pos - boundingBox.min;
+                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            history->storeBlock(blockInstance, localPos);
+                        });
+                    }
 
                     long long i = 0;
 
@@ -137,16 +139,18 @@ namespace worldedit {
                         }
                     }
 
-                    auto history = mod.getPlayerNextHistory(xuid);
-                    *history = Clipboard(boundingBox.max - boundingBox.min);
-                    history->playerRelPos.x = dimID;
-                    history->playerPos = boundingBox.min;
+                    if (mod.maxHistoryLength > 0) {
+                        auto history = mod.getPlayerNextHistory(xuid);
+                        *history = Clipboard(boundingBox.max - boundingBox.min);
+                        history->playerRelPos.x = dimID;
+                        history->playerPos = boundingBox.min;
 
-                    boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
-                        auto localPos = pos - boundingBox.min;
-                        auto blockInstance = blockSource->getBlockInstance(pos);
-                        history->storeBlock(blockInstance, localPos);
-                    });
+                        boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
+                            auto localPos = pos - boundingBox.min;
+                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            history->storeBlock(blockInstance, localPos);
+                        });
+                    }
 
                     auto sizeDim = boundingBox.max - boundingBox.min + 3;
 
@@ -298,16 +302,18 @@ namespace worldedit {
 
                     if (region->regionType == RegionType::LOFT) {
                         try {
-                            auto history = mod.getPlayerNextHistory(xuid);
-                            *history = Clipboard(boundingBox.max - boundingBox.min);
-                            history->playerRelPos.x = dimID;
-                            history->playerPos = boundingBox.min;
+                            if (mod.maxHistoryLength > 0) {
+                                auto history = mod.getPlayerNextHistory(xuid);
+                                *history = Clipboard(boundingBox.max - boundingBox.min);
+                                history->playerRelPos.x = dimID;
+                                history->playerPos = boundingBox.min;
 
-                            boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
-                                auto localPos = pos - boundingBox.min;
-                                auto blockInstance = blockSource->getBlockInstance(pos);
-                                history->storeBlock(blockInstance, localPos);
-                            });
+                                boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
+                                    auto localPos = pos - boundingBox.min;
+                                    auto blockInstance = blockSource->getBlockInstance(pos);
+                                    history->storeBlock(blockInstance, localPos);
+                                });
+                            }
                             f.setbox(boundingBox);
                             auto* loft = static_cast<LoftRegion*>(region);
                             loft->forEachBlockInLines(radius, !arg_h, [&](const BlockPos& pos) {
@@ -349,16 +355,18 @@ namespace worldedit {
                         boundingBox.min -= radius + 1;
                         boundingBox.max += radius + 1;
                         try {
-                            auto history = mod.getPlayerNextHistory(xuid);
-                            *history = Clipboard(boundingBox.max - boundingBox.min);
-                            history->playerRelPos.x = dimID;
-                            history->playerPos = boundingBox.min;
+                            if (mod.maxHistoryLength > 0) {
+                                auto history = mod.getPlayerNextHistory(xuid);
+                                *history = Clipboard(boundingBox.max - boundingBox.min);
+                                history->playerRelPos.x = dimID;
+                                history->playerPos = boundingBox.min;
 
-                            boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
-                                auto localPos = pos - boundingBox.min;
-                                auto blockInstance = blockSource->getBlockInstance(pos);
-                                history->storeBlock(blockInstance, localPos);
-                            });
+                                boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
+                                    auto localPos = pos - boundingBox.min;
+                                    auto blockInstance = blockSource->getBlockInstance(pos);
+                                    history->storeBlock(blockInstance, localPos);
+                                });
+                            }
 
                             auto sizeDim = boundingBox.max - boundingBox.min + 3;
 
@@ -526,16 +534,18 @@ namespace worldedit {
                     boundingBox.min -= radius + 1;
                     boundingBox.max += radius + 1;
                     try {
-                        auto history = mod.getPlayerNextHistory(xuid);
-                        *history = Clipboard(boundingBox.max - boundingBox.min);
-                        history->playerRelPos.x = dimID;
-                        history->playerPos = boundingBox.min;
+                        if (mod.maxHistoryLength > 0) {
+                            auto history = mod.getPlayerNextHistory(xuid);
+                            *history = Clipboard(boundingBox.max - boundingBox.min);
+                            history->playerRelPos.x = dimID;
+                            history->playerPos = boundingBox.min;
 
-                        boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
-                            auto localPos = pos - boundingBox.min;
-                            auto blockInstance = blockSource->getBlockInstance(pos);
-                            history->storeBlock(blockInstance, localPos);
-                        });
+                            boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
+                                auto localPos = pos - boundingBox.min;
+                                auto blockInstance = blockSource->getBlockInstance(pos);
+                                history->storeBlock(blockInstance, localPos);
+                            });
+                        }
 
                         auto sizeDim = boundingBox.max - boundingBox.min + 3;
 
@@ -640,16 +650,18 @@ namespace worldedit {
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = Level::getBlockSource(dimID);
 
-                    auto history = mod.getPlayerNextHistory(xuid);
-                    *history = Clipboard(boundingBox.max - boundingBox.min);
-                    history->playerRelPos.x = dimID;
-                    history->playerPos = boundingBox.min;
+                    if (mod.maxHistoryLength > 0) {
+                        auto history = mod.getPlayerNextHistory(xuid);
+                        *history = Clipboard(boundingBox.max - boundingBox.min);
+                        history->playerRelPos.x = dimID;
+                        history->playerPos = boundingBox.min;
 
-                    region->forEachBlockInRegion([&](const BlockPos& pos) {
-                        auto localPos = pos - boundingBox.min;
-                        auto blockInstance = blockSource->getBlockInstance(pos);
-                        history->storeBlock(blockInstance, localPos);
-                    });
+                        region->forEachBlockInRegion([&](const BlockPos& pos) {
+                            auto localPos = pos - boundingBox.min;
+                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            history->storeBlock(blockInstance, localPos);
+                        });
+                    }
 
                     long long i = 0;
 
@@ -718,16 +730,18 @@ namespace worldedit {
                     boundingBox.max.z = static_cast<int>(floor(center.z + 0.49));
                     auto blockSource = Level::getBlockSource(dimID);
 
-                    auto history = mod.getPlayerNextHistory(xuid);
-                    *history = Clipboard(boundingBox.max - boundingBox.min);
-                    history->playerRelPos.x = dimID;
-                    history->playerPos = boundingBox.min;
+                    if (mod.maxHistoryLength > 0) {
+                        auto history = mod.getPlayerNextHistory(xuid);
+                        *history = Clipboard(boundingBox.max - boundingBox.min);
+                        history->playerRelPos.x = dimID;
+                        history->playerPos = boundingBox.min;
 
-                    boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
-                        auto localPos = pos - boundingBox.min;
-                        auto blockInstance = blockSource->getBlockInstance(pos);
-                        history->storeBlock(blockInstance, localPos);
-                    });
+                        boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
+                            auto localPos = pos - boundingBox.min;
+                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            history->storeBlock(blockInstance, localPos);
+                        });
+                    }
 
                     auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.62, 0.0);
                     auto playerRot = origin.getPlayer()->getRotation();
@@ -1056,16 +1070,18 @@ namespace worldedit {
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = Level::getBlockSource(dimID);
 
-                    auto history = mod.getPlayerNextHistory(xuid);
-                    *history = Clipboard(boundingBox.max - boundingBox.min);
-                    history->playerRelPos.x = dimID;
-                    history->playerPos = boundingBox.min;
+                    if (mod.maxHistoryLength > 0) {
+                        auto history = mod.getPlayerNextHistory(xuid);
+                        *history = Clipboard(boundingBox.max - boundingBox.min);
+                        history->playerRelPos.x = dimID;
+                        history->playerPos = boundingBox.min;
 
-                    region->forEachBlockInRegion([&](const BlockPos& pos) {
-                        auto localPos = pos - boundingBox.min;
-                        auto blockInstance = blockSource->getBlockInstance(pos);
-                        history->storeBlock(blockInstance, localPos);
-                    });
+                        region->forEachBlockInRegion([&](const BlockPos& pos) {
+                            auto localPos = pos - boundingBox.min;
+                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            history->storeBlock(blockInstance, localPos);
+                        });
+                    }
 
                     long long i = 0;
 
@@ -1172,16 +1188,18 @@ namespace worldedit {
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = Level::getBlockSource(dimID);
 
-                    auto history = mod.getPlayerNextHistory(xuid);
-                    *history = Clipboard(boundingBox.max - boundingBox.min);
-                    history->playerRelPos.x = dimID;
-                    history->playerPos = boundingBox.min;
+                    if (mod.maxHistoryLength > 0) {
+                        auto history = mod.getPlayerNextHistory(xuid);
+                        *history = Clipboard(boundingBox.max - boundingBox.min);
+                        history->playerRelPos.x = dimID;
+                        history->playerPos = boundingBox.min;
 
-                    region->forEachBlockInRegion([&](const BlockPos& pos) {
-                        auto localPos = pos - boundingBox.min;
-                        auto blockInstance = blockSource->getBlockInstance(pos);
-                        history->storeBlock(blockInstance, localPos);
-                    });
+                        region->forEachBlockInRegion([&](const BlockPos& pos) {
+                            auto localPos = pos - boundingBox.min;
+                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            history->storeBlock(blockInstance, localPos);
+                        });
+                    }
 
                     long long i = 0;
 
@@ -1262,16 +1280,18 @@ namespace worldedit {
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = Level::getBlockSource(dimID);
 
-                    auto history = mod.getPlayerNextHistory(xuid);
-                    *history = Clipboard(boundingBox.max - boundingBox.min);
-                    history->playerRelPos.x = dimID;
-                    history->playerPos = boundingBox.min;
+                    if (mod.maxHistoryLength > 0) {
+                        auto history = mod.getPlayerNextHistory(xuid);
+                        *history = Clipboard(boundingBox.max - boundingBox.min);
+                        history->playerRelPos.x = dimID;
+                        history->playerPos = boundingBox.min;
 
-                    region->forEachBlockInRegion([&](const BlockPos& pos) {
-                        auto localPos = pos - boundingBox.min;
-                        auto blockInstance = blockSource->getBlockInstance(pos);
-                        history->storeBlock(blockInstance, localPos);
-                    });
+                        region->forEachBlockInRegion([&](const BlockPos& pos) {
+                            auto localPos = pos - boundingBox.min;
+                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            history->storeBlock(blockInstance, localPos);
+                        });
+                    }
 
                     long long i = 0;
 
@@ -1330,16 +1350,18 @@ namespace worldedit {
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = Level::getBlockSource(dimID);
 
-                    auto history = mod.getPlayerNextHistory(xuid);
-                    *history = Clipboard(boundingBox.max - boundingBox.min);
-                    history->playerRelPos.x = dimID;
-                    history->playerPos = boundingBox.min;
+                    if (mod.maxHistoryLength > 0) {
+                        auto history = mod.getPlayerNextHistory(xuid);
+                        *history = Clipboard(boundingBox.max - boundingBox.min);
+                        history->playerRelPos.x = dimID;
+                        history->playerPos = boundingBox.min;
 
-                    region->forTopBlockInRegion([&](const BlockPos& pos) {
-                        auto localPos = pos - boundingBox.min;
-                        auto blockInstance = blockSource->getBlockInstance(pos);
-                        history->storeBlock(blockInstance, localPos);
-                    });
+                        region->forTopBlockInRegion([&](const BlockPos& pos) {
+                            auto localPos = pos - boundingBox.min;
+                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            history->storeBlock(blockInstance, localPos);
+                        });
+                    }
 
                     long long i = 0;
 
@@ -1387,16 +1409,18 @@ namespace worldedit {
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = Level::getBlockSource(dimID);
 
-                    auto history = mod.getPlayerNextHistory(xuid);
-                    *history = Clipboard(boundingBox.max - boundingBox.min);
-                    history->playerRelPos.x = dimID;
-                    history->playerPos = boundingBox.min;
+                    if (mod.maxHistoryLength > 0) {
+                        auto history = mod.getPlayerNextHistory(xuid);
+                        *history = Clipboard(boundingBox.max - boundingBox.min);
+                        history->playerRelPos.x = dimID;
+                        history->playerPos = boundingBox.min;
 
-                    region->forEachBlockInRegion([&](const BlockPos& pos) {
-                        auto localPos = pos - boundingBox.min;
-                        auto blockInstance = blockSource->getBlockInstance(pos);
-                        history->storeBlock(blockInstance, localPos);
-                    });
+                        region->forEachBlockInRegion([&](const BlockPos& pos) {
+                            auto localPos = pos - boundingBox.min;
+                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            history->storeBlock(blockInstance, localPos);
+                        });
+                    }
 
                     INNERIZE_GMASK
 
@@ -1459,16 +1483,18 @@ namespace worldedit {
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = Level::getBlockSource(dimID);
 
-                    auto history = mod.getPlayerNextHistory(xuid);
-                    *history = Clipboard(boundingBox.max - boundingBox.min);
-                    history->playerRelPos.x = dimID;
-                    history->playerPos = boundingBox.min;
+                    if (mod.maxHistoryLength > 0) {
+                        auto history = mod.getPlayerNextHistory(xuid);
+                        *history = Clipboard(boundingBox.max - boundingBox.min);
+                        history->playerRelPos.x = dimID;
+                        history->playerPos = boundingBox.min;
 
-                    region->forEachBlockInRegion([&](const BlockPos& pos) {
-                        auto localPos = pos - boundingBox.min;
-                        auto blockInstance = blockSource->getBlockInstance(pos);
-                        history->storeBlock(blockInstance, localPos);
-                    });
+                        region->forEachBlockInRegion([&](const BlockPos& pos) {
+                            auto localPos = pos - boundingBox.min;
+                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            history->storeBlock(blockInstance, localPos);
+                        });
+                    }
 
                     INNERIZE_GMASK
 
@@ -1568,16 +1594,18 @@ namespace worldedit {
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = Level::getBlockSource(dimID);
 
-                    auto history = mod.getPlayerNextHistory(xuid);
-                    *history = Clipboard(boundingBox.max - boundingBox.min);
-                    history->playerRelPos.x = dimID;
-                    history->playerPos = boundingBox.min;
+                    if (mod.maxHistoryLength > 0) {
+                        auto history = mod.getPlayerNextHistory(xuid);
+                        *history = Clipboard(boundingBox.max - boundingBox.min);
+                        history->playerRelPos.x = dimID;
+                        history->playerPos = boundingBox.min;
 
-                    boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
-                        auto localPos = pos - boundingBox.min;
-                        auto blockInstance = blockSource->getBlockInstance(pos);
-                        history->storeBlock(blockInstance, localPos);
-                    });
+                        boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
+                            auto localPos = pos - boundingBox.min;
+                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            history->storeBlock(blockInstance, localPos);
+                        });
+                    }
 
                     std::string mask = "";
                     if (results["mask"].isSet) {
@@ -1799,10 +1827,10 @@ namespace worldedit {
                     auto size = boundingBox.max - boundingBox.min;
                     auto blockSource = Level::getBlockSource(dimID);
 
-                    if (region->regionType != RegionType::LOFT && size.x != 0 && size.y != 0 && size.z != 0) {
-                        output.error("You need to select a slice");
-                        return;
-                    }
+                    // if (region->regionType != RegionType::LOFT && size.x != 0 && size.y != 0 && size.z != 0) {
+                    //     output.error("You need to select a slice");
+                    //     return;
+                    // }
 
                     int flipInt = 0;
 
@@ -1830,16 +1858,18 @@ namespace worldedit {
                         }
                     }
 
-                    auto history = mod.getPlayerNextHistory(xuid);
-                    *history = Clipboard(boundingBox.max - boundingBox.min);
-                    history->playerRelPos.x = dimID;
-                    history->playerPos = boundingBox.min;
+                    if (mod.maxHistoryLength > 0) {
+                        auto history = mod.getPlayerNextHistory(xuid);
+                        *history = Clipboard(boundingBox.max - boundingBox.min);
+                        history->playerRelPos.x = dimID;
+                        history->playerPos = boundingBox.min;
 
-                    boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
-                        auto localPos = pos - boundingBox.min;
-                        auto blockInstance = blockSource->getBlockInstance(pos);
-                        history->storeBlock(blockInstance, localPos);
-                    });
+                        boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
+                            auto localPos = pos - boundingBox.min;
+                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            history->storeBlock(blockInstance, localPos);
+                        });
+                    }
 
                     INNERIZE_GMASK
 
@@ -1874,7 +1904,7 @@ namespace worldedit {
 
                     auto texture2D = loadpng(filename);
 
-                    Sampler sampler(SamplerType::Bilinear, EdgeType::FLIP);
+                    Sampler sampler(SamplerType::Bilinear, EdgeType::CLAMP);
 
                     std::function<void(double&, double&)> rotate;
 
@@ -1960,16 +1990,18 @@ namespace worldedit {
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = Level::getBlockSource(dimID);
 
-                    auto history = mod.getPlayerNextHistory(xuid);
-                    *history = Clipboard(boundingBox.max - boundingBox.min);
-                    history->playerRelPos.x = dimID;
-                    history->playerPos = boundingBox.min;
+                    if (mod.maxHistoryLength > 0) {
+                        auto history = mod.getPlayerNextHistory(xuid);
+                        *history = Clipboard(boundingBox.max - boundingBox.min);
+                        history->playerRelPos.x = dimID;
+                        history->playerPos = boundingBox.min;
 
-                    region->forEachBlockInRegion([&](const BlockPos& pos) {
-                        auto localPos = pos - boundingBox.min;
-                        auto blockInstance = blockSource->getBlockInstance(pos);
-                        history->storeBlock(blockInstance, localPos);
-                    });
+                        region->forEachBlockInRegion([&](const BlockPos& pos) {
+                            auto localPos = pos - boundingBox.min;
+                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            history->storeBlock(blockInstance, localPos);
+                        });
+                    }
                     int num = -1;
                     if (results["num"].isSet) {
                         num = results["num"].get<int>();

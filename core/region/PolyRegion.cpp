@@ -17,13 +17,51 @@ namespace worldedit {
         boundingBox.min.z = points[0].z;
         boundingBox.max.x = points[0].x;
         boundingBox.max.z = points[0].z;
-        for_each(points.begin(), points.end(), [&](BlockPos value) {
-            boundingBox.min.x = std::min(boundingBox.min.x, value.x);
-            boundingBox.min.z = std::min(boundingBox.min.z, value.z);
-            boundingBox.max.x = std::max(boundingBox.max.x, value.x);
-            boundingBox.max.z = std::max(boundingBox.max.z, value.z);
-        });
+        for (auto& point : points) {
+            boundingBox.min.x = std::min(boundingBox.min.x, point.x);
+            boundingBox.min.z = std::min(boundingBox.min.z, point.z);
+            boundingBox.max.x = std::max(boundingBox.max.x, point.x);
+            boundingBox.max.z = std::max(boundingBox.max.z, point.z);
+        }
     }
+
+    void PolyRegion::forEachBlockUVInRegion(const std::function<void(const BlockPos&, double, double)>& todo) {
+        auto faceNum = points.size() - 1;
+        for (int i = 0; i < faceNum; ++i) {
+            auto pos0 = points[i];
+            auto pos1 = points[i + 1];
+            int x0 = pos0.x;
+            int z0 = pos0.z;
+            int x1 = pos1.x;
+            int z1 = pos1.z;
+            int dx = abs(x1 - x0);
+            int dz = abs(z1 - z0);
+            int sx = x0 < x1 ? 1 : -1;
+            int sz = z0 < z1 ? 1 : -1;
+
+            int dMax = std::max(dx, dz);
+            if (dMax == dx) {
+                for (int domstep = 0; domstep <= dx; domstep++) {
+                    int tipx = x0 + domstep * sx;
+                    int tipz = (int)round(z0 + domstep / ((double)dx) * ((double)dz) * sz);
+                    for (int y = minY; y <= maxY; ++y) {
+                        todo(BlockPos(tipx, y, tipz), (i + (static_cast<double>(domstep) / dx)) / faceNum,
+                             static_cast<double>(y - minY) / (maxY - minY));
+                    }
+                }
+            } else {
+                for (int domstep = 0; domstep <= dz; domstep++) {
+                    int tipx = (int)round(x0 + domstep / ((double)dz) * ((double)dx) * sx);
+                    int tipz = z0 + domstep * sz;
+                    for (int y = minY; y <= maxY; ++y) {
+                        todo(BlockPos(tipx, y, tipz), (i + (static_cast<double>(domstep) / dz)) / faceNum,
+                             static_cast<double>(y - minY) / (maxY - minY));
+                    }
+                }
+            }
+        }
+    }
+
     PolyRegion::PolyRegion(const BoundingBox& region, const int& dim) : Region(region, dim) {
         points.clear();
         this->regionType = POLY;

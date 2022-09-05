@@ -120,7 +120,7 @@ namespace worldedit {
                 res.x = -res.x;
                 res.z = -res.z;
             }
-            angle.y = angle.y * static_cast<float>(__M__PI__ / 180.0);
+            angle.y = angle.y * static_cast<float>(M_PI / 180.0);
             auto tanY = tan(angle.y * 0.5);
             res.x = static_cast<int>(floor(res.x + 0.5 - (res.z + 0.5) * tanY));
             res.z = static_cast<int>(floor((res.x + 0.5) * sin(angle.y) + res.z + 0.5));
@@ -146,7 +146,7 @@ namespace worldedit {
                 res.y = -res.y;
                 res.z = -res.z;
             }
-            angle.x = angle.x * static_cast<float>(__M__PI__ / 180.0);
+            angle.x = angle.x * static_cast<float>(M_PI / 180.0);
             auto tanX = tan(angle.x * 0.5);
             res.y = static_cast<int>(floor(res.y + 0.5 - (res.z + 0.5) * tanX));
             res.z = static_cast<int>(floor((res.y + 0.5) * sin(angle.x) + res.z + 0.5));
@@ -171,7 +171,7 @@ namespace worldedit {
                 res.x = -res.x;
                 res.y = -res.y;
             }
-            angle.z = angle.z * static_cast<float>(__M__PI__ / 180.0);
+            angle.z = angle.z * static_cast<float>(M_PI / 180.0);
             auto tanZ = tan(angle.z * 0.5);
             res.x = static_cast<int>(floor(res.x + 0.5 - (res.y + 0.5) * tanZ));
             res.y = static_cast<int>(floor((res.x + 0.5) * sin(angle.z) + res.y + 0.5));

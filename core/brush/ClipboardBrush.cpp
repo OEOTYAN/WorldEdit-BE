@@ -25,18 +25,19 @@ namespace worldedit {
         auto playerPos = player->getPosition() - Vec3(0.0, 1.62, 0.0);
         auto playerRot = player->getRotation();
         auto blockSource = Level::getBlockSource(dimID);
-        auto history = mod.getPlayerNextHistory(xuid);
-
         BoundingBox box = clipboard.getBoundingBox() + pbPos;
 
-        *history = Clipboard(box.max - box.min);
-        history->playerRelPos.x = dimID;
-        history->playerPos = box.min;
-        box.forEachBlockInBox([&](const BlockPos& pos) {
-            auto localPos = pos - box.min;
-            auto blockInstance = blockSource->getBlockInstance(pos);
-            history->storeBlock(blockInstance, localPos);
-        });
+        if (mod.maxHistoryLength > 0) {
+            auto history = mod.getPlayerNextHistory(xuid);
+            *history = Clipboard(box.max - box.min);
+            history->playerRelPos.x = dimID;
+            history->playerPos = box.min;
+            box.forEachBlockInBox([&](const BlockPos& pos) {
+                auto localPos = pos - box.min;
+                auto blockInstance = blockSource->getBlockInstance(pos);
+                history->storeBlock(blockInstance, localPos);
+            });
+        }
 
         INNERIZE_GMASK
 

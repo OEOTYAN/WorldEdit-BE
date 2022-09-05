@@ -65,16 +65,18 @@ namespace worldedit {
         f.setbox(box);
         std::unordered_map<std::string, double> variables;
 
-        auto history = mod.getPlayerNextHistory(xuid);
-        *history = Clipboard(box.max - box.min);
-        history->playerRelPos.x = dim;
-        history->playerPos = box.min;
+        if (mod.maxHistoryLength > 0) {
+            auto history = mod.getPlayerNextHistory(xuid);
+            *history = Clipboard(box.max - box.min);
+            history->playerRelPos.x = dim;
+            history->playerPos = box.min;
 
-        box.forEachBlockInBox([&](const BlockPos& blockPos) {
-            auto localPos = blockPos - box.min;
-            auto blockInstance = blockSource->getBlockInstance(blockPos);
-            history->storeBlock(blockInstance, localPos);
-        });
+            box.forEachBlockInBox([&](const BlockPos& blockPos) {
+                auto localPos = blockPos - box.min;
+                auto blockInstance = blockSource->getBlockInstance(blockPos);
+                history->storeBlock(blockInstance, localPos);
+            });
+        }
 
         BlockPos blockPos;
 
@@ -229,16 +231,18 @@ namespace worldedit {
         f.setbox(box);
         std::unordered_map<std::string, double> variables;
 
-        auto history = mod.getPlayerNextHistory(xuid);
-        *history = Clipboard(box.max - box.min);
-        history->playerRelPos.x = dim;
-        history->playerPos = box.min;
+        if (mod.maxHistoryLength > 0) {
+            auto history = mod.getPlayerNextHistory(xuid);
+            *history = Clipboard(box.max - box.min);
+            history->playerRelPos.x = dim;
+            history->playerPos = box.min;
 
-        box.forEachBlockInBox([&](const BlockPos& blockPos) {
-            auto localPos = blockPos - box.min;
-            auto blockInstance = blockSource->getBlockInstance(blockPos);
-            history->storeBlock(blockInstance, localPos);
-        });
+            box.forEachBlockInBox([&](const BlockPos& blockPos) {
+                auto localPos = blockPos - box.min;
+                auto blockInstance = blockSource->getBlockInstance(blockPos);
+                history->storeBlock(blockInstance, localPos);
+            });
+        }
 
         BlockPos blockPos;
 
@@ -398,16 +402,18 @@ namespace worldedit {
         f.setbox(box);
         std::unordered_map<std::string, double> variables;
 
-        auto history = mod.getPlayerNextHistory(xuid);
-        *history = Clipboard(box.max - box.min);
-        history->playerRelPos.x = dim;
-        history->playerPos = box.min;
+        if (mod.maxHistoryLength > 0) {
+            auto history = mod.getPlayerNextHistory(xuid);
+            *history = Clipboard(box.max - box.min);
+            history->playerRelPos.x = dim;
+            history->playerPos = box.min;
 
-        box.forEachBlockInBox([&](const BlockPos& blockPos) {
-            auto localPos = blockPos - box.min;
-            auto blockInstance = blockSource->getBlockInstance(blockPos);
-            history->storeBlock(blockInstance, localPos);
-        });
+            box.forEachBlockInBox([&](const BlockPos& blockPos) {
+                auto localPos = blockPos - box.min;
+                auto blockInstance = blockSource->getBlockInstance(blockPos);
+                history->storeBlock(blockInstance, localPos);
+            });
+        }
 
         box.forEachBlockInBox([&](const BlockPos blockPos) {
             if (!hollow || (blockPos.x == box.min.x || blockPos.x == box.max.x || blockPos.y == box.min.y ||

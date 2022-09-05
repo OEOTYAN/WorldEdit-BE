@@ -4,18 +4,42 @@
 
 #include "SphereRegion.h"
 #include "MC/Level.hpp"
+#include "eval/Eval.h"
 #include "MC/Dimension.hpp"
 namespace worldedit {
     void SphereRegion::updateBoundingBox() {
         auto range = Global<Level>->getDimension(dimensionID)->getHeightRange();
         rendertick = 0;
-        auto newRadius = (int)(radius);
+        auto newRadius = (int)(ceil(radius));
         boundingBox.min.x = center.x - newRadius;
         boundingBox.min.y = std::max(center.y - newRadius, static_cast<int>(range.min));
         boundingBox.min.z = center.z - newRadius;
         boundingBox.max.x = center.x + newRadius;
         boundingBox.max.y = std::min(center.y + newRadius, static_cast<int>(range.max) - 1);
         boundingBox.max.z = center.z + newRadius;
+    }
+
+    void SphereRegion::forEachBlockUVInRegion(const std::function<void(const BlockPos&, double, double)>& todo) {
+        this->forEachBlockInRegion([&](const BlockPos& pos) {
+            int counts = 0;
+            for (auto& calPos : pos.getNeighbors()) {
+                counts += this->contains(calPos);
+            }
+            if (counts < 6) {
+                double y = (pos.y - center.y) / radius;
+                if (abs(y) > 0.8) {
+                    todo(pos, (atan2(pos.z - center.z, pos.x - center.x) + M_PI) / (M_PI * 2),
+                         acos(clamp(
+                             -sign(y) *
+                                 sqrt(std::max(0.0, pow2(radius) - pow2(pos.z - center.z) - pow2(pos.x - center.x))) /
+                                 radius,
+                             -1.0, 1.0)) *
+                             M_1_PI);
+                } else {
+                    todo(pos, (atan2(pos.z - center.z, pos.x - center.x) + M_PI) / (M_PI * 2), acos(-y) * M_1_PI);
+                }
+            }
+        });
     }
 
     bool SphereRegion::setMainPos(const BlockPos& pos, const int& dim) {
@@ -31,7 +55,7 @@ namespace worldedit {
         if (!selecting || dim != dimensionID) {
             return false;
         }
-        float dis = (float)pos.distanceTo(center);
+        auto dis = pos.distanceTo(center);
         if (dis > radius) {
             radius = dis + 0.5f;
             updateBoundingBox();
@@ -71,7 +95,7 @@ namespace worldedit {
             return {"This region can only be contracted isotropically", false};
         } else {
             radius -= check;
-            radius = std::max(radius, 0.5f);
+            radius = std::max(radius, 0.5);
         }
         updateBoundingBox();
         return {"§aThis region has been contracted", true};

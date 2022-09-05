@@ -29,6 +29,8 @@ namespace worldedit {
 
         void renderRegion() override;
 
+        void forEachBlockUVInRegion(const std::function<void(const BlockPos&, double, double)>& todo) override;
+
         Vec3 getCenter() const override {
             BlockPos tmp(0, 0, 0);
             for (auto& point : points) {

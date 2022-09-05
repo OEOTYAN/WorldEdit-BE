@@ -12,6 +12,19 @@ namespace worldedit {
         this->regionType = CYLINDER;
     }
 
+    void CylinderRegion::forEachBlockUVInRegion(const std::function<void(const BlockPos&, double, double)>& todo) {
+        this->forEachBlockInRegion([&](const BlockPos& pos) {
+            int counts = 0;
+            for (auto& calPos : pos.getNeighbors()) {
+                counts += this->contains(calPos);
+            }
+            if (counts < 6) {
+                todo(pos, (atan2(pos.z - center.z, pos.x - center.x) + M_PI) / (M_PI * 2),
+                     (pos.y - minY) / static_cast<double>(maxY - minY));
+            }
+        });
+    }
+
     void CylinderRegion::updateBoundingBox() {
         if (hasY) {
             auto range = Global<Level>->getDimension(dimensionID)->getHeightRange();
@@ -159,8 +172,8 @@ namespace worldedit {
                 globalPT().drawCuboid(AABB(centery.toVec3(), centery.toVec3() + Vec3(1, 1 + maxY - minY, 1)),
                                       dimensionID, mce::ColorPalette::YELLOW);
                 centery.z = center.z + (int)radius;
-                globalPT().drawCuboid(AABB(centery.toVec3(), centery.toVec3() + Vec3(1, 1 + maxY - minY, 1)), dimensionID,
-                                      mce::ColorPalette::YELLOW);
+                globalPT().drawCuboid(AABB(centery.toVec3(), centery.toVec3() + Vec3(1, 1 + maxY - minY, 1)),
+                                      dimensionID, mce::ColorPalette::YELLOW);
                 globalPT().drawCircle(BlockPos(center.x, maxY, center.z), ParticleCUI::Direction::POS_Y, radius,
                                       dimensionID, ParticleCUI::PointSize::PX4, 1, 64, mce::ColorPalette::YELLOW);
                 if (minY != maxY) {

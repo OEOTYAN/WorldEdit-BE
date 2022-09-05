@@ -18,17 +18,18 @@ namespace worldedit {
 
         auto dimID       = player->getDimensionId();
         auto blockSource = Level::getBlockSource(dimID);
-        auto history     = mod.getPlayerNextHistory(xuid);
-        auto region      = CuboidRegion(box, dimID);
-
-        *history                = Clipboard(box.max - box.min);
-        history->playerRelPos.x = dimID;
-        history->playerPos      = box.min;
-        box.forEachBlockInBox([&](const BlockPos& pos) {
-            auto localPos      = pos - box.min;
-            auto blockInstance = blockSource->getBlockInstance(pos);
-            history->storeBlock(blockInstance, localPos);
-        });
+        auto region = CuboidRegion(box, dimID);
+        if (mod.maxHistoryLength > 0) {
+            auto history = mod.getPlayerNextHistory(xuid);
+            *history = Clipboard(box.max - box.min);
+            history->playerRelPos.x = dimID;
+            history->playerPos = box.min;
+            box.forEachBlockInBox([&](const BlockPos& pos) {
+                auto localPos = pos - box.min;
+                auto blockInstance = blockSource->getBlockInstance(pos);
+                history->storeBlock(blockInstance, localPos);
+            });
+        }
 
         auto heightMap = region.getHeightMap(mask);
         int  sizex     = box.max.x - box.min.x + 1;

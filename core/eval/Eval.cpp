@@ -375,7 +375,7 @@ namespace worldedit {
                         sumy = static_cast<double>(solid * here.y - posSum.y);
                         sumz = static_cast<double>(solid * here.z - posSum.z);
                         double length = sqrt(sumx * sumx + sumy * sumy + sumz * sumz);
-                        return acos(sumy / length) / __M__PI__ * 180.0;
+                        return acos(sumy / length) / M_PI * 180.0;
                     }
                 }
                 return 0;

@@ -15,7 +15,6 @@ namespace worldedit {
         auto xuid = player->getXuid();
         auto dimID = player->getDimensionId();
         auto blockSource = Level::getBlockSource(dimID);
-        auto history = mod.getPlayerNextHistory(xuid);
         auto range = Global<Level>->getDimension(dimID)->getHeightRange();
         int minY = 2147483647;
         int maxY = -2147483648;
@@ -43,14 +42,17 @@ namespace worldedit {
 
         BoundingBox box({pos.x - size, minY, pos.z - size}, {pos.x + size, maxY, pos.z + size});
 
-        *history = Clipboard(box.max - box.min);
-        history->playerRelPos.x = dimID;
-        history->playerPos = box.min;
-        box.forEachBlockInBox([&](const BlockPos& pos) {
-            auto localPos = pos - box.min;
-            auto blockInstance = blockSource->getBlockInstance(pos);
-            history->storeBlock(blockInstance, localPos);
-        });
+        if (mod.maxHistoryLength > 0) {
+            auto history = mod.getPlayerNextHistory(xuid);
+            *history = Clipboard(box.max - box.min);
+            history->playerRelPos.x = dimID;
+            history->playerPos = box.min;
+            box.forEachBlockInBox([&](const BlockPos& pos) {
+                auto localPos = pos - box.min;
+                auto blockInstance = blockSource->getBlockInstance(pos);
+                history->storeBlock(blockInstance, localPos);
+            });
+        }
 
         Sampler sampler(SamplerType::Bilinear, EdgeType::FLIP);
 

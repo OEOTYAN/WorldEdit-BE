@@ -14,7 +14,7 @@ namespace worldedit {
             case EdgeType::FLIP:
                 return abs(1 - posfmod(u + 1, 2));
             default:
-                return -1;
+                return 0;
         }
     }
 
@@ -23,26 +23,22 @@ namespace worldedit {
     };
 
     mce::Color Texture2D::load(const Sampler& sampler, double u, double v, double offsetu, double offsetv) const {
-        if (width > 1)
-            u += offsetu / (width - 1);
-        if (height > 1)
-            v += offsetv / (height - 1);
+        u += offsetu / width;
+        v += offsetv / height;
         u = sampler.setUV(u);
         v = sampler.setUV(v);
         if (u < 0 || v < 0) {
             return mce::Color(0, 0, 0, 0);
         }
-        u *= width - 1;
-        v *= height - 1;
-        u += 0.5;
-        v += 0.5;
-        unsigned iu = static_cast<unsigned>(floor(u));
-        unsigned iv = static_cast<unsigned>(floor(v));
+        u *= width;
+        v *= height;
+        unsigned iu = std::min(width - 1, std::max(0u, static_cast<unsigned>(floor(u))));
+        unsigned iv = std::min(height - 1, std::max(0u, static_cast<unsigned>(floor(v))));
         return rawColor[iu + iv * width];
     }
     mce::Color Texture2D::sample(const Sampler& sampler, double u, double v, double lod) const {
         switch (sampler.samplerType) {
-            case SamplerType::Trilinear:
+            case SamplerType::Bicubic:
             case SamplerType::Bilinear: {
                 auto color0 = load(sampler, u, v);
                 auto color1 = load(sampler, u, v, 1);
@@ -50,8 +46,8 @@ namespace worldedit {
                 auto color3 = load(sampler, u, v, 1, 1);
 
                 mce::Color res(0, 0, 0, 0);
-                u *= width - 1;
-                v *= height - 1;
+                u *= width;
+                v *= height;
                 u += 0.5;
                 v += 0.5;
                 u -= floor(u);
@@ -78,14 +74,14 @@ namespace worldedit {
         unsigned width, height;
         unsigned error = lodepng::decode(image, width, height, filename);
         if (error != 0) {
-            //std::cout << "error " << error << ": " << lodepng_error_text(error) << std::endl;
+            // std::cout << "error " << error << ": " << lodepng_error_text(error) << std::endl;
             Level::broadcastText("§c" + std::string(lodepng_error_text(error)), TextType::RAW);
             return Texture2D(0, 0);
         }
         Texture2D res(width, height);
         for (size_t v = 0; v < height; v++)
             for (size_t u = 0; u < width; u++) {
-                auto k            = width * v + u;
+                auto k = width * v + u;
                 res.rawColor[k].r = image[4 * k] / 255.0f;
                 res.rawColor[k].g = image[4 * k + 1] / 255.0f;
                 res.rawColor[k].b = image[4 * k + 2] / 255.0f;

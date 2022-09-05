@@ -12,22 +12,23 @@ namespace worldedit {
         rendertick = 0;
         boundingBox.min = *vertices.begin();
         boundingBox.max = *vertices.begin();
-        for_each(vertices.begin(), vertices.end(), [&](BlockPos const& value) {
+
+        for (auto& vertice : vertices) {
+            boundingBox.min.x = std::min(boundingBox.min.x, vertice.x);
+            boundingBox.min.y = std::max(std::min(boundingBox.min.y, vertice.y), static_cast<int>(range.min));
+            boundingBox.min.z = std::min(boundingBox.min.z, vertice.z);
+            boundingBox.max.x = std::max(boundingBox.max.x, vertice.x);
+            boundingBox.max.y = std::min(std::max(boundingBox.max.y, vertice.y), static_cast<int>(range.max) - 1);
+            boundingBox.max.z = std::max(boundingBox.max.z, vertice.z);
+        }
+        for (auto& value : vertexBacklog) {
             boundingBox.min.x = std::min(boundingBox.min.x, value.x);
             boundingBox.min.y = std::max(std::min(boundingBox.min.y, value.y), static_cast<int>(range.min));
             boundingBox.min.z = std::min(boundingBox.min.z, value.z);
             boundingBox.max.x = std::max(boundingBox.max.x, value.x);
             boundingBox.max.y = std::min(std::max(boundingBox.max.y, value.y), static_cast<int>(range.max) - 1);
             boundingBox.max.z = std::max(boundingBox.max.z, value.z);
-        });
-        for_each(vertexBacklog.begin(), vertexBacklog.end(), [&](BlockPos const& value) {
-            boundingBox.min.x = std::min(boundingBox.min.x, value.x);
-            boundingBox.min.y = std::max(std::min(boundingBox.min.y, value.y), static_cast<int>(range.min));
-            boundingBox.min.z = std::min(boundingBox.min.z, value.z);
-            boundingBox.max.x = std::max(boundingBox.max.x, value.x);
-            boundingBox.max.y = std::min(std::max(boundingBox.max.y, value.y), static_cast<int>(range.max) - 1);
-            boundingBox.max.z = std::max(boundingBox.max.z, value.z);
-        });
+        }
     }
 
     void ConvexRegion::updateEdges() {

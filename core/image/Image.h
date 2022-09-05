@@ -12,7 +12,7 @@ namespace worldedit {
     enum class SamplerType {
         Point = 0,
         Bilinear = 1,
-        Trilinear = 2,
+        Bicubic = 2,
     };
     enum class EdgeType {
         ZERO = 0,
