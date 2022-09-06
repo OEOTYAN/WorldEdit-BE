@@ -13,7 +13,7 @@ namespace worldedit {
     using ParamType = DynamicCommand::ParameterType;
     using ParamData = DynamicCommand::ParameterData;
 
-    // brush bmask bsize
+    // brush bmask bsize ruseface
 
     void brushCommandSetup() {
         DynamicCommand::setup(
@@ -244,6 +244,41 @@ namespace worldedit {
                     output.success("§aBrush size set to " + std::to_string(size));
                 } else {
                     output.error("You need to choose a brush first");
+                }
+            },
+            CommandPermissionLevel::GameMasters);
+
+        DynamicCommand::setup(
+            "ruseface",                 // command name
+            "set right click useface",  // command description
+            {}, {ParamData("bool", ParamType::Bool, "bool")}, {{"bool"}},
+            // dynamic command callback
+            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+               std::unordered_map<std::string, DynamicCommand::Result>& results) {
+                auto& mod = worldedit::getMod();
+                auto player = origin.getPlayer();
+                auto* item = player->getHandSlot();
+                std::string brushName = item->getTypeName() + std::to_string(item->getAuxValue());
+                auto xuid = player->getXuid();
+                int i = 0;
+                if (mod.playerBrushMap.find(xuid) != mod.playerBrushMap.end() &&
+                    mod.playerBrushMap[xuid].find(brushName) != mod.playerBrushMap[xuid].end()) {
+                    auto* brush = mod.playerBrushMap[xuid][brushName];
+                    auto useface = results["bool"].get<bool>();
+                    brush->needFace = useface;
+                    output.success("§aBrush useface set to " + std::to_string(useface));
+                    ++i;
+                }
+                if (mod.playerHandToolMap.find(xuid) != mod.playerHandToolMap.end() &&
+                    mod.playerHandToolMap[xuid].find(brushName) != mod.playerHandToolMap[xuid].end()) {
+                    auto* tool = mod.playerHandToolMap[xuid][brushName];
+                    auto useface = results["bool"].get<bool>();
+                    tool->needFace = useface;
+                    output.success("§aTool useface set to " + std::to_string(useface));
+                    ++i;
+                }
+                if (i == 0) {
+                    output.error("You need to choose a brush or tool first");
                 }
             },
             CommandPermissionLevel::GameMasters);

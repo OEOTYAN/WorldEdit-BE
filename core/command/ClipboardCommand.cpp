@@ -95,16 +95,18 @@ namespace worldedit {
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = Level::getBlockSource(dimID);
 
-                  if (mod.maxHistoryLength > 0) {  auto history = mod.getPlayerNextHistory(xuid);
-                    *history = Clipboard(boundingBox.max - boundingBox.min);
-                    history->playerRelPos.x = dimID;
-                    history->playerPos = boundingBox.min;
+                    if (mod.maxHistoryLength > 0) {
+                        auto history = mod.getPlayerNextHistory(xuid);
+                        *history = Clipboard(boundingBox.max - boundingBox.min);
+                        history->playerRelPos.x = dimID;
+                        history->playerPos = boundingBox.min;
 
-                    region->forEachBlockInRegion([&](const BlockPos& pos) {
-                        auto localPos = pos - boundingBox.min;
-                        auto blockInstance = blockSource->getBlockInstance(pos);
-                        history->storeBlock(blockInstance, localPos);
-                    });}
+                        region->forEachBlockInRegion([&](const BlockPos& pos) {
+                            auto localPos = pos - boundingBox.min;
+                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            history->storeBlock(blockInstance, localPos);
+                        });
+                    }
 
                     auto pPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.62, 0.0);
 
@@ -180,16 +182,18 @@ namespace worldedit {
                     auto dimID = origin.getPlayer()->getDimensionId();
                     if (!arg_n) {
                         auto blockSource = Level::getBlockSource(dimID);
-                     if (mod.maxHistoryLength > 0) {   auto history = mod.getPlayerNextHistory(xuid);
-                        *history = Clipboard(box.max - box.min);
-                        history->playerRelPos.x = dimID;
-                        history->playerPos = box.min;
+                        if (mod.maxHistoryLength > 0) {
+                            auto history = mod.getPlayerNextHistory(xuid);
+                            *history = Clipboard(box.max - box.min);
+                            history->playerRelPos.x = dimID;
+                            history->playerPos = box.min;
 
-                        box.forEachBlockInBox([&](const BlockPos& pos) {
-                            auto localPos = pos - box.min;
-                            auto blockInstance = blockSource->getBlockInstance(pos);
-                            history->storeBlock(blockInstance, localPos);
-                        });}
+                            box.forEachBlockInBox([&](const BlockPos& pos) {
+                                auto localPos = pos - box.min;
+                                auto blockInstance = blockSource->getBlockInstance(pos);
+                                history->storeBlock(blockInstance, localPos);
+                            });
+                        }
 
                         if (arg_a) {
                             clipboard->forEachBlockInClipboard([&](const BlockPos& pos) {

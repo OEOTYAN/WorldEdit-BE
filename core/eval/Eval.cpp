@@ -3,7 +3,13 @@
 //
 #include "Eval.h"
 #include <MC/LevelChunk.hpp>
+#include "FastNoiseLite.h"
 // #include <MC/ChunkBlockPos.hpp>
+
+#define tryGetParameter(size, params, n, f, t) \
+    if (size >= n) {                           \
+        f(static_cast<t>(params[n - 1]));      \
+    }
 namespace worldedit {
     double posfmod(double x, double y) {
         return x - floor(x / y) * y;
@@ -39,6 +45,13 @@ namespace worldedit {
         size = normalSearchBox.max - normalSearchBox.min + 1;
         posMap.clear();
         solidMap.clear();
+        searchBoxInitialized = true;
+    }
+
+    void EvalFunctions::buildSearchCache() {
+        if (!searchBoxInitialized || searchCacheBuilded) {
+            return;
+        }
         try {
             posMap.resize(size.x * size.y * size.z + 1);
             solidMap = std::vector<long long>(size.x * size.y * size.z + 1, 0);
@@ -48,7 +61,7 @@ namespace worldedit {
         }
         posMap[size.x * size.y * size.z] = {0, 0, 0};
         solidMap[size.x * size.y * size.z] = 0;
-        searchBoxInitialized = true;
+
         normalSearchBox.forEachBlockInBox([&](const BlockPos& pos) {
             if (&blockSource->getBlock(pos) == BedrockBlocks::mAir) {
                 return;
@@ -95,6 +108,7 @@ namespace worldedit {
                     posMap[index].y = posMap[index].y + posMap[indexf].y;
                     posMap[index].z = posMap[index].z + posMap[indexf].z;
                 }
+        searchCacheBuilded = true;
     }
     long long EvalFunctions::getIndex(const BlockPos& pos) {
         auto localPos = pos - normalSearchBox.min;
@@ -315,6 +329,7 @@ namespace worldedit {
             case do_hash("normalx"):
                 if (searchBoxInitialized) {
                     if (size == 0) {
+                        buildSearchCache();
                         auto solid = getSolidMap(here - normalSearchDis, here + normalSearchDis);
                         auto posSum = getPosMap(here - normalSearchDis, here + normalSearchDis);
                         double sumx = 0;
@@ -332,6 +347,7 @@ namespace worldedit {
             case do_hash("normaly"):
                 if (searchBoxInitialized) {
                     if (size == 0) {
+                        buildSearchCache();
                         auto solid = getSolidMap(here - normalSearchDis, here + normalSearchDis);
                         auto posSum = getPosMap(here - normalSearchDis, here + normalSearchDis);
                         double sumx = 0;
@@ -349,6 +365,7 @@ namespace worldedit {
             case do_hash("normalz"):
                 if (searchBoxInitialized) {
                     if (size == 0) {
+                        buildSearchCache();
                         auto solid = getSolidMap(here - normalSearchDis, here + normalSearchDis);
                         auto posSum = getPosMap(here - normalSearchDis, here + normalSearchDis);
                         double sumx = 0;
@@ -366,6 +383,7 @@ namespace worldedit {
             case do_hash("angle"):
                 if (searchBoxInitialized) {
                     if (size == 0) {
+                        buildSearchCache();
                         auto solid = getSolidMap(here - normalSearchDis, here + normalSearchDis);
                         auto posSum = getPosMap(here - normalSearchDis, here + normalSearchDis);
                         double sumx = 0;
@@ -394,11 +412,95 @@ namespace worldedit {
                 break;
             case do_hash("issurfacesmooth"):
                 if (searchBoxInitialized) {
+                    buildSearchCache();
                     return 1.0 - static_cast<double>(getSolidMap(tmp - normalSearchDis, tmp + normalSearchDis)) /
                                      static_cast<double>((normalSearchDis * 2 + 1) * normalSearchDis * 2 + 1);
                 }
                 return 0;
                 break;
+
+            case do_hash("simplex"):
+                if (size >= 3) {
+                    FastNoiseLite noise = FastNoiseLite();
+                    noise.SetNoiseType(FastNoiseLite::NoiseType::NoiseType_Simplex);
+                    tryGetParameter(size, params, 4, noise.SetSeed, int64_t);
+                    tryGetParameter(size, params, 5, noise.SetFractalType, FastNoiseLite::FractalType);
+                    tryGetParameter(size, params, 6, noise.SetFractalOctaves, int64_t);
+                    tryGetParameter(size, params, 7, noise.SetFractalLacunarity, double);
+                    tryGetParameter(size, params, 8, noise.SetFractalGain, double);
+                    tryGetParameter(size, params, 9, noise.SetFractalWeightedStrength, double);
+                    tryGetParameter(size, params, 10, noise.SetFractalPingPongStrength, double);
+                    return (noise.GetNoise<double>(params[0], params[1], params[2]) + 1.0) * 0.5;
+                }
+                return 0;
+                break;
+
+            case do_hash("perlin"):
+                if (size >= 3) {
+                    FastNoiseLite noise = FastNoiseLite();
+                    noise.SetNoiseType(FastNoiseLite::NoiseType::NoiseType_Perlin);
+                    tryGetParameter(size, params, 4, noise.SetSeed, int64_t);
+                    tryGetParameter(size, params, 5, noise.SetFractalType, FastNoiseLite::FractalType);
+                    tryGetParameter(size, params, 6, noise.SetFractalOctaves, int64_t);
+                    tryGetParameter(size, params, 7, noise.SetFractalLacunarity, double);
+                    tryGetParameter(size, params, 8, noise.SetFractalGain, double);
+                    tryGetParameter(size, params, 9, noise.SetFractalWeightedStrength, double);
+                    tryGetParameter(size, params, 10, noise.SetFractalPingPongStrength, double);
+                    return (noise.GetNoise<double>(params[0], params[1], params[2]) + 1.0) * 0.5;
+                }
+                return 0;
+                break;
+
+            case do_hash("cubic"):
+                if (size >= 3) {
+                    FastNoiseLite noise = FastNoiseLite();
+                    noise.SetNoiseType(FastNoiseLite::NoiseType::NoiseType_ValueCubic);
+                    tryGetParameter(size, params, 4, noise.SetSeed, int64_t);
+                    tryGetParameter(size, params, 5, noise.SetFractalType, FastNoiseLite::FractalType);
+                    tryGetParameter(size, params, 6, noise.SetFractalOctaves, int64_t);
+                    tryGetParameter(size, params, 7, noise.SetFractalLacunarity, double);
+                    tryGetParameter(size, params, 8, noise.SetFractalGain, double);
+                    tryGetParameter(size, params, 9, noise.SetFractalWeightedStrength, double);
+                    tryGetParameter(size, params, 10, noise.SetFractalPingPongStrength, double);
+                    return (noise.GetNoise<double>(params[0], params[1], params[2]) + 1.0) * 0.5;
+                }
+                return 0;
+                break;
+
+            case do_hash("value"):
+                if (size >= 3) {
+                    FastNoiseLite noise = FastNoiseLite();
+                    noise.SetNoiseType(FastNoiseLite::NoiseType::NoiseType_Value);
+                    tryGetParameter(size, params, 4, noise.SetSeed, int64_t);
+                    tryGetParameter(size, params, 5, noise.SetFractalType, FastNoiseLite::FractalType);
+                    tryGetParameter(size, params, 6, noise.SetFractalOctaves, int64_t);
+                    tryGetParameter(size, params, 7, noise.SetFractalLacunarity, double);
+                    tryGetParameter(size, params, 8, noise.SetFractalGain, double);
+                    tryGetParameter(size, params, 9, noise.SetFractalWeightedStrength, double);
+                    tryGetParameter(size, params, 10, noise.SetFractalPingPongStrength, double);
+                    return (noise.GetNoise<double>(params[0], params[1], params[2]) + 1.0) * 0.5;
+                }
+                return 0;
+                break;
+
+            case do_hash("voronoi"):
+                if (size >= 3) {
+                    FastNoiseLite noise = FastNoiseLite();
+                    noise.SetNoiseType(FastNoiseLite::NoiseType::NoiseType_Cellular);
+                    tryGetParameter(size, params, 4, noise.SetSeed, int64_t);
+                    tryGetParameter(size, params, 5, noise.SetCellularReturnType, FastNoiseLite::CellularReturnType);
+                    tryGetParameter(size, params, 6, noise.SetCellularDistanceFunction, FastNoiseLite::CellularDistanceFunction);
+                    tryGetParameter(size, params, 7, noise.SetCellularJitter, double);
+                    tryGetParameter(size, params, 8, noise.SetFractalType, FastNoiseLite::FractalType);
+                    tryGetParameter(size, params, 9, noise.SetFractalOctaves, int64_t);
+                    tryGetParameter(size, params, 10, noise.SetFractalLacunarity, double);
+                    tryGetParameter(size, params, 11, noise.SetFractalGain, double);
+                    tryGetParameter(size, params, 12, noise.SetFractalWeightedStrength, double);
+                    tryGetParameter(size, params, 13, noise.SetFractalPingPongStrength, double);
+                    return (noise.GetNoise<double>(params[0], params[1], params[2]) + 1.0) * 0.5;
+                }
+                break;
+
             default:
                 if (blockdataInitialized) {
                     std::string sname(name);

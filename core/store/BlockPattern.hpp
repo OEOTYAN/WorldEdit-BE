@@ -38,7 +38,7 @@ namespace worldedit {
         std::string function = "1";
         Percents() = default;
         template <typename functions>
-        double getPercents(const std::unordered_map<::std::string, double>& variables, functions& funcs) {
+        inline double getPercents(const std::unordered_map<::std::string, double>& variables, functions& funcs) {
             if (isNum) {
                 return value;
             }
@@ -58,7 +58,7 @@ namespace worldedit {
         std::string blockDatafunc = "0";
         RawBlock() = default;
         template <typename functions>
-        Block* getBlock(const std::unordered_map<::std::string, double>& variables, functions& funcs) {
+        inline  Block* getBlock(const std::unordered_map<::std::string, double>& variables, functions& funcs) {
             if (constBlock) {
                 return block;
             }
@@ -87,7 +87,7 @@ namespace worldedit {
         BlockPos bias = {0, 0, 0};
         BlockPattern(std::string str, std::string xuid = "", Region* region = nullptr);
         template <typename functions>
-        RawBlock* getRawBlock(const std::unordered_map<::std::string, double>& variables, functions& funcs) {
+        inline RawBlock* getRawBlock(const std::unordered_map<::std::string, double>& variables, functions& funcs) {
             std::vector<double> weights;
             double total = 0;
             weights.resize(blockNum);
@@ -109,12 +109,12 @@ namespace worldedit {
             return &rawBlocks[blockNum - 1];
         }
         template <typename functions>
-        Block* getBlock(const std::unordered_map<::std::string, double>& variables, functions& funcs) {
+       inline Block* getBlock(const std::unordered_map<::std::string, double>& variables, functions& funcs) {
             return getRawBlock(variables, funcs)->getBlock(variables, funcs);
         }
         bool hasBlock(Block* block);
         template <typename functions>
-        bool setBlock(const std::unordered_map<::std::string, double>& variables,
+       inline bool setBlock(const std::unordered_map<::std::string, double>& variables,
                       functions& funcs,
                       BlockSource* blockSource,
                       const BlockPos& pos) {

@@ -6,12 +6,13 @@
 #include "string/StringTool.h"
 #include "MC/ItemStack.hpp"
 #include "WorldEdit.h"
+#include "store/BlockPattern.hpp"
 
 namespace worldedit {
     using ParamType = DynamicCommand::ParameterType;
     using ParamData = DynamicCommand::ParameterData;
 
-    // tool
+    // tool luseface
 
     void handToolCommandSetup() {
         DynamicCommand::setup(
@@ -24,6 +25,7 @@ namespace worldedit {
                 {"airwand", {"airwand"}},
                 {"cycler", {"cycler"}},
                 {"info", {"info"}},
+                {"rep", {"rep"}},
                 {"flood", {"flood"}},
                 {"none", {"none"}},
             },
@@ -34,11 +36,13 @@ namespace worldedit {
                 ParamData("airwand", ParamType::Enum, "airwand"),
                 ParamData("cycler", ParamType::Enum, "cycler"),
                 ParamData("info", ParamType::Enum, "info"),
+                ParamData("rep", ParamType::Enum, "rep"),
                 ParamData("flood", ParamType::Enum, "flood"),
                 ParamData("none", ParamType::Enum, "none"),
                 ParamData("block", ParamType::Block, "block"),
                 ParamData("blockPattern", ParamType::String, "blockPattern"),
-                ParamData("distance", ParamType::Float, "distance"),
+                ParamData("dis", ParamType::Int, true, "dis"),
+                ParamData("needEdge", ParamType::Bool, true, "needEdge"),
             },
             {
                 {"tree"},
@@ -47,8 +51,9 @@ namespace worldedit {
                 {"airwand"},
                 {"cycler"},
                 {"info"},
-                {"flood", "block", "distance"},
-                {"flood", "blockPattern", "distance"},
+                {"rep"},
+                {"flood", "block", "dis", "needEdge"},
+                {"flood", "blockPattern", "dis", "needEdge"},
                 {"none"},
             },
             // dynamic command callback
@@ -83,12 +88,56 @@ namespace worldedit {
                     mod.playerHandToolMap[xuid][toolName] = new InfoTool();
                     output.success(fmt::format("§aBlock info tool bound to {}", toolrName));
                 } else if (results["flood"].isSet) {
-                    mod.playerHandToolMap[xuid][toolName] = new FloodFillTool();
+                    std::string bps = "minecraft:air";
+                    if (results["blockPattern"].isSet) {
+                        bps = results["blockPattern"].get<std::string>();
+                    } else if (results["block"].isSet) {
+                        bps = results["block"].get<Block const*>()->getTypeName();
+                    }
+
+                    int radius = 5;
+                    if (results["dis"].isSet) {
+                        radius = results["dis"].get<int>();
+                    }
+                    int needEdge = false;
+                    if (results["needEdge"].isSet) {
+                        needEdge = results["needEdge"].get<bool>();
+                    }
+                    mod.playerHandToolMap[xuid][toolName] =
+                        new FloodFillTool(new BlockPattern(bps, xuid, nullptr), radius, needEdge);
                     output.success(fmt::format("§aFlood fill tool bound to {}", toolrName));
+                } else if (results["rep"].isSet) {
+                    mod.playerHandToolMap[xuid][toolName] = new RepTool();
+                    output.success(fmt::format("§aRep fill tool bound to {}", toolrName));
                 } else if (results["none"].isSet) {
                     delete mod.playerHandToolMap[xuid][toolName];
                     mod.playerHandToolMap[xuid].erase(toolName);
                     output.success(fmt::format("§aHand tool cleared"));
+                }
+            },
+            CommandPermissionLevel::GameMasters);
+
+        DynamicCommand::setup(
+            "luseface",                // command name
+            "set left click useface",  // command description
+            {}, {ParamData("bool", ParamType::Bool, "bool")}, {{"bool"}},
+            // dynamic command callback
+            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+               std::unordered_map<std::string, DynamicCommand::Result>& results) {
+                auto& mod = worldedit::getMod();
+                auto player = origin.getPlayer();
+                auto* item = player->getHandSlot();
+                std::string toolName = item->getTypeName() + std::to_string(item->getAuxValue());
+                auto xuid = player->getXuid();
+
+                if (mod.playerHandToolMap.find(xuid) != mod.playerHandToolMap.end() &&
+                    mod.playerHandToolMap[xuid].find(toolName) != mod.playerHandToolMap[xuid].end()) {
+                    auto* tool = mod.playerHandToolMap[xuid][toolName];
+                    auto useface = results["bool"].get<bool>();
+                    tool->lneedFace = useface;
+                    output.success("§aTool size set to " + std::to_string(useface));
+                } else {
+                    output.error("You need to choose a tool first");
                 }
             },
             CommandPermissionLevel::GameMasters);

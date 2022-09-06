@@ -11,17 +11,14 @@ namespace worldedit {
 
     BlockPattern::BlockPattern(std::string str, std::string xuid, Region* region) {
         auto strSize = str.size();
-        if (str.find("#clipboard") != std::string::npos) {
+        if (str.find("#clipboard") != std::string::npos && region!=nullptr) {
             auto& mod = worldedit::getMod();
             if (mod.playerClipboardMap.find(xuid) == mod.playerClipboardMap.end()) {
                 return;
             }
             clipboard = &mod.playerClipboardMap[xuid];
             if (str.find("@c") != std::string::npos) {
-                auto center = region->getCenter();
-                bias.x = static_cast<int>(floor(center.x));
-                bias.y = static_cast<int>(floor(center.y));
-                bias.z = static_cast<int>(floor(center.z));
+                bias = region->getCenter().toBlockPos();
             } else {
                 bias = region->getBoundBox().min;
             }

@@ -116,6 +116,7 @@ namespace worldedit {
         std::vector<LongLong3> posMap;
         std::vector<long long> solidMap;
         bool searchBoxInitialized = false;
+        bool searchCacheBuilded = false;
         bool blockdataInitialized = false;
 
        public:
@@ -125,6 +126,7 @@ namespace worldedit {
             blockdataInitialized = true;
         }
         void setbox(BoundingBox box);
+        void buildSearchCache();
         long long getIndex(const BlockPos& pos);
         long long getSolidMap(const BlockPos& pos1, const BlockPos& pos2);
         LongLong3 getPosMap(const BlockPos& pos1, const BlockPos& pos2);

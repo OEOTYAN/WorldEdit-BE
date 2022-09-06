@@ -9,13 +9,17 @@
 #include <MC/Player.hpp>
 #include <MC/Block.hpp>
 #include <MC/BlockSource.hpp>
+#include "store/BlockNBTSet.hpp"
 
 namespace worldedit {
     class Tool {
        public:
+        bool needFace = false;
+        bool lneedFace = false;
         Tool() = default;
         virtual bool leftClick(Player* player, BlockInstance& blockInstance);
         virtual bool rightClick(Player* player, BlockInstance& blockInstance);
+        virtual ~Tool() = default;
     };
     class FarWand : public Tool {
        public:
@@ -42,8 +46,19 @@ namespace worldedit {
     };
     class FloodFillTool : public Tool {
        public:
-        FloodFillTool() = default;
+        class BlockPattern* pattern;
+        int radius;
+        bool needEdge;
+        FloodFillTool(BlockPattern* bp,int r,bool n):pattern(bp),radius(r),needEdge(n){}
         bool rightClick(Player* player, BlockInstance& blockInstance) override;
+        ~FloodFillTool(){delete pattern;}
+    };
+    class RepTool : public Tool {
+       public:
+       class BlockNBTSet blockSet;
+       RepTool() = default;
+       bool leftClick(Player* player, BlockInstance& blockInstance) override;
+       bool rightClick(Player* player, BlockInstance& blockInstance) override;
     };
     class TreeTool : public Tool {
        public:

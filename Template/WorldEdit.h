@@ -42,7 +42,7 @@ namespace worldedit {
         std::unordered_map<std::string, std::pair<BlockPos, std::pair<int, int>>> playerMainPosMap;
         std::unordered_map<std::string, std::pair<BlockPos, std::pair<int, int>>> playerVicePosMap;
         std::unordered_map<std::string, Clipboard> playerClipboardMap;
-        std::unordered_map<std::string, std::unordered_map<std::string, Tool*>> playerHandToolMap;
+        std::unordered_map<std::string, std::unordered_map<std::string,class Tool*>> playerHandToolMap;
         std::unordered_map<std::string, std::unordered_map<std::string, Brush*>> playerBrushMap;
         std::unordered_map<std::string, std::string> playerGMaskMap;
         std::unordered_map<std::string, std::pair<std::vector<Clipboard>, std::pair<int, int>>> playerHistoryMap;

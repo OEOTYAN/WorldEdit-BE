@@ -11,6 +11,7 @@ namespace worldedit {
         class BlockPattern* pattern = nullptr;
         bool setted = false;
         std::string mask = "";
+        bool needFace = false;
         Brush() = default;
         Brush(unsigned short, BlockPattern*);
         void setMask(std::string const& str = "") { mask = str; };

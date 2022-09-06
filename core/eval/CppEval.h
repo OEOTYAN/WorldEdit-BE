@@ -316,24 +316,48 @@ namespace cpp_eval {
                         return 0.577215664901532860606512090082;
                     case do_hash("e"):
                         return 2.718281828459045235360287471352;
+
+                        // cellular disFunc
                     case do_hash("sqrted"):
                         return 0;
-                    case do_hash("fbm"):
                     case do_hash("square"):
                         return 1;
-                    case do_hash("ridged"):
                     case do_hash("manhattan"):
                         return 2;
-                    case do_hash("pingpong"):
                     case do_hash("hybird"):
                         return 3;
+
+                        // cellular returnType
                     case do_hash("value"):
+                        return 0;
+                    case do_hash("dis"):
+                    case do_hash("dis1"):
+                        return 1;
+                    case do_hash("dis2"):
+                        return 2;
+                    case do_hash("disadd"):
+                        return 3;
+                    case do_hash("dissub"):
                         return 4;
-                        // simplex(x,y,z,seed,fractaltype,octaves,lacunarity,gain,weighted,ppStrength)
-                        // perlin(x,y,z,seed,fractaltype,octaves,lacunarity,gain,weighted,ppStrength)
-                        // cubic(x,y,z,seed,fractaltype,octaves,lacunarity,gain,weighted,ppStrength)
-                        // value(x,y,z,seed,fractaltype,octaves,lacunarity,gain,weighted,ppStrength)
-                        // cellular(x,y,z,seed,disFunc,returnType,jitter,fractaltype,octaves,lacunarity,gain,weighted,ppStrength)
+                    case do_hash("dismul"):
+                        return 5;
+                    case do_hash("disdiv"):
+                        return 6;
+
+                        // fractalType
+                    case do_hash("none"):
+                        return 0;
+                    case do_hash("fbm"):
+                        return 1;
+                    case do_hash("ridged"):
+                        return 2;
+                    case do_hash("pingpong"):
+                        return 3;
+                        // simplex(x,y,z,seed,fractalType,octaves,lacunarity,gain,weighted,ppStrength)
+                        // perlin(x,y,z,seed,fractalType,octaves,lacunarity,gain,weighted,ppStrength)
+                        // cubic(x,y,z,seed,fractalType,octaves,lacunarity,gain,weighted,ppStrength)
+                        // value(x,y,z,seed,fractalType,octaves,lacunarity,gain,weighted,ppStrength)
+                        // voronoi(x,y,z,seed,returnType,disFunc,jitter,fractalType,octaves,lacunarity,gain,weighted,ppStrength)
                     default:
                         if (mVariables.find(id) == mVariables.end())
                             return 0;
