@@ -85,7 +85,7 @@ namespace worldedit {
             }
         } else {
             double minDis = DBL_MAX;
-            int pi = 0, pj = 0;
+            size_t pi = 0, pj = 0;
             for (size_t endi = loftPoints.size(),i=0 ; i < endi; ++i) {
                 for (size_t endj = loftPoints[i].size(), j = 0; j < endj; ++j) {
                     auto length = (loftPoints[i][j] - pos).length();

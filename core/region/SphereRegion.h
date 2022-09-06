@@ -36,7 +36,7 @@ namespace worldedit {
 
         void renderRegion() override;
 
-        float getRadius() const { return radius; };
+        double getRadius() const { return radius; };
 
         bool setMainPos(const BlockPos& pos, const int& dim) override;
 

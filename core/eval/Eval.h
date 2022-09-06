@@ -20,7 +20,7 @@ namespace worldedit {
     template <class T>
     constexpr T binpow(T const& a, uint64_t const& b) {
         if (b == 0)
-            return 1;
+            return static_cast<T>(1);
         T res = binpow(a, b / 2);
         if (b % 2)
             return res * res * a;

@@ -430,7 +430,7 @@ namespace worldedit {
                     tryGetParameter(size, params, 8, noise.SetFractalGain, double);
                     tryGetParameter(size, params, 9, noise.SetFractalWeightedStrength, double);
                     tryGetParameter(size, params, 10, noise.SetFractalPingPongStrength, double);
-                    return (noise.GetNoise<double>(params[0], params[1], params[2]) + 1.0) * 0.5;
+                    return (noise.GetNoise(params[0], params[1], params[2]) + 1.0) * 0.5;
                 }
                 return 0;
                 break;
@@ -446,7 +446,7 @@ namespace worldedit {
                     tryGetParameter(size, params, 8, noise.SetFractalGain, double);
                     tryGetParameter(size, params, 9, noise.SetFractalWeightedStrength, double);
                     tryGetParameter(size, params, 10, noise.SetFractalPingPongStrength, double);
-                    return (noise.GetNoise<double>(params[0], params[1], params[2]) + 1.0) * 0.5;
+                    return (noise.GetNoise(params[0], params[1], params[2]) + 1.0) * 0.5;
                 }
                 return 0;
                 break;
@@ -462,7 +462,7 @@ namespace worldedit {
                     tryGetParameter(size, params, 8, noise.SetFractalGain, double);
                     tryGetParameter(size, params, 9, noise.SetFractalWeightedStrength, double);
                     tryGetParameter(size, params, 10, noise.SetFractalPingPongStrength, double);
-                    return (noise.GetNoise<double>(params[0], params[1], params[2]) + 1.0) * 0.5;
+                    return (noise.GetNoise(params[0], params[1], params[2]) + 1.0) * 0.5;
                 }
                 return 0;
                 break;
@@ -478,7 +478,7 @@ namespace worldedit {
                     tryGetParameter(size, params, 8, noise.SetFractalGain, double);
                     tryGetParameter(size, params, 9, noise.SetFractalWeightedStrength, double);
                     tryGetParameter(size, params, 10, noise.SetFractalPingPongStrength, double);
-                    return (noise.GetNoise<double>(params[0], params[1], params[2]) + 1.0) * 0.5;
+                    return (noise.GetNoise(params[0], params[1], params[2]) + 1.0) * 0.5;
                 }
                 return 0;
                 break;
@@ -497,7 +497,7 @@ namespace worldedit {
                     tryGetParameter(size, params, 11, noise.SetFractalGain, double);
                     tryGetParameter(size, params, 12, noise.SetFractalWeightedStrength, double);
                     tryGetParameter(size, params, 13, noise.SetFractalPingPongStrength, double);
-                    return (noise.GetNoise<double>(params[0], params[1], params[2]) + 1.0) * 0.5;
+                    return (noise.GetNoise(params[0], params[1], params[2]) + 1.0) * 0.5;
                 }
                 break;
 

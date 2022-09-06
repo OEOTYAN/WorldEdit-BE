@@ -123,6 +123,9 @@ namespace worldedit {
     }
 
     ////////
+    FloodFillTool::~FloodFillTool() {
+        delete pattern;
+    }
     bool FloodFillTool::rightClick(Player* player, BlockInstance& blockInstance) {
         if (blockInstance == BlockInstance::Null) {
             return false;
@@ -154,7 +157,7 @@ namespace worldedit {
             boundingBox = boundingBox.merge(pos1);
             if (needEdge) {
                 BoundingBox(pos1 - 1, pos1 + 1).forEachBlockInBox([&](const BlockPos& tmpPos) {
-                    if (tmpPos != pos1 && pos0.distanceTo(tmpPos) <=0.5+ radius &&
+                    if (tmpPos != pos1 && pos0.distanceTo(tmpPos) <= 0.5 + radius &&
                         (&blockSource->getBlock(tmpPos) == block && &blockSource->getExtraBlock(tmpPos) == exBlock) &&
                         s.find(tmpPos) == s.end()) {
                         q.push(tmpPos);
@@ -163,7 +166,7 @@ namespace worldedit {
                 });
             } else {
                 for (auto& tmpPos : pos1.getNeighbors()) {
-                    if (pos0.distanceTo(tmpPos) <= 0.5+radius &&
+                    if (pos0.distanceTo(tmpPos) <= 0.5 + radius &&
                         (&blockSource->getBlock(tmpPos) == block && &blockSource->getExtraBlock(tmpPos) == exBlock) &&
                         s.find(tmpPos) == s.end()) {
                         q.push(tmpPos);
@@ -182,7 +185,7 @@ namespace worldedit {
             history->playerPos = boundingBox.min;
         }
 
-        for(auto& pos1: s){
+        for (auto& pos1 : s) {
             if (history != nullptr) {
                 auto localPos = pos1 - boundingBox.min;
                 auto bi = blockSource->getBlockInstance(pos1);

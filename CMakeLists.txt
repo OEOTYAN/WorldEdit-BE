@@ -5,19 +5,19 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_BUILD_TYPE Release)
 
 file(GLOB_RECURSE SRC_FILES_DIR
-        ${PROJECT_SOURCE_DIR}/SDK/Header/*.cpp
-        ${PROJECT_SOURCE_DIR}/SDK/Header/*.hpp
-        ${PROJECT_SOURCE_DIR}/SDK/Header/*.h
-        ${PROJECT_SOURCE_DIR}/core/*/*.cpp
-        ${PROJECT_SOURCE_DIR}/core/*/*.hpp
-        ${PROJECT_SOURCE_DIR}/core/*/*.h
-        ${PROJECT_SOURCE_DIR}/Template/*.cpp
-        ${PROJECT_SOURCE_DIR}/Template/*.hpp
-        ${PROJECT_SOURCE_DIR}/Template/*.h
-        ${PROJECT_SOURCE_DIR}/lodepng/*.cpp
-        ${PROJECT_SOURCE_DIR}/lodepng/*.h
-        ${PROJECT_SOURCE_DIR}/FastNoise/*.h
-        )
+    ${PROJECT_SOURCE_DIR}/SDK/Header/*.cpp
+    ${PROJECT_SOURCE_DIR}/SDK/Header/*.hpp
+    ${PROJECT_SOURCE_DIR}/SDK/Header/*.h
+    ${PROJECT_SOURCE_DIR}/core/*/*.cpp
+    ${PROJECT_SOURCE_DIR}/core/*/*.hpp
+    ${PROJECT_SOURCE_DIR}/core/*/*.h
+    ${PROJECT_SOURCE_DIR}/Template/*.cpp
+    ${PROJECT_SOURCE_DIR}/Template/*.hpp
+    ${PROJECT_SOURCE_DIR}/Template/*.h
+    ${PROJECT_SOURCE_DIR}/lodepng/*.cpp
+    ${PROJECT_SOURCE_DIR}/lodepng/*.h
+    ${PROJECT_SOURCE_DIR}/FastNoise/*.h
+)
 include_directories(core)
 include_directories(FastNoise)
 include_directories(lodepng)
@@ -41,37 +41,18 @@ add_definitions(
     -D"_WINDOWS")
 
 add_compile_options(
-    /diagnostics:column
-    /EHsc
-    /FC
-    /GL
-    /MD
-    /nologo
-    /permissive-
-    /sdl
-    /utf-8
-    /Zc:inline
-    /Zi
+    /permissive- /GS /GL /W3 /Gy /Zc:wchar_t /Zi /Zf /Gm- /sdl /Zc:inline /fp:precise /errorReport:prompt /WX- /utf-8
+    /Zc:forScope /Gd /Oi /Ot /MD /std:c++20 /FC /EHsc /nologo /diagnostics:column
 )
 
 add_link_options(
-    /DEBUG
-    /DELAYLOAD:"bedrock_server.dll"
-    /DLL
-    /IGNORE:4199
-    /INCREMENTAL:NO
-    /LTCG:INCREMENTAL
-    /MANIFESTUAC:NO
-    /MACHINE:X64
-    /NOLOGO
-    /OPT:ICF
-    /OPT:REF
-    /SUBSYSTEM:CONSOLE
+    /MANIFEST /LTCG:incremental /NXCOMPAT /DEBUG /DLL /MACHINE:X64 /OPT:REF /INCREMENTAL:NO /SUBSYSTEM:CONSOLE
+    /MANIFESTUAC:NO /OPT:ICF /ERRORREPORT:PROMPT /NOLOGO /DELAYLOAD:"bedrock_server.dll" /TLBID:1
 )
 
 add_library(WorldEdit SHARED ${SRC_FILES_DIR})
 
 add_custom_command(TARGET WorldEdit PRE_BUILD
-        COMMAND cmd /c ${PROJECT_SOURCE_DIR}/prepareLib.cmd ${PROJECT_SOURCE_DIR}
-        COMMENT "Preparing Library"
-        )
+    COMMAND cmd /c ${PROJECT_SOURCE_DIR}/prepareLib.cmd ${PROJECT_SOURCE_DIR}
+    COMMENT "Preparing Library"
+)

@@ -29,11 +29,11 @@ namespace worldedit {
                 double y = (pos.y - center.y) / radius;
                 if (abs(y) > 0.8) {
                     todo(pos, (atan2(pos.z - center.z, pos.x - center.x) + M_PI) / (M_PI * 2),
-                         acos(clamp(
-                             -sign(y) *
-                                 sqrt(std::max(0.0, pow2(radius) - pow2(pos.z - center.z) - pow2(pos.x - center.x))) /
-                                 radius,
-                             -1.0, 1.0)) *
+                         acos(clamp(-sign(y) *
+                                        sqrt(std::max(0.0, pow2(radius) - pow2(static_cast<double>(pos.z) - center.z) -
+                                                               pow2(static_cast<double>(pos.x) - center.x))) /
+                                        radius,
+                                    -1.0, 1.0)) *
                              M_1_PI);
                 } else {
                     todo(pos, (atan2(pos.z - center.z, pos.x - center.x) + M_PI) / (M_PI * 2), acos(-y) * M_1_PI);

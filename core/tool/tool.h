@@ -51,7 +51,7 @@ namespace worldedit {
         bool needEdge;
         FloodFillTool(BlockPattern* bp,int r,bool n):pattern(bp),radius(r),needEdge(n){}
         bool rightClick(Player* player, BlockInstance& blockInstance) override;
-        ~FloodFillTool(){delete pattern;}
+        ~FloodFillTool();
     };
     class RepTool : public Tool {
        public:

@@ -224,9 +224,9 @@ class FastNoiseLite {
     /// <returns>
     /// Noise output bounded between -1...1
     /// </returns>
-    template <typename FNfloat>
-    double GetNoise(FNfloat x, FNfloat y) {
-        Arguments_must_be_floating_point_values<FNfloat>();
+    
+    double GetNoise(double x, double y) {
+        
 
         TransformNoiseCoordinate(x, y);
 
@@ -248,9 +248,9 @@ class FastNoiseLite {
     /// <returns>
     /// Noise output bounded between -1...1
     /// </returns>
-    template <typename FNfloat>
-    double GetNoise(FNfloat x, FNfloat y, FNfloat z) {
-        Arguments_must_be_floating_point_values<FNfloat>();
+    
+    double GetNoise(double x, double y, double z) {
+        
 
         TransformNoiseCoordinate(x, y, z);
 
@@ -274,9 +274,9 @@ class FastNoiseLite {
     /// <code>DomainWarp(x, y)
     /// noise = GetNoise(x, y)</code>
     /// </example>
-    template <typename FNfloat>
-    void DomainWarp(FNfloat& x, FNfloat& y) {
-        Arguments_must_be_floating_point_values<FNfloat>();
+    
+    void DomainWarp(double& x, double& y) {
+        
 
         switch (mFractalType) {
             default:
@@ -299,9 +299,9 @@ class FastNoiseLite {
     /// <code>DomainWarp(x, y, z)
     /// noise = GetNoise(x, y, z)</code>
     /// </example>
-    template <typename FNfloat>
-    void DomainWarp(FNfloat& x, FNfloat& y, FNfloat& z) {
-        Arguments_must_be_floating_point_values<FNfloat>();
+    
+    void DomainWarp(double& x, double& y, double& z) {
+        
 
         switch (mFractalType) {
             default:
@@ -350,23 +350,14 @@ class FastNoiseLite {
         static const T RandVecs2D[];
         static const T RandVecs3D[];
     };
-
-    static double FastMin(double a, double b) { return a < b ? a : b; }
-
-    static double FastMax(double a, double b) { return a > b ? a : b; }
-
-    static double FastAbs(double f) { return f < 0 ? -f : f; }
-
-    static double FastSqrt(double f) { return sqrtf(f); }
-
-    template <typename FNfloat>
-    static int64_t FastFloor(FNfloat f) {
-        return f >= 0 ? (int64_t)f : (int64_t)f - 1;
+    
+    static int64_t FastFloor(double f) {
+        return static_cast<int64_t>(std::floor(f));
     }
 
-    template <typename FNfloat>
-    static int64_t FastRound(FNfloat f) {
-        return f >= 0 ? (int64_t)(f + 0.5) : (int64_t)(f - 0.5);
+    
+    static int64_t FastRound(double f) {
+        return static_cast<int64_t>(std::round(f));
     }
 
     static double Lerp(double a, double b, double t) { return a + t * (b - a); }
@@ -386,7 +377,7 @@ class FastNoiseLite {
     }
 
     void CalculateFractalBounding() {
-        double gain = FastAbs(mGain);
+        double gain = std::abs(mGain);
         double amp = gain;
         double ampFractal = 1.0;
         for (int64_t i = 1; i < mOctaves; i++) {
@@ -515,8 +506,8 @@ class FastNoiseLite {
 
     // Generic noise gen
 
-    template <typename FNfloat>
-    double GenNoiseSingle(int64_t seed, FNfloat x, FNfloat y) {
+    
+    double GenNoiseSingle(int64_t seed, double x, double y) {
         switch (mNoiseType) {
             case NoiseType_Simplex:
                 return SingleSimplex(seed, x, y);
@@ -533,8 +524,8 @@ class FastNoiseLite {
         }
     }
 
-    template <typename FNfloat>
-    double GenNoiseSingle(int64_t seed, FNfloat x, FNfloat y, FNfloat z) {
+    
+    double GenNoiseSingle(int64_t seed, double x, double y, double z) {
         switch (mNoiseType) {
             case NoiseType_Simplex:
                 return SingleSimplex(seed, x, y, z);
@@ -553,13 +544,13 @@ class FastNoiseLite {
 
     // Noise Coordinate Transforms (frequency, and possible skew or rotation)
 
-    template <typename FNfloat>
-    void TransformNoiseCoordinate(FNfloat& x, FNfloat& y) {
+    
+    void TransformNoiseCoordinate(double& x, double& y) {
         switch (mNoiseType) {
             case NoiseType_Simplex: {
-                const FNfloat SQRT3 = (FNfloat)1.7320508075688772935274463415059;
-                const FNfloat F2 = 0.5 * (SQRT3 - 1);
-                FNfloat t = (x + y) * F2;
+                const double SQRT3 = (double)1.7320508075688772935274463415059;
+                const double F2 = 0.5 * (SQRT3 - 1);
+                double t = (x + y) * F2;
                 x += t;
                 y += t;
             } break;
@@ -568,12 +559,12 @@ class FastNoiseLite {
         }
     }
 
-    template <typename FNfloat>
-    void TransformNoiseCoordinate(FNfloat& x, FNfloat& y, FNfloat& z) {
+    
+    void TransformNoiseCoordinate(double& x, double& y, double& z) {
         switch (mTransformType3D) {
             case TransformType3D_DefaultOpenSimplex2: {
-                const FNfloat R3 = (FNfloat)(2.0 / 3.0);
-                FNfloat r = (x + y + z) * R3;  // Rotation, not skew
+                const double R3 = (double)(2.0 / 3.0);
+                double r = (x + y + z) * R3;  // Rotation, not skew
                 x = r - x;
                 y = r - y;
                 z = r - z;
@@ -596,14 +587,14 @@ class FastNoiseLite {
 
     // Domain Warp Coordinate Transforms
 
-    template <typename FNfloat>
-    void TransformDomainWarpCoordinate(FNfloat& x, FNfloat& y) {
+    
+    void TransformDomainWarpCoordinate(double& x, double& y) {
         switch (mDomainWarpType) {
             case DomainWarpType_OpenSimplex2:
             case DomainWarpType_OpenSimplex2Reduced: {
-                const FNfloat SQRT3 = (FNfloat)1.7320508075688772935274463415059;
-                const FNfloat F2 = 0.5 * (SQRT3 - 1);
-                FNfloat t = (x + y) * F2;
+                const double SQRT3 = (double)1.7320508075688772935274463415059;
+                const double F2 = 0.5 * (SQRT3 - 1);
+                double t = (x + y) * F2;
                 x += t;
                 y += t;
             } break;
@@ -612,12 +603,12 @@ class FastNoiseLite {
         }
     }
 
-    template <typename FNfloat>
-    void TransformDomainWarpCoordinate(FNfloat& x, FNfloat& y, FNfloat& z) {
+    
+    void TransformDomainWarpCoordinate(double& x, double& y, double& z) {
         switch (mWarpTransformType3D) {
             case TransformType3D_DefaultOpenSimplex2: {
-                const FNfloat R3 = (FNfloat)(2.0 / 3.0);
-                FNfloat r = (x + y + z) * R3;  // Rotation, not skew
+                const double R3 = (double)(2.0 / 3.0);
+                double r = (x + y + z) * R3;  // Rotation, not skew
                 x = r - x;
                 y = r - y;
                 z = r - z;
@@ -641,8 +632,8 @@ class FastNoiseLite {
 
     // Fractal FBm
 
-    template <typename FNfloat>
-    double GenFractalFBm(FNfloat x, FNfloat y) {
+    
+    double GenFractalFBm(double x, double y) {
         int64_t seed = mSeed;
         double sum = 0;
         double amp = mFractalBounding;
@@ -650,7 +641,7 @@ class FastNoiseLite {
         for (int64_t i = 0; i < mOctaves; i++) {
             double noise = GenNoiseSingle(seed++, x, y);
             sum += noise * amp;
-            amp *= Lerp(1.0, FastMin(noise + 1, 2) * 0.5, mWeightedStrength);
+            amp *= Lerp(1.0, std::min(noise + 1.0, 2.0) * 0.5, mWeightedStrength);
 
             x *= mLacunarity;
             y *= mLacunarity;
@@ -660,8 +651,8 @@ class FastNoiseLite {
         return sum;
     }
 
-    template <typename FNfloat>
-    double GenFractalFBm(FNfloat x, FNfloat y, FNfloat z) {
+    
+    double GenFractalFBm(double x, double y, double z) {
         int64_t seed = mSeed;
         double sum = 0;
         double amp = mFractalBounding;
@@ -682,14 +673,14 @@ class FastNoiseLite {
 
     // Fractal Ridged
 
-    template <typename FNfloat>
-    double GenFractalRidged(FNfloat x, FNfloat y) {
+    
+    double GenFractalRidged(double x, double y) {
         int64_t seed = mSeed;
         double sum = 0;
         double amp = mFractalBounding;
 
         for (int64_t i = 0; i < mOctaves; i++) {
-            double noise = FastAbs(GenNoiseSingle(seed++, x, y));
+            double noise = std::abs(GenNoiseSingle(seed++, x, y));
             sum += (noise * -2 + 1) * amp;
             amp *= Lerp(1.0, 1 - noise, mWeightedStrength);
 
@@ -701,14 +692,14 @@ class FastNoiseLite {
         return sum;
     }
 
-    template <typename FNfloat>
-    double GenFractalRidged(FNfloat x, FNfloat y, FNfloat z) {
+    
+    double GenFractalRidged(double x, double y, double z) {
         int64_t seed = mSeed;
         double sum = 0;
         double amp = mFractalBounding;
 
         for (int64_t i = 0; i < mOctaves; i++) {
-            double noise = FastAbs(GenNoiseSingle(seed++, x, y, z));
+            double noise = std::abs(GenNoiseSingle(seed++, x, y, z));
             sum += (noise * -2 + 1) * amp;
             amp *= Lerp(1.0, 1 - noise, mWeightedStrength);
 
@@ -723,8 +714,8 @@ class FastNoiseLite {
 
     // Fractal PingPong
 
-    template <typename FNfloat>
-    double GenFractalPingPong(FNfloat x, FNfloat y) {
+    
+    double GenFractalPingPong(double x, double y) {
         int64_t seed = mSeed;
         double sum = 0;
         double amp = mFractalBounding;
@@ -742,8 +733,8 @@ class FastNoiseLite {
         return sum;
     }
 
-    template <typename FNfloat>
-    double GenFractalPingPong(FNfloat x, FNfloat y, FNfloat z) {
+    
+    double GenFractalPingPong(double x, double y, double z) {
         int64_t seed = mSeed;
         double sum = 0;
         double amp = mFractalBounding;
@@ -764,17 +755,17 @@ class FastNoiseLite {
 
     // Simplex Noise
 
-    template <typename FNfloat>
-    double SingleSimplex(int64_t seed, FNfloat x, FNfloat y) {
+    
+    double SingleSimplex(int64_t seed, double x, double y) {
         // 2D Simplex case is a modified 2D simplex noise.
 
-        const FNfloat SQRT3 = (FNfloat)1.7320508075688772935274463415059;
-        const FNfloat G2 = (3 - SQRT3) / 6;
+        const double SQRT3 = (double)1.7320508075688772935274463415059;
+        const double G2 = (3 - SQRT3) / 6;
 
         /*
          * --- Skew moved to TransformNoiseCoordinate method ---
-         * const FNfloat F2 = 0.5 * (SQRT3 - 1);
-         * FNfloat s = (x + y) * F2;
+         * const double F2 = 0.5 * (SQRT3 - 1);
+         * double s = (x + y) * F2;
          * x += s; y += s;
          */
 
@@ -871,14 +862,14 @@ class FastNoiseLite {
         return value * 18.24196194486065;
     }
 
-    template <typename FNfloat>
-    double SingleSimplex(int64_t seed, FNfloat x, FNfloat y, FNfloat z) {
+    
+    double SingleSimplex(int64_t seed, double x, double y, double z) {
         // 3D Simplex case uses two offset rotated cube grids.
 
         /*
          * --- Rotation moved to TransformNoiseCoordinate method ---
-         * const FNfloat R3 = (FNfloat)(2.0 / 3.0);
-         * FNfloat r = (x + y + z) * R3; // Rotation, not skew
+         * const double R3 = (double)(2.0 / 3.0);
+         * double r = (x + y + z) * R3; // Rotation, not skew
          * x = r - x; y = r - y; z = r - z;
          */
 
@@ -1049,8 +1040,8 @@ class FastNoiseLite {
 
     // Cellular Noise
 
-    template <typename FNfloat>
-    double SingleCellular(int64_t seed, FNfloat x, FNfloat y) {
+    
+    double SingleCellular(int64_t seed, double x, double y) {
         int64_t xr = FastRound(x);
         int64_t yr = FastRound(y);
 
@@ -1079,7 +1070,7 @@ class FastNoiseLite {
 
                         double newDistance = vecX * vecX + vecY * vecY;
 
-                        distance1 = FastMax(FastMin(distance1, newDistance), distance0);
+                        distance1 = std::max(std::min(distance1, newDistance), distance0);
                         if (newDistance < distance0) {
                             distance0 = newDistance;
                             closestHash = hash;
@@ -1100,9 +1091,9 @@ class FastNoiseLite {
                         double vecX = (double)(xi - x) + Lookup<double>::RandVecs2D[idx] * cellularJitter;
                         double vecY = (double)(yi - y) + Lookup<double>::RandVecs2D[idx | 1] * cellularJitter;
 
-                        double newDistance = FastAbs(vecX) + FastAbs(vecY);
+                        double newDistance = std::abs(vecX) + std::abs(vecY);
 
-                        distance1 = FastMax(FastMin(distance1, newDistance), distance0);
+                        distance1 = std::max(std::min(distance1, newDistance), distance0);
                         if (newDistance < distance0) {
                             distance0 = newDistance;
                             closestHash = hash;
@@ -1123,9 +1114,9 @@ class FastNoiseLite {
                         double vecX = (double)(xi - x) + Lookup<double>::RandVecs2D[idx] * cellularJitter;
                         double vecY = (double)(yi - y) + Lookup<double>::RandVecs2D[idx | 1] * cellularJitter;
 
-                        double newDistance = (FastAbs(vecX) + FastAbs(vecY)) + (vecX * vecX + vecY * vecY);
+                        double newDistance = (std::abs(vecX) + std::abs(vecY)) + (vecX * vecX + vecY * vecY);
 
-                        distance1 = FastMax(FastMin(distance1, newDistance), distance0);
+                        distance1 = std::max(std::min(distance1, newDistance), distance0);
                         if (newDistance < distance0) {
                             distance0 = newDistance;
                             closestHash = hash;
@@ -1139,10 +1130,10 @@ class FastNoiseLite {
 
         if (mCellularDistanceFunction == CellularDistanceFunction_Euclidean &&
             mCellularReturnType >= CellularReturnType_Distance) {
-            distance0 = FastSqrt(distance0);
+            distance0 = std::sqrt(distance0);
 
             if (mCellularReturnType >= CellularReturnType_Distance2) {
-                distance1 = FastSqrt(distance1);
+                distance1 = std::sqrt(distance1);
             }
         }
 
@@ -1166,8 +1157,8 @@ class FastNoiseLite {
         }
     }
 
-    template <typename FNfloat>
-    double SingleCellular(int64_t seed, FNfloat x, FNfloat y, FNfloat z) {
+    
+    double SingleCellular(int64_t seed, double x, double y, double z) {
         int64_t xr = FastRound(x);
         int64_t yr = FastRound(y);
         int64_t zr = FastRound(z);
@@ -1201,7 +1192,7 @@ class FastNoiseLite {
 
                             double newDistance = vecX * vecX + vecY * vecY + vecZ * vecZ;
 
-                            distance1 = FastMax(FastMin(distance1, newDistance), distance0);
+                            distance1 = std::max(std::min(distance1, newDistance), distance0);
                             if (newDistance < distance0) {
                                 distance0 = newDistance;
                                 closestHash = hash;
@@ -1228,9 +1219,9 @@ class FastNoiseLite {
                             double vecY = (double)(yi - y) + Lookup<double>::RandVecs3D[idx | 1] * cellularJitter;
                             double vecZ = (double)(zi - z) + Lookup<double>::RandVecs3D[idx | 2] * cellularJitter;
 
-                            double newDistance = FastAbs(vecX) + FastAbs(vecY) + FastAbs(vecZ);
+                            double newDistance = std::abs(vecX) + std::abs(vecY) + std::abs(vecZ);
 
-                            distance1 = FastMax(FastMin(distance1, newDistance), distance0);
+                            distance1 = std::max(std::min(distance1, newDistance), distance0);
                             if (newDistance < distance0) {
                                 distance0 = newDistance;
                                 closestHash = hash;
@@ -1257,10 +1248,10 @@ class FastNoiseLite {
                             double vecY = (double)(yi - y) + Lookup<double>::RandVecs3D[idx | 1] * cellularJitter;
                             double vecZ = (double)(zi - z) + Lookup<double>::RandVecs3D[idx | 2] * cellularJitter;
 
-                            double newDistance = (FastAbs(vecX) + FastAbs(vecY) + FastAbs(vecZ)) +
+                            double newDistance = (std::abs(vecX) + std::abs(vecY) + std::abs(vecZ)) +
                                                  (vecX * vecX + vecY * vecY + vecZ * vecZ);
 
-                            distance1 = FastMax(FastMin(distance1, newDistance), distance0);
+                            distance1 = std::max(std::min(distance1, newDistance), distance0);
                             if (newDistance < distance0) {
                                 distance0 = newDistance;
                                 closestHash = hash;
@@ -1278,10 +1269,10 @@ class FastNoiseLite {
 
         if (mCellularDistanceFunction == CellularDistanceFunction_Euclidean &&
             mCellularReturnType >= CellularReturnType_Distance) {
-            distance0 = FastSqrt(distance0);
+            distance0 = std::sqrt(distance0);
 
             if (mCellularReturnType >= CellularReturnType_Distance2) {
-                distance1 = FastSqrt(distance1);
+                distance1 = std::sqrt(distance1);
             }
         }
 
@@ -1307,8 +1298,8 @@ class FastNoiseLite {
 
     // Perlin Noise
 
-    template <typename FNfloat>
-    double SinglePerlin(int64_t seed, FNfloat x, FNfloat y) {
+    
+    double SinglePerlin(int64_t seed, double x, double y) {
         int64_t x0 = FastFloor(x);
         int64_t y0 = FastFloor(y);
 
@@ -1331,8 +1322,8 @@ class FastNoiseLite {
         return Lerp(xf0, xf1, ys) * 1.4247691104677813;
     }
 
-    template <typename FNfloat>
-    double SinglePerlin(int64_t seed, FNfloat x, FNfloat y, FNfloat z) {
+    
+    double SinglePerlin(int64_t seed, double x, double y, double z) {
         int64_t x0 = FastFloor(x);
         int64_t y0 = FastFloor(y);
         int64_t z0 = FastFloor(z);
@@ -1368,8 +1359,8 @@ class FastNoiseLite {
 
     // Value Cubic Noise
 
-    template <typename FNfloat>
-    double SingleValueCubic(int64_t seed, FNfloat x, FNfloat y) {
+    
+    double SingleValueCubic(int64_t seed, double x, double y) {
         int64_t x1 = FastFloor(x);
         int64_t y1 = FastFloor(y);
 
@@ -1397,8 +1388,8 @@ class FastNoiseLite {
                (1 / (1.5 * 1.5));
     }
 
-    template <typename FNfloat>
-    double SingleValueCubic(int64_t seed, FNfloat x, FNfloat y, FNfloat z) {
+    
+    double SingleValueCubic(int64_t seed, double x, double y, double z) {
         int64_t x1 = FastFloor(x);
         int64_t y1 = FastFloor(y);
         int64_t z1 = FastFloor(z);
@@ -1463,8 +1454,8 @@ class FastNoiseLite {
 
     // Value Noise
 
-    template <typename FNfloat>
-    double SingleValue(int64_t seed, FNfloat x, FNfloat y) {
+    
+    double SingleValue(int64_t seed, double x, double y) {
         int64_t x0 = FastFloor(x);
         int64_t y0 = FastFloor(y);
 
@@ -1482,8 +1473,8 @@ class FastNoiseLite {
         return Lerp(xf0, xf1, ys);
     }
 
-    template <typename FNfloat>
-    double SingleValue(int64_t seed, FNfloat x, FNfloat y, FNfloat z) {
+    
+    double SingleValue(int64_t seed, double x, double y, double z) {
         int64_t x0 = FastFloor(x);
         int64_t y0 = FastFloor(y);
         int64_t z0 = FastFloor(z);
@@ -1512,8 +1503,8 @@ class FastNoiseLite {
 
     // Domain Warp
 
-    template <typename FNfloat>
-    void DoSingleDomainWarp(int64_t seed, double amp, double freq, FNfloat x, FNfloat y, FNfloat& xr, FNfloat& yr) {
+    
+    void DoSingleDomainWarp(int64_t seed, double amp, double freq, double x, double y, double& xr, double& yr) {
         switch (mDomainWarpType) {
             case DomainWarpType_OpenSimplex2:
                 SingleDomainWarpSimplexGradient(seed, amp * 38.283687591552734375, freq, x, y, xr, yr, false);
@@ -1527,16 +1518,16 @@ class FastNoiseLite {
         }
     }
 
-    template <typename FNfloat>
+    
     void DoSingleDomainWarp(int64_t seed,
                             double amp,
                             double freq,
-                            FNfloat x,
-                            FNfloat y,
-                            FNfloat z,
-                            FNfloat& xr,
-                            FNfloat& yr,
-                            FNfloat& zr) {
+                            double x,
+                            double y,
+                            double z,
+                            double& xr,
+                            double& yr,
+                            double& zr) {
         switch (mDomainWarpType) {
             case DomainWarpType_OpenSimplex2:
                 SingleDomainWarpOpenSimplex2Gradient(seed, amp * 32.69428253173828125, freq, x, y, z, xr, yr, zr,
@@ -1553,28 +1544,28 @@ class FastNoiseLite {
 
     // Domain Warp Single Wrapper
 
-    template <typename FNfloat>
-    void DomainWarpSingle(FNfloat& x, FNfloat& y) {
+    
+    void DomainWarpSingle(double& x, double& y) {
         int64_t seed = mSeed;
         double amp = mDomainWarpAmp * mFractalBounding;
         double freq = 1;
 
-        FNfloat xs = x;
-        FNfloat ys = y;
+        double xs = x;
+        double ys = y;
         TransformDomainWarpCoordinate(xs, ys);
 
         DoSingleDomainWarp(seed, amp, freq, xs, ys, x, y);
     }
 
-    template <typename FNfloat>
-    void DomainWarpSingle(FNfloat& x, FNfloat& y, FNfloat& z) {
+    
+    void DomainWarpSingle(double& x, double& y, double& z) {
         int64_t seed = mSeed;
         double amp = mDomainWarpAmp * mFractalBounding;
         double freq = 1;
 
-        FNfloat xs = x;
-        FNfloat ys = y;
-        FNfloat zs = z;
+        double xs = x;
+        double ys = y;
+        double zs = z;
         TransformDomainWarpCoordinate(xs, ys, zs);
 
         DoSingleDomainWarp(seed, amp, freq, xs, ys, zs, x, y, z);
@@ -1582,15 +1573,15 @@ class FastNoiseLite {
 
     // Domain Warp Fractal Progressive
 
-    template <typename FNfloat>
-    void DomainWarpFractalProgressive(FNfloat& x, FNfloat& y) {
+    
+    void DomainWarpFractalProgressive(double& x, double& y) {
         int64_t seed = mSeed;
         double amp = mDomainWarpAmp * mFractalBounding;
         double freq = 1;
 
         for (int64_t i = 0; i < mOctaves; i++) {
-            FNfloat xs = x;
-            FNfloat ys = y;
+            double xs = x;
+            double ys = y;
             TransformDomainWarpCoordinate(xs, ys);
 
             DoSingleDomainWarp(seed, amp, freq, xs, ys, x, y);
@@ -1601,16 +1592,16 @@ class FastNoiseLite {
         }
     }
 
-    template <typename FNfloat>
-    void DomainWarpFractalProgressive(FNfloat& x, FNfloat& y, FNfloat& z) {
+    
+    void DomainWarpFractalProgressive(double& x, double& y, double& z) {
         int64_t seed = mSeed;
         double amp = mDomainWarpAmp * mFractalBounding;
         double freq = 1;
 
         for (int64_t i = 0; i < mOctaves; i++) {
-            FNfloat xs = x;
-            FNfloat ys = y;
-            FNfloat zs = z;
+            double xs = x;
+            double ys = y;
+            double zs = z;
             TransformDomainWarpCoordinate(xs, ys, zs);
 
             DoSingleDomainWarp(seed, amp, freq, xs, ys, zs, x, y, z);
@@ -1623,10 +1614,10 @@ class FastNoiseLite {
 
     // Domain Warp Fractal Independant
 
-    template <typename FNfloat>
-    void DomainWarpFractalIndependent(FNfloat& x, FNfloat& y) {
-        FNfloat xs = x;
-        FNfloat ys = y;
+    
+    void DomainWarpFractalIndependent(double& x, double& y) {
+        double xs = x;
+        double ys = y;
         TransformDomainWarpCoordinate(xs, ys);
 
         int64_t seed = mSeed;
@@ -1642,11 +1633,11 @@ class FastNoiseLite {
         }
     }
 
-    template <typename FNfloat>
-    void DomainWarpFractalIndependent(FNfloat& x, FNfloat& y, FNfloat& z) {
-        FNfloat xs = x;
-        FNfloat ys = y;
-        FNfloat zs = z;
+    
+    void DomainWarpFractalIndependent(double& x, double& y, double& z) {
+        double xs = x;
+        double ys = y;
+        double zs = z;
         TransformDomainWarpCoordinate(xs, ys, zs);
 
         int64_t seed = mSeed;
@@ -1664,16 +1655,16 @@ class FastNoiseLite {
 
     // Domain Warp Basic Grid
 
-    template <typename FNfloat>
+    
     void SingleDomainWarpBasicGrid(int64_t seed,
                                    double warpAmp,
                                    double frequency,
-                                   FNfloat x,
-                                   FNfloat y,
-                                   FNfloat& xr,
-                                   FNfloat& yr) {
-        FNfloat xf = x * frequency;
-        FNfloat yf = y * frequency;
+                                   double x,
+                                   double y,
+                                   double& xr,
+                                   double& yr) {
+        double xf = x * frequency;
+        double yf = y * frequency;
 
         int64_t x0 = FastFloor(xf);
         int64_t y0 = FastFloor(yf);
@@ -1702,19 +1693,19 @@ class FastNoiseLite {
         yr += Lerp(ly0x, ly1x, ys) * warpAmp;
     }
 
-    template <typename FNfloat>
+    
     void SingleDomainWarpBasicGrid(int64_t seed,
                                    double warpAmp,
                                    double frequency,
-                                   FNfloat x,
-                                   FNfloat y,
-                                   FNfloat z,
-                                   FNfloat& xr,
-                                   FNfloat& yr,
-                                   FNfloat& zr) {
-        FNfloat xf = x * frequency;
-        FNfloat yf = y * frequency;
-        FNfloat zf = z * frequency;
+                                   double x,
+                                   double y,
+                                   double z,
+                                   double& xr,
+                                   double& yr,
+                                   double& zr) {
+        double xf = x * frequency;
+        double yf = y * frequency;
+        double zf = z * frequency;
 
         int64_t x0 = FastFloor(xf);
         int64_t y0 = FastFloor(yf);
@@ -1770,14 +1761,14 @@ class FastNoiseLite {
 
     // Domain Warp Simplex/OpenSimplex2
 
-    template <typename FNfloat>
+    
     void SingleDomainWarpSimplexGradient(int64_t seed,
                                          double warpAmp,
                                          double frequency,
-                                         FNfloat x,
-                                         FNfloat y,
-                                         FNfloat& xr,
-                                         FNfloat& yr,
+                                         double x,
+                                         double y,
+                                         double& xr,
+                                         double& yr,
                                          bool outGradOnly) {
         const double SQRT3 = 1.7320508075688772935274463415059;
         const double G2 = (3 - SQRT3) / 6;
@@ -1787,8 +1778,8 @@ class FastNoiseLite {
 
         /*
          * --- Skew moved to TransformNoiseCoordinate method ---
-         * const FNfloat F2 = 0.5 * (SQRT3 - 1);
-         * FNfloat s = (x + y) * F2;
+         * const double F2 = 0.5 * (SQRT3 - 1);
+         * double s = (x + y) * F2;
          * x += s; y += s;
          */
 
@@ -1867,16 +1858,16 @@ class FastNoiseLite {
         yr += vy * warpAmp;
     }
 
-    template <typename FNfloat>
+    
     void SingleDomainWarpOpenSimplex2Gradient(int64_t seed,
                                               double warpAmp,
                                               double frequency,
-                                              FNfloat x,
-                                              FNfloat y,
-                                              FNfloat z,
-                                              FNfloat& xr,
-                                              FNfloat& yr,
-                                              FNfloat& zr,
+                                              double x,
+                                              double y,
+                                              double z,
+                                              double& xr,
+                                              double& yr,
+                                              double& zr,
                                               bool outGradOnly) {
         x *= frequency;
         y *= frequency;
@@ -1884,8 +1875,8 @@ class FastNoiseLite {
 
         /*
          * --- Rotation moved to TransformDomainWarpCoordinate method ---
-         * const FNfloat R3 = (FNfloat)(2.0 / 3.0);
-         * FNfloat r = (x + y + z) * R3; // Rotation, not skew
+         * const double R3 = (double)(2.0 / 3.0);
+         * double r = (x + y + z) * R3; // Rotation, not skew
          * x = r - x; y = r - y; z = r - z;
          */
 
