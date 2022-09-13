@@ -58,12 +58,13 @@ namespace worldedit {
 
         auto* player = Global<Level>->getPlayer(xuid);
 
-        auto playerPos = player->getPosition() - Vec3(0.0, 1.62, 0.0);
+        auto playerPos = player->getPosition();
         auto playerRot = player->getRotation();
         EvalFunctions f;
         f.setbs(blockSource);
         f.setbox(box);
         std::unordered_map<std::string, double> variables;
+        setFunction(variables, playerPos, playerRot);
 
         if (mod.maxHistoryLength > 0) {
             auto history = mod.getPlayerNextHistory(xuid);
@@ -93,7 +94,7 @@ namespace worldedit {
                     blockPos = pos;
                     blockPos += {X, y, Yi};
 
-                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -104,7 +105,7 @@ namespace worldedit {
 
                     blockPos.z = pos.z - Yi;
 
-                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -115,7 +116,7 @@ namespace worldedit {
 
                     blockPos.x = pos.x - X;
 
-                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -126,7 +127,7 @@ namespace worldedit {
 
                     blockPos.z = pos.z + Yi;
 
-                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -138,7 +139,7 @@ namespace worldedit {
                     blockPos.x = pos.x + Yi;
                     blockPos.z = pos.z + X;
 
-                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -149,7 +150,7 @@ namespace worldedit {
 
                     blockPos.z = pos.z - X;
 
-                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -160,7 +161,7 @@ namespace worldedit {
 
                     blockPos.x = pos.x - Yi;
 
-                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -171,7 +172,7 @@ namespace worldedit {
 
                     blockPos.z = pos.z + X;
 
-                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -224,12 +225,13 @@ namespace worldedit {
 
         auto* player = Global<Level>->getPlayer(xuid);
 
-        auto playerPos = player->getPosition() - Vec3(0.0, 1.62, 0.0);
+        auto playerPos = player->getPosition();
         auto playerRot = player->getRotation();
         EvalFunctions f;
         f.setbs(blockSource);
         f.setbox(box);
         std::unordered_map<std::string, double> variables;
+        setFunction(variables, playerPos, playerRot);
 
         if (mod.maxHistoryLength > 0) {
             auto history = mod.getPlayerNextHistory(xuid);
@@ -271,7 +273,7 @@ namespace worldedit {
                     blockPos = pos;
                     blockPos += {x, y, z};
 
-                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -282,7 +284,7 @@ namespace worldedit {
 
                     blockPos.y = pos.y - y;
 
-                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -293,7 +295,7 @@ namespace worldedit {
 
                     blockPos.z = pos.z - z;
 
-                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -304,7 +306,7 @@ namespace worldedit {
 
                     blockPos.x = pos.x - x;
 
-                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -315,7 +317,7 @@ namespace worldedit {
 
                     blockPos.y = pos.y + y;
 
-                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -326,7 +328,7 @@ namespace worldedit {
 
                     blockPos.x = pos.x + x;
 
-                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -338,7 +340,7 @@ namespace worldedit {
                     blockPos.x = pos.x - x;
                     blockPos.z = pos.z + z;
 
-                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -349,7 +351,7 @@ namespace worldedit {
 
                     blockPos.y = pos.y - y;
 
-                    setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
+                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
                     gMaskLambda(f, variables, [&]() mutable {
                         maskLambda(f, variables, [&]() mutable {
@@ -395,12 +397,13 @@ namespace worldedit {
 
         auto* player = Global<Level>->getPlayer(xuid);
 
-        auto playerPos = player->getPosition() - Vec3(0.0, 1.62, 0.0);
+        auto playerPos = player->getPosition();
         auto playerRot = player->getRotation();
         EvalFunctions f;
         f.setbs(blockSource);
         f.setbox(box);
         std::unordered_map<std::string, double> variables;
+        setFunction(variables, playerPos, playerRot);
 
         if (mod.maxHistoryLength > 0) {
             auto history = mod.getPlayerNextHistory(xuid);
@@ -418,7 +421,7 @@ namespace worldedit {
         box.forEachBlockInBox([&](const BlockPos blockPos) {
             if (!hollow || (blockPos.x == box.min.x || blockPos.x == box.max.x || blockPos.y == box.min.y ||
                             blockPos.y == box.max.y || blockPos.z == box.min.z || blockPos.z == box.max.z)) {
-                setFunction(variables, f, box, playerPos, playerRot, blockPos, pos.toVec3() + 0.5f);
+                setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
                 gMaskLambda(f, variables, [&]() mutable {
                     maskLambda(f, variables, [&]() mutable {

@@ -44,20 +44,30 @@ namespace worldedit {
             return false;
         }
         auto block = blockInstance.getBlock();
-        auto& exblock = const_cast<Block&>(blockInstance.getBlockSource()->getExtraBlock(blockInstance.getPosition()));
-        std::cout << "block: (" << getBlockId(block->getTypeName()) << ":" << block->getTileData() << ")\n"
+        auto exblock = &const_cast<Block&>(blockInstance.getBlockSource()->getExtraBlock(blockInstance.getPosition()));
+        std::cout << "block: (" << getBlockId(block->getTypeName()) << ":" << block->getTileData() << ") "
+                  << block->getRuntimeId() << "\n"
                   << block->getNbt()->toPrettySNBT() << std::endl;
         player->sendText("block: (" + fto_string(getBlockId(block->getTypeName())) + ":" +
-                         fto_string(block->getTileData()) + ")\n" + block->getNbt()->toPrettySNBT(true));
-        if (&exblock != BedrockBlocks::mAir) {
-            std::cout << "exBlock: (" << getBlockId(exblock.getTypeName()) << ":" << exblock.getTileData() << ")\n"
-                      << exblock.getNbt()->toPrettySNBT() << std::endl;
-            player->sendText("block: (" + fto_string(getBlockId(exblock.getTypeName())) + ":" +
-                             fto_string(exblock.getTileData()) + ")\n" + exblock.getNbt()->toPrettySNBT(true));
+                         fto_string(block->getTileData()) + ") " + fto_string(block->getRuntimeId()) + "\n" +
+                         block->getNbt()->toPrettySNBT(true));
+        if (exblock != BedrockBlocks::mAir) {
+            std::cout << "exBlock: (" << getBlockId(exblock->getTypeName()) << ":" << exblock->getTileData() << ") "
+                      << exblock->getRuntimeId() << "\n"
+                      << exblock->getNbt()->toPrettySNBT() << std::endl;
+            player->sendText("exBlock: (" + fto_string(getBlockId(exblock->getTypeName())) + ":" +
+                             fto_string(exblock->getTileData()) + ") " + fto_string(exblock->getRuntimeId()) + "\n" +
+                             exblock->getNbt()->toPrettySNBT(true));
         }
         if (blockInstance.hasBlockEntity()) {
-            std::cout << "blockEntity:\n" << blockInstance.getBlockEntity()->getNbt()->toPrettySNBT() << std::endl;
-            player->sendText("blockEntity:\n" + blockInstance.getBlockEntity()->getNbt()->toPrettySNBT(true));
+            auto be = blockInstance.getBlockEntity();
+            if (be != nullptr) {
+                std::cout << "blockEntity:\n" << be->getNbt()->toPrettySNBT() << std::endl;
+                player->sendText("blockEntity:\n" + be->getNbt()->toPrettySNBT(true));
+            } else {
+                std::cout << "blockEntity: null" << std::endl;
+                player->sendText("blockEntity: null");
+            }
         }
         return true;
     }
@@ -107,13 +117,16 @@ namespace worldedit {
             history->storeBlock(blockInstance, BlockPos(0, 0, 0));
         }
         f.setPos(bpos);
-        auto playerPos = player->getPosition() - Vec3(0.0, 1.62, 0.0);
+        auto playerPos = player->getPosition();
         auto playerRot = player->getRotation();
         variables["rx"] = bpos.x;
         variables["ry"] = bpos.y;
         variables["rz"] = bpos.z;
-        variables["px"] = playerRot.x;
-        variables["py"] = playerRot.y;
+        variables["px"] = playerPos.x;
+        variables["py"] = playerPos.y;
+        variables["pz"] = playerPos.z;
+        variables["pp"] = playerRot.x;
+        variables["pt"] = playerRot.y;
         variables["ox"] = bpos.x - playerPos.x;
         variables["oy"] = bpos.y - playerPos.y;
         variables["oz"] = bpos.z - playerPos.z;
@@ -144,8 +157,13 @@ namespace worldedit {
         EvalFunctions f;
         f.setbs(blockSource);
         std::unordered_map<std::string, double> variables;
-        auto playerPos = player->getPosition() - Vec3(0.0, 1.62, 0.0);
+        auto playerPos = player->getPosition();
         auto playerRot = player->getRotation();
+        variables["px"] = playerPos.x;
+        variables["py"] = playerPos.y;
+        variables["pz"] = playerPos.z;
+        variables["pp"] = playerRot.x;
+        variables["pt"] = playerRot.y;
         std::unordered_set<BlockPos> s;
         s.insert(pos0);
 
@@ -160,8 +178,20 @@ namespace worldedit {
                     if (tmpPos != pos1 && pos0.distanceTo(tmpPos) <= 0.5 + radius &&
                         (&blockSource->getBlock(tmpPos) == block && &blockSource->getExtraBlock(tmpPos) == exBlock) &&
                         s.find(tmpPos) == s.end()) {
-                        q.push(tmpPos);
-                        s.insert(tmpPos);
+                        f.setPos(tmpPos);
+                        variables["rx"] = tmpPos.x;
+                        variables["ry"] = tmpPos.y;
+                        variables["rz"] = tmpPos.z;
+                        variables["cx"] = tmpPos.x-pos0.x;
+                        variables["cy"] = tmpPos.y-pos0.y;
+                        variables["cz"] = tmpPos.z-pos0.z;
+                        variables["ox"] = tmpPos.x - playerPos.x;
+                        variables["oy"] = tmpPos.y - playerPos.y;
+                        variables["oz"] = tmpPos.z - playerPos.z;
+                        gMaskLambda(f, variables, [&]() mutable {
+                            q.push(tmpPos);
+                            s.insert(tmpPos);
+                        });
                     }
                 });
             } else {
@@ -169,8 +199,20 @@ namespace worldedit {
                     if (pos0.distanceTo(tmpPos) <= 0.5 + radius &&
                         (&blockSource->getBlock(tmpPos) == block && &blockSource->getExtraBlock(tmpPos) == exBlock) &&
                         s.find(tmpPos) == s.end()) {
-                        q.push(tmpPos);
-                        s.insert(tmpPos);
+                        f.setPos(tmpPos);
+                        variables["rx"] = tmpPos.x;
+                        variables["ry"] = tmpPos.y;
+                        variables["rz"] = tmpPos.z;
+                        variables["cx"] = tmpPos.x - pos0.x;
+                        variables["cy"] = tmpPos.y - pos0.y;
+                        variables["cz"] = tmpPos.z - pos0.z;
+                        variables["ox"] = tmpPos.x - playerPos.x;
+                        variables["oy"] = tmpPos.y - playerPos.y;
+                        variables["oz"] = tmpPos.z - playerPos.z;
+                        gMaskLambda(f, variables, [&]() mutable {
+                            q.push(tmpPos);
+                            s.insert(tmpPos);
+                        });
                     }
                 }
             }
@@ -191,16 +233,7 @@ namespace worldedit {
                 auto bi = blockSource->getBlockInstance(pos1);
                 history->storeBlock(bi, localPos);
             }
-            f.setPos(pos1);
-            variables["rx"] = pos1.x;
-            variables["ry"] = pos1.y;
-            variables["rz"] = pos1.z;
-            variables["px"] = playerRot.x;
-            variables["py"] = playerRot.y;
-            variables["ox"] = pos1.x - playerPos.x;
-            variables["oy"] = pos1.y - playerPos.y;
-            variables["oz"] = pos1.z - playerPos.z;
-            gMaskLambda(f, variables, [&]() mutable { pattern->setBlock(variables, f, blockSource, pos1); });
+            pattern->setBlock(variables, f, blockSource, pos1);
         }
 
         return false;

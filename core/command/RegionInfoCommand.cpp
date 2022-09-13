@@ -28,7 +28,7 @@ namespace worldedit {
                     mod.playerRegionMap[xuid]->hasSelected()) {
                     auto* region = mod.playerRegionMap[xuid];
                     auto dimID = region->getDimensionID();
-                    auto blockSource = Level::getBlockSource(dimID);
+                    auto blockSource = &player->getRegion();
                     long long size = 0;
                     bool arg_a = false, arg_c = false;
                     if (results["args"].isSet) {
@@ -89,7 +89,7 @@ namespace worldedit {
                     mod.playerRegionMap[xuid]->hasSelected()) {
                     auto* region = mod.playerRegionMap[xuid];
                     auto dimID = region->getDimensionID();
-                    auto blockSource = Level::getBlockSource(dimID);
+                    auto blockSource = &player->getRegion();
                     long long count = 0;
                     if (results["args"].isSet) {
                         // clipboard
@@ -138,7 +138,7 @@ namespace worldedit {
                     mod.playerRegionMap[xuid]->hasSelected()) {
                     auto* region = mod.playerRegionMap[xuid];
                     auto dimID = region->getDimensionID();
-                    auto blockSource = Level::getBlockSource(dimID);
+                    auto blockSource = &player->getRegion();
                     std::unordered_map<std::string, long long> blocksMap;
                     std::vector<std::pair<std::string, long long>> blocksMap2;
                     blocksMap2.resize(0);

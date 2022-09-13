@@ -2,6 +2,8 @@
 // Created by OEOTYAN on 2022/06/10.
 //
 #include "BlockPattern.hpp"
+#include "MC/BlockPalette.hpp"
+#include "MC/Level.hpp"
 
 namespace worldedit {
 
@@ -71,14 +73,25 @@ namespace worldedit {
                 ++i;
                 form += string("funciton") + str[i];
             } else if (isalpha(str[i])) {
-                auto head = i;
-                ++i;
-                while (i < strSize && (isalpha(str[i]) || str[i] == '_' || isdigit(str[i]) ||
-                                       (str[i] == ':' && i + 1 < strSize && isalpha(str[i + 1])))) {
+                if (str[i] == 'r' && str[i + 1] == 't' && str[i + 2] == '\'') {
+                    i+=3;
+                    auto head = i;
+                    while (i < strSize && (str[i] != '\'')) {
+                        ++i;
+                    }
+                    raw.push_back(str.substr(head, i - head));
                     ++i;
+                    form += string("rtfunciton") + str[i];
+                } else {
+                    auto head = i;
+                    ++i;
+                    while (i < strSize && (isalpha(str[i]) || str[i] == '_' || isdigit(str[i]) ||
+                                           (str[i] == ':' && i + 1 < strSize && isalpha(str[i + 1])))) {
+                        ++i;
+                    }
+                    form += string("block") + str[i];
+                    raw.push_back(str.substr(head, i - head));
                 }
-                form += string("block") + str[i];
-                raw.push_back(str.substr(head, i - head));
             } else if (str[i] == '{') {
                 auto head = i;
                 int bracket = -1;
@@ -109,28 +122,40 @@ namespace worldedit {
                     percents[iter].isNum = false;
                     percents[iter].function = raw[rawPtr];
                 }
-                rawPtr++;
+                ++rawPtr;
             } else {
                 blockList[iter] = "%" + blockList[iter];
             }
             if (blockList[iter].find("%num") != std::string::npos) {
                 rawBlocks[iter].blockId = std::stoi(raw[rawPtr]);
-                rawPtr++;
+                ++rawPtr;
             } else if (blockList[iter].find("%block") != std::string::npos) {
                 std::string tmpName = raw[rawPtr];
+                if (tmpName[0] == 'r' && tmpName[1] == 't' && isdigit(tmpName[2])) {
+                    rawBlocks[iter].block = const_cast<Block*>(&Global<Level>->getBlockPalette().getBlock(
+                        static_cast<unsigned int>(std::stoi(tmpName.substr(2)))));
+                    ++rawPtr;
+                    continue;
+                }
                 if (tmpName.find("minecraft:") == std::string::npos) {
                     tmpName = "minecraft:" + tmpName;
                 }
                 rawBlocks[iter].blockId = getBlockId(tmpName);
-                rawPtr++;
-            } else if (blockList[iter].find("%funciton") != std::string::npos) {
-                rawBlocks[iter].blockId = -1;
+                ++rawPtr;
+            } else if (blockList[iter].find("%rtfunciton") != std::string::npos) {
+                rawBlocks[iter].blockId = -2140000001;
                 rawBlocks[iter].constBlock = false;
                 rawBlocks[iter].blockIdfunc = raw[rawPtr];
-                rawPtr++;
+                ++rawPtr;
+                continue;
+            } else if (blockList[iter].find("%funciton") != std::string::npos) {
+                rawBlocks[iter].blockId = INT_MIN;
+                rawBlocks[iter].constBlock = false;
+                rawBlocks[iter].blockIdfunc = raw[rawPtr];
+                ++rawPtr;
             } else if (blockList[iter].find("%SNBT") != std::string::npos) {
-                rawBlocks[iter].blockId = -1;
-                rawBlocks[iter].blockData = -1;
+                rawBlocks[iter].blockId = INT_MIN;
+                rawBlocks[iter].blockData = INT_MIN;
                 std::string tmpSNBT = raw[rawPtr];
                 if (tmpSNBT[0] == '{' && tmpSNBT[1] == '{') {
                     size_t i2 = 1;
@@ -164,17 +189,17 @@ namespace worldedit {
                 } else {
                     rawBlocks[iter].block = Block::create(CompoundTag::fromSNBT(tmpSNBT).get());
                 }
-                rawPtr++;
+                ++rawPtr;
                 continue;
             }
             if (blockList[iter].find(":num") != std::string::npos) {
                 rawBlocks[iter].blockData = std::stoi(raw[rawPtr]);
-                rawPtr++;
+                ++rawPtr;
             } else if (blockList[iter].find(":funciton") != std::string::npos) {
-                rawBlocks[iter].blockData = -1;
+                rawBlocks[iter].blockData = INT_MIN;
                 rawBlocks[iter].constBlock = false;
                 rawBlocks[iter].blockDatafunc = raw[rawPtr];
-                rawPtr++;
+                ++rawPtr;
             }
             if (rawBlocks[iter].constBlock) {
                 rawBlocks[iter].block = Block::create(getBlockName(rawBlocks[iter].blockId), rawBlocks[iter].blockData);

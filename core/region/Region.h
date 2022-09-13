@@ -43,8 +43,8 @@ namespace worldedit {
 
         virtual void updateBoundingBox() = 0;
 
-        virtual int size() const {
-            return (boundingBox.max.x - boundingBox.min.x + 1) * (boundingBox.max.y - boundingBox.min.y + 1) *
+        virtual uint64_t size() const {
+            return (uint64_t)(boundingBox.max.x - boundingBox.min.x + 1) * (boundingBox.max.y - boundingBox.min.y + 1) *
                    (boundingBox.max.z - boundingBox.min.z + 1);
         };
 

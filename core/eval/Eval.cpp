@@ -3,6 +3,9 @@
 //
 #include "Eval.h"
 #include <MC/LevelChunk.hpp>
+#include <MC/Brightness.hpp>
+#include <MC/Dimension.hpp>
+#include <MC/Player.hpp>
 #include "FastNoiseLite.h"
 // #include <MC/ChunkBlockPos.hpp>
 
@@ -26,6 +29,7 @@ namespace worldedit {
                 if (filter == "") {
                     return y;
                 } else {
+                    f.setPos(pos);
                     variables["rx"] = pos.x;
                     variables["ry"] = pos.y;
                     variables["rz"] = pos.z;
@@ -153,16 +157,32 @@ namespace worldedit {
                 if (size == 0) {
                     return RNG::rand<double>();
                 } else if (size == 2) {
-                    return RNG::rand<double>() * (params[1] - params[0]) + params[0];
+                    return RNG::rand<double>(params[0], params[1]);
                 }
                 break;
-            case do_hash("sin"):
-                if (size == 1)
-                    return sin(params[0]);
+            case do_hash("saturate"):
+                if (size == 3)
+                    return std::min(1.0, std::max(0.0, params[0]));
+                break;
+            case do_hash("clamp"):
+                if (size == 3)
+                    return std::min(params[2], std::max(params[1], params[0]));
+                break;
+            case do_hash("lerp"):
+                if (size == 3)
+                    return params[0] * (1 - params[2]) + params[1] * params[2];
+                break;
+            case do_hash("mod"):
+                if (size == 2)
+                    return posfmod(params[0], params[1]);
                 break;
             case do_hash("abs"):
                 if (size == 1)
                     return abs(params[0]);
+                break;
+            case do_hash("sin"):
+                if (size == 1)
+                    return sin(params[0]);
                 break;
             case do_hash("cos"):
                 if (size == 1)
@@ -172,6 +192,7 @@ namespace worldedit {
                 if (size == 1)
                     return params[0] == 0.0 ? 0.0 : (params[0] > 0.0 ? 1.0 : -1.0);
                 break;
+            case do_hash("log10"):
             case do_hash("lg"):
                 if (size == 1)
                     return log10(params[0]);
@@ -268,6 +289,12 @@ namespace worldedit {
                 }
                 return 0;
                 break;
+            case do_hash("runtimeid"):
+                if (blockdataInitialized) {
+                    return blockSource->getBlock(tmp).getRuntimeId();
+                }
+                return 0;
+                break;
             case do_hash("hsa"):
                 if (blockdataInitialized) {
                     for (auto& hsa : blockSource->getChunkAt(tmp)->getSpawningAreas()) {
@@ -292,7 +319,64 @@ namespace worldedit {
                 break;
             case do_hash("biome"):
                 if (blockdataInitialized) {
-                    return (const_cast<Block&>(blockSource->getBlock(tmp))).getTileData();
+                    return blockSource->getConstBiome(tmp).getId();
+                }
+                return 0;
+                break;
+            case do_hash("hasplayer"):
+                if (blockdataInitialized) {
+                    auto& dimension = blockSource->getDimensionConst();
+                    if (size == 1) {
+                        return nullptr != dimension.fetchAnyPlayer(here.toVec3(), static_cast<float>(params[0]));
+                    } else if (size == 4) {
+                        return nullptr != dimension.fetchAnyPlayer(here.toVec3() +Vec3(params[1], params[2], params[3]),
+                                                                   static_cast<float>(params[0]));
+                    }
+                }
+                return 0;
+                break;
+            case do_hash("noplayer"):
+                if (blockdataInitialized) {
+                    auto& dimension = blockSource->getDimensionConst();
+                    Vec3 tmpVec;
+                    if (size == 1) {
+                        tmpVec = here.toVec3();
+                    } else if (size == 4) {
+                        tmpVec = here.toVec3()+ Vec3(params[1], params[2], params[3]);
+                    }
+                    float playerDistance = FLT_MAX;
+                    dimension.forEachPlayer([&](Player& player) {
+                        float dis = player.getPosition().distanceToSqr(tmpVec);
+                        playerDistance = std::min(dis, playerDistance);
+                        return true;
+                    });
+                    return playerDistance == FLT_MAX || playerDistance >= pow2(static_cast<float>(params[0]));
+                }
+                return 0;
+                break;
+            case do_hash("hasuntickedchunk"):
+                if (blockdataInitialized) {
+                    if (size == 1) {
+                        return blockSource->hasUntickedNeighborChunk(ChunkPos(here), static_cast<int>(params[0]));
+                    } else if (size == 4) {
+                        return blockSource->hasUntickedNeighborChunk(
+                            ChunkPos(here + BlockPos(static_cast<int>(floor(params[1])),
+                                                     static_cast<int>(floor(params[2])),
+                                                     static_cast<int>(floor(params[3])))),
+                            static_cast<int>(params[0]));
+                    }
+                }
+                return 0;
+            case do_hash("chunksfullyloaded"):
+                if (blockdataInitialized) {
+                    if (size == 1) {
+                        return blockSource->areChunksFullyLoaded(here, static_cast<int>(params[0]));
+                    } else if (size == 4) {
+                        return blockSource->areChunksFullyLoaded(
+                            (here + BlockPos(static_cast<int>(floor(params[1])), static_cast<int>(floor(params[2])),
+                                             static_cast<int>(floor(params[3])))),
+                            static_cast<int>(params[0]));
+                    }
                 }
                 return 0;
                 break;
@@ -323,6 +407,36 @@ namespace worldedit {
             case do_hash("istop"):
                 if (blockdataInitialized) {
                     return blockSource->getHeightmapPos(tmp) == tmp;
+                }
+                return 0;
+                break;
+            case do_hash("destroyspeed"):
+                if (blockdataInitialized) {
+                    return blockSource->getBlock(tmp).getDestroySpeed();
+                }
+                return 0;
+                break;
+            case do_hash("thickness"):
+                if (blockdataInitialized) {
+                    return blockSource->getBlock(tmp).getThickness();
+                }
+                return 0;
+                break;
+            case do_hash("translucency"):
+                if (blockdataInitialized) {
+                    return blockSource->getBlock(tmp).getTranslucency();
+                }
+                return 0;
+                break;
+            case do_hash("light"):
+                if (blockdataInitialized) {
+                    return blockSource->getBlock(tmp).getLight().value;
+                }
+                return 0;
+                break;
+            case do_hash("emissive"):
+                if (blockdataInitialized) {
+                    return blockSource->getBlock(tmp).getLightEmission().value;
                 }
                 return 0;
                 break;
@@ -489,7 +603,8 @@ namespace worldedit {
                     noise.SetNoiseType(FastNoiseLite::NoiseType::NoiseType_Cellular);
                     tryGetParameter(size, params, 4, noise.SetSeed, int64_t);
                     tryGetParameter(size, params, 5, noise.SetCellularReturnType, FastNoiseLite::CellularReturnType);
-                    tryGetParameter(size, params, 6, noise.SetCellularDistanceFunction, FastNoiseLite::CellularDistanceFunction);
+                    tryGetParameter(size, params, 6, noise.SetCellularDistanceFunction,
+                                    FastNoiseLite::CellularDistanceFunction);
                     tryGetParameter(size, params, 7, noise.SetCellularJitter, double);
                     tryGetParameter(size, params, 8, noise.SetFractalType, FastNoiseLite::FractalType);
                     tryGetParameter(size, params, 9, noise.SetFractalOctaves, int64_t);

@@ -20,7 +20,6 @@ namespace worldedit {
                             mod.playerRegionMap[xuid]->renderRegion();
                         }
                     }
-
                     mod.renderMVpos();
                 },
                 1);
@@ -30,6 +29,7 @@ namespace worldedit {
             //     outStr << "\"" << aa.first << "\" : {\n" << aa.second << "\n},\n";
             // }
             // outStr.close();
+
             return true;
         });
     }

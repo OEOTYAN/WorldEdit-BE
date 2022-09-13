@@ -30,37 +30,37 @@ namespace worldedit {
 
     template <class T>
     constexpr T pow2(T const& a) {
-        return pow(a, 2);
+        return binpow<T>(a, 2);
     }
 
     template <class T>
     constexpr T pow3(T const& a) {
-        return pow(a, 3);
+        return binpow<T>(a, 3);
     }
 
     template <class T>
     constexpr T pow4(T const& a) {
-        return pow(a, 4);
+        return binpow<T>(a, 4);
     }
 
     template <class T>
     constexpr T pow5(T const& a) {
-        return pow(a, 5);
+        return binpow<T>(a, 5);
     }
 
     template <class T>
     constexpr T pow6(T const& a) {
-        return pow(a, 6);
+        return binpow<T>(a, 6);
     }
 
     template <class T>
     constexpr T pow7(T const& a) {
-        return pow(a, 7);
+        return binpow<T>(a, 7);
     }
 
     template <class T>
     constexpr T pow8(T const& a) {
-        return pow(a, 8);
+        return binpow<T>(a, 8);
     }
 
     template <class T>

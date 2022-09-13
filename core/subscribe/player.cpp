@@ -8,11 +8,15 @@
 namespace worldedit {
 
     bool playerLeftClick(Player* player,
-                         bool isLong,
+                         const bool isLong,
                          class ItemStack* item,
                          BlockInstance& blockInstance,
                          FaceID mFace) {
         static std::unordered_map<std::string, long long> tickMap;
+
+        if (!(player->isOP() && player->isCreative())) {
+            return true;
+        }
 
         bool needDiscard = false;
 
@@ -23,21 +27,19 @@ namespace worldedit {
                 needDiscard = true;
             }
         }
-        if (!isLong)
-            tickMap[xuid] = tick;
 
         auto itemName = item->getTypeName();
 
-        if (!(player->isOP() && player->isCreative())) {
-            return true;
-        } else if (itemName == "minecraft:wooden_axe") {
+        if (itemName == "minecraft:wooden_axe") {
             if (!isLong) {
+                tickMap[xuid] = tick;
                 if (!needDiscard) {
                     changeMainPos(player, blockInstance);
                 }
                 return false;
             }
         } else {
+            tickMap[xuid] = tick;
             auto& mod = worldedit::getMod();
             if (mod.playerHandToolMap.find(xuid) != mod.playerHandToolMap.end()) {
                 auto& toolMap = mod.playerHandToolMap[xuid];
@@ -83,11 +85,15 @@ namespace worldedit {
     }
 
     bool playerRightClick(Player* player,
-                          bool isLong,
+                          const bool isLong,
                           class ItemStack* item,
                           BlockInstance& blockInstance,
                           FaceID mFace) {
         static std::unordered_map<std::string, long long> tickMap;
+
+        if (!(player->isOP() && player->isCreative())) {
+            return true;
+        }
 
         bool needDiscard = false;
 
@@ -98,20 +104,19 @@ namespace worldedit {
                 needDiscard = true;
             }
         }
-        tickMap[xuid] = tick;
 
         auto itemName = item->getTypeName();
 
-        if (!(player->isOP() && player->isCreative())) {
-            return true;
-        } else if (item->getTypeName() == "minecraft:wooden_axe") {
+        if (item->getTypeName() == "minecraft:wooden_axe") {
             if (!isLong) {
+                tickMap[xuid] = tick;
                 if (!needDiscard) {
                     changeVicePos(player, blockInstance);
                 }
                 return false;
             }
         } else {
+            tickMap[xuid] = tick;
             auto& mod = worldedit::getMod();
             itemName += std::to_string(item->getAuxValue());
             if (mod.playerHandToolMap.find(xuid) != mod.playerHandToolMap.end()) {

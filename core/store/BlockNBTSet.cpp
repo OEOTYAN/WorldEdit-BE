@@ -11,16 +11,21 @@ namespace worldedit {
         exblock = &const_cast<Block&>((blockInstance.getBlockSource()->getExtraBlock(blockInstance.getPosition())));
         if (blockInstance.hasBlockEntity()) {
             hasBlockEntity = true;
-            blockEntity    = blockInstance.getBlockEntity()->getNbt()->toBinaryNBT();
+            auto be = blockInstance.getBlockEntity();
+            if (be != nullptr) {
+                blockEntity = be->getNbt()->toBinaryNBT();
+            }
         }
     }
 
     bool BlockNBTSet::setBlock(const BlockPos& pos, BlockSource* blockSource) const {
         setBlockSimple(blockSource, pos, block, exblock);
         if (hasBlockEntity) {
-            auto blockInstance = blockSource->getBlockInstance(pos);
-            if (blockInstance.hasBlockEntity()) {
-                blockInstance.getBlockEntity()->setNbt(CompoundTag::fromBinaryNBT(blockEntity).get());
+            if (block->hasBlockEntity()) {
+                auto be = blockSource->getBlockEntity(pos);
+                if (be != nullptr && blockEntity != "") {
+                    be->setNbt(CompoundTag::fromBinaryNBT(blockEntity).get());
+                }
             }
         }
         return true;
@@ -30,9 +35,11 @@ namespace worldedit {
                        const_cast<Block*>(VanillaBlockStateTransformUtils::transformBlock(*block, rotation, mirror)),
                        const_cast<Block*>(VanillaBlockStateTransformUtils::transformBlock(*exblock, rotation, mirror)));
         if (hasBlockEntity) {
-            auto blockInstance = blockSource->getBlockInstance(pos);
-            if (blockInstance.hasBlockEntity()) {
-                blockInstance.getBlockEntity()->setNbt(CompoundTag::fromBinaryNBT(blockEntity).get());
+            if (block->hasBlockEntity()) {
+                auto be = blockSource->getBlockEntity(pos);
+                if (be != nullptr && blockEntity!="") {
+                    be->setNbt(CompoundTag::fromBinaryNBT(blockEntity).get());
+                }
             }
         }
         return true;

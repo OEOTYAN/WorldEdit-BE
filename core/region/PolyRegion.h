@@ -25,7 +25,7 @@ namespace worldedit {
 
         std::pair<std::string, bool> shift(const BlockPos& change) override;
 
-        int size() const override;
+        uint64_t size() const override;
 
         void renderRegion() override;
 

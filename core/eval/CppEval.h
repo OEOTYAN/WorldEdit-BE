@@ -24,7 +24,9 @@ namespace cpp_eval {
     number eval(std::string const& expression, const ::std::unordered_map<::std::string, number>& variables);
 
     template <typename number, typename functions>
-    number eval(std::string const& expression, const ::std::unordered_map<::std::string, number>& variables, functions& funcs);
+    number eval(std::string const& expression,
+                const ::std::unordered_map<::std::string, number>& variables,
+                functions& funcs);
 
     template <typename number>
     class dummy_functions {
@@ -64,6 +66,7 @@ namespace cpp_eval {
             DIVIDE = '/',
             MOD = '%',
 
+            NOT = '!',
             ADD_OR_POSITIVE = '+',
             SUBTRACT_OR_NEGATIVE = '-',
 
@@ -88,52 +91,78 @@ namespace cpp_eval {
 
         void look_ahead() {
             for (;;) {
+                if (*mCurrent == 0) {
+                    mType = FINISHED;
+                    return;
+                }
                 if (isspace(*mCurrent)) {
                     ++mCurrent;
                     continue;
-                } else if (*mCurrent == 'a' && *(mCurrent + 1) == 'n' && *(mCurrent + 2) == 'd')
-                    mType = LOGIC_AND, mCurrent += 3;
-                else if (*mCurrent == 'm' && *(mCurrent + 1) == 'o' && *(mCurrent + 2) == 'd')
-                    mType = MOD, mCurrent += 3;
-                else if (*mCurrent == 'o' && *(mCurrent + 1) == 'r')
-                    mType = LOGIC_OR, mCurrent += 2;
-                else if (*mCurrent == '=' && *(mCurrent + 1) == '=')
-                    mType = EQUAL, mCurrent += 2;
-                else if (*mCurrent == '^' && *(mCurrent + 1) == '^')
-                    mType = XOR, mCurrent += 2;
-                else if (*mCurrent == '<' && *(mCurrent + 1) == '=')
-                    mType = LESS_THAN_OR_EQUAL, mCurrent += 2;
-                else if (*mCurrent == '>' && *(mCurrent + 1) == '=')
-                    mType = GREATER_THAN_OR_EQUAL, mCurrent += 2;
-                else if (*mCurrent == '!' && *(mCurrent + 1) == '=')
-                    mType = NOT_EQUAL, mCurrent += 2;
-                else if (*mCurrent == '&' && *(mCurrent + 1) == '&')
-                    mType = LOGIC_AND, mCurrent += 2;
-                else if (*mCurrent == '|' && *(mCurrent + 1) == '|')
-                    mType = LOGIC_OR, mCurrent += 2;
-                else if (*mCurrent == ADD_OR_POSITIVE || *mCurrent == SUBTRACT_OR_NEGATIVE || *mCurrent == MULTIPLY ||
-                         *mCurrent == DIVIDE || *mCurrent == MOD || *mCurrent == LEFT_BRACKET ||
-                         *mCurrent == RIGHT_BRACKET || *mCurrent == PARAMETER_SEPERATOR || *mCurrent == LESS_THAN ||
-                         *mCurrent == GREATER_THAN || *mCurrent == AND || *mCurrent == POWER || *mCurrent == OR)
-                    mType = (Type)*mCurrent, ++mCurrent;
-                else if (isalpha(*mCurrent)) {
-                    mType = IDENTIFIER;
-                    mIdentifier.clear();
-                    mIdentifier += *mCurrent;
-                    ++mCurrent;
-                    while (isalpha(*mCurrent) || isdigit(*mCurrent) || *mCurrent == '_' || *mCurrent == ':')
-                        mIdentifier += *mCurrent, ++mCurrent;
-                } else if (*mCurrent == 0)
-                    mType = FINISHED;
-                else {
-                    mType = NUMBER;
-                    std::istringstream iss(mCurrent);
-                    // iss.setf(std::ios::fixed);
-                    // iss.precision(18);
-                    iss >> mValue;
-                    if (!iss)
-                        return;
-                    mCurrent += iss.rdbuf()->pubseekoff(0, std::ios::cur, std::ios::in);
+                }
+
+                switch (do_hash(mCurrent, 2)) {
+                    case do_hash("||"):
+                        mType = LOGIC_OR, mCurrent += 2;
+                        break;
+                    case do_hash("=="):
+                        mType = EQUAL, mCurrent += 2;
+                        break;
+                    case do_hash("^^"):
+                        mType = XOR, mCurrent += 2;
+                        break;
+                    case do_hash("<="):
+                        mType = LESS_THAN_OR_EQUAL, mCurrent += 2;
+                        break;
+                    case do_hash(">="):
+                        mType = GREATER_THAN_OR_EQUAL, mCurrent += 2;
+                        break;
+                    case do_hash("!="):
+                        mType = NOT_EQUAL, mCurrent += 2;
+                        break;
+                    case do_hash("&&"):
+                        mType = LOGIC_AND, mCurrent += 2;
+                        break;
+                    default:
+
+                        switch (*mCurrent) {
+                            case ADD_OR_POSITIVE:
+                            case SUBTRACT_OR_NEGATIVE:
+                            case MULTIPLY:
+                            case DIVIDE:
+                            case MOD:
+                            case LEFT_BRACKET:
+                            case RIGHT_BRACKET:
+                            case PARAMETER_SEPERATOR:
+                            case LESS_THAN:
+                            case GREATER_THAN:
+                            case AND:
+                            case POWER:
+                            case OR:
+                            case NOT:
+                                mType = (Type)*mCurrent, ++mCurrent;
+                                break;
+                            default:
+                                if (isalpha(*mCurrent)) {
+                                    mType = IDENTIFIER;
+                                    mIdentifier.clear();
+                                    mIdentifier += *mCurrent;
+                                    ++mCurrent;
+                                    while (isalpha(*mCurrent) || isdigit(*mCurrent) || *mCurrent == '_' ||
+                                           *mCurrent == ':')
+                                        mIdentifier += *mCurrent, ++mCurrent;
+                                } else {
+                                    mType = NUMBER;
+                                    std::istringstream iss(mCurrent);
+                                    // iss.setf(std::ios::fixed);
+                                    // iss.precision(18);
+                                    iss >> mValue;
+                                    if (!iss)
+                                        return;
+                                    mCurrent += iss.rdbuf()->pubseekoff(0, std::ios::cur, std::ios::in);
+                                }
+                                break;
+                        }
+                        break;
                 }
                 break;
             }
@@ -266,6 +295,8 @@ namespace cpp_eval {
                 match(ADD_OR_POSITIVE), result = sign_expression();
             else if (mType == SUBTRACT_OR_NEGATIVE)
                 match(SUBTRACT_OR_NEGATIVE), result = -sign_expression();
+            else if (mType == NOT)
+                match(NOT), result = (static_cast<number>(1) - sign_expression());
             else
                 result = power_expression();
             return result;

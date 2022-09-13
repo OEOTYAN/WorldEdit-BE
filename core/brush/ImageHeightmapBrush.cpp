@@ -14,7 +14,7 @@ namespace worldedit {
         auto& mod = worldedit::getMod();
         auto xuid = player->getXuid();
         auto dimID = player->getDimensionId();
-        auto blockSource = Level::getBlockSource(dimID);
+        auto blockSource = &player->getRegion();
         auto range = Global<Level>->getDimension(dimID)->getHeightRange();
         int minY = 2147483647;
         int maxY = -2147483648;

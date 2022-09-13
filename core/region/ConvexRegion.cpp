@@ -229,12 +229,12 @@ namespace worldedit {
         }
     }
 
-    int ConvexRegion::size() const {
+    uint64_t ConvexRegion::size() const {
         double volume = 0;
         for (auto triangle : triangles) {
             volume += triangle.getVertex(0).cross(triangle.getVertex(1)).dot(triangle.getVertex(2));
         }
-        return (int)std::abs(volume / 6.0);
+        return (uint64_t)std::abs(volume / 6.0);
     };
 
     void ConvexRegion::renderRegion() {

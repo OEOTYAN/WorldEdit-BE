@@ -46,7 +46,8 @@ namespace worldedit {
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto& mod = worldedit::getMod();
-                auto xuid = origin.getPlayer()->getXuid();
+                auto player = origin.getPlayer();
+                auto xuid = player->getXuid();
                 int ut = 1;
                 if (results["num"].isSet) {
                     ut = results["num"].get<int>();
@@ -65,7 +66,7 @@ namespace worldedit {
                     long long i = 0;
 
                     Clipboard tmp(res.first->board);
-                    auto blockSource = Level::getBlockSource(dimID);
+                    auto blockSource = &player->getRegion();
                     res.first->forEachBlockInClipboard([&](const BlockPos& pos) {
                         auto worldPos = pos + res.first->playerPos;
                         auto blockInstance = blockSource->getBlockInstance(worldPos);
@@ -94,7 +95,8 @@ namespace worldedit {
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto& mod = worldedit::getMod();
-                auto xuid = origin.getPlayer()->getXuid();
+                auto player = origin.getPlayer();
+                auto xuid = player->getXuid();
                 int rt = 1;
                 if (results["num"].isSet) {
                     rt = results["num"].get<int>();
@@ -113,7 +115,7 @@ namespace worldedit {
                     long long i = 0;
 
                     Clipboard tmp(res.first->board);
-                    auto blockSource = Level::getBlockSource(dimID);
+                    auto blockSource = &player->getRegion();
                     res.first->forEachBlockInClipboard([&](const BlockPos& pos) {
                         auto worldPos = pos + res.first->playerPos;
                         auto blockInstance = blockSource->getBlockInstance(worldPos);

@@ -8,6 +8,12 @@
 #include "eval/Eval.h"
 #include "WorldEdit.h"
 
+
+#include "MC/Level.hpp"
+#include "MC/MobSpawnRules.hpp"
+#include "MC/SpawnGroupData.hpp"
+#include "MC/SpawnGroupRegistry.hpp"
+
 namespace worldedit {
     void commandsSetup() {
         brushCommandSetup();
@@ -126,32 +132,25 @@ namespace worldedit {
             },
             CommandPermissionLevel::GameMasters);
 
-        DynamicCommand::setup(
-            "cl",                    // command name
-            "calculate expression",  // command description
-            {}, {ParamData("exp", ParamType::Message, "exp")}, {{"exp"}},
-            // dynamic command callback
-            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
-               std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
-                auto player = origin.getPlayer();
-                auto dimID = player->getDimensionId();
-                auto blockSource = Level::getBlockSource(dimID);
-                EvalFunctions f;
-                f.setbs(blockSource);
-                std::unordered_map<std::string, double> variables;
-                auto playerPos = origin.getPlayer()->getPosition() - Vec3(0.0, 1.62, 0.0);
-                auto playerRot = origin.getPlayer()->getRotation();
-                variables["px"] = playerRot.x;
-                variables["py"] = playerRot.y;
-                variables["ox"] = playerPos.x;
-                variables["oy"] = playerPos.y;
-                variables["oz"] = playerPos.z;
-                auto func = results["exp"].getRaw<CommandMessage>().getMessage(origin);
-                Level::broadcastText(fmt::format("§g{}§f = §b{}", func, cpp_eval::eval<double>(func, variables, f)),
-                                     TextType::RAW);
-                output.success("");
-            },
-            CommandPermissionLevel::GameMasters);
+        // DynamicCommand::setup(
+        //     "wetest",                    // command name
+        //     "calculate expression",  // command description
+        //     {}, {ParamData("exp", ParamType::Message, "exp")}, {{"exp"}},
+        //     // dynamic command callback
+        //     [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+        //        std::unordered_map<std::string, DynamicCommand::Result>& results) {
+        //         auto& mod = worldedit::getMod();
+        //         auto player = origin.getPlayer();
+        //         auto dimID = player->getDimensionId();
+        //         auto blockSource = &player->getRegion();
+
+        //         auto* spawnGroupRegistry = blockSource->getLevel().getSpawnGroupRegistry();
+
+        //         for (auto& m : spawnGroupRegistry->mSpawnGroupLookupMap) {
+        //             std::cout << m.first << std::endl;
+        //         }
+        //         output.success("");
+        //     },
+        //     CommandPermissionLevel::GameMasters);
     }
 }  // namespace worldedit

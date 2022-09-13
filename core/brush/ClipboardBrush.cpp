@@ -22,9 +22,9 @@ namespace worldedit {
         }
         auto dimID = player->getDimensionId();
 
-        auto playerPos = player->getPosition() - Vec3(0.0, 1.62, 0.0);
+        auto playerPos = player->getPosition();
         auto playerRot = player->getRotation();
-        auto blockSource = Level::getBlockSource(dimID);
+        auto blockSource = &player->getRegion();
         BoundingBox box = clipboard.getBoundingBox() + pbPos;
 
         if (mod.maxHistoryLength > 0) {
@@ -45,7 +45,7 @@ namespace worldedit {
         f.setbs(blockSource);
         f.setbox(box);
         std::unordered_map<std::string, double> variables;
-
+        setFunction(variables, playerPos, playerRot);
         long long i = 0;
         if (ignoreAir) {
             clipboard.forEachBlockInClipboard([&](const BlockPos& pos) {
@@ -55,7 +55,7 @@ namespace worldedit {
                 }
                 auto worldPos = clipboard.getPos(pos) + pbPos;
 
-                setFunction(variables, f, box, playerPos, playerRot, worldPos, box.toAABB().getCenter());
+                setFunction(variables, f, box, playerPos, worldPos, box.toAABB().getCenter());
                 gMaskLambda(f, variables, [&]() mutable {
                     clipboard.setBlocks(pos, worldPos, blockSource);
                     ++i;
@@ -64,7 +64,7 @@ namespace worldedit {
         } else {
             clipboard.forEachBlockInClipboard([&](const BlockPos& pos) {
                 auto worldPos = clipboard.getPos(pos) + pbPos;
-                setFunction(variables, f, box, playerPos, playerRot, worldPos, box.toAABB().getCenter());
+                setFunction(variables, f, box, playerPos, worldPos, box.toAABB().getCenter());
                 gMaskLambda(f, variables, [&]() mutable {
                     clipboard.setBlocks(pos, worldPos, blockSource);
                     ++i;

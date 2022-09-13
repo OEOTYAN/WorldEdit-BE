@@ -33,37 +33,28 @@ namespace worldedit {
     }
 
     bool changeVicePos(Player* player, BlockInstance blockInstance, bool output) {
-        static std::unordered_map<std::string, long long> tickMap;
-        if (blockInstance == BlockInstance::Null) {
-            return false;
-        }
-        auto xuid = player->getXuid();
-        long long tick = player->getLevel().getCurrentServerTick().t;
-        if (tickMap.find(xuid) != tickMap.end()) {
-            if (abs(tick - tickMap[xuid]) < MINIMUM__RESPONSE_TICK)
-                return true;
-        }
-        tickMap[xuid] = tick;
-
         if (blockInstance == BlockInstance::Null) {
             if (output)
                 player->sendFormattedText("§cSecond position set failed");
             return false;
         }
+        auto xuid = player->getXuid();
         auto& mod = worldedit::getMod();
         if (mod.playerRegionMap.find(xuid) == mod.playerRegionMap.end()) {
             mod.playerRegionMap[xuid] = new worldedit::CuboidRegion();
         }
+        auto& region = mod.playerRegionMap[xuid];
         auto pos = blockInstance.getPosition();
-        if (player->getDimensionId() != mod.playerRegionMap[xuid]->getDimensionID()) {
-            mod.playerRegionMap[xuid]->selecting = false;
+        if (player->getDimensionId() != region->getDimensionID()) {
+            region->selecting = false;
         }
-        if (mod.playerRegionMap[xuid]->setVicePos(pos, player->getDimensionId())) {
+        if (region->setVicePos(pos, player->getDimensionId())) {
             if (output)
-                player->sendFormattedText("§aSecond position set to ({}, {}, {})", pos.x, pos.y, pos.z);
-            mod.playerVicePosMap[xuid].first = pos;
-            mod.playerVicePosMap[xuid].second.first = 0;
-            mod.playerVicePosMap[xuid].second.second = player->getDimensionId();
+                player->sendFormattedText("§aSecond position set to ({}, {}, {}) ({})", pos.x, pos.y, pos.z, region->size());
+            auto& mPos = mod.playerVicePosMap[xuid];
+            mPos.first = pos;
+            mPos.second.first = 0;
+            mPos.second.second = player->getDimensionId();
             return true;
         } else {
             if (output)
@@ -73,38 +64,30 @@ namespace worldedit {
     }
 
     bool changeMainPos(Player* player, BlockInstance blockInstance, bool output) {
-        static std::unordered_map<std::string, long long> tickMap;
-        if (blockInstance == BlockInstance::Null) {
-            return false;
-        }
-        auto xuid = player->getXuid();
-        long long tick = player->getLevel().getCurrentServerTick().t;
-        if (tickMap.find(xuid) != tickMap.end()) {
-            if (abs(tick - tickMap[xuid]) < MINIMUM__RESPONSE_TICK)
-                return true;
-        }
-        tickMap[xuid] = tick;
-
         if (blockInstance == BlockInstance::Null) {
             if (output)
                 player->sendFormattedText("§cFirst position set failed");
             return false;
         }
+        auto xuid = player->getXuid();
         auto& mod = worldedit::getMod();
         if (mod.playerRegionMap.find(xuid) == mod.playerRegionMap.end()) {
             mod.playerRegionMap[xuid] = new worldedit::CuboidRegion();
         }
+        auto& region = mod.playerRegionMap[xuid];
         auto pos = blockInstance.getPosition();
-        if (player->getDimensionId() != mod.playerRegionMap[xuid]->getDimensionID()) {
-            mod.playerRegionMap[xuid]->selecting = false;
+        if (player->getDimensionId() != region->getDimensionID()) {
+            region->selecting = false;
         }
-        if (mod.playerRegionMap[xuid]->setMainPos(pos, player->getDimensionId())) {
+        if (region->setMainPos(pos, player->getDimensionId())) {
             if (output)
-                player->sendFormattedText("§aFirst position set to ({}, {}, {})", pos.x, pos.y, pos.z);
-            mod.playerMainPosMap[xuid].first = pos;
-            mod.playerMainPosMap[xuid].second.first = 0;
-            mod.playerMainPosMap[xuid].second.second = player->getDimensionId();
-            if (mod.playerRegionMap[xuid]->needResetVice) {
+                player->sendFormattedText("§aFirst position set to ({}, {}, {}) ({})", pos.x, pos.y, pos.z,
+                                          region->size());
+            auto& mPos = mod.playerMainPosMap[xuid];
+            mPos.first = pos;
+            mPos.second.first = 0;
+            mPos.second.second = player->getDimensionId();
+            if (region->needResetVice) {
                 mod.playerVicePosMap.erase(xuid);
             }
             return true;

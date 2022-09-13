@@ -11,6 +11,7 @@
 #include <MC/BedrockBlocks.hpp>
 #include "WorldEdit.h"
 #include "region/ChangeRegion.hpp"
+#include "MC/BlockPalette.hpp"
 // #include <EventAPI.h>
 // #include <LoggerAPI.h>
 // #include <MC/Level.hpp>
@@ -62,14 +63,18 @@ namespace worldedit {
             if (constBlock) {
                 return block;
             }
+            if (blockId = -2140000001) {
+                return const_cast<Block*>(&Global<Level>->getBlockPalette().getBlock(
+                    static_cast<unsigned int>(round(cpp_eval::eval<double>(blockIdfunc, variables, funcs)))));
+            }
             int mId = blockId;
-            if (mId == -1) {
+            if (mId == INT_MIN) {
                 mId = static_cast<int>(round(cpp_eval::eval<double>(blockIdfunc, variables, funcs)));
             } else if (mId == -2140000000) {
                 mId = 0;
             }
             int mData = blockData;
-            if (mData == -1) {
+            if (mData == INT_MIN) {
                 mData = static_cast<int>(round(cpp_eval::eval<double>(blockDatafunc, variables, funcs)));
             } else if (mData == -2140000000) {
                 mData = 0;
@@ -121,15 +126,18 @@ namespace worldedit {
             if (clipboard != nullptr) {
                 return clipboard->getSet2(pos - bias).setBlock(pos, blockSource);
             }
-            auto blockInstance = blockSource->getBlockInstance(pos);
             auto* rawBlock = getRawBlock(variables, funcs);
             if (rawBlock == nullptr) {
                 return false;
             }
             auto* block = rawBlock->getBlock(variables, funcs);
             setBlockSimple(blockSource, pos, block, rawBlock->exBlock);
-            if (rawBlock->hasBE && blockInstance.hasBlockEntity()) {
-                blockInstance.getBlockEntity()->setNbt(CompoundTag::fromBinaryNBT(rawBlock->blockEntity).get());
+
+            if (rawBlock->hasBE && block->hasBlockEntity()) {
+                auto be = blockSource->getBlockEntity(pos);
+                if (be != nullptr && rawBlock->blockEntity!="") {
+                    be->setNbt(CompoundTag::fromBinaryNBT(rawBlock->blockEntity).get());
+                }
             }
             return true;
         }

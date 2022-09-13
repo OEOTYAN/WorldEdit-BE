@@ -68,7 +68,7 @@ namespace worldedit {
 
         explicit ConvexRegion(const BoundingBox& region, const int& dim);
 
-        int size() const override;
+        uint64_t size() const override;
 
         void renderRegion() override;
 

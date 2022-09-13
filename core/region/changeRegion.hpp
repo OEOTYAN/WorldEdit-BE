@@ -33,12 +33,21 @@ namespace worldedit {
                         Block* block = const_cast<Block*>(BedrockBlocks::mAir),
                         Block* exblock = const_cast<Block*>(BedrockBlocks::mAir));
 
+    inline void setFunction(std::unordered_map<::std::string, double>& variables,
+                            const Vec3& playerPos,
+                            const Vec2& playerRot) {
+        variables["px"] = playerPos.x;
+        variables["py"] = playerPos.y;
+        variables["pz"] = playerPos.z;
+        variables["pp"] = playerRot.x;
+        variables["pt"] = playerRot.y;
+    }
+
     template <typename functions>
-    void setFunction(std::unordered_map<::std::string, double>& variables,
+    inline void setFunction(std::unordered_map<::std::string, double>& variables,
                      functions& funcs,
                      const BoundingBox& boundingBox,
                      const Vec3& playerPos,
-                     const Vec2& playerRot,
                      const BlockPos& pos,
                      const Vec3& center) {
         double lengthx = (boundingBox.max.x - boundingBox.min.x) * 0.5;
@@ -54,8 +63,6 @@ namespace worldedit {
         variables["rx"] = pos.x;
         variables["ry"] = pos.y;
         variables["rz"] = pos.z;
-        variables["px"] = playerRot.x;
-        variables["py"] = playerRot.y;
         variables["ox"] = pos.x - playerPos.x;
         variables["oy"] = pos.y - playerPos.y;
         variables["oz"] = pos.z - playerPos.z;

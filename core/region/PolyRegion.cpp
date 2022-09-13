@@ -144,8 +144,8 @@ namespace worldedit {
         return {"§aThis region has been shifted", true};
     }
 
-    int PolyRegion::size() const {
-        int area = 0;
+    uint64_t PolyRegion::size() const {
+        uint64_t area = 0;
         auto j = points.size() - 1;
         for (int i = 0; i <= j; ++i) {
             int x = points[j].x + points[i].x;
@@ -154,7 +154,7 @@ namespace worldedit {
             j = i;
         }
 
-        return (int)std::floor(std::abs((double)area * 0.5)) * (maxY - minY + 1);
+        return (uint64_t)std::floor(std::abs((double)area * 0.5)) * (maxY - minY + 1);
     };
 
     void PolyRegion::renderRegion() {

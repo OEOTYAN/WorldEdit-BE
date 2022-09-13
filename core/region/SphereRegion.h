@@ -28,9 +28,7 @@ namespace worldedit {
 
         Vec3 getCenter() const override { return center.toVec3() + 0.5f; };
 
-        int size() const override {
-            return (int)std::round(4.0 / 3.0 * M_PI * radius * radius * radius);
-        };
+        uint64_t size() const override { return (uint64_t)std::round(4.0 / 3.0 * M_PI * radius * radius * radius); };
 
         void forEachBlockUVInRegion(const std::function<void(const BlockPos&, double, double)>& todo) override;
 

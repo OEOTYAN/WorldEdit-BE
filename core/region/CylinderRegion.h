@@ -23,8 +23,8 @@ namespace worldedit {
 
         bool setY(int y);
 
-        int size() const override {
-            return (int)std::round(M_PI * (double)radius * (double)radius * (maxY - minY + 1));
+        uint64_t size() const override {
+            return (uint64_t)std::round(M_PI * (double)radius * (double)radius * (maxY - minY + 1));
         };
 
         std::pair<std::string, bool> expand(const std::vector<BlockPos>& changes) override;

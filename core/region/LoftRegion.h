@@ -53,6 +53,11 @@ namespace worldedit {
 
         void buildCache();
 
+        uint64_t size() const override {
+            auto bSize = boundingBox.max - boundingBox.min + 1;
+            return std::max(std::max((uint64_t)bSize.x * bSize.z, (uint64_t)bSize.x * bSize.y), (uint64_t)bSize.y * bSize.z);
+        }
+
         bool removePoint(int dim, const BlockPos& pos = BlockPos::MIN) override;
 
         void forEachBlockInRegion(const std::function<void(const BlockPos&)>& todo) override;

@@ -36,12 +36,12 @@
 namespace worldedit {
     void playerSubscribe();
     bool playerLeftClick(Player* player,
-                         bool isLong,
+                        const bool isLong,
                          class ItemStack* item,
                          BlockInstance& blockInstance,
                          FaceID mFace);
     bool playerRightClick(Player* player,
-                          bool isLong,
+                          const bool isLong,
                           class ItemStack* item,
                           BlockInstance& blockInstance,
                           FaceID mFace);
