@@ -63,7 +63,7 @@ namespace worldedit {
             if (constBlock) {
                 return block;
             }
-            if (blockId = -2140000001) {
+            if (blockId == -2140000001) {
                 return const_cast<Block*>(&Global<Level>->getBlockPalette().getBlock(
                     static_cast<unsigned int>(round(cpp_eval::eval<double>(blockIdfunc, variables, funcs)))));
             }
