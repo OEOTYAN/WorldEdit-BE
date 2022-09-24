@@ -2,8 +2,6 @@
 // Created by OEOTYAN on 2022/05/30.
 //
 #pragma once
-#ifndef WORLDEDIT_TOOL_H
-#define WORLDEDIT_TOOL_H
 
 #include <MC/BlockInstance.hpp>
 #include <MC/Player.hpp>
@@ -72,5 +70,3 @@ namespace worldedit {
     };
 
 }  // namespace worldedit
-
-#endif  // WORLDEDIT_TOOL_H

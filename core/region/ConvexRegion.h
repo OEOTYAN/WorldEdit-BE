@@ -2,8 +2,6 @@
 // Created by OEOTYAN on 2021/2/8.
 //
 #pragma once
-#ifndef WORLDEDIT_CONVEXREGION_H
-#define WORLDEDIT_CONVEXREGION_H
 
 #include "Global.h"
 #include "Region.h"
@@ -14,13 +12,16 @@ namespace worldedit {
         Vec3 start;
         Vec3 end;
 
-        explicit Edge(const Vec3& _start, const Vec3& _end) : start(_start), end(_end){};
+        explicit Edge(const Vec3& _start, const Vec3& _end)
+            : start(_start), end(_end){};
         bool operator==(const Edge& other) const;
         Triangle createTriangle(const Vec3&);
     };
     class _hash {
        public:
-        size_t operator()(const Edge& rc) const { return std::hash<Vec3>()(rc.start) ^ std::hash<Vec3>()(rc.end); }
+        size_t operator()(const Edge& rc) const {
+            return std::hash<Vec3>()(rc.start) ^ std::hash<Vec3>()(rc.end);
+        }
     };
     class Triangle {
        public:
@@ -75,10 +76,13 @@ namespace worldedit {
         std::pair<std::string, bool> shift(const BlockPos& change) override;
 
         Vec3 getCenter() const override {
-            return centerAccum.toVec3() * (1.0f / vertices.size()) + Vec3(0.5, 0.5, 0.5);
+            return centerAccum.toVec3() * (1.0f / vertices.size()) +
+                   Vec3(0.5, 0.5, 0.5);
         };
 
-        void forEachLine(const std::function<void(const BlockPos&, const BlockPos&)>& todo) override;
+        void forEachLine(
+            const std::function<void(const BlockPos&, const BlockPos&)>& todo)
+            override;
 
         bool setMainPos(const BlockPos& pos, const int& dim) override;
 
@@ -87,5 +91,3 @@ namespace worldedit {
         bool contains(const BlockPos& pos) override;
     };
 }  // namespace worldedit
-
-#endif  // WORLDEDIT_CONVEXREGION_H

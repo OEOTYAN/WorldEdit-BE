@@ -2,8 +2,6 @@
 // Created by OEOTYAN on 2022/05/18.
 //
 #pragma once
-#ifndef WORLDEDIT_BLOCKPATTERN_H
-#define WORLDEDIT_BLOCKPATTERN_H
 
 #include "Global.h"
 #include "Utils/StringHelper.h"
@@ -143,5 +141,3 @@ namespace worldedit {
         }
     };
 }  // namespace worldedit
-
-#endif  // WORLDEDIT_BLOCKPATTERN_H

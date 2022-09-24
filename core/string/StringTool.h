@@ -2,10 +2,6 @@
 // Created by OEOTYAN on 2021/02/19.
 //
 #pragma once
-#ifndef WORLDEDIT_STRINGTOOL_H
-#define WORLDEDIT_STRINGTOOL_H
-
-//#include "Global.h"
 
 namespace worldedit {
 
@@ -49,4 +45,3 @@ namespace worldedit {
         }
     }  // namespace
 }  // namespace worldedit
-#endif  // WORLDEDIT_STRINGTOOL_H

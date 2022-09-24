@@ -2,8 +2,6 @@
 // Created by OEOTYAN on 2022/05/16.
 //
 #pragma once
-#ifndef WORLDEDIT_WORLDEDIT_H
-#define WORLDEDIT_WORLDEDIT_H
 
 #include "Global.h"
 #include "region/Regions.h"
@@ -60,6 +58,3 @@ namespace worldedit {
     std::string getBlockName(int id);
     int getBlockId(const std::string& name);
 }  // namespace worldedit
-
-// std::unordered_map<std::string, std::string>& getBlockColorssMap();
-#endif  // WORLDEDIT_WORLDEDIT_H

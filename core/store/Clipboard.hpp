@@ -2,8 +2,6 @@
 // Created by OEOTYAN on 2022/05/21.
 //
 #pragma once
-#ifndef WORLDEDIT_CLIPBOARD_H
-#define WORLDEDIT_CLIPBOARD_H
 
 #include "Global.h"
 #include <MC/Level.hpp>
@@ -58,5 +56,3 @@ namespace worldedit {
         void forEachBlockInClipboard(const std::function<void(const BlockPos&)>& todo);
     };
 }  // namespace worldedit
-
-#endif  // WORLDEDIT_CLIPBOARD_H

@@ -2,8 +2,6 @@
 // Created by OEOTYAN on 2022/05/16.
 //
 #pragma once
-#ifndef WORLDEDIT_PLAYER_H
-#define WORLDEDIT_PLAYER_H
 #include "Global.h"
 #include <EventAPI.h>
 // #include <LoggerAPI.h>
@@ -46,5 +44,3 @@ namespace worldedit {
                           BlockInstance& blockInstance,
                           FaceID mFace);
 }  // namespace worldedit
-
-#endif  // WORLDEDIT_PLAYER_H

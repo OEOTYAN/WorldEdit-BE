@@ -2,8 +2,6 @@
 // Created by OEOTYAN on 2022/5/15.
 //
 #pragma once
-#ifndef WORLDEDIT_GRAPHICS_H
-#define WORLDEDIT_GRAPHICS_H
 
 #include "Global.h"
 #include "ParticleAPI.h"
@@ -41,9 +39,9 @@ namespace worldedit {
 
     std::string facingToDirString(FACING facing);
 
-    void drawCurve(class KochanekBartelsInterpolation const& curve, enum mce::ColorPalette color, int dimType);
+    void drawCurve(class KochanekBartelsInterpolation const& curve,
+                   enum mce::ColorPalette color,
+                   int dimType);
 
     class ::ParticleCUI& globalPT();
 }  // namespace worldedit
-
-#endif  // WORLDEDIT_GRAPHICS_H

@@ -2,8 +2,6 @@
 // Created by OEOTYAN on 2022/06/11.
 //
 #pragma once
-#ifndef WORLDEDIT_IMAGE_H
-#define WORLDEDIT_IMAGE_H
 
 #include "Global.h"
 #include "lodepng.h"
@@ -39,13 +37,18 @@ namespace worldedit {
         unsigned long long size = 0;
 
         Texture2D(unsigned w, unsigned h);
-        mce::Color sample(const Sampler& sampler, double u, double v, double lod = 0.0) const;
-        mce::Color load(const Sampler& sampler, double u, double v, double offsetu = 0.0, double offsetv = 0.0) const;
+        mce::Color sample(const Sampler& sampler,
+                          double u,
+                          double v,
+                          double lod = 0.0) const;
+        mce::Color load(const Sampler& sampler,
+                        double u,
+                        double v,
+                        double offsetu = 0.0,
+                        double offsetv = 0.0) const;
     };
 
     Texture2D loadpng(const std::string& filename);
 
     double colorToHeight(const mce::Color& color);
 }  // namespace worldedit
-
-#endif  // WORLDEDIT_IMAGE_H

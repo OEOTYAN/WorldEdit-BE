@@ -3,8 +3,6 @@
 //
 
 #pragma once
-#ifndef WORLDEDIT_REGIONS_H
-#define WORLDEDIT_REGIONS_H
 
 #include "Region.h"
 #include "CuboidRegion.h"
@@ -14,5 +12,3 @@
 #include "PolyRegion.h"
 #include "ConvexRegion.h"
 #include "LoftRegion.h"
-
-#endif  // WORLDEDIT_REGIONS_H

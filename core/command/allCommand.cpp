@@ -8,7 +8,6 @@
 #include "eval/Eval.h"
 #include "WorldEdit.h"
 
-
 #include "MC/Level.hpp"
 #include "MC/MobSpawnRules.hpp"
 #include "MC/SpawnGroupData.hpp"

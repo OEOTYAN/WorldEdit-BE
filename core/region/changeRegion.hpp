@@ -2,8 +2,6 @@
 // Created by OEOTYAN on 2022/05/17.
 //
 #pragma once
-#ifndef WORLDEDIT_CHANGEREGION_H
-#define WORLDEDIT_CHANGEREGION_H
 
 #include "Global.h"
 // #include <EventAPI.h>
@@ -28,14 +26,16 @@
 
 namespace worldedit {
 
-    void setBlockSimple(BlockSource* blockSource,
-                        const BlockPos& pos,
-                        Block* block = const_cast<Block*>(BedrockBlocks::mAir),
-                        Block* exblock = const_cast<Block*>(BedrockBlocks::mAir));
+    void setBlockSimple(
+        BlockSource* blockSource,
+        const BlockPos& pos,
+        Block* block = const_cast<Block*>(BedrockBlocks::mAir),
+        Block* exblock = const_cast<Block*>(BedrockBlocks::mAir));
 
-    inline void setFunction(std::unordered_map<::std::string, double>& variables,
-                            const Vec3& playerPos,
-                            const Vec2& playerRot) {
+    inline void setFunction(
+        std::unordered_map<::std::string, double>& variables,
+        const Vec3& playerPos,
+        const Vec2& playerRot) {
         variables["px"] = playerPos.x;
         variables["py"] = playerPos.y;
         variables["pz"] = playerPos.z;
@@ -44,12 +44,13 @@ namespace worldedit {
     }
 
     template <typename functions>
-    inline void setFunction(std::unordered_map<::std::string, double>& variables,
-                     functions& funcs,
-                     const BoundingBox& boundingBox,
-                     const Vec3& playerPos,
-                     const BlockPos& pos,
-                     const Vec3& center) {
+    inline void setFunction(
+        std::unordered_map<::std::string, double>& variables,
+        functions& funcs,
+        const BoundingBox& boundingBox,
+        const Vec3& playerPos,
+        const BlockPos& pos,
+        const Vec3& center) {
         double lengthx = (boundingBox.max.x - boundingBox.min.x) * 0.5;
         double lengthy = (boundingBox.max.y - boundingBox.min.y) * 0.5;
         double lengthz = (boundingBox.max.z - boundingBox.min.z) * 0.5;
@@ -71,10 +72,12 @@ namespace worldedit {
         variables["cz"] = pos.z - floor(center.z);
     }
 
-    bool changeVicePos(Player* player, BlockInstance blockInstance, bool output = true);
+    bool changeVicePos(Player* player,
+                       BlockInstance blockInstance,
+                       bool output = true);
 
-    bool changeMainPos(Player* player, BlockInstance blockInstance, bool output = true);
+    bool changeMainPos(Player* player,
+                       BlockInstance blockInstance,
+                       bool output = true);
 
 }  // namespace worldedit
-
-#endif  // WORLDEDIT_CHANGEREGION_H

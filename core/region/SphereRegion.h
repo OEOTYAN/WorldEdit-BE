@@ -2,9 +2,6 @@
 // Created by OEOTYAN on 2021/2/8.
 //
 
-#ifndef WORLDEDIT_SPHEREREGION_H
-#define WORLDEDIT_SPHEREREGION_H
-
 #include "Global.h"
 #include "Region.h"
 
@@ -43,5 +40,3 @@ namespace worldedit {
         bool contains(const BlockPos& pos) override;
     };
 }  // namespace worldedit
-
-#endif  // WORLDEDIT_SPHEREREGION_H
