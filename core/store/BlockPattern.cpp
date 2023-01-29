@@ -15,52 +15,49 @@
 
 namespace worldedit {
 
-    double Percents::getPercents(
-        const std::unordered_map<::std::string, double>& variables,
-        EvalFunctions& funcs) {
+    double Percents::getPercents(const std::unordered_map<::std::string, double>& variables, EvalFunctions& funcs) {
         if (isNum) {
             return value;
         }
         return cpp_eval::eval<double>(function, variables, funcs);
     }
-    Block* RawBlock::getBlock(
-        const std::unordered_map<::std::string, double>& variables,
-        EvalFunctions& funcs) {
+    Block* RawBlock::getBlock(const std::unordered_map<::std::string, double>& variables, EvalFunctions& funcs) {
         if (constBlock) {
             return block;
         }
-        if (blockId = -2140000001) {
-            return const_cast<Block*>(
-                &Global<Level>->getBlockPalette().getBlock(
-                    static_cast<unsigned int>(round(cpp_eval::eval<double>(
-                        blockIdfunc, variables, funcs)))));
+        if (blockId == -2140000001) {
+            return const_cast<Block*>(&Global<Level>->getBlockPalette().getBlock(
+                static_cast<unsigned int>(round(cpp_eval::eval<double>(blockIdfunc, variables, funcs)))));
         }
         int mId = blockId;
-        if (mId == INT_MIN) {
-            mId = static_cast<int>(
-                round(cpp_eval::eval<double>(blockIdfunc, variables, funcs)));
-        } else if (mId == -2140000000) {
-            mId = 0;
+        std::string blockName;
+        if (mId == -2140000002) {
+            blockName = blockIdfunc;
+        } else {
+            if (mId == INT_MIN) {
+                mId = static_cast<int>(round(cpp_eval::eval<double>(blockIdfunc, variables, funcs)));
+            } else if (mId == -2140000000) {
+                mId = 0;
+            }
+            blockName = getBlockName(mId);
         }
+
         int mData = blockData;
         if (mData == INT_MIN) {
-            mData = static_cast<int>(
-                round(cpp_eval::eval<double>(blockDatafunc, variables, funcs)));
+            mData = static_cast<int>(round(cpp_eval::eval<double>(blockDatafunc, variables, funcs)));
         } else if (mData == -2140000000) {
             mData = 0;
         }
-        return Block::create(getBlockName(mId), mData);
+        return Block::create(blockName, mData);
     }
 
-    RawBlock* BlockPattern::getRawBlock(
-        const std::unordered_map<::std::string, double>& variables,
-        EvalFunctions& funcs) {
+    RawBlock* BlockPattern::getRawBlock(const std::unordered_map<::std::string, double>& variables,
+                                        EvalFunctions& funcs) {
         std::vector<double> weights;
         double total = 0;
         weights.resize(blockNum);
         for (int i = 0; i < blockNum; ++i) {
-            weights[i] =
-                std::max(percents[i].getPercents(variables, funcs), 0.0);
+            weights[i] = std::max(percents[i].getPercents(variables, funcs), 0.0);
             total += weights[i];
         }
         if (total < 1e-32) {
@@ -82,42 +79,34 @@ namespace worldedit {
         exBlock = const_cast<class Block*>(BedrockBlocks::mAir);
     }
 
-    Block* BlockPattern::getBlock(
-        const std::unordered_map<::std::string, double>& variables,
-        EvalFunctions& funcs) {
+    Block* BlockPattern::getBlock(const std::unordered_map<::std::string, double>& variables, EvalFunctions& funcs) {
         return getRawBlock(variables, funcs)->getBlock(variables, funcs);
     }
 
-    bool BlockPattern::setBlock(
-        const std::unordered_map<::std::string, double>& variables,
-        EvalFunctions& funcs,
-        BlockSource* blockSource,
-        const BlockPos& pos) {
+    bool BlockPattern::setBlock(const std::unordered_map<::std::string, double>& variables,
+                                EvalFunctions& funcs,
+                                BlockSource* blockSource,
+                                const BlockPos& pos) {
         if (clipboard != nullptr) {
-            return clipboard->getSetLoop(pos - bias)
-                .setBlock(pos, blockSource, *playerData, funcs, variables);
+            return clipboard->getSetLoop(pos - bias).setBlock(pos, blockSource, *playerData, funcs, variables);
         }
         auto* rawBlock = getRawBlock(variables, funcs);
         if (rawBlock == nullptr) {
             return false;
         }
         auto* block = rawBlock->getBlock(variables, funcs);
-        playerData->setBlockSimple(blockSource, funcs, variables, pos, block,
-                                   rawBlock->exBlock);
+        playerData->setBlockSimple(blockSource, funcs, variables, pos, block, rawBlock->exBlock);
 
         if (rawBlock->hasBE && block->hasBlockEntity()) {
             auto be = blockSource->getBlockEntity(pos);
             if (be != nullptr && rawBlock->blockEntity != "") {
-                be->setNbt(
-                    CompoundTag::fromBinaryNBT(rawBlock->blockEntity).get());
+                be->setNbt(CompoundTag::fromBinaryNBT(rawBlock->blockEntity).get());
             }
         }
         return true;
     }
 
-    BlockPattern::BlockPattern(std::string str,
-                               std::string xuid,
-                               Region* region) {
+    BlockPattern::BlockPattern(std::string str, std::string xuid, Region* region) {
         auto strSize = str.size();
 
         playerData = &getPlayersData(xuid);
@@ -196,10 +185,8 @@ namespace worldedit {
                 } else {
                     auto head = i;
                     ++i;
-                    while (i < strSize && (isalpha(str[i]) || str[i] == '_' ||
-                                           isdigit(str[i]) ||
-                                           (str[i] == ':' && i + 1 < strSize &&
-                                            isalpha(str[i + 1])))) {
+                    while (i < strSize && (isalpha(str[i]) || str[i] == '_' || isdigit(str[i]) ||
+                                           (str[i] == ':' && i + 1 < strSize && isalpha(str[i + 1])))) {
                         ++i;
                     }
                     form += string("block") + str[i];
@@ -228,8 +215,10 @@ namespace worldedit {
         rawBlocks.resize(blockNum);
         int rawPtr = 0;
         for (int iter = 0; iter < blockNum; iter++) {
-            if (blockList[iter].find("%") != std::string::npos) {
-                if (blockList[iter].find("num%") != std::string::npos) {
+            auto& blockIter = blockList[iter];
+            auto& rawBlockIter = rawBlocks[iter];
+            if (blockIter.find("%") != std::string::npos) {
+                if (blockIter.find("num%") != std::string::npos) {
                     percents[iter].value = std::stod(raw[rawPtr]);
                 } else {
                     percents[iter].isNum = false;
@@ -237,42 +226,40 @@ namespace worldedit {
                 }
                 ++rawPtr;
             } else {
-                blockList[iter] = "%" + blockList[iter];
+                blockIter = "%" + blockIter;
             }
-            if (blockList[iter].find("%num") != std::string::npos) {
-                rawBlocks[iter].blockId = std::stoi(raw[rawPtr]);
+            if (blockIter.find("%num") != std::string::npos) {
+                rawBlockIter.blockId = -2140000002;
+                rawBlockIter.blockIdfunc = getBlockName(std::stoi(raw[rawPtr]));
                 ++rawPtr;
-            } else if (blockList[iter].find("%block") != std::string::npos) {
+            } else if (blockIter.find("%block") != std::string::npos) {
                 std::string tmpName = raw[rawPtr];
-                if (tmpName[0] == 'r' && tmpName[1] == 't' &&
-                    isdigit(tmpName[2])) {
-                    rawBlocks[iter].block = const_cast<Block*>(
-                        &Global<Level>->getBlockPalette().getBlock(
-                            static_cast<unsigned int>(
-                                std::stoi(tmpName.substr(2)))));
+                if (tmpName[0] == 'r' && tmpName[1] == 't' && isdigit(tmpName[2])) {
+                    rawBlockIter.block = const_cast<Block*>(&Global<Level>->getBlockPalette().getBlock(
+                        static_cast<unsigned int>(std::stoi(tmpName.substr(2)))));
                     ++rawPtr;
                     continue;
                 }
                 if (tmpName.find("minecraft:") == std::string::npos) {
                     tmpName = "minecraft:" + tmpName;
                 }
-                rawBlocks[iter].blockId = getBlockId(tmpName);
+                rawBlockIter.blockId = -2140000002;
+                rawBlockIter.blockIdfunc = tmpName;
                 ++rawPtr;
-            } else if (blockList[iter].find("%rtfunciton") !=
-                       std::string::npos) {
-                rawBlocks[iter].blockId = -2140000001;
-                rawBlocks[iter].constBlock = false;
-                rawBlocks[iter].blockIdfunc = raw[rawPtr];
+            } else if (blockIter.find("%rtfunciton") != std::string::npos) {
+                rawBlockIter.blockId = -2140000001;
+                rawBlockIter.constBlock = false;
+                rawBlockIter.blockIdfunc = raw[rawPtr];
                 ++rawPtr;
                 continue;
-            } else if (blockList[iter].find("%funciton") != std::string::npos) {
-                rawBlocks[iter].blockId = INT_MIN;
-                rawBlocks[iter].constBlock = false;
-                rawBlocks[iter].blockIdfunc = raw[rawPtr];
+            } else if (blockIter.find("%funciton") != std::string::npos) {
+                rawBlockIter.blockId = INT_MIN;
+                rawBlockIter.constBlock = false;
+                rawBlockIter.blockIdfunc = raw[rawPtr];
                 ++rawPtr;
-            } else if (blockList[iter].find("%SNBT") != std::string::npos) {
-                rawBlocks[iter].blockId = INT_MIN;
-                rawBlocks[iter].blockData = INT_MIN;
+            } else if (blockIter.find("%SNBT") != std::string::npos) {
+                rawBlockIter.blockId = INT_MIN;
+                rawBlockIter.blockData = INT_MIN;
                 std::string tmpSNBT = raw[rawPtr];
                 if (tmpSNBT[0] == '{' && tmpSNBT[1] == '{') {
                     size_t i2 = 1;
@@ -291,43 +278,34 @@ namespace worldedit {
                                 }
                                 i2++;
                             }
-                            tmpSNBTs.push_back(
-                                tmpSNBT.substr(head2, i2 - head2));
-                            // std::cout << tmpSNBT.substr(head2, i2 - head2) <<
-                            // std::endl;
+                            tmpSNBTs.push_back(tmpSNBT.substr(head2, i2 - head2));
                         }
                         i2++;
                     }
-                    rawBlocks[iter].block =
-                        Block::create(CompoundTag::fromSNBT(tmpSNBTs[0]).get());
+                    rawBlockIter.block = Block::create(CompoundTag::fromSNBT(tmpSNBTs[0]).get());
                     if (tmpSNBTs.size() > 1) {
-                        rawBlocks[iter].exBlock = Block::create(
-                            CompoundTag::fromSNBT(tmpSNBTs[1]).get());
+                        rawBlockIter.exBlock = Block::create(CompoundTag::fromSNBT(tmpSNBTs[1]).get());
                     }
                     if (tmpSNBTs.size() > 2) {
-                        rawBlocks[iter].blockEntity =
-                            CompoundTag::fromSNBT(tmpSNBTs[2])->toBinaryNBT();
+                        rawBlockIter.blockEntity = CompoundTag::fromSNBT(tmpSNBTs[2])->toBinaryNBT();
                     }
                 } else {
-                    rawBlocks[iter].block =
-                        Block::create(CompoundTag::fromSNBT(tmpSNBT).get());
+                    rawBlockIter.block = Block::create(CompoundTag::fromSNBT(tmpSNBT).get());
                 }
                 ++rawPtr;
                 continue;
             }
-            if (blockList[iter].find(":num") != std::string::npos) {
-                rawBlocks[iter].blockData = std::stoi(raw[rawPtr]);
+            if (blockIter.find(":num") != std::string::npos) {
+                rawBlockIter.blockData = std::stoi(raw[rawPtr]);
                 ++rawPtr;
-            } else if (blockList[iter].find(":funciton") != std::string::npos) {
-                rawBlocks[iter].blockData = INT_MIN;
-                rawBlocks[iter].constBlock = false;
-                rawBlocks[iter].blockDatafunc = raw[rawPtr];
+            } else if (blockIter.find(":funciton") != std::string::npos) {
+                rawBlockIter.blockData = INT_MIN;
+                rawBlockIter.constBlock = false;
+                rawBlockIter.blockDatafunc = raw[rawPtr];
                 ++rawPtr;
             }
-            if (rawBlocks[iter].constBlock) {
-                rawBlocks[iter].block =
-                    Block::create(getBlockName(rawBlocks[iter].blockId),
-                                  rawBlocks[iter].blockData);
+            if (rawBlockIter.constBlock) {
+                rawBlockIter.block = Block::create(rawBlockIter.blockIdfunc, rawBlockIter.blockData);
             }
         }
     }
@@ -335,8 +313,7 @@ namespace worldedit {
     bool BlockPattern::hasBlock(Block* block) {
         for (auto& rawBlock : rawBlocks) {
             if (block->getTypeName() == getBlockName(rawBlock.blockId) &&
-                (rawBlock.blockData < 0 ||
-                 rawBlock.blockData == block->getTileData())) {
+                (rawBlock.blockData < 0 || rawBlock.blockData == block->getTileData())) {
                 return true;
             }
         }
