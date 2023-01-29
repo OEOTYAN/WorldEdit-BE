@@ -3,7 +3,6 @@
 //
 
 #include "Clipboard.hpp"
-#include "store/BlockNBTSet.hpp"
 #include "eval/Eval.h"
 
 namespace worldedit {
@@ -11,7 +10,7 @@ namespace worldedit {
     long long Clipboard::getIter(const BlockPos& pos) {
         return (pos.y + size.y * pos.z) * size.x + pos.x;
     }
-    long long Clipboard::getIter2(const BlockPos& pos) {
+    long long Clipboard::getIterLoop(const BlockPos& pos) {
         return (static_cast<int>(posfmod(pos.y, size.y)) + size.y * static_cast<int>(posfmod(pos.z, size.z))) * size.x +
                static_cast<int>(posfmod(pos.x, size.x));
     }
@@ -58,7 +57,7 @@ namespace worldedit {
             rotation = Rotation::Rotate270;
         }
     }
-    void Clipboard::flip(FACING facing) {
+    void Clipboard::flip(enum class FACING facing) {
         if (facing == FACING::NEG_Z || facing == FACING::POS_Z) {
             if (mirror == Mirror::None_15) {
                 mirror = Mirror::X;
@@ -182,14 +181,19 @@ namespace worldedit {
     BlockNBTSet& Clipboard::getSet(const BlockPos& pos) {
         return blockslist[getIter(pos)];
     }
-    BlockNBTSet& Clipboard::getSet2(const BlockPos& pos) {
-        return blockslist[getIter2(pos)];
+    BlockNBTSet& Clipboard::getSetLoop(const BlockPos& pos) {
+        return blockslist[getIterLoop(pos)];
     }
     bool Clipboard::contains(const BlockPos& pos) {
         return blockslist[getIter(pos)].hasBlock;
     }
-    void Clipboard::setBlocks(const BlockPos& pos, BlockPos& worldPos, BlockSource* blockSource) {
-        blockslist[getIter(pos)].setBlock(worldPos, blockSource, rotation, mirror);
+    bool Clipboard::setBlocks(const BlockPos& pos,
+                              BlockPos& worldPos,
+                              BlockSource* blockSource,
+                              class PlayerData& data,
+                              class EvalFunctions& funcs,
+                              std::unordered_map<std::string, double> const& var) {
+       return blockslist[getIter(pos)].setBlock(worldPos, blockSource, data, funcs, var, rotation, mirror);
     }
     void Clipboard::forEachBlockInClipboard(const std::function<void(const BlockPos&)>& todo) {
         for (int y = 0; y < size.y; y++)

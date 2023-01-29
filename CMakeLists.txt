@@ -56,3 +56,6 @@ add_custom_command(TARGET WorldEdit PRE_BUILD
     COMMAND cmd /c ${PROJECT_SOURCE_DIR}/prepareLib.cmd ${PROJECT_SOURCE_DIR}
     COMMENT "Preparing Library"
 )
+add_custom_command(TARGET WorldEdit POST_BUILD
+    COMMAND cmd /c ${PROJECT_SOURCE_DIR}/runbds.bat ${PROJECT_SOURCE_DIR}
+)

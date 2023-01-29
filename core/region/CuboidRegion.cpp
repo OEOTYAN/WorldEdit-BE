@@ -91,7 +91,7 @@ namespace worldedit {
 
         updateBoundingBox();
 
-        return {"§aThis region has been expanded", true};
+        return {"worldedit.expand.expanded", true};
     }
 
     std::pair<std::string, bool> CuboidRegion::contract(const std::vector<BlockPos>& changes) {
@@ -140,7 +140,7 @@ namespace worldedit {
         }
 
         updateBoundingBox();
-        return {"§aThis region has been contracted", true};
+        return {"worldedit.contract.contracted", true};
     }
 
     std::pair<std::string, bool> CuboidRegion::shift(const BlockPos& change) {
@@ -148,7 +148,7 @@ namespace worldedit {
         vicePos = vicePos + change;
         updateBoundingBox();
 
-        return {"§aThis region has been shifted", true};
+        return {"worldedit.shift.shifted", true};
     }
 
     void CuboidRegion::forEachLine(const std::function<void(const BlockPos&, const BlockPos&)>& todo) {

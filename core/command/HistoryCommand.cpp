@@ -12,54 +12,57 @@ namespace worldedit {
 
     void historyCommandSetup() {
         DynamicCommand::setup(
-            "maxhistorylength",        // command name
-            "set max history length",  // command description
+            "maxhistorylength",                                    // command name
+            tr("worldedit.command.description.maxhistorylength"),  // command description
             {}, {ParamData("num", ParamType::Int, false, "num")}, {{"num"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
-                mod.maxHistoryLength = results["num"].get<int>();
-                output.success(fmt::format("§amax history length set to {}", mod.maxHistoryLength));
+                auto player = origin.getPlayer();
+                auto xuid = player->getXuid();
+                auto& playerData = getPlayersData(xuid);
+                playerData.maxHistoryLength = results["num"].get<int>();
+                output.trSuccess("worldedit.history.length", playerData.maxHistoryLength);
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "clearhistory",        // command name
-            "clear your history",  // command description
+            "clearhistory",                                    // command name
+            tr("worldedit.command.description.clearhistory"),  // command description
             {}, {}, {{}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
-                auto xuid = origin.getPlayer()->getXuid();
-                mod.playerHistoryMap.erase(xuid);
-                output.success(fmt::format("§ahistory cleared"));
+                auto player = origin.getPlayer();
+                auto xuid = player->getXuid();
+                auto& playerData = getPlayersData(xuid);
+                playerData.clearHistory();
+                output.trSuccess("worldedit.clearhistory.cleared");
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "undo",  // command name
-            "undo",  // command description
+            "undo",                                    // command name
+            tr("worldedit.command.description.undo"),  // command description
             {}, {ParamData("num", ParamType::Int, true, "num")}, {{"num"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
+                auto& playerData = getPlayersData(xuid);
                 int ut = 1;
                 if (results["num"].isSet) {
                     ut = results["num"].get<int>();
                 }
                 for (int undoTimes = 0; undoTimes < ut; undoTimes++) {
-                    auto res = mod.getPlayerUndoHistory(xuid);
+                    auto res = playerData.getUndoHistory();
                     auto flag = res.second;
                     if (res.second == -1) {
-                        output.error(fmt::format("§aYou don't have a history yet"));
+                        output.trError("worldedit.undo.none");
                         return;
                     } else if (res.second == 0) {
-                        output.error(fmt::format("Undo limit reached"));
+                        output.trError("worldedit.undo.none");
                         return;
                     }
                     int dimID = res.first->playerRelPos.x;
@@ -77,38 +80,40 @@ namespace worldedit {
 
                     res.first->forEachBlockInClipboard([&](const BlockPos& pos) {
                         auto worldPos = pos + res.first->playerPos;
-                        res.first->blockslist[res.first->getIter(pos)].setBlock(worldPos, blockSource);
-                        ++i;
+
+                        i += res.first->blockslist[res.first->getIter(pos)].setBlockForHistory(worldPos, blockSource,
+                                                                                               playerData);
                     });
                     *res.first = tmp;
                     res.first->used = true;
-                    output.success(fmt::format("§a{} block(s) undone", i));
+                    output.trSuccess("worldedit.undo.count", i);
                 }
+                output.trSuccess("worldedit.undo.undone", ut);
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "redo",  // command name
-            "redo",  // command description
+            "redo",                                    // command name
+            tr("worldedit.command.description.redo"),  // command description
             {}, {ParamData("num", ParamType::Int, true, "num")}, {{"num"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
+                auto& playerData = getPlayersData(xuid);
                 int rt = 1;
                 if (results["num"].isSet) {
                     rt = results["num"].get<int>();
                 }
                 for (int redoTimes = 0; redoTimes < rt; redoTimes++) {
-                    auto res = mod.getPlayerRedoHistory(xuid);
+                    auto res = playerData.getRedoHistory();
                     auto flag = res.second;
                     if (res.second == -1) {
-                        output.error(fmt::format("§aYou don't have a history yet"));
+                        output.trError("worldedit.redo.none");
                         return;
                     } else if (res.second == 0) {
-                        output.error(fmt::format("Redo limit reached"));
+                        output.trError("worldedit.redo.none");
                         return;
                     }
                     int dimID = res.first->playerRelPos.x;
@@ -126,13 +131,14 @@ namespace worldedit {
 
                     res.first->forEachBlockInClipboard([&](const BlockPos& pos) {
                         auto worldPos = pos + res.first->playerPos;
-                        res.first->blockslist[res.first->getIter(pos)].setBlock(worldPos, blockSource);
-                        ++i;
+                        i += res.first->blockslist[res.first->getIter(pos)].setBlockForHistory(worldPos, blockSource,
+                                                                                               playerData);
                     });
                     *res.first = tmp;
                     res.first->used = true;
-                    output.success(fmt::format("§a{} block(s) redone", i));
+                    output.trSuccess("worldedit.redo.count", i);
                 }
+                output.trSuccess("worldedit.redo.redone", rt);
             },
             CommandPermissionLevel::GameMasters);
     }

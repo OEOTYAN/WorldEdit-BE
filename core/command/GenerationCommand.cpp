@@ -5,6 +5,7 @@
 #include "builder/SimpleBuilder.h"
 #include "store/BlockPattern.hpp"
 #include "WorldEdit.h"
+#include "region/Regions.h"
 
 namespace worldedit {
     using ParamType = DynamicCommand::ParameterType;
@@ -14,8 +15,8 @@ namespace worldedit {
 
     void generationCommandSetup() {
         DynamicCommand::setup(
-            "cyl",           // command name
-            "set cylinder",  // command description
+            "cyl",                                    // command name
+            tr("worldedit.command.description.cyl"),  // command description
             {},
             {ParamData("block", ParamType::Block, "block"),
              ParamData("blockPattern", ParamType::String, "blockPattern"),
@@ -25,7 +26,6 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
                 auto dimID = player->getDimensionId();
@@ -35,7 +35,7 @@ namespace worldedit {
                 if (results["args"].isSet) {
                     auto str = results["args"].getRaw<std::string>();
                     if (str.find("-") == std::string::npos) {
-                        output.error("wrong args");
+                        output.trError("worldedit.command.error.args", str);
                         return;
                     }
                     if (str.find("h") != std::string::npos) {
@@ -61,12 +61,12 @@ namespace worldedit {
                 BlockPattern blockPattern(bps, xuid, &region);
                 long long i = SimpleBuilder::buildCylinder(pos, dimID, xuid, &blockPattern, radius, height, arg_h);
                 i = std::max(0ll, i);
-                output.success(fmt::format("§a{} block(s) placed", i));
+                output.trSuccess("worldedit.set.success", i);
             },
             CommandPermissionLevel::GameMasters);
         DynamicCommand::setup(
-            "hcyl",                   // command name
-            "set hollowed cylinder",  // command description
+            "hcyl",                                    // command name
+            tr("worldedit.command.description.hcyl"),  // command description
             {},
             {ParamData("block", ParamType::Block, "block"),
              ParamData("blockPattern", ParamType::String, "blockPattern"),
@@ -75,7 +75,6 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
                 auto dimID = player->getDimensionId();
@@ -101,13 +100,13 @@ namespace worldedit {
                 BlockPattern blockPattern(bps, xuid, &region);
                 long long i = SimpleBuilder::buildCylinder(pos, dimID, xuid, &blockPattern, radius, height, arg_h);
                 i = std::max(0ll, i);
-                output.success(fmt::format("§a{} block(s) placed", i));
+                output.trSuccess("worldedit.set.success", i);
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "sphere",      // command name
-            "set sphere",  // command description
+            "sphere",                                    // command name
+            tr("worldedit.command.description.sphere"),  // command description
             {},
             {ParamData("block", ParamType::Block, "block"),
              ParamData("blockPattern", ParamType::String, "blockPattern"),
@@ -116,7 +115,6 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
                 auto dimID = player->getDimensionId();
@@ -126,7 +124,7 @@ namespace worldedit {
                 if (results["args"].isSet) {
                     auto str = results["args"].getRaw<std::string>();
                     if (str.find("-") == std::string::npos) {
-                        output.error("wrong args");
+                        output.trError("worldedit.command.error.args", str);
                         return;
                     }
                     if (str.find("h") != std::string::npos) {
@@ -148,12 +146,12 @@ namespace worldedit {
                 BlockPattern blockPattern(bps, xuid, &region);
                 long long i = SimpleBuilder::buildSphere(pos, dimID, xuid, &blockPattern, radius, arg_h);
                 i = std::max(0ll, i);
-                output.success(fmt::format("§a{} block(s) placed", i));
+                output.trSuccess("worldedit.set.success", i);
             },
             CommandPermissionLevel::GameMasters);
         DynamicCommand::setup(
-            "hsphere",              // command name
-            "set hollowed sphere",  // command description
+            "hsphere",                                    // command name
+            tr("worldedit.command.description.hsphere"),  // command description
             {},
             {ParamData("block", ParamType::Block, "block"),
              ParamData("blockPattern", ParamType::String, "blockPattern"),
@@ -162,7 +160,6 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
                 auto dimID = player->getDimensionId();
@@ -184,7 +181,7 @@ namespace worldedit {
                 BlockPattern blockPattern(bps, xuid, &region);
                 long long i = SimpleBuilder::buildSphere(pos, dimID, xuid, &blockPattern, radius, arg_h);
                 i = std::max(0ll, i);
-                output.success(fmt::format("§a{} block(s) placed", i));
+                output.trSuccess("worldedit.set.success", i);
             },
             CommandPermissionLevel::GameMasters);
     }

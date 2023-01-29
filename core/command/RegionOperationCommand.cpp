@@ -1,19 +1,22 @@
 //
 // Created by OEOTYAN on 2022/05/27.
 //
+#include "MC/ItemInstance.hpp"
 #include "allCommand.hpp"
 #include "store/BlockPattern.hpp"
+#include "store/BlockNBTSet.hpp"
 #include "eval/blur.hpp"
 #include "image/Image.h"
 #include "eval/Bresenham.hpp"
 #include "filesys/download.h"
 #include "MC/StructureTemplate.hpp"
-#include "MC/ItemInstance.hpp"
 #include "MC/Container.hpp"
 #include "MC/ItemStack.hpp"
 #include "MC/CompoundTag.hpp"
+#include "MC/StaticVanillaBlocks.hpp"
 #include "MC/ListTag.hpp"
 #include "WorldEdit.h"
+#include "region/Regions.h"
 
 namespace worldedit {
 
@@ -25,8 +28,8 @@ namespace worldedit {
 
     void regionOperationCommandSetup() {
         DynamicCommand::setup(
-            "set",        // command name
-            "set block",  // command description
+            "set",                                    // command name
+            tr("worldedit.command.description.set"),  // command description
             {},
             {ParamData("block", ParamType::Block, "block"),
              ParamData("blockPattern", ParamType::String, "blockPattern")},
@@ -34,19 +37,18 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
-                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
-                    mod.playerRegionMap[xuid]->hasSelected()) {
-                    auto* region = mod.playerRegionMap[xuid];
+                auto& playerData = getPlayersData(xuid);
+                if (playerData.region != nullptr && playerData.region->hasSelected()) {
+                    Region* region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = &player->getRegion();
 
-                    if (mod.maxHistoryLength > 0) {
-                        auto history = mod.getPlayerNextHistory(xuid);
+                    if (playerData.maxHistoryLength > 0) {
+                        auto history = playerData.getNextHistory();
                         *history = Clipboard(boundingBox.max - boundingBox.min);
                         history->playerRelPos.x = dimID;
                         history->playerPos = boundingBox.min;
@@ -60,15 +62,13 @@ namespace worldedit {
 
                     long long i = 0;
 
-                    INNERIZE_GMASK
-
                     auto playerPos = player->getPosition();
                     auto playerRot = player->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
                     f.setbox(boundingBox);
                     std::unordered_map<std::string, double> variables;
-                    setFunction(variables, playerPos, playerRot);
+                    playerData.setVarByPlayer(variables);
 
                     std::string bps = "minecraft:air";
                     if (results["blockPattern"].isSet) {
@@ -80,20 +80,19 @@ namespace worldedit {
 
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
-                        gMaskLambda(f, variables,
-                                    [&]() mutable { i += blockPattern.setBlock(variables, f, blockSource, pos); });
+                        i += blockPattern.setBlock(variables, f, blockSource, pos);
                     });
 
-                    output.success(fmt::format("§a{} block(s) placed", i));
+                    output.trSuccess("worldedit.set.success", i);
                 } else {
-                    output.error("You don't have a region yet");
+                    output.trError("worldedit.error.incomplete-region");
                 }
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "line",                                 // command name
-            "Draws lines through selected points",  // command description
+            "line",                                    // command name
+            tr("worldedit.command.description.line"),  // command description
             {},
             {
                 ParamData("block", ParamType::Block, "block"),
@@ -105,15 +104,14 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
-                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
-                    mod.playerRegionMap[xuid]->hasSelected()) {
-                    auto* region = mod.playerRegionMap[xuid];
+                auto& playerData = getPlayersData(xuid);
+                if (playerData.region != nullptr && playerData.region->hasSelected()) {
+                    Region* region = playerData.region;
 
                     if (region->regionType != RegionType::CUBOID && region->regionType != CONVEX) {
-                        output.error("You need to select a cuboid or convex region");
+                        output.trError("worldedit.line.invalid-type");
                         return;
                     }
 
@@ -134,7 +132,7 @@ namespace worldedit {
                     if (results["args"].isSet) {
                         auto str = results["args"].getRaw<std::string>();
                         if (str.find("-") == std::string::npos) {
-                            output.error("wrong args");
+                            output.trError("worldedit.command.error.args", str);
                             return;
                         }
                         if (str.find("h") != std::string::npos) {
@@ -142,8 +140,8 @@ namespace worldedit {
                         }
                     }
 
-                    if (mod.maxHistoryLength > 0) {
-                        auto history = mod.getPlayerNextHistory(xuid);
+                    if (playerData.maxHistoryLength > 0) {
+                        auto history = playerData.getNextHistory();
                         *history = Clipboard(boundingBox.max - boundingBox.min);
                         history->playerRelPos.x = dimID;
                         history->playerPos = boundingBox.min;
@@ -192,8 +190,6 @@ namespace worldedit {
 
                         long long i = 0;
 
-                        INNERIZE_GMASK
-
                         auto playerPos = player->getPosition();
                         auto playerRot = player->getRotation();
 
@@ -201,7 +197,7 @@ namespace worldedit {
                         f.setbs(blockSource);
                         f.setbox(boundingBox);
                         std::unordered_map<std::string, double> variables;
-                        setFunction(variables, playerPos, playerRot);
+                        playerData.setVarByPlayer(variables);
 
                         std::string bps = "minecraft:air";
                         if (results["blockPattern"].isSet) {
@@ -213,29 +209,27 @@ namespace worldedit {
 
                         boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
                             setFunction(variables, f, boundingBox, playerPos, pos, center);
-                            gMaskLambda(f, variables, [&]() mutable {
-                                auto localPos = pos - boundingBox.min + 1;
-                                if (tmp[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x]) {
-                                    i += blockPattern.setBlock(variables, f, blockSource, pos);
-                                }
-                            });
+                            auto localPos = pos - boundingBox.min + 1;
+                            if (tmp[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x]) {
+                                i += blockPattern.setBlock(variables, f, blockSource, pos);
+                            }
                         });
 
-                        output.success(fmt::format("§a{} block(s) placed", i));
+                        output.trSuccess("worldedit.line.success", i);
                     } catch (std::bad_alloc) {
-                        output.error("Out of memory");
+                        output.trError("worldedit.memory.out");
                         return;
                     }
 
                 } else {
-                    output.error("You don't have a region yet");
+                    output.trError("worldedit.error.incomplete-region");
                 }
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "curve",                                   // command name
-            "Draws a spline through selected points",  // command description
+            "curve",                                    // command name
+            tr("worldedit.command.description.curve"),  // command description
             {},
             {
                 ParamData("block", ParamType::Block, "block"),
@@ -247,15 +241,14 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
-                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
-                    mod.playerRegionMap[xuid]->hasSelected()) {
-                    auto* region = mod.playerRegionMap[xuid];
+                auto& playerData = getPlayersData(xuid);
+                if (playerData.region != nullptr && playerData.region->hasSelected()) {
+                    Region* region = playerData.region;
 
                     if (region->regionType != RegionType::CONVEX && region->regionType != RegionType::LOFT) {
-                        output.error("You need to select a convex or loft region");
+                        output.trError("worldedit.curve.invalid-type");
                         return;
                     }
 
@@ -272,7 +265,7 @@ namespace worldedit {
                     if (results["args"].isSet) {
                         auto str = results["args"].getRaw<std::string>();
                         if (str.find("-") == std::string::npos) {
-                            output.error("wrong args");
+                            output.trError("worldedit.command.error.args", str);
                             return;
                         }
                         if (str.find("h") != std::string::npos) {
@@ -288,8 +281,6 @@ namespace worldedit {
 
                     long long i = 0;
 
-                    INNERIZE_GMASK
-
                     auto playerPos = player->getPosition();
                     auto playerRot = player->getRotation();
 
@@ -304,12 +295,12 @@ namespace worldedit {
                     EvalFunctions f;
                     f.setbs(blockSource);
                     std::unordered_map<std::string, double> variables;
-                    setFunction(variables, playerPos, playerRot);
+                    playerData.setVarByPlayer(variables);
 
                     if (region->regionType == RegionType::LOFT) {
                         try {
-                            if (mod.maxHistoryLength > 0) {
-                                auto history = mod.getPlayerNextHistory(xuid);
+                            if (playerData.maxHistoryLength > 0) {
+                                auto history = playerData.getNextHistory();
                                 *history = Clipboard(boundingBox.max - boundingBox.min);
                                 history->playerRelPos.x = dimID;
                                 history->playerPos = boundingBox.min;
@@ -324,13 +315,11 @@ namespace worldedit {
                             auto* loft = static_cast<LoftRegion*>(region);
                             loft->forEachBlockInLines(radius, !arg_h, [&](const BlockPos& pos) {
                                 setFunction(variables, f, boundingBox, playerPos, pos, center);
-                                gMaskLambda(f, variables, [&]() mutable {
-                                    i += blockPattern.setBlock(variables, f, blockSource, pos);
-                                });
+                                i += blockPattern.setBlock(variables, f, blockSource, pos);
                             });
 
                         } catch (std::bad_alloc) {
-                            output.error("Out of memory");
+                            output.trError("worldedit.memory.out");
                             return;
                         }
                     } else {
@@ -361,8 +350,8 @@ namespace worldedit {
                         boundingBox.min -= radius + 1;
                         boundingBox.max += radius + 1;
                         try {
-                            if (mod.maxHistoryLength > 0) {
-                                auto history = mod.getPlayerNextHistory(xuid);
+                            if (playerData.maxHistoryLength > 0) {
+                                auto history = playerData.getNextHistory();
                                 *history = Clipboard(boundingBox.max - boundingBox.min);
                                 history->playerRelPos.x = dimID;
                                 history->playerPos = boundingBox.min;
@@ -412,28 +401,26 @@ namespace worldedit {
                             f.setbox(boundingBox);
                             boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
                                 setFunction(variables, f, boundingBox, playerPos, pos, center);
-                                gMaskLambda(f, variables, [&]() mutable {
-                                    auto localPos = pos - boundingBox.min + 1;
-                                    if (tmp[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x]) {
-                                        i += blockPattern.setBlock(variables, f, blockSource, pos);
-                                    }
-                                });
+                                auto localPos = pos - boundingBox.min + 1;
+                                if (tmp[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x]) {
+                                    i += blockPattern.setBlock(variables, f, blockSource, pos);
+                                }
                             });
                         } catch (std::bad_alloc) {
-                            output.error("Out of memory");
+                            output.trError("worldedit.memory.out");
                             return;
                         }
                     }
-                    output.success(fmt::format("§a{} block(s) placed", i));
+                    output.trSuccess("worldedit.curve.success", i);
                 } else {
-                    output.error("You don't have a region yet");
+                    output.trError("worldedit.error.incomplete-region");
                 }
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "spike",                                 // command name
-            "Make a spike through selected points",  // command description
+            "spike",                                    // command name
+            tr("worldedit.command.description.spike"),  // command description
             {},
             {
                 ParamData("block", ParamType::Block, "block"),
@@ -450,15 +437,14 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
-                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
-                    mod.playerRegionMap[xuid]->hasSelected()) {
-                    auto* region = mod.playerRegionMap[xuid];
+                auto& playerData = getPlayersData(xuid);
+                if (playerData.region != nullptr && playerData.region->hasSelected()) {
+                    Region* region = playerData.region;
 
                     if (region->regionType != CONVEX) {
-                        output.error("You need to select a convex region");
+                        output.trError("worldedit.spike.invalid-type");
                         return;
                     }
 
@@ -497,7 +483,7 @@ namespace worldedit {
                     if (results["args"].isSet) {
                         auto str = results["args"].getRaw<std::string>();
                         if (str.find("-") == std::string::npos) {
-                            output.error("wrong args");
+                            output.trError("worldedit.command.error.args", str);
                             return;
                         }
                         if (str.find("h") != std::string::npos) {
@@ -541,8 +527,8 @@ namespace worldedit {
                     boundingBox.min -= radius + 1;
                     boundingBox.max += radius + 1;
                     try {
-                        if (mod.maxHistoryLength > 0) {
-                            auto history = mod.getPlayerNextHistory(xuid);
+                        if (playerData.maxHistoryLength > 0) {
+                            auto history = playerData.getNextHistory();
                             *history = Clipboard(boundingBox.max - boundingBox.min);
                             history->playerRelPos.x = dimID;
                             history->playerPos = boundingBox.min;
@@ -592,8 +578,6 @@ namespace worldedit {
 
                         long long i = 0;
 
-                        INNERIZE_GMASK
-
                         auto playerPos = player->getPosition();
                         auto playerRot = player->getRotation();
 
@@ -601,7 +585,7 @@ namespace worldedit {
                         f.setbs(blockSource);
                         f.setbox(boundingBox);
                         std::unordered_map<std::string, double> variables;
-                        setFunction(variables, playerPos, playerRot);
+                        playerData.setVarByPlayer(variables);
 
                         std::string bps = "minecraft:air";
                         if (results["blockPattern"].isSet) {
@@ -613,29 +597,27 @@ namespace worldedit {
 
                         boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
                             setFunction(variables, f, boundingBox, playerPos, pos, center);
-                            gMaskLambda(f, variables, [&]() mutable {
-                                auto localPos = pos - boundingBox.min + 1;
-                                if (tmp[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x]) {
-                                    i += blockPattern.setBlock(variables, f, blockSource, pos);
-                                }
-                            });
+                            auto localPos = pos - boundingBox.min + 1;
+                            if (tmp[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x]) {
+                                i += blockPattern.setBlock(variables, f, blockSource, pos);
+                            }
                         });
 
-                        output.success(fmt::format("§a{} block(s) placed", i));
+                        output.trSuccess("worldedit.spike.success", i);
                     } catch (std::bad_alloc) {
-                        output.error("Out of memory");
+                        output.trError("worldedit.memory.out");
                         return;
                     }
 
                 } else {
-                    output.error("You don't have a region yet");
+                    output.trError("worldedit.error.incomplete-region");
                 }
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "rep",            // command name
-            "replace block",  // command description
+            "rep",                                    // command name
+            tr("worldedit.command.description.rep"),  // command description
             {},
             {ParamData("blockAfter", ParamType::Block, "blockAfter"),
              ParamData("blockBefore", ParamType::Block, true, "blockBefore"),
@@ -648,19 +630,18 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
-                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
-                    mod.playerRegionMap[xuid]->hasSelected()) {
-                    auto* region = mod.playerRegionMap[xuid];
+                auto& playerData = getPlayersData(xuid);
+                if (playerData.region != nullptr && playerData.region->hasSelected()) {
+                    Region* region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = &player->getRegion();
 
-                    if (mod.maxHistoryLength > 0) {
-                        auto history = mod.getPlayerNextHistory(xuid);
+                    if (playerData.maxHistoryLength > 0) {
+                        auto history = playerData.getNextHistory();
                         *history = Clipboard(boundingBox.max - boundingBox.min);
                         history->playerRelPos.x = dimID;
                         history->playerPos = boundingBox.min;
@@ -674,15 +655,13 @@ namespace worldedit {
 
                     long long i = 0;
 
-                    INNERIZE_GMASK
-
                     auto playerPos = player->getPosition();
                     auto playerRot = player->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
                     f.setbox(boundingBox);
                     std::unordered_map<std::string, double> variables;
-                    setFunction(variables, playerPos, playerRot);
+                    playerData.setVarByPlayer(variables);
 
                     std::string bps = "minecraft:air";
                     if (results["blockAfterS"].isSet) {
@@ -700,23 +679,21 @@ namespace worldedit {
                     BlockPattern blockFilter(bps2);
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
-                        gMaskLambda(f, variables, [&]() mutable {
-                            if (blockFilter.hasBlock(const_cast<Block*>(&blockSource->getBlock(pos)))) {
-                                i += blockPattern.setBlock(variables, f, blockSource, pos);
-                            }
-                        });
+                        if (blockFilter.hasBlock(const_cast<Block*>(&blockSource->getBlock(pos)))) {
+                            i += blockPattern.setBlock(variables, f, blockSource, pos);
+                        }
                     });
 
-                    output.success(fmt::format("§a{} block(s) replaced", i));
+                    output.trSuccess("worldedit.rep.success", i);
                 } else {
-                    output.error("You don't have a region yet");
+                    output.trError("worldedit.error.incomplete-region");
                 }
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "center",                         // command name
-            "set center block(s) of region",  // command description
+            "center",                                    // command name
+            tr("worldedit.command.description.center"),  // command description
             {},
             {ParamData("block", ParamType::Block, "block"),
              ParamData("blockPattern", ParamType::String, "blockPattern")},
@@ -724,12 +701,11 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
-                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
-                    mod.playerRegionMap[xuid]->hasSelected()) {
-                    auto* region = mod.playerRegionMap[xuid];
+                auto& playerData = getPlayersData(xuid);
+                if (playerData.region != nullptr && playerData.region->hasSelected()) {
+                    Region* region = playerData.region;
                     auto dimID = region->getDimensionID();
                     auto center = region->getCenter();
                     BoundingBox boundingBox;
@@ -741,8 +717,8 @@ namespace worldedit {
                     boundingBox.max.z = static_cast<int>(floor(center.z + 0.49));
                     auto blockSource = &player->getRegion();
 
-                    if (mod.maxHistoryLength > 0) {
-                        auto history = mod.getPlayerNextHistory(xuid);
+                    if (playerData.maxHistoryLength > 0) {
+                        auto history = playerData.getNextHistory();
                         *history = Clipboard(boundingBox.max - boundingBox.min);
                         history->playerRelPos.x = dimID;
                         history->playerPos = boundingBox.min;
@@ -760,9 +736,7 @@ namespace worldedit {
                     f.setbs(blockSource);
                     f.setbox(boundingBox);
                     std::unordered_map<std::string, double> variables;
-                    setFunction(variables, playerPos, playerRot);
-
-                    INNERIZE_GMASK
+                    playerData.setVarByPlayer(variables);
 
                     std::string bps = "minecraft:air";
                     if (results["blockPattern"].isSet) {
@@ -773,21 +747,19 @@ namespace worldedit {
                     BlockPattern blockPattern(bps, xuid, region);
                     boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
-
-                        gMaskLambda(f, variables,
-                                    [&]() mutable { blockPattern.setBlock(variables, f, blockSource, pos); });
+                        blockPattern.setBlock(variables, f, blockSource, pos);
                     });
 
-                    output.success(fmt::format("§acenter placed"));
+                    output.trSuccess("worldedit.center.success");
                 } else {
-                    output.error("You don't have a region yet");
+                    output.trError("worldedit.error.incomplete-region");
                 }
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "stack",         // command name
-            "stack region",  // command description
+            "stack",                                    // command name
+            tr("worldedit.command.description.stack"),  // command description
             {
                 {"dir", {"me", "back", "up", "down", "south", "north", "east", "west"}},
             },
@@ -797,11 +769,10 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
-                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
-                    mod.playerRegionMap[xuid]->hasSelected()) {
+                auto& playerData = getPlayersData(xuid);
+                if (playerData.region != nullptr && playerData.region->hasSelected()) {
                     auto times = 1;
                     if (results["times"].isSet) {
                         times = results["times"].get<int>();
@@ -810,7 +781,7 @@ namespace worldedit {
                     if (results["args"].isSet) {
                         auto str = results["args"].getRaw<std::string>();
                         if (str.find("-") == std::string::npos) {
-                            output.error("wrong args");
+                            output.trError("worldedit.command.error.args", str);
                             return;
                         }
                         if (str.find("a") != std::string::npos) {
@@ -842,7 +813,7 @@ namespace worldedit {
                     }
                     BlockPos faceVec = worldedit::facingToPos(facing, 1);
 
-                    auto* region = mod.playerRegionMap[xuid];
+                    Region* region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
@@ -860,7 +831,7 @@ namespace worldedit {
                     boundingBoxLast.max = boundingBoxLast.max + movingVec * times;
                     auto boundingBoxHistory = boundingBoxLast.merge(boundingBox);
 
-                    auto history = mod.getPlayerNextHistory(xuid);
+                    auto history = playerData.getNextHistory();
                     *history = Clipboard(boundingBoxHistory.max - boundingBoxHistory.min);
                     history->playerRelPos.x = dimID;
                     history->playerPos = boundingBoxHistory.min;
@@ -873,28 +844,25 @@ namespace worldedit {
 
                     long long i = 0;
 
-                    INNERIZE_GMASK
-
                     auto playerPos = player->getPosition();
                     auto playerRot = player->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
                     f.setbox(boundingBox);
                     std::unordered_map<std::string, double> variables;
-                    setFunction(variables, playerPos, playerRot);
+                    playerData.setVarByPlayer(variables);
                     region->forEachBlockInRegion([&](const BlockPos& posk) {
                         auto localPos = posk - boundingBoxHistory.min;
                         for (int j = 1; j <= times; ++j) {
                             auto pos = posk + movingVec * j;
                             setFunction(variables, f, boundingBox, playerPos, pos, center);
-                            if ((arg_a && (&blockSource->getBlock(posk) != BedrockBlocks::mAir)) || !arg_a)
-                                gMaskLambda(f, variables, [&]() mutable {
-                                    auto& set = history->getSet(localPos);
-                                    if (set.hasBlock)
-                                        if ((arg_l && (set.block != BedrockBlocks::mAir)) || !arg_l) {
-                                            i += set.setBlock(pos, blockSource);
-                                        }
-                                });
+                            if ((arg_a && (&blockSource->getBlock(posk) != BedrockBlocks::mAir)) || !arg_a) {
+                                auto& set = history->getSet(localPos);
+                                if (set.hasBlock)
+                                    if ((arg_l && (set.block != BedrockBlocks::mAir)) || !arg_l) {
+                                        i += set.setBlock(pos, blockSource, playerData, f, variables);
+                                    }
+                            }
                         }
                     });
                     if (arg_e) {
@@ -911,18 +879,18 @@ namespace worldedit {
                         }
                     }
                     if (arg_s) {
-                        mod.playerRegionMap[xuid]->shift(movingVec * times);
+                        playerData.region->shift(movingVec * times);
                     }
-                    output.success(fmt::format("§a{} block(s) stacked", i));
+                    output.trSuccess("worldedit.stack.success", i);
                 } else {
-                    output.error("You don't have a region yet");
+                    output.trError("worldedit.error.incomplete-region");
                 }
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "move",         // command name
-            "move region",  // command description
+            "move",                                    // command name
+            tr("worldedit.command.description.move"),  // command description
             {
                 {"dir", {"me", "back", "up", "down", "south", "north", "east", "west"}},
             },
@@ -934,11 +902,10 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
-                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
-                    mod.playerRegionMap[xuid]->hasSelected()) {
+                auto& playerData = getPlayersData(xuid);
+                if (playerData.region != nullptr && playerData.region->hasSelected()) {
                     auto dis = 1;
                     if (results["dis"].isSet) {
                         dis = results["dis"].get<int>();
@@ -947,7 +914,7 @@ namespace worldedit {
                     if (results["args"].isSet) {
                         auto str = results["args"].getRaw<std::string>();
                         if (str.find("-") == std::string::npos) {
-                            output.error("wrong args");
+                            output.trError("worldedit.command.error.args", str);
                             return;
                         }
                         if (str.find("a") != std::string::npos) {
@@ -973,7 +940,7 @@ namespace worldedit {
                     }
                     BlockPos faceVec = worldedit::facingToPos(facing, dis);
 
-                    auto* region = mod.playerRegionMap[xuid];
+                    Region* region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
@@ -984,7 +951,7 @@ namespace worldedit {
                     boundingBoxLast.max = boundingBoxLast.max + faceVec;
                     auto boundingBoxHistory = boundingBoxLast.merge(boundingBox);
 
-                    auto history = mod.getPlayerNextHistory(xuid);
+                    auto history = playerData.getNextHistory();
                     *history = Clipboard(boundingBoxHistory.max - boundingBoxHistory.min);
                     history->playerRelPos.x = dimID;
                     history->playerPos = boundingBoxHistory.min;
@@ -1004,15 +971,13 @@ namespace worldedit {
 
                     long long i = 0;
 
-                    INNERIZE_GMASK
-
                     auto playerPos = player->getPosition();
                     auto playerRot = player->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
                     f.setbox(boundingBox);
                     std::unordered_map<std::string, double> variables;
-                    setFunction(variables, playerPos, playerRot);
+                    playerData.setVarByPlayer(variables);
 
                     std::string bps = "minecraft:air";
                     if (results["blockPattern"].isSet) {
@@ -1023,8 +988,7 @@ namespace worldedit {
                     BlockPattern blockPattern(bps, xuid, region);
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
-                        gMaskLambda(f, variables,
-                                    [&]() mutable { blockPattern.setBlock(variables, f, blockSource, pos); });
+                        blockPattern.setBlock(variables, f, blockSource, pos);
                     });
 
                     region->forEachBlockInRegion([&](const BlockPos& posk) {
@@ -1032,27 +996,26 @@ namespace worldedit {
                         auto localPos = posk - boundingBoxHistory.min;
                         auto block = history->getSet(localPos).getBlock();
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
-                        if ((arg_a && (block != BedrockBlocks::mAir)) || !arg_a)
-                            gMaskLambda(f, variables, [&]() mutable {
-                                auto* set = &history->getSet(localPos);
-                                if (set->hasBlock) {
-                                    i += set->setBlock(pos, blockSource);
-                                }
-                            });
+                        if ((arg_a && (block != BedrockBlocks::mAir)) || !arg_a) {
+                            auto& set = history->getSet(localPos);
+                            if (set.hasBlock) {
+                                i += set.setBlock(pos, blockSource, playerData, f, variables);
+                            }
+                        }
                     });
                     if (arg_s) {
-                        mod.playerRegionMap[xuid]->shift(faceVec);
+                        playerData.region->shift(faceVec);
                     }
-                    output.success(fmt::format("§a{} block(s) moved", i));
+                    output.trSuccess("worldedit.move.success", i);
                 } else {
-                    output.error("You don't have a region yet");
+                    output.trError("worldedit.error.incomplete-region");
                 }
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "gen",                     // command name
-            "generate with function",  // command description
+            "gen",                                    // command name
+            tr("worldedit.command.description.gen"),  // command description
             {},
             {ParamData("block", ParamType::Block, "block"),
              ParamData("blockPattern", ParamType::String, "blockPattern"),
@@ -1062,16 +1025,15 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
-                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
-                    mod.playerRegionMap[xuid]->hasSelected()) {
+                auto& playerData = getPlayersData(xuid);
+                if (playerData.region != nullptr && playerData.region->hasSelected()) {
                     bool arg_h = false;
                     if (results["args"].isSet) {
                         auto str = results["args"].getRaw<std::string>();
                         if (str.find("-") == std::string::npos) {
-                            output.error("wrong args");
+                            output.trError("worldedit.command.error.args", str);
                             return;
                         }
                         if (str.find("h") != std::string::npos) {
@@ -1079,14 +1041,14 @@ namespace worldedit {
                         }
                     }
 
-                    auto* region = mod.playerRegionMap[xuid];
+                    Region* region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = &player->getRegion();
 
-                    if (mod.maxHistoryLength > 0) {
-                        auto history = mod.getPlayerNextHistory(xuid);
+                    if (playerData.maxHistoryLength > 0) {
+                        auto history = playerData.getNextHistory();
                         *history = Clipboard(boundingBox.max - boundingBox.min);
                         history->playerRelPos.x = dimID;
                         history->playerPos = boundingBox.min;
@@ -1100,8 +1062,6 @@ namespace worldedit {
 
                     long long i = 0;
 
-                    INNERIZE_GMASK
-
                     auto genfunc = results["function"].get<std::string>();
 
                     auto playerPos = player->getPosition();
@@ -1110,7 +1070,7 @@ namespace worldedit {
                     f.setbs(blockSource);
                     f.setbox(boundingBox);
                     std::unordered_map<std::string, double> variables;
-                    setFunction(variables, playerPos, playerRot);
+                    playerData.setVarByPlayer(variables);
 
                     auto sizeDim = boundingBox.max - boundingBox.min + 3;
 
@@ -1166,27 +1126,25 @@ namespace worldedit {
                         region->forEachBlockInRegion([&](const BlockPos& pos) {
                             auto localPos = pos - boundingBox.min + 1;
                             if (tmp[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x]) {
-                                gMaskLambda(f, variables, [&]() mutable {
-                                    setFunction(variables, f, boundingBox, playerPos, pos, center);
-                                    i += blockPattern.setBlock(variables, f, blockSource, pos);
-                                });
+                                setFunction(variables, f, boundingBox, playerPos, pos, center);
+                                i += blockPattern.setBlock(variables, f, blockSource, pos);
                             }
                         });
 
-                        output.success(fmt::format("§gfunction: {}\n§a{} block(s) placed", genfunc, i));
+                        output.trSuccess("worldedit.gen.success", genfunc, i);
                     } catch (std::bad_alloc) {
-                        output.error("Out of memory");
+                        output.trError("worldedit.memory.out");
                         return;
                     }
                 } else {
-                    output.error("You don't have a region yet");
+                    output.trError("worldedit.error.incomplete-region");
                 }
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "walls",                // command name
-            "set walls of region",  // command description
+            "walls",                                    // command name
+            tr("worldedit.command.description.walls"),  // command description
             {},
             {ParamData("block", ParamType::Block, "block"),
              ParamData("blockPattern", ParamType::String, "blockPattern")},
@@ -1194,19 +1152,18 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
-                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
-                    mod.playerRegionMap[xuid]->hasSelected()) {
-                    auto* region = mod.playerRegionMap[xuid];
+                auto& playerData = getPlayersData(xuid);
+                if (playerData.region != nullptr && playerData.region->hasSelected()) {
+                    Region* region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = &player->getRegion();
 
-                    if (mod.maxHistoryLength > 0) {
-                        auto history = mod.getPlayerNextHistory(xuid);
+                    if (playerData.maxHistoryLength > 0) {
+                        auto history = playerData.getNextHistory();
                         *history = Clipboard(boundingBox.max - boundingBox.min);
                         history->playerRelPos.x = dimID;
                         history->playerPos = boundingBox.min;
@@ -1220,15 +1177,13 @@ namespace worldedit {
 
                     long long i = 0;
 
-                    INNERIZE_GMASK
-
                     auto playerPos = player->getPosition();
                     auto playerRot = player->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
                     f.setbox(boundingBox);
                     std::unordered_map<std::string, double> variables;
-                    setFunction(variables, playerPos, playerRot);
+                    playerData.setVarByPlayer(variables);
 
                     std::string bps = "minecraft:air";
                     if (results["blockPattern"].isSet) {
@@ -1241,46 +1196,42 @@ namespace worldedit {
                         auto* loft = static_cast<LoftRegion*>(region);
                         loft->forEachBlockInLines(2, true, [&](const BlockPos& pos) {
                             setFunction(variables, f, boundingBox, playerPos, pos, center);
-                            gMaskLambda(f, variables,
-                                        [&]() mutable { i += blockPattern.setBlock(variables, f, blockSource, pos); });
+                            i += blockPattern.setBlock(variables, f, blockSource, pos);
                         });
                         if (!(loft->circle)) {
                             loft->forEachBlockInLines(2, false, [&](const BlockPos& pos) {
                                 setFunction(variables, f, boundingBox, playerPos, pos, center);
-                                gMaskLambda(f, variables, [&]() mutable {
-                                    i += blockPattern.setBlock(variables, f, blockSource, pos);
-                                });
+
+                                i += blockPattern.setBlock(variables, f, blockSource, pos);
                             });
                         }
                     } else {
                         region->forEachBlockInRegion([&](const BlockPos& pos) {
                             setFunction(variables, f, boundingBox, playerPos, pos, center);
-                            gMaskLambda(f, variables, [&]() mutable {
-                                int counts = 0;
-                                for (auto& calPos : pos.getNeighbors()) {
-                                    if (calPos.y <= boundingBox.max.y && calPos.y >= boundingBox.min.y) {
-                                        counts += region->contains(calPos);
-                                    } else {
-                                        counts += 1;
-                                    }
+                            int counts = 0;
+                            for (auto& calPos : pos.getNeighbors()) {
+                                if (calPos.y <= boundingBox.max.y && calPos.y >= boundingBox.min.y) {
+                                    counts += region->contains(calPos);
+                                } else {
+                                    counts += 1;
                                 }
-                                if (counts < 6) {
-                                    i += blockPattern.setBlock(variables, f, blockSource, pos);
-                                }
-                            });
+                            }
+                            if (counts < 6) {
+                                i += blockPattern.setBlock(variables, f, blockSource, pos);
+                            }
                         });
                     }
 
-                    output.success(fmt::format("§a{} block(s) placed", i));
+                    output.trSuccess("worldedit.walls.success", i);
                 } else {
-                    output.error("You don't have a region yet");
+                    output.trError("worldedit.error.incomplete-region");
                 }
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "faces",                // command name
-            "set faces of region",  // command description
+            "faces",                                    // command name
+            tr("worldedit.command.description.faces"),  // command description
             {},
             {ParamData("block", ParamType::Block, "block"),
              ParamData("blockPattern", ParamType::String, "blockPattern")},
@@ -1288,19 +1239,18 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
-                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
-                    mod.playerRegionMap[xuid]->hasSelected()) {
-                    auto* region = mod.playerRegionMap[xuid];
+                auto& playerData = getPlayersData(xuid);
+                if (playerData.region != nullptr && playerData.region->hasSelected()) {
+                    Region* region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = &player->getRegion();
 
-                    if (mod.maxHistoryLength > 0) {
-                        auto history = mod.getPlayerNextHistory(xuid);
+                    if (playerData.maxHistoryLength > 0) {
+                        auto history = playerData.getNextHistory();
                         *history = Clipboard(boundingBox.max - boundingBox.min);
                         history->playerRelPos.x = dimID;
                         history->playerPos = boundingBox.min;
@@ -1314,15 +1264,13 @@ namespace worldedit {
 
                     long long i = 0;
 
-                    INNERIZE_GMASK
-
                     auto playerPos = player->getPosition();
                     auto playerRot = player->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
                     f.setbox(boundingBox);
                     std::unordered_map<std::string, double> variables;
-                    setFunction(variables, playerPos, playerRot);
+                    playerData.setVarByPlayer(variables);
                     std::string bps = "minecraft:air";
                     if (results["blockPattern"].isSet) {
                         bps = results["blockPattern"].get<std::string>();
@@ -1332,27 +1280,25 @@ namespace worldedit {
                     BlockPattern blockPattern(bps, xuid, region);
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
-                        gMaskLambda(f, variables, [&]() mutable {
-                            int counts = 0;
-                            for (auto& calPos : pos.getNeighbors()) {
-                                counts += region->contains(calPos);
-                            }
-                            if (counts < 6) {
-                                i += blockPattern.setBlock(variables, f, blockSource, pos);
-                            }
-                        });
+                        int counts = 0;
+                        for (auto& calPos : pos.getNeighbors()) {
+                            counts += region->contains(calPos);
+                        }
+                        if (counts < 6) {
+                            i += blockPattern.setBlock(variables, f, blockSource, pos);
+                        }
                     });
 
-                    output.success(fmt::format("§a{} block(s) placed", i));
+                    output.trSuccess("worldedit.faces.success", i);
                 } else {
-                    output.error("You don't have a region yet");
+                    output.trError("worldedit.error.incomplete-region");
                 }
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "overlay",        // command name
-            "overlay block",  // command description
+            "overlay",                                    // command name
+            tr("worldedit.command.description.overlay"),  // command description
             {},
             {ParamData("block", ParamType::Block, "block"),
              ParamData("blockPattern", ParamType::String, "blockPattern")},
@@ -1360,19 +1306,18 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
-                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
-                    mod.playerRegionMap[xuid]->hasSelected()) {
-                    auto* region = mod.playerRegionMap[xuid];
+                auto& playerData = getPlayersData(xuid);
+                if (playerData.region != nullptr && playerData.region->hasSelected()) {
+                    Region* region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = &player->getRegion();
 
-                    if (mod.maxHistoryLength > 0) {
-                        auto history = mod.getPlayerNextHistory(xuid);
+                    if (playerData.maxHistoryLength > 0) {
+                        auto history = playerData.getNextHistory();
                         *history = Clipboard(boundingBox.max - boundingBox.min);
                         history->playerRelPos.x = dimID;
                         history->playerPos = boundingBox.min;
@@ -1386,15 +1331,13 @@ namespace worldedit {
 
                     long long i = 0;
 
-                    INNERIZE_GMASK
-
                     auto playerPos = player->getPosition();
                     auto playerRot = player->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
                     f.setbox(boundingBox);
                     std::unordered_map<std::string, double> variables;
-                    setFunction(variables, playerPos, playerRot);
+                    playerData.setVarByPlayer(variables);
                     std::string bps = "minecraft:air";
                     if (results["blockPattern"].isSet) {
                         bps = results["blockPattern"].get<std::string>();
@@ -1404,36 +1347,34 @@ namespace worldedit {
                     BlockPattern blockPattern(bps, xuid, region);
                     region->forTopBlockInRegion([&](const BlockPos& pos) {
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
-                        gMaskLambda(f, variables,
-                                    [&]() mutable { i += blockPattern.setBlock(variables, f, blockSource, pos); });
+                        i += blockPattern.setBlock(variables, f, blockSource, pos);
                     });
-                    output.success(fmt::format("§a{} block(s) placed", i));
+                    output.trSuccess("worldedit.overlay.success", i);
                 } else {
-                    output.error("You don't have a region yet");
+                    output.trError("worldedit.error.incomplete-region");
                 }
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "naturalize",         // command name
-            "naturalize region",  // command description
+            "naturalize",                                    // command name
+            tr("worldedit.command.description.naturalize"),  // command description
             {}, {}, {{}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
-                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
-                    mod.playerRegionMap[xuid]->hasSelected()) {
-                    auto* region = mod.playerRegionMap[xuid];
+                auto& playerData = getPlayersData(xuid);
+                if (playerData.region != nullptr && playerData.region->hasSelected()) {
+                    Region* region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = &player->getRegion();
 
-                    if (mod.maxHistoryLength > 0) {
-                        auto history = mod.getPlayerNextHistory(xuid);
+                    if (playerData.maxHistoryLength > 0) {
+                        auto history = playerData.getNextHistory();
                         *history = Clipboard(boundingBox.max - boundingBox.min);
                         history->playerRelPos.x = dimID;
                         history->playerPos = boundingBox.min;
@@ -1444,8 +1385,6 @@ namespace worldedit {
                             history->storeBlock(blockInstance, localPos);
                         });
                     }
-
-                    INNERIZE_GMASK
 
                     auto playerPos = player->getPosition();
                     auto playerRot = player->getRotation();
@@ -1453,36 +1392,35 @@ namespace worldedit {
                     f.setbs(blockSource);
                     f.setbox(boundingBox);
                     std::unordered_map<std::string, double> variables;
-                    setFunction(variables, playerPos, playerRot);
+                    playerData.setVarByPlayer(variables);
 
                     region->forTopBlockInRegion([&](const BlockPos& posk) {
                         BlockPos pos(posk.x, posk.y - 1, posk.z);
                         if (&blockSource->getBlock(pos) == StaticVanillaBlocks::mStone && region->contains(pos)) {
                             setFunction(variables, f, boundingBox, playerPos, pos, center);
-                            gMaskLambda(f, variables, [&]() mutable {
-                                setBlockSimple(blockSource, pos, const_cast<Block*>(StaticVanillaBlocks::mGrass));
-                            });
+                            playerData.setBlockSimple(blockSource, f, variables, pos,
+                                                      const_cast<Block*>(StaticVanillaBlocks::mGrass));
                         }
                         for (int mY = -2; mY >= -4; mY--) {
                             BlockPos pos(posk.x, posk.y + mY, posk.z);
                             if (&blockSource->getBlock(pos) == StaticVanillaBlocks::mStone && region->contains(pos)) {
                                 setFunction(variables, f, boundingBox, playerPos, pos, center);
-                                gMaskLambda(f, variables, [&]() mutable {
-                                    setBlockSimple(blockSource, pos, const_cast<Block*>(StaticVanillaBlocks::mDirt));
-                                });
+
+                                playerData.setBlockSimple(blockSource, f, variables, pos,
+                                                          const_cast<Block*>(StaticVanillaBlocks::mDirt));
                             }
                         }
                     });
-                    output.success(fmt::format("§aRegion naturalized"));
+                    output.trSuccess("worldedit.naturalize.success");
                 } else {
-                    output.error("You don't have a region yet");
+                    output.trError("worldedit.error.incomplete-region");
                 }
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "hollow",              // command name
-            "hollows out region",  // command description
+            "hollow",                                    // command name
+            tr("worldedit.command.description.hollow"),  // command description
             {},
             {ParamData("num", ParamType::Int, true, "num"), ParamData("block", ParamType::Block, true, "block"),
              ParamData("blockPattern", ParamType::String, true, "blockPattern")},
@@ -1490,24 +1428,23 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
-                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
-                    mod.playerRegionMap[xuid]->hasSelected()) {
+                auto& playerData = getPlayersData(xuid);
+                if (playerData.region != nullptr && playerData.region->hasSelected()) {
                     int layer = 0;
                     if (results["num"].isSet) {
                         layer = results["num"].get<int>();
                     }
 
-                    auto* region = mod.playerRegionMap[xuid];
+                    Region* region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = &player->getRegion();
 
-                    if (mod.maxHistoryLength > 0) {
-                        auto history = mod.getPlayerNextHistory(xuid);
+                    if (playerData.maxHistoryLength > 0) {
+                        auto history = playerData.getNextHistory();
                         *history = Clipboard(boundingBox.max - boundingBox.min);
                         history->playerRelPos.x = dimID;
                         history->playerPos = boundingBox.min;
@@ -1518,8 +1455,6 @@ namespace worldedit {
                             history->storeBlock(blockInstance, localPos);
                         });
                     }
-
-                    INNERIZE_GMASK
 
                     auto sizeDim = boundingBox.max - boundingBox.min + 3;
 
@@ -1563,7 +1498,7 @@ namespace worldedit {
                         f.setbs(blockSource);
                         f.setbox(boundingBox);
                         std::unordered_map<std::string, double> variables;
-                        setFunction(variables, playerPos, playerRot);
+                        playerData.setVarByPlayer(variables);
 
                         long long i = 0;
 
@@ -1577,50 +1512,46 @@ namespace worldedit {
                         region->forEachBlockInRegion([&](const BlockPos& pos) {
                             auto localPos = pos - boundingBox.min + 1;
                             setFunction(variables, f, boundingBox, playerPos, pos, center);
-                            gMaskLambda(f, variables, [&]() mutable {
-                                auto localPos = pos - boundingBox.min + 1;
-                                if (tmp[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x]) {
-                                    i += blockPattern.setBlock(variables, f, blockSource, pos);
-                                }
-                            });
+                            if (tmp[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x]) {
+                                i += blockPattern.setBlock(variables, f, blockSource, pos);
+                            }
                         });
-                        output.success(fmt::format("§a{} block(s) hollowed", i));
+                        output.trSuccess("worldedit.hollow.success", i);
                     } catch (std::bad_alloc) {
-                        output.error("Out of memory");
+                        output.trError("worldedit.memory.out");
                         return;
                     }
                 } else {
-                    output.error("You don't have a region yet");
+                    output.trError("worldedit.error.incomplete-region");
                 }
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "smooth",            // command name
-            "smooth selection",  // command description
+            "smooth",                                    // command name
+            tr("worldedit.command.description.smooth"),  // command description
             {}, {ParamData("num", ParamType::Int, true, "num"), ParamData("mask", ParamType::String, true, "mask")},
             {{"num", "mask"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
-                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
-                    mod.playerRegionMap[xuid]->hasSelected()) {
+                auto& playerData = getPlayersData(xuid);
+                if (playerData.region != nullptr && playerData.region->hasSelected()) {
                     int ksize = 5;
                     if (results["num"].isSet) {
                         ksize = results["num"].get<int>();
                     }
 
-                    auto* region = mod.playerRegionMap[xuid];
+                    Region* region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = &player->getRegion();
 
-                    if (mod.maxHistoryLength > 0) {
-                        auto history = mod.getPlayerNextHistory(xuid);
+                    if (playerData.maxHistoryLength > 0) {
+                        auto history = playerData.getNextHistory();
                         *history = Clipboard(boundingBox.max - boundingBox.min);
                         history->playerRelPos.x = dimID;
                         history->playerPos = boundingBox.min;
@@ -1644,16 +1575,16 @@ namespace worldedit {
                     auto smoothedHeightMap = blur2D(heightMap, ksize, sizex, sizez);
                     region->applyHeightMap(smoothedHeightMap, mask);
 
-                    output.success(fmt::format("§aRegion smoothed"));
+                    output.trSuccess("worldedit.smooth.success");
                 } else {
-                    output.error("You don't have a region yet");
+                    output.trError("worldedit.error.incomplete-region");
                 }
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "exportstr",              // command name
-            "export as mcstructure",  // command description
+            "exportstr",                                    // command name
+            tr("worldedit.command.description.exportstr"),  // command description
             {},
             {
                 ParamData("strname", ParamType::String, false, "strname"),
@@ -1663,12 +1594,11 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
-                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
-                    mod.playerRegionMap[xuid]->hasSelected()) {
-                    auto* region = mod.playerRegionMap[xuid];
+                auto& playerData = getPlayersData(xuid);
+                if (playerData.region != nullptr && playerData.region->hasSelected()) {
+                    Region* region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
@@ -1689,13 +1619,13 @@ namespace worldedit {
                                          std::ios::out | std::ios::binary);
                     outStr << structure;
                     outStr.close();
-                    output.success(fmt::format("§aStructure exported"));
+                    output.trSuccess("worldedit.exportstr.str");
 
                     bool arg_l = false;
                     if (results["args"].isSet) {
                         auto str = results["args"].getRaw<std::string>();
                         if (str.find("-") == std::string::npos) {
-                            output.error("wrong args");
+                            output.trError("worldedit.command.error.args", str);
                             return;
                         }
                         if (str.find("l") != std::string::npos) {
@@ -1794,6 +1724,7 @@ namespace worldedit {
                                         }
                                     }
                                     delete item;
+                                    item = nullptr;
                                 }
                             }
                         });
@@ -1810,17 +1741,17 @@ namespace worldedit {
                             outStr << fmt::format("{} {}\n", block.second, block.first);
                         }
                         outStr.close();
-                        output.success(fmt::format("§aMaterial list exported"));
+                        output.trSuccess("worldedit.exportstr.list");
                     }
                 } else {
-                    output.error("You don't have a region yet");
+                    output.trError("worldedit.error.incomplete-region");
                 }
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "image",      // command name
-            "set image",  // command description
+            "image",                                    // command name
+            tr("worldedit.command.description.image"),  // command description
             {
                 {"fliptype", {"none", "flipu", "flipv", "flipuv"}},
                 {"rotation", {"none", "rotate90", "rotate180", "rotate270"}},
@@ -1842,22 +1773,16 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
-                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
-                    mod.playerRegionMap[xuid]->hasSelected()) {
-                    auto* region = mod.playerRegionMap[xuid];
+                auto& playerData = getPlayersData(xuid);
+                if (playerData.region != nullptr && playerData.region->hasSelected()) {
+                    Region* region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
                     auto size = boundingBox.max - boundingBox.min;
                     auto blockSource = &player->getRegion();
-
-                    // if (region->regionType != RegionType::LOFT && size.x != 0 && size.y != 0 && size.z != 0) {
-                    //     output.error("You need to select a slice");
-                    //     return;
-                    // }
 
                     int flipInt = 0;
 
@@ -1885,8 +1810,8 @@ namespace worldedit {
                         }
                     }
 
-                    if (mod.maxHistoryLength > 0) {
-                        auto history = mod.getPlayerNextHistory(xuid);
+                    if (playerData.maxHistoryLength > 0) {
+                        auto history = playerData.getNextHistory();
                         *history = Clipboard(boundingBox.max - boundingBox.min);
                         history->playerRelPos.x = dimID;
                         history->playerPos = boundingBox.min;
@@ -1898,8 +1823,6 @@ namespace worldedit {
                         });
                     }
 
-                    INNERIZE_GMASK
-
                     auto blockColorMap = getBlockColorMap();
 
                     auto playerPos = player->getPosition();
@@ -1908,7 +1831,7 @@ namespace worldedit {
                     f.setbs(blockSource);
                     f.setbox(boundingBox);
                     std::unordered_map<std::string, double> variables;
-                    setFunction(variables, playerPos, playerRot);
+                    playerData.setVarByPlayer(variables);
 
                     long long i = 0;
 
@@ -1925,7 +1848,7 @@ namespace worldedit {
                         if (downloadImage(results["url"].get<std::string>())) {
                             filename = WE_DIR + "imgtemp/0.png";
                         } else {
-                            output.error("Failed to download image");
+                            output.trError("worldedit.error.download-image");
                             return;
                         }
                     }
@@ -1961,46 +1884,45 @@ namespace worldedit {
 
                     region->forEachBlockUVInRegion([&](const BlockPos& pos, double u, double v) {
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
-                        gMaskLambda(f, variables, [&]() mutable {
-                            if (flipInt != 3) {
-                                if (flipInt != 1) {
-                                    u = 1 - u;
-                                }
-                                if (flipInt != 2) {
-                                    v = 1 - v;
-                                }
-                            }
 
-                            rotate(u, v);
-
-                            auto color = texture2D.sample(sampler, u, v);
-
-                            double minDist = DBL_MAX;
-                            int minTile = 15;
-                            for (auto& i : blockColorMap) {
-                                auto dst = i.first.distanceTo(color);
-                                if (dst < minDist) {
-                                    minDist = dst;
-                                    minTile = i.second;
-                                }
+                        if (flipInt != 3) {
+                            if (flipInt != 1) {
+                                u = 1 - u;
                             }
-                            if (RNG::rand<double>() <= color.a) {
-                                setBlockSimple(blockSource, pos, Block::create("minecraft:concrete", minTile));
-                                ++i;
+                            if (flipInt != 2) {
+                                v = 1 - v;
                             }
-                        });
+                        }
+
+                        rotate(u, v);
+
+                        auto color = texture2D.sample(sampler, u, v);
+
+                        double minDist = DBL_MAX;
+                        int minTile = 15;
+                        for (auto& i : blockColorMap) {
+                            auto dst = i.first.distanceTo(color);
+                            if (dst < minDist) {
+                                minDist = dst;
+                                minTile = i.second;
+                            }
+                        }
+                        if (RNG::rand<double>() <= color.a) {
+                            i += playerData.setBlockSimple(blockSource, f, variables, pos,
+                                                           Block::create("minecraft:concrete", minTile));
+                        }
                     });
 
-                    output.success(fmt::format("§apng setted"));
+                    output.trSuccess("worldedit.image.success");
                 } else {
-                    output.error("You don't have a region yet");
+                    output.trError("worldedit.error.incomplete-region");
                 }
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "removeitem",             // command name
-            "remove item in region",  // command description
+            "removeitem",                                    // command name
+            tr("worldedit.command.description.removeitem"),  // command description
             {},
             {ParamData("item", ParamType::Item, "item"), ParamData("num", ParamType::Int, true, "num"),
              ParamData("data", ParamType::Int, true, "data")},
@@ -2008,19 +1930,18 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
-                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
-                    mod.playerRegionMap[xuid]->hasSelected()) {
-                    auto* region = mod.playerRegionMap[xuid];
+                auto& playerData = getPlayersData(xuid);
+                if (playerData.region != nullptr && playerData.region->hasSelected()) {
+                    Region* region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = &player->getRegion();
 
-                    if (mod.maxHistoryLength > 0) {
-                        auto history = mod.getPlayerNextHistory(xuid);
+                    if (playerData.maxHistoryLength > 0) {
+                        auto history = playerData.getNextHistory();
                         *history = Clipboard(boundingBox.max - boundingBox.min);
                         history->playerRelPos.x = dimID;
                         history->playerPos = boundingBox.min;
@@ -2041,15 +1962,13 @@ namespace worldedit {
                     }
                     long long i = 0;
 
-                    INNERIZE_GMASK
-
                     auto playerPos = player->getPosition();
                     auto playerRot = player->getRotation();
                     EvalFunctions f;
                     f.setbs(blockSource);
                     f.setbox(boundingBox);
                     std::unordered_map<std::string, double> variables;
-                    setFunction(variables, playerPos, playerRot);
+                    playerData.setVarByPlayer(variables);
 
                     auto cmdItem = results["item"]
                                        .getRaw<CommandItem>()
@@ -2057,82 +1976,81 @@ namespace worldedit {
                                        .value_or(ItemInstance::EMPTY_ITEM);
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
-                        gMaskLambda(f, variables, [&]() mutable {
-                            auto blockInstance = blockSource->getBlockInstance(pos);
-                            if (blockInstance.hasContainer()) {
-                                auto container = blockInstance.getContainer();
-                                for (auto& constItem : container->getAllSlots()) {
-                                    auto item = const_cast<ItemStack*>(constItem);
-                                    int count = item->getCount();
-                                    if (count <= 0) {
+                        auto blockInstance = blockSource->getBlockInstance(pos);
+                        if (blockInstance.hasContainer()) {
+                            auto container = blockInstance.getContainer();
+                            for (auto& constItem : container->getAllSlots()) {
+                                auto item = const_cast<ItemStack*>(constItem);
+                                int count = item->getCount();
+                                if (count <= 0) {
+                                    continue;
+                                }
+                                auto iNbt = item->getNbt();
+                                auto* vmap = &iNbt->value();
+                                if (vmap->find("tag") != vmap->end()) {
+                                    if (count != 1) {
                                         continue;
                                     }
-                                    auto iNbt = item->getNbt();
-                                    auto* vmap = &iNbt->value();
-                                    if (vmap->find("tag") != vmap->end()) {
-                                        if (count != 1) {
-                                            continue;
-                                        }
-                                        auto* imap = &vmap->at("tag").asCompoundTag()->value();
-                                        if (imap->find("Items") != imap->end()) {
-                                            auto* cmap = &imap->at("Items").asListTag()->value();
-                                            std::vector<Tag*> afterVal;
-                                            afterVal.clear();
-                                            for (auto& mItem : *cmap) {
-                                                auto* shulkItem = ItemStack::create(mItem->asCompoundTag()->clone());
-                                                int count2 = shulkItem->getCount();
+                                    auto* imap = &vmap->at("tag").asCompoundTag()->value();
+                                    if (imap->find("Items") != imap->end()) {
+                                        auto* cmap = &imap->at("Items").asListTag()->value();
+                                        std::vector<Tag*> afterVal;
+                                        afterVal.clear();
+                                        for (auto& mItem : *cmap) {
+                                            auto* shulkItem = ItemStack::create(mItem->asCompoundTag()->clone());
+                                            int count2 = shulkItem->getCount();
 
-                                                if (count2 <= 0 || !(shulkItem->sameItem(cmdItem)) ||
-                                                    (data >= -2140000000 && data != shulkItem->getAuxValue())) {
-                                                    continue;
-                                                }
-                                                int removeNum2 = num > 0 ? std::min(num, count2) : count2;
-                                                i += removeNum2;
-                                                if (num > 0) {
-                                                    num -= removeNum2;
-                                                }
-                                                if (removeNum2 == count2) {
-                                                    continue;
-                                                }
-                                                shulkItem->remove(removeNum2);
-                                                afterVal.push_back(shulkItem->getNbt().get());
-                                                delete shulkItem;
+                                            if (count2 <= 0 || !(shulkItem->sameItem(cmdItem)) ||
+                                                (data >= -2140000000 && data != shulkItem->getAuxValue())) {
+                                                continue;
                                             }
-                                            if (afterVal.size() < 1) {
-                                                imap->erase("Items");
-                                                if (imap->size() < 1) {
-                                                    vmap->erase("tag");
-                                                }
-                                            } else {
-                                                *cmap = afterVal;
+                                            int removeNum2 = num > 0 ? std::min(num, count2) : count2;
+                                            i += removeNum2;
+                                            if (num > 0) {
+                                                num -= removeNum2;
                                             }
-                                            item->setNbt(iNbt.get());
-                                            continue;
+                                            if (removeNum2 == count2) {
+                                                continue;
+                                            }
+                                            shulkItem->remove(removeNum2);
+                                            afterVal.push_back(shulkItem->getNbt().get());
+                                            delete shulkItem;
+                                            item = nullptr;
                                         }
-                                    }
-
-                                    if (!(item->sameItem(cmdItem)) ||
-                                        (data >= -2140000000 && data != item->getAuxValue())) {
+                                        if (afterVal.size() < 1) {
+                                            imap->erase("Items");
+                                            if (imap->size() < 1) {
+                                                vmap->erase("tag");
+                                            }
+                                        } else {
+                                            *cmap = afterVal;
+                                        }
+                                        item->setNbt(iNbt.get());
                                         continue;
-                                    }
-
-                                    int removeNum = num > 0 ? std::min(num, count) : count;
-                                    item->remove(removeNum);
-                                    i += removeNum;
-                                    if (num > 0) {
-                                        num -= removeNum;
-                                    }
-                                    if (num == 0) {
-                                        return;
                                     }
                                 }
+
+                                if (!(item->sameItem(cmdItem)) ||
+                                    (data >= -2140000000 && data != item->getAuxValue())) {
+                                    continue;
+                                }
+
+                                int removeNum = num > 0 ? std::min(num, count) : count;
+                                item->remove(removeNum);
+                                i += removeNum;
+                                if (num > 0) {
+                                    num -= removeNum;
+                                }
+                                if (num == 0) {
+                                    return;
+                                }
                             }
-                        });
+                        }
                     });
 
-                    output.success(fmt::format("§a{} item(s) removed", i));
+                    output.trSuccess("worldedit.removeitem.success", i);
                 } else {
-                    output.error("You don't have a region yet");
+                    output.trError("worldedit.error.incomplete-region");
                 }
             },
             CommandPermissionLevel::GameMasters);

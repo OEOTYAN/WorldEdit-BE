@@ -4,6 +4,7 @@
 #pragma once
 #include <MC/BlockInstance.hpp>
 #include <MC/Player.hpp>
+#include "eval/Eval.h"
 namespace worldedit {
     class Brush {
        public:
@@ -12,10 +13,15 @@ namespace worldedit {
         bool setted = false;
         std::string mask = "";
         bool needFace = false;
-        Brush() = default;
+        bool lneedFace = false;
+        Brush(){}
         Brush(unsigned short, BlockPattern*);
         void setMask(std::string const& str = "") { mask = str; };
         virtual long long set(class Player*, class ::BlockInstance);
+        virtual long long lset(class Player* , class ::BlockInstance);
+     bool maskFunc(class EvalFunctions& func, const std::unordered_map<std::string, double>& var,
+                             std::function<void()> const& todo);
+
         virtual ~Brush();
     };
 }  // namespace worldedit

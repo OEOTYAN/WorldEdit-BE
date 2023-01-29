@@ -18,6 +18,8 @@ namespace worldedit {
        public:
         void updateBoundingBox() override;
 
+        std::string getName() override { return "sphere"; }
+
         explicit SphereRegion(const BoundingBox& region, const int& dim);
 
         std::pair<std::string, bool> expand(const std::vector<BlockPos>& changes) override;

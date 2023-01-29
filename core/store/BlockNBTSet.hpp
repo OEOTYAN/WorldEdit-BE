@@ -16,18 +16,6 @@
 #include <MC/StructureSettings.hpp>
 #include <MC/VanillaBlockStateTransformUtils.hpp>
 #include "particle/Graphics.h"
-// #include <MC/Player.hpp>
-// #include <MC/ServerPlayer.hpp>
-// #include <MC/Dimension.hpp>
-// #include <MC/ItemStack.hpp>
-// #include "Version.h"
-// #include "string/StringTool.h"
-// #include <LLAPI.h>
-// #include <ServerAPI.h>
-// #include <EventAPI.h>
-// #include <ScheduleAPI.h>
-// #include <DynamicCommandAPI.h>
-// #include "WorldEdit.h"
 
 namespace worldedit {
 
@@ -39,12 +27,23 @@ namespace worldedit {
         bool hasBlock = false;
         bool hasBlockEntity = false;
         BlockNBTSet() = default;
-        // BlockNBTSet& operator=(BlockNBTSet const&) = delete;
         BlockNBTSet(BlockInstance& blockInstance);
         Block* getBlock() const { return block; }
         Block* getExBlock() const { return exblock; }
-        bool setBlock(const BlockPos& pos, BlockSource* blockSource) const;
-        bool setBlock(const BlockPos& pos, BlockSource* blockSource, Rotation rotation, Mirror mirror) const;
+        bool setBlockForHistory(const BlockPos& pos,
+                      BlockSource* blockSource,
+                      class PlayerData& data) const;
+        bool setBlock(const BlockPos& pos,
+                      BlockSource* blockSource,
+                      class PlayerData& data,
+                      class EvalFunctions& funcs,
+                      std::unordered_map<std::string, double> const& var) const;
+        bool setBlock(const BlockPos& pos,
+                      BlockSource* blockSource, class PlayerData& data,
+                      class EvalFunctions& funcs,
+                      std::unordered_map<std::string, double> const& var,
+                      Rotation rotation,
+                      Mirror mirror) const;
     };
 }  // namespace worldedit
 

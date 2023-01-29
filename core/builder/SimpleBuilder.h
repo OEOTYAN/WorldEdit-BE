@@ -8,28 +8,28 @@
 namespace worldedit {
     class SimpleBuilder {
        public:
-        static long long buildCylinder(BlockPos    pos,
-                                       int         dim,
+        static long long buildCylinder(BlockPos pos,
+                                       int dim,
                                        std::string xuid,
                                        class BlockPattern*,
                                        unsigned short radius = 0,
-                                       int            height = 1,
-                                       bool           hollow = false,
-                                       std::string    mask   = "");
-        static long long buildSphere(BlockPos    pos,
-                                     int         dim,
+                                       int height = 1,
+                                       bool hollow = false,
+                                       std::string mask = "");
+        static long long buildSphere(BlockPos pos,
+                                     int dim,
                                      std::string xuid,
                                      class BlockPattern*,
                                      unsigned short radius = 0,
-                                     bool           hollow = false,
-                                     std::string    mask   = "");
-        static long long buildCube(BlockPos    pos,
-                                   int         dim,
+                                     bool hollow = false,
+                                     std::string mask = "");
+        static long long buildCube(BlockPos pos,
+                                   int dim,
                                    std::string xuid,
                                    class BlockPattern*,
-                                   unsigned short size   = 0,
-                                   bool           hollow = false,
-                                   std::string    mask   = "");
+                                   unsigned short size = 0,
+                                   bool hollow = false,
+                                   std::string mask = "");
     };
 }  // namespace worldedit
 

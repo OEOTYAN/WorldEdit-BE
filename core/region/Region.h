@@ -35,6 +35,7 @@ namespace worldedit {
         bool needResetVice = true;
         explicit Region(const BoundingBox& b, int dim);
 
+        virtual std::string getName() { return "null"; }
         virtual BoundingBox getBoundBox() { return this->boundingBox; }
         RegionType getRegionType() const { return this->regionType; }
         int getDimensionID() const { return this->dimensionID; }
@@ -49,14 +50,14 @@ namespace worldedit {
         };
 
         virtual std::pair<std::string, bool> expand(const std::vector<BlockPos>& changes) {
-            return {"This region can not be extended", false};
+            return {"worldedit.selection.expand.error", false};
         };
 
         virtual std::pair<std::string, bool> contract(const std::vector<BlockPos>& changes) {
-            return {"This region can not be contracted", false};
+            return {"worldedit.selection.contract.error", false};
         };
         virtual std::pair<std::string, bool> shift(const BlockPos& change) {
-            return {"This region can not be shifted", false};
+            return {"worldedit.selection.shift.error", false};
         };
 
         virtual Vec3 getCenter() const { return toRealAABB(boundingBox).getCenter(); };
@@ -79,7 +80,7 @@ namespace worldedit {
 
         virtual bool removePoint(int dim, const BlockPos& pos = BlockPos::MIN) { return false; };
 
-        virtual void applyHeightMap(const std::vector<double>& data, std::string mask = "");
+        virtual void applyHeightMap(const std::vector<double>& data, std::string xuid, std::string mask = "");
 
         virtual void renderRegion();
 

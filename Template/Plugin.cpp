@@ -1,15 +1,41 @@
 #include "Global.h"
 #include <LoggerAPI.h>
+#include <I18nAPI.h>
 #include "Version.h"
 #include "subscribe/subscribeall.hpp"
-#include "command/allCommand.hpp"
 #include "WorldEdit.h"
+#include <filesystem>
 
-Logger loggerp(PLUGIN_NAME);
+
+void preparePath(std::string_view path) {
+    namespace fs = std::filesystem;
+    if (!fs::exists(path)) {
+        fs::create_directory(path);
+    }
+}
 
 void PluginInit() {
-    auto& mod = worldedit::getMod();
+
+    preparePath("./plugins/WorldEdit");
+    preparePath("./plugins/WorldEdit/lang");
+    preparePath("./plugins/WorldEdit/image");
+    preparePath("./plugins/WorldEdit/imgtemp");
+    preparePath("./plugins/WorldEdit/mappings");
+    preparePath("./plugins/WorldEdit/textures");
+    preparePath("./plugins/WorldEdit/structures");
+
+    Translation::load("./plugins/WorldEdit/lang/");
+
+    worldedit::getPlayersDataMap();
+
     worldedit::serverSubscribe();
     worldedit::playerSubscribe();
-    worldedit::commandsSetup();
+
+    Logger logger(PLUGIN_NAME);
+
+    logger.info("");
+    logger.info(tr("worldedit.version"), PLUGIN_VERSION_MAJOR, PLUGIN_VERSION_MINOR, PLUGIN_VERSION_REVISION,
+                PLUGIN_VERSION_STATUS == 0 ? "dev" : (PLUGIN_VERSION_STATUS == 1 ? "beta" : "release"));
+    logger.info(tr("worldedit.wiki"));
+    logger.info("");
 }

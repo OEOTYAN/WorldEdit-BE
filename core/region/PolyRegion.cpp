@@ -98,7 +98,7 @@ namespace worldedit {
     std::pair<std::string, bool> PolyRegion::expand(const std::vector<BlockPos>& changes) {
         for (BlockPos change : changes) {
             if (change.x != 0 || change.z != 0) {
-                return {"§aThis region can only expand vertically", false};
+                return {"worldedit.selection.expand.poly.error", false};
             }
         }
         for (BlockPos change : changes) {
@@ -111,13 +111,13 @@ namespace worldedit {
         }
         updateBoundingBox();
 
-        return {"§aThis region has been expanded", true};
+        return {"worldedit.expand.expanded", true};
     }
 
     std::pair<std::string, bool> PolyRegion::contract(const std::vector<BlockPos>& changes) {
         for (BlockPos change : changes) {
             if (change.x != 0 || change.z != 0) {
-                return {"§aThis region can only contract vertically", false};
+                return {"worldedit.selection.contract.poly.error", false};
             }
         }
         for (BlockPos change : changes) {
@@ -129,7 +129,7 @@ namespace worldedit {
             }
         }
         updateBoundingBox();
-        return {"§aThis region has been contracted", true};
+        return {"worldedit.contract.contracted", true};
     }
 
     std::pair<std::string, bool> PolyRegion::shift(const BlockPos& change) {
@@ -141,7 +141,7 @@ namespace worldedit {
             point.z += change.z;
         }
         updateBoundingBox();
-        return {"§aThis region has been shifted", true};
+        return {"worldedit.shift.shifted", true};
     }
 
     uint64_t PolyRegion::size() const {

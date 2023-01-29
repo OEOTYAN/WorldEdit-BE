@@ -14,6 +14,8 @@ namespace worldedit {
         BlockPos vicePos = BlockPos::MIN;
         void updateBoundingBox() override;
 
+        std::string getName() override { return "extend"; }
+
         explicit ExpandRegion(const BoundingBox& region, const int& dim);
 
         std::pair<std::string, bool> expand(const std::vector<BlockPos>& changes) override;

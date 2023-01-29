@@ -64,6 +64,8 @@ namespace worldedit {
        public:
         std::vector<BlockPos> poss;
 
+        std::string getName() override { return "convex"; }
+
         void updateBoundingBox() override;
 
         explicit ConvexRegion(const BoundingBox& region, const int& dim);

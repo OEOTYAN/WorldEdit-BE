@@ -38,6 +38,8 @@ namespace worldedit {
         static const int quality = 16;
         bool posCached = false;
 
+        std::string getName() override { return "loft"; }
+
         void updateBoundingBox() override;
 
         explicit LoftRegion(const BoundingBox& region, const int& dim);

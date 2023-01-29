@@ -15,6 +15,8 @@ namespace worldedit {
         int maxY = -2100000000;
         BlockPos mainPos{-2100000000, -2100000000, -2100000000};
 
+        std::string getName() override { return "poly"; }
+
         void updateBoundingBox() override;
 
         explicit PolyRegion(const BoundingBox& region, const int& dim);

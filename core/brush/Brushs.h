@@ -5,6 +5,7 @@
 #ifndef WORLDEDIT_BRUSHS_H
 #define WORLDEDIT_BRUSHS_H
 
+#include "tool.h"
 #include "Brush.h"
 #include "CubeBrush.h"
 #include "DeformBrush.h"

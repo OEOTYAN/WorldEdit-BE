@@ -2,46 +2,48 @@
 // Created by OEOTYAN on 2022/06/10.
 //
 #include "tool.h"
-#include "region/ChangeRegion.hpp"
+
 #include "string/StringTool.h"
 #include "WorldEdit.h"
 #include "MC/Sapling.hpp"
+#include "MC/BlockInstance.hpp"
 #include "store/BlockPattern.hpp"
 namespace worldedit {
 
-    bool Tool::leftClick(Player* player, BlockInstance& blockInstance) {
-        return false;
+    ////////
+    long long FarWand::lset(Player* player, class BlockInstance blockInstance) {
+        auto xuid = player->getXuid();
+        auto& playerData = getPlayersData(xuid);
+        playerData.changeMainPos(blockInstance);
+        return -2;
     }
-    bool Tool::rightClick(Player* player, BlockInstance& blockInstance) {
-        return false;
+    long long FarWand::set(Player* player, class BlockInstance blockInstance) {
+        auto xuid = player->getXuid();
+        auto& playerData = getPlayersData(xuid);
+        playerData.changeVicePos(blockInstance);
+        return -2;
     }
 
     ////////
-    bool FarWand::leftClick(Player* player, BlockInstance& blockInstance) {
-        changeMainPos(player, blockInstance);
-        return true;
-    }
-    bool FarWand::rightClick(Player* player, BlockInstance& blockInstance) {
-        changeVicePos(player, blockInstance);
-        return true;
-    }
-
-    ////////
-    bool AirWand::leftClick(Player* player, BlockInstance& blockInstance) {
+    long long AirWand::lset(Player* player, class BlockInstance blockInstance) {
+        auto xuid = player->getXuid();
+        auto& playerData = getPlayersData(xuid);
         auto bs = Level::getBlockSource(player);
-        changeMainPos(player, bs->getBlockInstance((player->getPosition() - Vec3(0.0, 1.62, 0.0)).toBlockPos()));
-        return true;
+        playerData.changeMainPos(bs->getBlockInstance((player->getPosition() - Vec3(0.0, 1.62, 0.0)).toBlockPos()));
+        return -2;
     }
-    bool AirWand::rightClick(Player* player, BlockInstance& blockInstance) {
+    long long AirWand::set(Player* player, class BlockInstance blockInstance) {
+        auto xuid = player->getXuid();
+        auto& playerData = getPlayersData(xuid);
         auto bs = Level::getBlockSource(player);
-        changeVicePos(player, bs->getBlockInstance((player->getPosition() - Vec3(0.0, 1.62, 0.0)).toBlockPos()));
-        return true;
+        playerData.changeVicePos(bs->getBlockInstance((player->getPosition() - Vec3(0.0, 1.62, 0.0)).toBlockPos()));
+        return -2;
     }
 
     ////////
-    bool InfoTool::rightClick(Player* player, BlockInstance& blockInstance) {
+    long long InfoTool::set(Player* player, class BlockInstance blockInstance) {
         if (blockInstance == BlockInstance::Null) {
-            return false;
+            return -2;
         }
         auto block = blockInstance.getBlock();
         auto exblock = &const_cast<Block&>(blockInstance.getBlockSource()->getExtraBlock(blockInstance.getPosition()));
@@ -69,48 +71,47 @@ namespace worldedit {
                 player->sendText("blockEntity: null");
             }
         }
-        return true;
+        return -2;
     }
 
     ////////
-    bool CyclerTool::leftClick(Player* player, BlockInstance& blockInstance) {
+    long long CyclerTool::lset(Player* player, class BlockInstance blockInstance) {
         if (blockInstance == BlockInstance::Null) {
-            return false;
+            return -2;
         }
-        return false;
+        return -2;
     }
-    bool CyclerTool::rightClick(Player* player, BlockInstance& blockInstance) {
+    long long CyclerTool::set(Player* player, class BlockInstance blockInstance) {
         if (blockInstance == BlockInstance::Null) {
-            return false;
+            return -2;
         }
-        return true;
+        return -2;
     }
 
     ////////
-    bool RepTool::leftClick(Player* player, BlockInstance& blockInstance) {
+    long long RepTool::lset(Player* player, class BlockInstance blockInstance) {
         if (blockInstance == BlockInstance::Null) {
-            return false;
+            return -2;
         }
         blockSet = BlockNBTSet(blockInstance);
-        return true;
+        return -2;
     }
-    bool RepTool::rightClick(Player* player, BlockInstance& blockInstance) {
+    long long RepTool::set(Player* player, class BlockInstance blockInstance) {
         if (blockInstance == BlockInstance::Null) {
-            return false;
+            return -2;
         }
         auto blockSource = blockInstance.getBlockSource();
         auto bpos = blockInstance.getPosition();
-        auto& mod = worldedit::getMod();
-        auto xuid = player->getXuid();
 
-        INNERIZE_GMASK
+        auto xuid = player->getXuid();
+        auto& playerData = getPlayersData(xuid);
 
         EvalFunctions f;
         f.setbs(blockSource);
         std::unordered_map<std::string, double> variables;
 
-        if (mod.maxHistoryLength > 0) {
-            auto history = mod.getPlayerNextHistory(xuid);
+        if (playerData.maxHistoryLength > 0) {
+            auto history = playerData.getNextHistory();
             *history = Clipboard(BlockPos(0, 0, 0));
             history->playerRelPos.x = blockInstance.getDimensionId();
             history->playerPos = bpos;
@@ -130,29 +131,24 @@ namespace worldedit {
         variables["ox"] = bpos.x - playerPos.x;
         variables["oy"] = bpos.y - playerPos.y;
         variables["oz"] = bpos.z - playerPos.z;
-        gMaskLambda(f, variables, [&]() mutable { blockSet.setBlock(bpos, blockSource); });
+        maskFunc(f, variables, [&]() mutable { blockSet.setBlock(bpos, blockSource, playerData, f, variables); });
 
-        return false;
+        return -2;
     }
 
-    ////////
-    FloodFillTool::~FloodFillTool() {
-        delete pattern;
-    }
-    bool FloodFillTool::rightClick(Player* player, BlockInstance& blockInstance) {
+    long long FloodFillTool::set(Player* player, class BlockInstance blockInstance) {
         if (blockInstance == BlockInstance::Null) {
             return false;
         }
         std::queue<BlockPos> q;
         auto pos0 = blockInstance.getPosition();
         q.push(pos0);
-        auto& mod = worldedit::getMod();
+
         auto xuid = player->getXuid();
+        auto& playerData = getPlayersData(xuid);
         auto blockSource = blockInstance.getBlockSource();
         const Block* block = blockInstance.getBlock();
         const Block* exBlock = &blockSource->getExtraBlock(pos0);
-
-        INNERIZE_GMASK
 
         EvalFunctions f;
         f.setbs(blockSource);
@@ -175,28 +171,7 @@ namespace worldedit {
             boundingBox = boundingBox.merge(pos1);
             if (needEdge) {
                 BoundingBox(pos1 - 1, pos1 + 1).forEachBlockInBox([&](const BlockPos& tmpPos) {
-                    if (tmpPos != pos1 && pos0.distanceTo(tmpPos) <= 0.5 + radius &&
-                        (&blockSource->getBlock(tmpPos) == block && &blockSource->getExtraBlock(tmpPos) == exBlock) &&
-                        s.find(tmpPos) == s.end()) {
-                        f.setPos(tmpPos);
-                        variables["rx"] = tmpPos.x;
-                        variables["ry"] = tmpPos.y;
-                        variables["rz"] = tmpPos.z;
-                        variables["cx"] = tmpPos.x-pos0.x;
-                        variables["cy"] = tmpPos.y-pos0.y;
-                        variables["cz"] = tmpPos.z-pos0.z;
-                        variables["ox"] = tmpPos.x - playerPos.x;
-                        variables["oy"] = tmpPos.y - playerPos.y;
-                        variables["oz"] = tmpPos.z - playerPos.z;
-                        gMaskLambda(f, variables, [&]() mutable {
-                            q.push(tmpPos);
-                            s.insert(tmpPos);
-                        });
-                    }
-                });
-            } else {
-                for (auto& tmpPos : pos1.getNeighbors()) {
-                    if (pos0.distanceTo(tmpPos) <= 0.5 + radius &&
+                    if (tmpPos != pos1 && pos0.distanceTo(tmpPos) <= 0.5 + size &&
                         (&blockSource->getBlock(tmpPos) == block && &blockSource->getExtraBlock(tmpPos) == exBlock) &&
                         s.find(tmpPos) == s.end()) {
                         f.setPos(tmpPos);
@@ -209,7 +184,28 @@ namespace worldedit {
                         variables["ox"] = tmpPos.x - playerPos.x;
                         variables["oy"] = tmpPos.y - playerPos.y;
                         variables["oz"] = tmpPos.z - playerPos.z;
-                        gMaskLambda(f, variables, [&]() mutable {
+                        maskFunc(f, variables, [&]() mutable {
+                            q.push(tmpPos);
+                            s.insert(tmpPos);
+                        });
+                    }
+                });
+            } else {
+                for (auto& tmpPos : pos1.getNeighbors()) {
+                    if (pos0.distanceTo(tmpPos) <= 0.5 + size &&
+                        (&blockSource->getBlock(tmpPos) == block && &blockSource->getExtraBlock(tmpPos) == exBlock) &&
+                        s.find(tmpPos) == s.end()) {
+                        f.setPos(tmpPos);
+                        variables["rx"] = tmpPos.x;
+                        variables["ry"] = tmpPos.y;
+                        variables["rz"] = tmpPos.z;
+                        variables["cx"] = tmpPos.x - pos0.x;
+                        variables["cy"] = tmpPos.y - pos0.y;
+                        variables["cz"] = tmpPos.z - pos0.z;
+                        variables["ox"] = tmpPos.x - playerPos.x;
+                        variables["oy"] = tmpPos.y - playerPos.y;
+                        variables["oz"] = tmpPos.z - playerPos.z;
+                        maskFunc(f, variables, [&]() mutable {
                             q.push(tmpPos);
                             s.insert(tmpPos);
                         });
@@ -220,8 +216,8 @@ namespace worldedit {
 
         worldedit::Clipboard* history = nullptr;
 
-        if (mod.maxHistoryLength > 0) {
-            history = mod.getPlayerNextHistory(xuid);
+        if (playerData.maxHistoryLength > 0) {
+            history = playerData.getNextHistory();
             *history = Clipboard(boundingBox.max - boundingBox.min);
             history->playerRelPos.x = blockInstance.getDimensionId();
             history->playerPos = boundingBox.min;
@@ -240,22 +236,24 @@ namespace worldedit {
     }
 
     ////////
-    bool TreeTool::rightClick(Player* player, BlockInstance& blockInstance) {
+    long long TreeTool::set(Player* player, class BlockInstance blockInstance) {
         // if (blockInstance == BlockInstance::Null) {
         //     return false;
         // }
         // auto bs = Level::getBlockSource(player);
         // auto pos = blockInstance.getPosition();
-        // setBlockSimple(bs, pos, const_cast<Block*>(StaticVanillaBlocks::mGrass));
-        // pos.y += 1;
-        // setBlockSimple(bs, pos, const_cast<Block*>(StaticVanillaBlocks::mSapling));
-        // auto& legacyBlock = blockInstance.getBlock()->getLegacyBlock();
-        // return ((Sapling&)legacyBlock)._growTree(*bs, pos, Global<Level>->getRandom(), false);
+        // setBlockSimple(bs, pos,
+        // const_cast<Block*>(StaticVanillaBlocks::mGrass)); pos.y += 1;
+        // setBlockSimple(bs, pos,
+        // const_cast<Block*>(StaticVanillaBlocks::mSapling)); auto& legacyBlock
+        // = blockInstance.getBlock()->getLegacyBlock(); return
+        // ((Sapling&)legacyBlock)._growTree(*bs, pos,
+        // Global<Level>->getRandom(), false);
         return false;
     }
 
     ////////
-    bool DelTreeTool::rightClick(Player* player, BlockInstance& blockInstance) {
+    long long DelTreeTool::set(Player* player, class BlockInstance blockInstance) {
         if (blockInstance == BlockInstance::Null) {
             return false;
         }

@@ -5,14 +5,21 @@
 #include "ImageHeightmapBrush.h"
 #include "store/BlockPattern.hpp"
 #include "MC/Dimension.hpp"
+#include "WorldEdit.h"
+
 namespace worldedit {
-    ImageHeightmapBrush::ImageHeightmapBrush(unsigned short s, int a, Texture2D const& tex, bool r)
+    ImageHeightmapBrush::ImageHeightmapBrush(unsigned short s,
+                                             int a,
+                                             Texture2D const& tex,
+                                             bool r)
         : Brush(s, nullptr), height(a), texture(tex), rotation(r) {}
 
-    long long ImageHeightmapBrush::set(Player* player, BlockInstance blockInstance) {
+    long long ImageHeightmapBrush::set(Player* player,
+                                       BlockInstance blockInstance) {
         auto pos = blockInstance.getPosition();
-        auto& mod = worldedit::getMod();
+        
         auto xuid = player->getXuid();
+        auto& playerData = getPlayersData(xuid);
         auto dimID = player->getDimensionId();
         auto blockSource = &player->getRegion();
         auto range = Global<Level>->getDimension(dimID)->getHeightRange();
@@ -24,7 +31,8 @@ namespace worldedit {
         for (int dx = -size; dx <= size; dx++)
             for (int dz = -size; dz <= size; dz++) {
                 auto posk = pos + BlockPos(dx, 0, dz);
-                posk.y = getHighestTerrainBlock(blockSource, posk.x, posk.z, range.min, range.max - 1, mask);
+                posk.y = getHighestTerrainBlock(blockSource, posk.x, posk.z,
+                                                range.min, range.max - 1, mask);
                 if (range.min > posk.y) {
                     continue;
                 }
@@ -40,10 +48,11 @@ namespace worldedit {
         maxY = std::min(maxY, range.max - 1);
         minY = std::max(minY, (int)range.min);
 
-        BoundingBox box({pos.x - size, minY, pos.z - size}, {pos.x + size, maxY, pos.z + size});
+        BoundingBox box({pos.x - size, minY, pos.z - size},
+                        {pos.x + size, maxY, pos.z + size});
 
-        if (mod.maxHistoryLength > 0) {
-            auto history = mod.getPlayerNextHistory(xuid);
+        if (playerData.maxHistoryLength > 0) {
+            auto history = playerData.getNextHistory();
             *history = Clipboard(box.max - box.min);
             history->playerRelPos.x = dimID;
             history->playerPos = box.min;
@@ -84,6 +93,16 @@ namespace worldedit {
             rotate = [&](double& u, double& v) {};
         }
 
+        EvalFunctions f;
+        f.setbs(blockSource);
+        f.setbox(box);
+        std::unordered_map<std::string, double> variables;
+        playerData.setVarByPlayer(variables);
+
+        auto playerPos = player->getPosition();
+
+        Vec3 center = pos.toVec3();
+
         for (int dx = -size; dx <= size; dx++)
             for (int dz = -size; dz <= size; dz++) {
                 auto posk = pos + BlockPos(dx, 0, dz);
@@ -97,15 +116,25 @@ namespace worldedit {
                 posk.y = std::max(posk.y, (int)range.min);
                 posk.y = std::min(posk.y, (int)range.max - 1);
                 if (posk.y > originY) {
-                    auto* block = &blockSource->getBlock({posk.x, originY, posk.z});
+                    auto* block =
+                        &blockSource->getBlock({posk.x, originY, posk.z});
                     for (int i = originY + 1; i <= posk.y; ++i) {
-                        setBlockSimple(blockSource, {posk.x, i, posk.z}, const_cast<Block*>(block));
-                        iter++;
+                        BlockPos iPos(posk.x, i, posk.z);
+                        setFunction(variables, f, box, playerPos, iPos, center);
+                        maskFunc(f, variables, [&]() mutable {
+                            iter += playerData.setBlockSimple(
+                                blockSource, f, variables, iPos,
+                                const_cast<Block*>(block));
+                        });
                     }
                 } else if (posk.y < originY) {
                     for (int i = posk.y; i <= originY; ++i) {
-                        setBlockSimple(blockSource, {posk.x, i, posk.z});
-                        iter++;
+                        BlockPos iPos(posk.x, i, posk.z);
+                        setFunction(variables, f, box, playerPos, iPos, center);
+                        maskFunc(f, variables, [&]() mutable {
+                            iter += playerData.setBlockSimple(blockSource, f,
+                                                              variables, iPos);
+                        });
                     }
                 }
             }

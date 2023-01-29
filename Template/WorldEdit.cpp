@@ -5,7 +5,10 @@
 #include "WorldEdit.h"
 #include "HookAPI.h"
 #include "ParticleAPI.h"
+#include "particle/Graphics.h"
+#include "eval/Eval.h"
 #include <MC/Block.hpp>
+#include <MC/Level.hpp>
 #include <MC/BlockLegacy.hpp>
 #include <MC/ServerNetworkHandler.hpp>
 #include <MC/NetworkPacketEventCoordinator.hpp>
@@ -13,6 +16,7 @@
 #include <MC/Packet.hpp>
 #include <MC/NetworkIdentifier.hpp>
 #include <MC/PlayerActionPacket.hpp>
+#include <MC/Player.hpp>
 #include <fstream>
 
 //?handle@ServerNetworkHandler@@UEAAXAEBVNetworkIdentifier@@AEBVPlayerActionPacket@@@Z
@@ -47,7 +51,10 @@
 //     return sb;
 // }
 
-THook(void, "?setRuntimeId@Block@@IEBAXAEBI@Z", Block* block, unsigned int const& id) {
+THook(void,
+      "?setRuntimeId@Block@@IEBAXAEBI@Z",
+      Block* block,
+      unsigned int const& id) {
     auto& blockName = worldedit::getBlockNameMap();
     auto& blockId = worldedit::getBlockIdMap();
     auto blockid = block->getId();
@@ -55,17 +62,28 @@ THook(void, "?setRuntimeId@Block@@IEBAXAEBI@Z", Block* block, unsigned int const
     blockId[block->getTypeName()] = blockid;
     // auto color = block->getLegacyBlock().getMapColor().toHexString();
     // if (getBlockColorssMap().find(color) != getBlockColorssMap().end()) {
-    //     getBlockColorssMap()[color] += ",\n" + block->getNbt()->toSNBT(0, SnbtFormat::Minimize);
+    //     getBlockColorssMap()[color] += ",\n" + block->getNbt()->toSNBT(0,
+    //     SnbtFormat::Minimize);
     // } else {
-    //     getBlockColorssMap()[color] = block->getNbt()->toSNBT(0, SnbtFormat::Minimize);
+    //     getBlockColorssMap()[color] = block->getNbt()->toSNBT(0,
+    //     SnbtFormat::Minimize);
     // }
     return original(block, id);
 }
 
 namespace worldedit {
-    WE& getMod() {
-        static WE t;
-        return t;
+
+    std::unordered_map<std::string, class PlayerData>& getPlayersDataMap() {
+        static std::unordered_map<std::string, class PlayerData> data;
+        return data;
+    }
+
+    class PlayerData& getPlayersData(std::string xuid) {
+        auto& playerDataMap = getPlayersDataMap();
+        if (playerDataMap.find(xuid) == playerDataMap.end()) {
+            playerDataMap[xuid] = PlayerData(Global<Level>->getPlayer(xuid));
+        }
+        return playerDataMap[xuid];
     }
 
     std::unordered_map<mce::Color, int>& getBlockColorMap() {
@@ -115,90 +133,32 @@ namespace worldedit {
             return blockId[name];
         return 0;
     }
-    void WE::renderMVpos() {
-        auto allPlayers = Level::getAllPlayers();
-        for (auto& player : allPlayers) {
-            auto xuid = player->getXuid();
-            if (playerMainPosMap.find(xuid) != playerMainPosMap.end()) {
-                auto& PosPair = playerMainPosMap[xuid];
-                if (PosPair.second.first <= 0) {
-                    PosPair.second.first = 40;
-                    globalPT().drawCuboid(AABB(Vec3(PosPair.first) - Vec3(0.07f, 0.07f, 0.07f),
-                                               Vec3(PosPair.first) + Vec3(1.07f, 1.07f, 1.07f)),
-                                          PosPair.second.second, mce::ColorPalette::RED);
-                }
-                PosPair.second.first--;
-            }
-            if (playerVicePosMap.find(xuid) != playerVicePosMap.end()) {
-                auto& PosPair = playerVicePosMap[xuid];
-                if (PosPair.second.first <= 0) {
-                    PosPair.second.first = 40;
-                    globalPT().drawCuboid(AABB(Vec3(PosPair.first) - Vec3(0.06f, 0.06f, 0.06f),
-                                               Vec3(PosPair.first) + Vec3(1.06f, 1.06f, 1.06f)),
-                                          PosPair.second.second, mce::ColorPalette::VATBLUE);
-                }
-                PosPair.second.first--;
-            }
-        }
+
+    void setFunction(std::unordered_map<::std::string, double>& variables,
+                     EvalFunctions& funcs,
+                     const BoundingBox& boundingBox,
+                     const Vec3& playerPos,
+                     const BlockPos& pos,
+                     const Vec3& center) {
+        funcs.setPos(pos);
+        double lengthx = (boundingBox.max.x - boundingBox.min.x) * 0.5;
+        double lengthy = (boundingBox.max.y - boundingBox.min.y) * 0.5;
+        double lengthz = (boundingBox.max.z - boundingBox.min.z) * 0.5;
+        double centerx = (boundingBox.max.x + boundingBox.min.x) * 0.5;
+        double centery = (boundingBox.max.y + boundingBox.min.y) * 0.5;
+        double centerz = (boundingBox.max.z + boundingBox.min.z) * 0.5;
+        variables["x"] = (pos.x - centerx) / lengthx;
+        variables["y"] = (pos.y - centery) / lengthy;
+        variables["z"] = (pos.z - centerz) / lengthz;
+        variables["rx"] = pos.x;
+        variables["ry"] = pos.y;
+        variables["rz"] = pos.z;
+        variables["ox"] = pos.x - playerPos.x;
+        variables["oy"] = pos.y - playerPos.y;
+        variables["oz"] = pos.z - playerPos.z;
+        variables["cx"] = pos.x - floor(center.x);
+        variables["cy"] = pos.y - floor(center.y);
+        variables["cz"] = pos.z - floor(center.z);
     }
 
-    Clipboard* WE::getPlayerNextHistory(std::string xuid) {
-        if (playerHistoryMap.find(xuid) == playerHistoryMap.end()) {
-            playerHistoryMap[xuid].first.resize(maxHistoryLength);
-            playerHistoryMap[xuid].second.first = 0;
-        } else {
-            playerHistoryMap[xuid].second.first += 1;
-            playerHistoryMap[xuid].second.first %= maxHistoryLength;
-        }
-        playerHistoryMap[xuid].second.second = playerHistoryMap[xuid].second.first;
-        return &playerHistoryMap[xuid].first[playerHistoryMap[xuid].second.first];
-    }
-
-    std::pair<Clipboard*, int> WE::getPlayerUndoHistory(std::string xuid) {
-        std::pair<Clipboard*, int> result = {nullptr, -1};
-        if (playerHistoryMap.find(xuid) != playerHistoryMap.end()) {
-            int maximum = (playerHistoryMap[xuid].second.second + 1) % maxHistoryLength;
-            int current = playerHistoryMap[xuid].second.first;
-            if (maximum == current) {
-                result.second = 0;
-                return result;
-            }
-            result.first = &playerHistoryMap[xuid].first[current];
-            if (result.first->used == false) {
-                std::cout << "cao " << current << std::endl;
-                result.second = 0;
-                return result;
-            }
-            result.second = 1;
-            current -= 1;
-            if (current < 0) {
-                current += maxHistoryLength;
-            }
-            playerHistoryMap[xuid].second.first = current;
-            return result;
-        }
-        return result;
-    }
-
-    std::pair<Clipboard*, int> WE::getPlayerRedoHistory(std::string xuid) {
-        std::pair<Clipboard*, int> result = {nullptr, -1};
-        if (playerHistoryMap.find(xuid) != playerHistoryMap.end()) {
-            int maximum = (playerHistoryMap[xuid].second.second + 1) % maxHistoryLength;
-            int current = playerHistoryMap[xuid].second.first + 1;
-            current %= maxHistoryLength;
-            if (maximum == current) {
-                result.second = 0;
-                return result;
-            }
-            result.first = &playerHistoryMap[xuid].first[current];
-            if (result.first->used == false) {
-                result.second = 0;
-                return result;
-            }
-            result.second = 1;
-            playerHistoryMap[xuid].second.first = current;
-            return result;
-        }
-        return result;
-    }
 }  // namespace worldedit

@@ -8,7 +8,6 @@
 #include "eval/Eval.h"
 #include "WorldEdit.h"
 
-
 #include "MC/Level.hpp"
 #include "MC/MobSpawnRules.hpp"
 #include "MC/SpawnGroupData.hpp"
@@ -45,8 +44,8 @@ namespace worldedit {
             20);
 
         DynamicCommand::setup(
-            "updateimage",             // command name
-            "update image file enum",  // command description
+            "updateimage",                                    // command name
+            tr("worldedit.command.description.updateimage"),  // command description
             {}, {}, {{}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
@@ -54,81 +53,81 @@ namespace worldedit {
                 std::vector<std::string> test;
                 getImageFiles(WE_DIR + "image", test);
                 Global<CommandRegistry>->setSoftEnumValues("filename", test);
-                output.success("§aUpdate image file enum success");
+                output.trSuccess("worldedit.updateimage.success");
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "gmask",            // command name
-            "set global mask",  // command description
+            "gmask",                                    // command name
+            tr("worldedit.command.description.gmask"),  // command description
             {}, {ParamData("mask", ParamType::String, true, "mask")}, {{"mask"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
+                auto& playerData = getPlayersData(xuid);
                 if (results["mask"].isSet) {
                     auto str = results["mask"].getRaw<std::string>();
-                    mod.playerGMaskMap[xuid] = str;
-                    output.success(fmt::format("§aglobal mask set to: §g{}", str));
+                    playerData.gMask = str;
+                    output.trSuccess("worldedit.gmask.success", str);
                 } else {
-                    mod.playerGMaskMap.erase(xuid);
-                    output.success(fmt::format("§aYour global mask is cleared"));
+                    playerData.gMask = "";
+                    output.trSuccess("worldedit.gmask.clear");
                 }
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "needneighberupdate",                              // command name
-            "whether the neighber block needs to be updated",  // command description
+            "neighberupdate",                                // command name
+            "worldedit.command.description.neighberupdate",  // command description
             {}, {ParamData("bool", ParamType::Bool, "bool")}, {{"bool"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
+                auto& playerData = getPlayersData(xuid);
                 if (results["bool"].get<bool>()) {
-                    mod.updateArg = 3;
-                    output.success(fmt::format("§aNeighber block update is now enabled"));
+                    playerData.updateArg = 3;
+                    output.trSuccess("worldedit.neighberupdate.on");
                 } else {
-                    mod.updateArg = 2;
-                    output.success(fmt::format("§aNeighber block update is now disabled"));
+                    playerData.updateArg = 2;
+                    output.trSuccess("worldedit.neighberupdate.off");
                 }
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "needblockupdate",                        // command name
-            "whether the block needs to be updated",  // command description
+            "blockupdate",                                    // command name
+            tr("worldedit.command.description.blockupdate"),  // command description
             {}, {ParamData("bool", ParamType::Bool, "bool")}, {{"bool"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
+                auto& playerData = getPlayersData(xuid);
                 if (results["bool"].get<bool>()) {
-                    mod.updateExArg = 1;
-                    output.success(fmt::format("§aBlock update is now enabled"));
+                    playerData.updateExArg = 1;
+                    output.trSuccess("worldedit.blockupdate.on");
                 } else {
-                    mod.updateExArg = 0;
-                    output.success(fmt::format("§aBlock update is now disabled"));
+                    playerData.updateExArg = 0;
+                    output.trSuccess("worldedit.blockupdate.off");
                 }
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "wand",             // command name
-            "give you a wand",  // command description
+            "wand",                                    // command name
+            tr("worldedit.command.description.wand"),  // command description
             {}, {}, {{}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto player = origin.getPlayer();
                 Level::runcmdAs(player, "give @s wooden_axe");
-                output.success("");
+                output.trSuccess("");
             },
             CommandPermissionLevel::GameMasters);
 
@@ -137,19 +136,22 @@ namespace worldedit {
         //     "calculate expression",  // command description
         //     {}, {ParamData("exp", ParamType::Message, "exp")}, {{"exp"}},
         //     // dynamic command callback
-        //     [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
-        //        std::unordered_map<std::string, DynamicCommand::Result>& results) {
-        //         auto& mod = worldedit::getMod();
+        //     [](DynamicCommand const& command, CommandOrigin const& origin,
+        //     CommandOutput& output,
+        //        std::unordered_map<std::string, DynamicCommand::Result>&
+        //        results) {
+        //
         //         auto player = origin.getPlayer();
         //         auto dimID = player->getDimensionId();
         //         auto blockSource = &player->getRegion();
 
-        //         auto* spawnGroupRegistry = blockSource->getLevel().getSpawnGroupRegistry();
+        //         auto* spawnGroupRegistry =
+        //         blockSource->getLevel().getSpawnGroupRegistry();
 
         //         for (auto& m : spawnGroupRegistry->mSpawnGroupLookupMap) {
         //             std::cout << m.first << std::endl;
         //         }
-        //         output.success("");
+        //         output.trSuccess("");
         //     },
         //     CommandPermissionLevel::GameMasters);
     }

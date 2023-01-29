@@ -110,7 +110,7 @@ namespace worldedit {
     std::pair<std::string, bool> CylinderRegion::expand(const std::vector<BlockPos>& changes) {
         int check = checkChanges(changes);
         if (check == -1) {
-            return {"This region can only be expanded isotropically", false};
+            return {"orldedit.selection.expand.cylinder.error", false};
         } else {
             radius += check;
         }
@@ -122,13 +122,13 @@ namespace worldedit {
             }
         }
         updateBoundingBox();
-        return {"§aThis region has been expanded", true};
+        return {"worldedit.expand.expanded", true};
     }
 
     std::pair<std::string, bool> CylinderRegion::contract(const std::vector<BlockPos>& changes) {
         int check = checkChanges(changes);
         if (check == -1) {
-            return {"This region can only be expanded isotropically", false};
+            return {"orldedit.selection.contract.cylinder.error", false};
         } else {
             radius -= check;
             radius = std::max(radius, 0.5f);
@@ -142,7 +142,7 @@ namespace worldedit {
             }
         }
         updateBoundingBox();
-        return {"§aThis region has been contracted", true};
+        return {"worldedit.contract.contracted", true};
     }
 
     std::pair<std::string, bool> CylinderRegion::shift(const BlockPos& change) {
@@ -150,7 +150,7 @@ namespace worldedit {
         maxY += change.y;
         minY += change.y;
         updateBoundingBox();
-        return {"§aThis region has been shifted", true};
+        return {"worldedit.shift.shifted", true};
     }
 
     void CylinderRegion::renderRegion() {

@@ -174,39 +174,35 @@ namespace worldedit {
     std::pair<std::string, bool> ConvexRegion::shift(const BlockPos& change) {
         boundingBox.min = boundingBox.min + change;
         boundingBox.max = boundingBox.max + change;
-        auto tmpVertices = new std::unordered_set<BlockPos>(vertices);
+        std::unordered_set<BlockPos> tmpVertices = vertices;
         vertices.clear();
-        for (auto vertice : *tmpVertices) {
+        for (auto vertice : tmpVertices) {
             vertices.insert(vertice + change);
         }
         for (auto& pos : poss) {
             pos += change;
         }
-        delete tmpVertices;
-        auto tmpVertexBacklog = new std::unordered_set<BlockPos>(vertexBacklog);
+        std::unordered_set<BlockPos> tmpVertexBacklog = vertexBacklog;
         vertexBacklog.clear();
-        for (auto vertex : *tmpVertexBacklog) {
+        for (auto vertex : tmpVertexBacklog) {
             vertexBacklog.insert(vertex + change);
         }
-        delete tmpVertexBacklog;
-        auto tmpTriangles = new std::vector<Triangle>(triangles);
+        std::vector<Triangle> tmpTriangles = triangles;
         triangles.clear();
-        for (auto triangle : *tmpTriangles) {
+        for (auto triangle : tmpTriangles) {
             triangles.emplace_back(Triangle(triangle.vertices[0] + change.toVec3(),
                                             triangle.vertices[1] + change.toVec3(),
                                             triangle.vertices[2] + change.toVec3()));
         }
-        delete tmpTriangles;
-        auto tmpEdges = new std::unordered_set<Edge, _hash>(edges);
+        std::unordered_set<Edge, _hash> tmpEdges = edges;
         edges.clear();
-        for (auto edge : *tmpEdges) {
+        for (auto edge : tmpEdges) {
             edges.insert(Edge(edge.start + change.toVec3(), edge.end + change.toVec3()));
         }
-        delete tmpEdges;
         centerAccum = centerAccum + change * (int)vertices.size();
         hasLast = false;
 
-        return {"§aThis region has been shifted", true};
+        return {"worldedit.shift.shifted", true};
     }
 
     bool ConvexRegion::contains(const BlockPos& pos) {

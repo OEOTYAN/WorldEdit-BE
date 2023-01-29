@@ -14,6 +14,8 @@ namespace worldedit {
         BlockPos vicePos = BlockPos::MIN;
         void updateBoundingBox() override;
 
+        std::string getName() override { return "cuboid"; }
+
         explicit CuboidRegion(const BoundingBox& region, const int& dim);
         explicit CuboidRegion();
 

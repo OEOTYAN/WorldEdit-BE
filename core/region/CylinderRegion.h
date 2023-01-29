@@ -17,6 +17,8 @@ namespace worldedit {
         int checkChanges(const std::vector<BlockPos>& changes);
 
        public:
+        std::string getName() override { return "cylinder"; }
+
         explicit CylinderRegion(const BoundingBox& region, const int& dim);
 
         void updateBoundingBox() override;

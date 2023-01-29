@@ -279,7 +279,7 @@ namespace worldedit {
             }
         }
         updateBoundingBox();
-        return {"§aThis region has been shifted", true};
+        return {"worldedit.shift.shifted", true};
     }
 
 }  // namespace worldedit

@@ -2,12 +2,12 @@
 // Created by OEOTYAN on 2022/06/10.
 //
 #include "BlockNBTSet.hpp"
-#include "region/ChangeRegion.hpp"
+#include "data/PlayerData.h"
 
 namespace worldedit {
 
     BlockNBTSet::BlockNBTSet(BlockInstance& blockInstance) : hasBlock(true) {
-        block   = blockInstance.getBlock();
+        block = blockInstance.getBlock();
         exblock = &const_cast<Block&>((blockInstance.getBlockSource()->getExtraBlock(blockInstance.getPosition())));
         if (blockInstance.hasBlockEntity()) {
             hasBlockEntity = true;
@@ -18,8 +18,12 @@ namespace worldedit {
         }
     }
 
-    bool BlockNBTSet::setBlock(const BlockPos& pos, BlockSource* blockSource) const {
-        setBlockSimple(blockSource, pos, block, exblock);
+    bool BlockNBTSet::setBlockForHistory(const BlockPos& pos,
+                               BlockSource* blockSource,
+                               class PlayerData& data) const {
+        if (!data.setBlockForHistory(blockSource, pos, block, exblock)) {
+            return false;
+        }
         if (hasBlockEntity) {
             if (block->hasBlockEntity()) {
                 auto be = blockSource->getBlockEntity(pos);
@@ -30,14 +34,39 @@ namespace worldedit {
         }
         return true;
     }
-    bool BlockNBTSet::setBlock(const BlockPos& pos, BlockSource* blockSource, Rotation rotation, Mirror mirror) const {
-        setBlockSimple(blockSource, pos,
-                       const_cast<Block*>(VanillaBlockStateTransformUtils::transformBlock(*block, rotation, mirror)),
-                       const_cast<Block*>(VanillaBlockStateTransformUtils::transformBlock(*exblock, rotation, mirror)));
+
+    bool BlockNBTSet::setBlock(const BlockPos& pos,
+                               BlockSource* blockSource,
+                               class PlayerData& data,
+                               class EvalFunctions& funcs,
+                               std::unordered_map<std::string, double> const& var) const {
+        if (!data.setBlockSimple(blockSource, funcs, var, pos, block, exblock)) {
+            return false;
+        }
         if (hasBlockEntity) {
             if (block->hasBlockEntity()) {
                 auto be = blockSource->getBlockEntity(pos);
-                if (be != nullptr && blockEntity!="") {
+                if (be != nullptr && blockEntity != "") {
+                    be->setNbt(CompoundTag::fromBinaryNBT(blockEntity).get());
+                }
+            }
+        }
+        return true;
+    }
+    bool BlockNBTSet::setBlock(const BlockPos& pos,
+                               BlockSource* blockSource,
+                               class PlayerData& data,
+                               class EvalFunctions& funcs,
+                               std::unordered_map<std::string, double> const& var,
+                               Rotation rotation,
+                               Mirror mirror) const {
+        if (!data.setBlockSimple(blockSource, funcs, var, pos, block, exblock)) {
+            return false;
+        }
+        if (hasBlockEntity) {
+            if (block->hasBlockEntity()) {
+                auto be = blockSource->getBlockEntity(pos);
+                if (be != nullptr && blockEntity != "") {
                     be->setNbt(CompoundTag::fromBinaryNBT(blockEntity).get());
                 }
             }

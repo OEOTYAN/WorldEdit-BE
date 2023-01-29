@@ -7,6 +7,7 @@
 #include "string/StringTool.h"
 #include "MC/ItemStack.hpp"
 #include "WorldEdit.h"
+#include "region/Regions.h"
 namespace worldedit {
     using ParamType = DynamicCommand::ParameterType;
     using ParamData = DynamicCommand::ParameterData;
@@ -15,18 +16,17 @@ namespace worldedit {
 
     void regionInfoCommandSetup() {
         DynamicCommand::setup(
-            "size",                   // command name
-            "calculate region size",  // command description
+            "size",                                    // command name
+            tr("worldedit.command.description.size"),  // command description
             {}, {ParamData("args", ParamType::SoftEnum, true, "-ca", "-ca")}, {{"args"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
-                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
-                    mod.playerRegionMap[xuid]->hasSelected()) {
-                    auto* region = mod.playerRegionMap[xuid];
+                auto& playerData = getPlayersData(xuid);
+                if (playerData.region != nullptr && playerData.region->hasSelected()) {
+                    Region* region = playerData.region;
                     auto dimID = region->getDimensionID();
                     auto blockSource = &player->getRegion();
                     long long size = 0;
@@ -34,7 +34,7 @@ namespace worldedit {
                     if (results["args"].isSet) {
                         auto str = results["args"].getRaw<std::string>();
                         if (str.find("-") == std::string::npos) {
-                            output.error("wrong args");
+                            output.trError("worldedit.command.error.args", str);
                             return;
                         }
                         if (str.find("a") != std::string::npos) {
@@ -46,10 +46,10 @@ namespace worldedit {
                     }
                     if (!arg_c) {
                         if (arg_a) {
-                            mod.playerRegionMap[xuid]->forEachBlockInRegion([&](const BlockPos& pos) { size++; });
+                            playerData.region->forEachBlockInRegion([&](const BlockPos& pos) { size++; });
                         } else {
-                            auto dimID = mod.playerRegionMap[xuid]->getDimensionID();
-                            mod.playerRegionMap[xuid]->forEachBlockInRegion([&](const BlockPos& pos) {
+                            auto dimID = playerData.region->getDimensionID();
+                            playerData.region->forEachBlockInRegion([&](const BlockPos& pos) {
                                 auto block = &blockSource->getBlock(pos);
                                 if (!(block == BedrockBlocks::mAir))
                                     size++;
@@ -58,16 +58,16 @@ namespace worldedit {
                     } else {
                         // clipboard
                     }
-                    output.success(fmt::format("§6size: {}", size));
+                    output.trSuccess("worldedit.size.success", size);
                 } else {
-                    output.error("You don't have a region yet");
+                    output.trError("worldedit.error.incomplete-region");
                 }
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "count",        // command name
-            "count block",  // command description
+            "count",                                    // command name
+            tr("worldedit.command.description.count"),  // command description
             {
                 {"-c", {"-c"}},
             },
@@ -77,17 +77,17 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
+
+                auto& playerData = getPlayersData(xuid);
                 int data = -1;
                 auto blockname = results["block"].get<Block const*>()->getTypeName();
                 if (results["data"].isSet) {
                     data = results["data"].getRaw<int>();
                 }
-                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
-                    mod.playerRegionMap[xuid]->hasSelected()) {
-                    auto* region = mod.playerRegionMap[xuid];
+                if (playerData.region != nullptr && playerData.region->hasSelected()) {
+                    Region* region = playerData.region;
                     auto dimID = region->getDimensionID();
                     auto blockSource = &player->getRegion();
                     long long count = 0;
@@ -102,28 +102,29 @@ namespace worldedit {
                             }
                         });
                     }
-                    output.success(fmt::format("§6count: {}", count));
+                    output.trSuccess("worldedit.count.success", count);
                 } else {
-                    output.error("You don't have a region yet");
+                    output.trError("worldedit.error.incomplete-region");
                 }
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "distr",                         // command name
-            "block distribution in region",  // command description
+            "distr",                                    // command name
+            tr("worldedit.command.description.distr"),  // command description
             {}, {ParamData("args", ParamType::SoftEnum, true, "-cd", "-cd")}, {{"args"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
+
+                auto& playerData = getPlayersData(xuid);
                 bool arg_d = false, arg_c = false;
                 if (results["args"].isSet) {
                     auto str = results["args"].getRaw<std::string>();
                     if (str.find("-") == std::string::npos) {
-                        output.error("wrong args");
+                        output.trError("worldedit.command.error.args", str);
                         return;
                     }
                     if (str.find("d") != std::string::npos) {
@@ -134,9 +135,8 @@ namespace worldedit {
                     }
                 }
 
-                if (mod.playerRegionMap.find(xuid) != mod.playerRegionMap.end() &&
-                    mod.playerRegionMap[xuid]->hasSelected()) {
-                    auto* region = mod.playerRegionMap[xuid];
+                if (playerData.region != nullptr && playerData.region->hasSelected()) {
+                    Region* region = playerData.region;
                     auto dimID = region->getDimensionID();
                     auto blockSource = &player->getRegion();
                     std::unordered_map<std::string, long long> blocksMap;
@@ -200,6 +200,7 @@ namespace worldedit {
                                         }
                                     }
                                     delete item;
+                                    item = nullptr;
                                 }
                             }
                         });
@@ -239,16 +240,16 @@ namespace worldedit {
                     std::sort(blocksMap2.begin(), blocksMap2.end(),
                               [](const std::pair<std::string, long long>& a,
                                  const std::pair<std::string, long long>& b) { return a.second > b.second; });
-                    std::string res(fmt::format("§6total: §b{}", all));
+                    std::string res(fmt::format(tr("worldedit.distr.total"), all));
                     for (auto& block : blocksMap2) {
                         res += fmt::format("\n§b{}      §6({}%%) §f{}", block.second,
                                            worldedit::fto_string(
                                                static_cast<double>(block.second) / static_cast<double>(all) * 100.0, 3),
                                            block.first);
                     }
-                    output.success(res);
+                    output.trSuccess(res);
                 } else {
-                    output.error("You don't have a region yet");
+                    output.trError("worldedit.error.incomplete-region");
                 }
             },
             CommandPermissionLevel::GameMasters);

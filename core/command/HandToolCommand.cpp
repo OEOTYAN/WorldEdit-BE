@@ -7,6 +7,7 @@
 #include "MC/ItemStack.hpp"
 #include "WorldEdit.h"
 #include "store/BlockPattern.hpp"
+#include "brush/Brushs.h"
 
 namespace worldedit {
     using ParamType = DynamicCommand::ParameterType;
@@ -16,8 +17,8 @@ namespace worldedit {
 
     void handToolCommandSetup() {
         DynamicCommand::setup(
-            "tool",                // command name
-            "set your hand tool",  // command description
+            "tool",                                    // command name
+            tr("worldedit.command.description.tool"),  // command description
             {
                 {"tree", {"tree"}},
                 {"deltree", {"deltree"}},
@@ -59,34 +60,39 @@ namespace worldedit {
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
-                auto xuid = origin.getPlayer()->getXuid();
+                auto player = origin.getPlayer();
+                auto xuid = player->getXuid();
+                auto& playerData = getPlayersData(xuid);
                 auto* item = origin.getPlayer()->getHandSlot();
                 std::string toolrName = item->getTypeName();
                 std::string toolName = toolrName + std::to_string(item->getAuxValue());
                 stringReplace(toolrName, "minecraft:", "");
                 if (toolName == "") {
-                    output.error("You need to select an item");
+                    output.trError("worldedit.error.noitem");
                     return;
                 }
+                if (playerData.brushMap.find(toolName) != playerData.brushMap.end()) {
+                    delete playerData.brushMap[toolName];
+                    playerData.brushMap[toolName] = nullptr;
+                }
                 if (results["tree"].isSet) {
-                    mod.playerHandToolMap[xuid][toolName] = new TreeTool();
-                    output.success(fmt::format("§aTree tool bound to {}", toolrName));
+                    playerData.brushMap[toolName] = new TreeTool();
+                    output.trSuccess("worldedit.tool.set.tree", toolrName);
                 } else if (results["deltree"].isSet) {
-                    mod.playerHandToolMap[xuid][toolName] = new DelTreeTool();
-                    output.success(fmt::format("§aDeltree tool bound to {}", toolrName));
+                    playerData.brushMap[toolName] = new DelTreeTool();
+                    output.trSuccess("worldedit.tool.set.deltree", toolrName);
                 } else if (results["farwand"].isSet) {
-                    mod.playerHandToolMap[xuid][toolName] = new FarWand();
-                    output.success(fmt::format("§aFar wand tool bound to {}", toolrName));
+                    playerData.brushMap[toolName] = new FarWand();
+                    output.trSuccess("worldedit.tool.set.farwand", toolrName);
                 } else if (results["airwand"].isSet) {
-                    mod.playerHandToolMap[xuid][toolName] = new AirWand();
-                    output.success(fmt::format("§aAir wand tool bound to {}", toolrName));
+                    playerData.brushMap[toolName] = new AirWand();
+                    output.trSuccess("worldedit.tool.set.airwand", toolrName);
                 } else if (results["cycler"].isSet) {
-                    mod.playerHandToolMap[xuid][toolName] = new CyclerTool();
-                    output.success(fmt::format("§aCycler tool bound to {}", toolrName));
+                    playerData.brushMap[toolName] = new CyclerTool();
+                    output.trSuccess("worldedit.tool.set.cycler", toolrName);
                 } else if (results["info"].isSet) {
-                    mod.playerHandToolMap[xuid][toolName] = new InfoTool();
-                    output.success(fmt::format("§aBlock info tool bound to {}", toolrName));
+                    playerData.brushMap[toolName] = new InfoTool();
+                    output.trSuccess("worldedit.tool.set.info", toolrName);
                 } else if (results["flood"].isSet) {
                     std::string bps = "minecraft:air";
                     if (results["blockPattern"].isSet) {
@@ -99,45 +105,42 @@ namespace worldedit {
                     if (results["dis"].isSet) {
                         radius = results["dis"].get<int>();
                     }
-                    int needEdge = false;
+                    bool needEdge = false;
                     if (results["needEdge"].isSet) {
                         needEdge = results["needEdge"].get<bool>();
                     }
-                    mod.playerHandToolMap[xuid][toolName] =
+                    playerData.brushMap[toolName] =
                         new FloodFillTool(new BlockPattern(bps, xuid, nullptr), radius, needEdge);
-                    output.success(fmt::format("§aFlood fill tool bound to {}", toolrName));
+                    output.trSuccess("worldedit.tool.set.flood", toolrName);
                 } else if (results["rep"].isSet) {
-                    mod.playerHandToolMap[xuid][toolName] = new RepTool();
-                    output.success(fmt::format("§aRep fill tool bound to {}", toolrName));
+                    playerData.brushMap[toolName] = new RepTool();
+                    output.trSuccess("worldedit.tool.set.rep", toolrName);
                 } else if (results["none"].isSet) {
-                    delete mod.playerHandToolMap[xuid][toolName];
-                    mod.playerHandToolMap[xuid].erase(toolName);
-                    output.success(fmt::format("§aHand tool cleared"));
+                    playerData.brushMap.erase(toolName);
+                    output.trSuccess("worldedit.tool.clear", toolrName);
                 }
             },
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "luseface",                // command name
-            "set left click useface",  // command description
+            "luseface",                                    // command name
+            tr("worldedit.command.description.luseface"),  // command description
             {}, {ParamData("bool", ParamType::Bool, "bool")}, {{"bool"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto& mod = worldedit::getMod();
                 auto player = origin.getPlayer();
                 auto* item = player->getHandSlot();
                 std::string toolName = item->getTypeName() + std::to_string(item->getAuxValue());
                 auto xuid = player->getXuid();
-
-                if (mod.playerHandToolMap.find(xuid) != mod.playerHandToolMap.end() &&
-                    mod.playerHandToolMap[xuid].find(toolName) != mod.playerHandToolMap[xuid].end()) {
-                    auto* tool = mod.playerHandToolMap[xuid][toolName];
+                auto& playerData = getPlayersData(xuid);
+                if (playerData.brushMap.find(toolName) != playerData.brushMap.end()) {
+                    auto* tool = playerData.brushMap[toolName];
                     auto useface = results["bool"].get<bool>();
                     tool->lneedFace = useface;
-                    output.success("§aTool size set to " + std::to_string(useface));
+                    output.trSuccess("worldedit.tool.luseface.set", useface ? "true" : "false");
                 } else {
-                    output.error("You need to choose a tool first");
+                    output.trError("worldedit.error.notool");
                 }
             },
             CommandPermissionLevel::GameMasters);

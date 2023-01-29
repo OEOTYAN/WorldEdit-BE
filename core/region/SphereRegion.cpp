@@ -80,31 +80,31 @@ namespace worldedit {
     std::pair<std::string, bool> SphereRegion::expand(const std::vector<BlockPos>& changes) {
         int check = checkChanges(changes);
         if (check == -1) {
-            return {"This region can only be expanded isotropically", false};
+            return {"worldedit.selection.expand.sphere.error", false};
         } else {
             radius += check;
             updateBoundingBox();
         }
 
-        return {"§aThis region has been expanded", true};
+        return {"worldedit.expand.expanded", true};
     }
 
     std::pair<std::string, bool> SphereRegion::contract(const std::vector<BlockPos>& changes) {
         int check = checkChanges(changes);
         if (check == -1) {
-            return {"This region can only be contracted isotropically", false};
+            return {"worldedit.selection.contract.sphere.error", false};
         } else {
             radius -= check;
             radius = std::max(radius, 0.5);
         }
         updateBoundingBox();
-        return {"§aThis region has been contracted", true};
+        return {"worldedit.contract.contracted", true};
     }
 
     std::pair<std::string, bool> SphereRegion::shift(const BlockPos& change) {
         center = center + change;
         updateBoundingBox();
-        return {"§aThis region has been shifted", true};
+        return {"worldedit.shift.shifted", true};
     }
 
     bool SphereRegion::contains(const BlockPos& pos) {

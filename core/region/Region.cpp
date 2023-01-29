@@ -6,8 +6,10 @@
 #include "MC/Level.hpp"
 #include "MC/BlockSource.hpp"
 #include "MC/Block.hpp"
-#include "region/ChangeRegion.hpp"
 #include <MC/BedrockBlocks.hpp>
+#include <MC/Player.hpp>
+#include "eval/Eval.h"
+#include "WorldEdit.h"
 namespace worldedit {
     void Region::forEachBlockInRegion(const std::function<void(const BlockPos&)>& todo) {
         for (int y = boundingBox.min.y; y <= boundingBox.max.y; ++y)
@@ -102,10 +104,19 @@ namespace worldedit {
         return res;
     }
 
-    void Region::applyHeightMap(const std::vector<double>& data, std::string mask) {
+    void Region::applyHeightMap(const std::vector<double>& data, std::string mask, std::string xuid) {
+        auto& playerData = getPlayersData(xuid);
+        auto* player = Global<Level>->getPlayer(xuid);
         int sizex = boundingBox.max.x - boundingBox.min.x + 1;
         int sizez = boundingBox.max.z - boundingBox.min.z + 1;
         auto blockSource = Level::getBlockSource(dimensionID);
+        EvalFunctions f;
+        f.setbs(blockSource);
+        f.setbox(boundingBox);
+        std::unordered_map<std::string, double> variables;
+        playerData.setVarByPlayer(variables);
+        auto playerPos = player->getPosition();
+        Vec3 center = boundingBox.getCenter().toVec3();
         for (int posx = boundingBox.min.x; posx <= boundingBox.max.x; posx++)
             for (int posz = boundingBox.min.z; posz <= boundingBox.max.z; posz++) {
                 auto topy = getHighestTerrainBlock(blockSource, posx, posz, boundingBox.min.y,
@@ -132,27 +143,38 @@ namespace worldedit {
                 if (newHeight > curHeight) {
                     auto* top = const_cast<Block*>(&blockSource->getBlock({xr, curHeight, zr}));
 
-                    setBlockSimple(blockSource, {xr, newHeight, zr}, top);
+                    pos = {xr, newHeight, zr};
+
+                    setFunction(variables, f, boundingBox, playerPos, pos, center);
+                    playerData.setBlockSimple(blockSource, f, variables, pos, top);
 
                     for (int y = newHeight - 1 - boundingBox.min.y; y >= 0; y--) {
                         int copyFrom = static_cast<int>(floor(y * scale));
-                        setBlockSimple(
-                            blockSource, {xr, boundingBox.min.y + y, zr},
+                        pos = {xr, boundingBox.min.y + y, zr};
+                        setFunction(variables, f, boundingBox, playerPos, pos, center);
+                        playerData.setBlockSimple(
+                            blockSource, f, variables, pos,
                             const_cast<Block*>(&blockSource->getBlock({xr, boundingBox.min.y + copyFrom, zr})));
                     }
                 } else if (curHeight > newHeight) {
                     for (int y = 0; y < newHeight - boundingBox.min.y; ++y) {
                         int copyFrom = static_cast<int>(floor(y * scale));
-                        setBlockSimple(
-                            blockSource, {xr, boundingBox.min.y + y, zr},
+                        pos = {xr, boundingBox.min.y + y, zr};
+                        setFunction(variables, f, boundingBox, playerPos, pos, center);
+                        playerData.setBlockSimple(
+                            blockSource, f, variables, pos,
                             const_cast<Block*>(&blockSource->getBlock({xr, boundingBox.min.y + copyFrom, zr})));
                     }
 
-                    setBlockSimple(blockSource, {xr, newHeight, zr},
-                                   const_cast<Block*>(&blockSource->getBlock({xr, curHeight, zr})));
+                    pos = {xr, newHeight, zr};
+                    setFunction(variables, f, boundingBox, playerPos, pos, center);
+                    playerData.setBlockSimple(blockSource, f, variables, pos,
+                                              const_cast<Block*>(&blockSource->getBlock({xr, curHeight, zr})));
 
                     for (int y = newHeight + 1; y <= curHeight; ++y) {
-                        setBlockSimple(blockSource, {xr, y, zr});
+                        pos = {xr, y, zr};
+                        setFunction(variables, f, boundingBox, playerPos, pos, center);
+                        playerData.setBlockSimple(blockSource, f, variables, pos);
                     }
                 }
             };

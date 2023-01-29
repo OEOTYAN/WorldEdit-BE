@@ -16,9 +16,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
                                std::map<std::string, std::string>{
 #ifdef PLUGIN_AUTHOR
                                    {"Author", PLUGIN_AUTHOR},
-#endif  // PLUGIN_AUTHOR
-        //{ "Key", "Value" }
-                               });
+#endif 
+                          });
             break;
         case DLL_THREAD_ATTACH:
         case DLL_THREAD_DETACH:

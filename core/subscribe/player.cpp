@@ -2,6 +2,7 @@
 // Created by OEOTYAN on 2022/06/10.
 //
 #include "player.hpp"
+#include "brush/Brushs.h"
 
 #define MINIMUM__RESPONSE_TICK 3
 
@@ -27,6 +28,7 @@ namespace worldedit {
                 needDiscard = true;
             }
         }
+        auto& playerData = getPlayersData(xuid);
 
         auto itemName = item->getTypeName();
 
@@ -34,20 +36,17 @@ namespace worldedit {
             if (!isLong) {
                 tickMap[xuid] = tick;
                 if (!needDiscard) {
-                    changeMainPos(player, blockInstance);
+                    playerData.changeMainPos(blockInstance);
                 }
                 return false;
             }
         } else {
             tickMap[xuid] = tick;
-            auto& mod = worldedit::getMod();
-            if (mod.playerHandToolMap.find(xuid) != mod.playerHandToolMap.end()) {
-                auto& toolMap = mod.playerHandToolMap[xuid];
                 itemName += std::to_string(item->getAuxValue());
-                if (toolMap.find(itemName) != toolMap.end()) {
+                if (playerData.brushMap.find(itemName) != playerData.brushMap.end()) {
                     if (!needDiscard) {
-                        auto& tool = toolMap[itemName];
-                        if (tool->lneedFace && blockInstance != BlockInstance::Null) {
+                        auto& brush = playerData.brushMap[itemName];
+                        if (brush->lneedFace && blockInstance != BlockInstance::Null) {
                             BlockPos bPos = blockInstance.getPosition();
                             switch (mFace) {
                                 case FaceID::Down:
@@ -72,14 +71,14 @@ namespace worldedit {
                                     break;
                             }
                             auto bi = blockInstance.getBlockSource()->getBlockInstance(bPos);
-                            tool->leftClick(player, bi);
+                            brush->lset(player, bi);
                         } else {
-                            tool->leftClick(player, blockInstance);
+                            brush->lset(player, blockInstance);
                         }
                     }
                     return false;
                 }
-            }
+            
         }
         return true;
     }
@@ -106,62 +105,24 @@ namespace worldedit {
         }
 
         auto itemName = item->getTypeName();
+        auto& playerData = getPlayersData(xuid);
 
         if (item->getTypeName() == "minecraft:wooden_axe") {
             if (!isLong) {
                 tickMap[xuid] = tick;
                 if (!needDiscard) {
-                    changeVicePos(player, blockInstance);
+                        playerData.changeVicePos(blockInstance);
                 }
                 return false;
             }
         } else {
             tickMap[xuid] = tick;
-            auto& mod = worldedit::getMod();
+            auto& playerDataMap = getPlayersDataMap();
             itemName += std::to_string(item->getAuxValue());
-            if (mod.playerHandToolMap.find(xuid) != mod.playerHandToolMap.end()) {
-                auto& toolMap = mod.playerHandToolMap[xuid];
-                if (toolMap.find(itemName) != toolMap.end()) {
-                    if (!needDiscard) {
-                        auto& tool = toolMap[itemName];
-                        if (tool->needFace && blockInstance != BlockInstance::Null) {
-                            BlockPos bPos = blockInstance.getPosition();
-                            switch (mFace) {
-                                case FaceID::Down:
-                                    bPos.y -= 1;
-                                    break;
-                                case FaceID::Up:
-                                    bPos.y += 1;
-                                    break;
-                                case FaceID::North:
-                                    bPos.z -= 1;
-                                    break;
-                                case FaceID::South:
-                                    bPos.z += 1;
-                                    break;
-                                case FaceID::West:
-                                    bPos.x -= 1;
-                                    break;
-                                case FaceID::East:
-                                    bPos.x += 1;
-                                    break;
-                                default:
-                                    break;
-                            }
-                            auto bi = blockInstance.getBlockSource()->getBlockInstance(bPos);
-                            tool->rightClick(player, bi);
-                        } else {
-                            tool->rightClick(player, blockInstance);
-                        }
-                    }
-                    return false;
-                }
-            }
-            if (mod.playerBrushMap.find(xuid) != mod.playerBrushMap.end()) {
-                auto& brushMap = mod.playerBrushMap[xuid];
-                if (brushMap.find(itemName) != brushMap.end()) {
-                    if (!needDiscard) {
-                        auto& brush = brushMap[itemName];
+
+            if (playerData.brushMap.find(itemName) != playerData.brushMap.end()) {
+                if (!needDiscard) {
+                        auto& brush = playerData.brushMap[itemName];
                         if (brush->needFace && blockInstance != BlockInstance::Null) {
                             BlockPos bPos = blockInstance.getPosition();
                             switch (mFace) {
@@ -193,7 +154,6 @@ namespace worldedit {
                         }
                     }
                     return false;
-                }
             }
         }
         return true;

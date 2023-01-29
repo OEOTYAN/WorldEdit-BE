@@ -4,19 +4,25 @@
 
 #include "ClipboardBrush.h"
 #include "store/BlockPattern.hpp"
+#include "store/BlockNBTSet.hpp"
 #include <MC/Player.hpp>
 #include "WorldEdit.h"
 
 namespace worldedit {
-    ClipboardBrush::ClipboardBrush(unsigned short s, Clipboard& c, bool o, bool a)
+    ClipboardBrush::ClipboardBrush(unsigned short s,
+                                   Clipboard& c,
+                                   bool o,
+                                   bool a)
         : Brush(s, nullptr), center(o), ignoreAir(a), clipboard(c) {}
     long long ClipboardBrush::set(Player* player, BlockInstance blockInstance) {
-        auto& mod = worldedit::getMod();
+        
         auto xuid = player->getXuid();
+        auto& playerData = getPlayersData(xuid);
         BlockPos pbPos;
         if (center) {
             BoundingBox box(BlockPos::ZERO, clipboard.board);
-            pbPos = blockInstance.getPosition() - box.getCenter() + clipboard.playerRelPos;
+            pbPos = blockInstance.getPosition() - box.getCenter() +
+                    clipboard.playerRelPos;
         } else {
             pbPos = blockInstance.getPosition();
         }
@@ -27,8 +33,8 @@ namespace worldedit {
         auto blockSource = &player->getRegion();
         BoundingBox box = clipboard.getBoundingBox() + pbPos;
 
-        if (mod.maxHistoryLength > 0) {
-            auto history = mod.getPlayerNextHistory(xuid);
+        if (playerData.maxHistoryLength > 0) {
+            auto history = playerData.getNextHistory();
             *history = Clipboard(box.max - box.min);
             history->playerRelPos.x = dimID;
             history->playerPos = box.min;
@@ -39,13 +45,11 @@ namespace worldedit {
             });
         }
 
-        INNERIZE_GMASK
-
         EvalFunctions f;
         f.setbs(blockSource);
         f.setbox(box);
         std::unordered_map<std::string, double> variables;
-        setFunction(variables, playerPos, playerRot);
+        playerData.setVarByPlayer(variables);
         long long i = 0;
         if (ignoreAir) {
             clipboard.forEachBlockInClipboard([&](const BlockPos& pos) {
@@ -55,19 +59,21 @@ namespace worldedit {
                 }
                 auto worldPos = clipboard.getPos(pos) + pbPos;
 
-                setFunction(variables, f, box, playerPos, worldPos, box.toAABB().getCenter());
-                gMaskLambda(f, variables, [&]() mutable {
-                    clipboard.setBlocks(pos, worldPos, blockSource);
-                    ++i;
+                setFunction(variables, f, box, playerPos, worldPos,
+                            box.toAABB().getCenter());
+                maskFunc(f, variables, [&]() mutable {
+                    i += playerData.clipboard.setBlocks(
+                        pos, worldPos, blockSource, playerData, f, variables);
                 });
             });
         } else {
             clipboard.forEachBlockInClipboard([&](const BlockPos& pos) {
                 auto worldPos = clipboard.getPos(pos) + pbPos;
-                setFunction(variables, f, box, playerPos, worldPos, box.toAABB().getCenter());
-                gMaskLambda(f, variables, [&]() mutable {
-                    clipboard.setBlocks(pos, worldPos, blockSource);
-                    ++i;
+                setFunction(variables, f, box, playerPos, worldPos,
+                            box.toAABB().getCenter());
+                maskFunc(f, variables, [&]() mutable {
+                    i += playerData.clipboard.setBlocks(
+                        pos, worldPos, blockSource, playerData, f, variables);
                 });
             });
         }

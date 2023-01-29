@@ -75,7 +75,10 @@ namespace worldedit {
 
     template <class T>
     inline T sign(T const& a) {
-        return 1 - std::signbit(a) * 2;
+        if (a == 0) {
+            return 0;
+        }
+        return std::copysign(1, a);
     }
 
     template <class T>

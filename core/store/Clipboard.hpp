@@ -9,6 +9,7 @@
 #include <MC/Level.hpp>
 #include <MC/BlockInstance.hpp>
 #include <MC/StructureSettings.hpp>
+#include "BlockNBTSet.hpp"
 
 namespace worldedit {
 
@@ -45,16 +46,21 @@ namespace worldedit {
             }
         }
         long long getIter(const BlockPos& pos);
-        long long getIter2(const BlockPos& pos);
+        long long getIterLoop(const BlockPos& pos);
         void storeBlock(BlockInstance& blockInstance, const BlockPos& pos);
         BoundingBox getBoundingBox();
         void rotate(Vec3 angle);
         void flip(enum class FACING facing);
         BlockPos getPos(const BlockPos& pos);
         BlockNBTSet& getSet(const BlockPos& pos);
-        BlockNBTSet& getSet2(const BlockPos& pos);
+        BlockNBTSet& getSetLoop(const BlockPos& pos);
         bool contains(const BlockPos& pos);
-        void setBlocks(const BlockPos& pos, BlockPos& worldPos, BlockSource* blockSource);
+        bool setBlocks(const BlockPos& pos,
+                       BlockPos& worldPos,
+                       BlockSource* blockSource,
+                       class PlayerData& data,
+                       class EvalFunctions& funcs,
+                       std::unordered_map<std::string, double> const& var);
         void forEachBlockInClipboard(const std::function<void(const BlockPos&)>& todo);
     };
 }  // namespace worldedit
