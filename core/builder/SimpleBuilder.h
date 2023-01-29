@@ -2,8 +2,6 @@
 // Created by OEOTYAN on 2022/06/09.
 //
 #pragma once
-#ifndef WORLDEDIT_SIMPLEBUILDER_H
-#define WORLDEDIT_SIMPLEBUILDER_H
 
 namespace worldedit {
     class SimpleBuilder {
@@ -32,5 +30,3 @@ namespace worldedit {
                                    std::string mask = "");
     };
 }  // namespace worldedit
-
-#endif  // WORLDEDIT_SIMPLEBUILDER_H

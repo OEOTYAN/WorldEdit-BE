@@ -2,8 +2,6 @@
 // Created by OEOTYAN on 2022/05/20.
 //
 #pragma once
-#ifndef WORLDEDIT_BLOCKNBTSET_H
-#define WORLDEDIT_BLOCKNBTSET_H
 
 #include "Global.h"
 #include <MC/Level.hpp>
@@ -46,5 +44,3 @@ namespace worldedit {
                       Mirror mirror) const;
     };
 }  // namespace worldedit
-
-#endif  // WORLDEDIT_BLOCKNBTSET_H

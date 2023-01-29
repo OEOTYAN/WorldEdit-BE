@@ -3,8 +3,6 @@
 //
 
 #pragma once
-#ifndef WORLDEDIT_REGION_H
-#define WORLDEDIT_REGION_H
 #include "Global.h"
 #include "particle/Graphics.h"
 
@@ -91,4 +89,3 @@ namespace worldedit {
         static Region* createRegion(RegionType type, const BoundingBox& box, int dim);
     };
 }  // namespace worldedit
-#endif  // WORLDEDIT_REGION_H

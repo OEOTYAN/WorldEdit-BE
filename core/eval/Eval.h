@@ -2,8 +2,6 @@
 //
 // Created by OEOTYAN on 2022/5/15.
 //
-#ifndef WORLDEDIT_EVAL_H
-#define WORLDEDIT_EVAL_H
 
 #include "Global.h"
 #include <MC/Biome.hpp>
@@ -88,7 +86,12 @@ namespace worldedit {
 
     double posfmod(double x, double y);
 
-    int getHighestTerrainBlock(class BlockSource* blockSource, int x, int z, int minY, int maxY, std::string filter);
+    int getHighestTerrainBlock(class BlockSource* blockSource,
+                               int x,
+                               int z,
+                               int minY,
+                               int maxY,
+                               std::string filter);
 
     class LongLong3 {
        public:
@@ -133,7 +136,7 @@ namespace worldedit {
         long long getIndex(const BlockPos& pos);
         long long getSolidMap(const BlockPos& pos1, const BlockPos& pos2);
         LongLong3 getPosMap(const BlockPos& pos1, const BlockPos& pos2);
-        double operator()(std::string const& name, const std::vector<double>& params);
+        double operator()(std::string const& name,
+                          const std::vector<double>& params);
     };
 }  // namespace worldedit
-#endif

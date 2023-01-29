@@ -2,8 +2,6 @@
 // Created by OEOTYAN on 2022/05/16.
 //
 #pragma once
-#ifndef WORLDEDIT_WORLDEDIT_H
-#define WORLDEDIT_WORLDEDIT_H
 
 #include "Global.h"
 #include "data/PlayerData.h"
@@ -27,5 +25,3 @@ namespace worldedit {
                      const BlockPos& pos,
                      const Vec3& center);
 }  // namespace worldedit
-
-#endif  // WORLDEDIT_WORLDEDIT_H

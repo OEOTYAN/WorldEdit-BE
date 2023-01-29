@@ -226,7 +226,6 @@ class FastNoiseLite {
     /// </returns>
     
     double GetNoise(double x, double y) {
-        
 
         TransformNoiseCoordinate(x, y);
 
@@ -250,7 +249,6 @@ class FastNoiseLite {
     /// </returns>
     
     double GetNoise(double x, double y, double z) {
-        
 
         TransformNoiseCoordinate(x, y, z);
 
@@ -276,7 +274,6 @@ class FastNoiseLite {
     /// </example>
     
     void DomainWarp(double& x, double& y) {
-        
 
         switch (mFractalType) {
             default:
@@ -299,9 +296,8 @@ class FastNoiseLite {
     /// <code>DomainWarp(x, y, z)
     /// noise = GetNoise(x, y, z)</code>
     /// </example>
-    
+
     void DomainWarp(double& x, double& y, double& z) {
-        
 
         switch (mFractalType) {
             default:

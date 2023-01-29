@@ -2,8 +2,6 @@
 // Created by OEOTYAN on 2021/2/8.
 //
 #pragma once
-#ifndef WORLDEDIT_EXPANDREGION_H
-#define WORLDEDIT_EXPANDREGION_H
 
 #include "Global.h"
 #include "Region.h"
@@ -18,9 +16,11 @@ namespace worldedit {
 
         explicit ExpandRegion(const BoundingBox& region, const int& dim);
 
-        std::pair<std::string, bool> expand(const std::vector<BlockPos>& changes) override;
+        std::pair<std::string, bool> expand(
+            const std::vector<BlockPos>& changes) override;
 
-        std::pair<std::string, bool> contract(const std::vector<BlockPos>& changes) override;
+        std::pair<std::string, bool> contract(
+            const std::vector<BlockPos>& changes) override;
 
         std::pair<std::string, bool> shift(const BlockPos& change) override;
 
@@ -29,4 +29,3 @@ namespace worldedit {
         bool setVicePos(const BlockPos& pos, const int& dim) override;
     };
 }  // namespace worldedit
-#endif  // WORLDEDIT_EXPANDREGION_H

@@ -2,8 +2,6 @@
 // Created by OEOTYAN on 2022/05/18.
 //
 #pragma once
-#ifndef WORLDEDIT_BLOCKPATTERN_H
-#define WORLDEDIT_BLOCKPATTERN_H
 
 #include "Global.h"
 #include "eval/Eval.h"
@@ -55,5 +53,3 @@ namespace worldedit {
                       const BlockPos& pos);
     };
 }  // namespace worldedit
-
-#endif  // WORLDEDIT_BLOCKPATTERN_H
