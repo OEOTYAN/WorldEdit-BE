@@ -27,7 +27,6 @@ namespace worldedit {
                 {"cube", {"cube"}},
                 {"clipboard", {"clipboard"}},
                 {"smooth", {"smooth"}},
-                {"gravity", {"gravity"}},
                 {"heightmap", {"heightmap"}},
                 {"none", {"none"}},
                 {"file", {"file"}},
@@ -44,7 +43,6 @@ namespace worldedit {
                 ParamData("cube", ParamType::Enum, "cube"),
                 ParamData("clipboard", ParamType::Enum, "clipboard"),
                 ParamData("smooth", ParamType::Enum, "smooth"),
-                ParamData("gravity", ParamType::Enum, "gravity"),
                 ParamData("heightmap", ParamType::Enum, "heightmap"),
                 ParamData("none", ParamType::Enum, "none"),
                 ParamData("args", ParamType::SoftEnum, true, "-aho", "-aho"),
@@ -68,7 +66,6 @@ namespace worldedit {
                 {"cyl", "block", "radius", "height", "args"},
                 {"cyl", "blockPattern", "radius", "height", "args"},
                 {"smooth", "radius", "kernelsize"},
-                {"gravity", "args"},
                 {"heightmap", "file", "filename", "radius", "height", "args"},
                 {"heightmap", "link", "url", "radius", "height", "args"},
                 {"none"},
@@ -160,9 +157,6 @@ namespace worldedit {
                 } else if (results["smooth"].isSet) {
                     playerData.brushMap[brushName] = new SmoothBrush(radius, ksize);
                     output.trSuccess("worldedit.brush.set.smooth", brushrName);
-                    return;
-                } else if (results["gravity"].isSet) {
-                    output.trSuccess("worldedit.brush.set.gravity", brushrName);
                     return;
                 } else if (results["heightmap"].isSet) {
                     std::string filename;

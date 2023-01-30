@@ -5,6 +5,16 @@
 #include "Bresenham.hpp"
 #include "Eval.h"
 namespace worldedit {
+
+    double getCatenaryParameter(double d, double h, double L) {
+        const double m = sqrt(pow2(L) - pow2(h)) / d;
+        double x = acosh(m) + 1;
+        for (int i = 0; i < 10; i++) {
+            x -= (sinh(x) - m * x) / (cosh(x) - m);
+        }
+        return d / (2 * x);
+    }
+
     void plotLine(BlockPos const& pos0, BlockPos const& pos1, std::function<void(BlockPos const&)> const& todo) {
         int x0 = pos0.x;
         int y0 = pos0.y;

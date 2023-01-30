@@ -20,22 +20,22 @@ namespace worldedit {
             "tool",                                    // command name
             tr("worldedit.command.description.tool"),  // command description
             {
-                {"tree", {"tree"}},
-                {"deltree", {"deltree"}},
+                // {"tree", {"tree"}},
+                // {"deltree", {"deltree"}},
                 {"farwand", {"farwand"}},
                 {"airwand", {"airwand"}},
-                {"cycler", {"cycler"}},
+                // {"cycler", {"cycler"}},
                 {"info", {"info"}},
                 {"rep", {"rep"}},
                 {"flood", {"flood"}},
                 {"none", {"none"}},
             },
             {
-                ParamData("tree", ParamType::Enum, "tree"),
-                ParamData("deltree", ParamType::Enum, "deltree"),
+                // ParamData("tree", ParamType::Enum, "tree"),
+                // ParamData("deltree", ParamType::Enum, "deltree"),
                 ParamData("farwand", ParamType::Enum, "farwand"),
                 ParamData("airwand", ParamType::Enum, "airwand"),
-                ParamData("cycler", ParamType::Enum, "cycler"),
+                // ParamData("cycler", ParamType::Enum, "cycler"),
                 ParamData("info", ParamType::Enum, "info"),
                 ParamData("rep", ParamType::Enum, "rep"),
                 ParamData("flood", ParamType::Enum, "flood"),
@@ -46,11 +46,11 @@ namespace worldedit {
                 ParamData("needEdge", ParamType::Bool, true, "needEdge"),
             },
             {
-                {"tree"},
-                {"deltree"},
+                // {"tree"},
+                // {"deltree"},
                 {"farwand"},
                 {"airwand"},
-                {"cycler"},
+                // {"cycler"},
                 {"info"},
                 {"rep"},
                 {"flood", "block", "dis", "needEdge"},
@@ -75,22 +75,25 @@ namespace worldedit {
                     delete playerData.brushMap[toolName];
                     playerData.brushMap[toolName] = nullptr;
                 }
-                if (results["tree"].isSet) {
-                    playerData.brushMap[toolName] = new TreeTool();
-                    output.trSuccess("worldedit.tool.set.tree", toolrName);
-                } else if (results["deltree"].isSet) {
-                    playerData.brushMap[toolName] = new DelTreeTool();
-                    output.trSuccess("worldedit.tool.set.deltree", toolrName);
-                } else if (results["farwand"].isSet) {
+                // if (results["tree"].isSet) {
+                //     playerData.brushMap[toolName] = new TreeTool();
+                //     output.trSuccess("worldedit.tool.set.tree", toolrName);
+                // } else if (results["deltree"].isSet) {
+                //     playerData.brushMap[toolName] = new DelTreeTool();
+                //     output.trSuccess("worldedit.tool.set.deltree", toolrName);
+                // } else
+                if (results["farwand"].isSet) {
                     playerData.brushMap[toolName] = new FarWand();
                     output.trSuccess("worldedit.tool.set.farwand", toolrName);
                 } else if (results["airwand"].isSet) {
                     playerData.brushMap[toolName] = new AirWand();
                     output.trSuccess("worldedit.tool.set.airwand", toolrName);
-                } else if (results["cycler"].isSet) {
-                    playerData.brushMap[toolName] = new CyclerTool();
-                    output.trSuccess("worldedit.tool.set.cycler", toolrName);
-                } else if (results["info"].isSet) {
+                }
+                // else if (results["cycler"].isSet) {
+                //     playerData.brushMap[toolName] = new CyclerTool();
+                //     output.trSuccess("worldedit.tool.set.cycler", toolrName);
+                // }
+                else if (results["info"].isSet) {
                     playerData.brushMap[toolName] = new InfoTool();
                     output.trSuccess("worldedit.tool.set.info", toolrName);
                 } else if (results["flood"].isSet) {

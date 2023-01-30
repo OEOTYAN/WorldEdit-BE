@@ -4,6 +4,8 @@
 #pragma once
 #include "Global.h"
 namespace worldedit {
+    double getCatenaryParameter(double d,double h,double L);
+
     void plotLine(BlockPos const& pos0,
                   BlockPos const& pos1,
                   std::function<void(class BlockPos const&)> const& todo);

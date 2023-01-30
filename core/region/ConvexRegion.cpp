@@ -246,8 +246,8 @@ namespace worldedit {
                 }
             }
             for (auto& edge : edges) {
-                globalPT().drawOrientedLine(edge.start, edge.end, dimensionID, ParticleCUI::PointSize::PX4, 1, 64,
-                                            mce::ColorPalette::YELLOW);
+                globalPT().drawOrientedLine(edge.start + 0.5f, edge.end + 0.5f, dimensionID,
+                                            ParticleCUI::PointSize::PX4, 1, 64, mce::ColorPalette::YELLOW);
             }
         }
         rendertick--;

@@ -91,13 +91,185 @@ namespace worldedit {
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
+            "rope",                                    // command name
+            tr("worldedit.command.description.rope"),  // command description
+            {},
+            {
+                ParamData("block", ParamType::Block, "block"),
+                ParamData("blockPattern", ParamType::SoftEnum, "blockPattern"),
+                ParamData("extraLength", ParamType::Float, true, "extraLength"),
+                ParamData("radius", ParamType::Float, true, "radius"),
+                ParamData("args", ParamType::SoftEnum, true, "-h", "-h"),
+            },
+            {{"block", "extraLength", "radius", "args"}, {"blockPattern", "extraLength", "radius", "args"}},
+            // dynamic command callback
+            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+               std::unordered_map<std::string, DynamicCommand::Result>& results) {
+                auto player = origin.getPlayer();
+                auto xuid = player->getXuid();
+                auto& playerData = getPlayersData(xuid);
+                if (playerData.region != nullptr && playerData.region->hasSelected()) {
+                    Region* region = playerData.region;
+
+                    if (region->regionType != RegionType::CUBOID && region->regionType != CONVEX) {
+                        output.trError("worldedit.rope.invalid-type");
+                        return;
+                    }
+
+                    auto center = region->getCenter();
+                    auto dimID = region->getDimensionID();
+                    auto boundingBox = region->getBoundBox();
+                    auto blockSource = &player->getRegion();
+
+                    double extraLength = 20;
+                    if (results["extraLength"].isSet) {
+                        extraLength = results["extraLength"].get<float>();
+                    }
+                    extraLength = 1.0 + extraLength / 100.0;
+
+                    float radius = 0;
+                    if (results["radius"].isSet) {
+                        radius = results["radius"].get<float>();
+                    }
+
+                    bool arg_h = false;
+                    if (results["args"].isSet) {
+                        auto str = results["args"].getRaw<std::string>();
+                        if (str.find("-") == std::string::npos) {
+                            output.trError("worldedit.command.error.args", str);
+                            return;
+                        }
+                        if (str.find("h") != std::string::npos) {
+                            arg_h = true;
+                        }
+                    }
+
+                    try {
+                        std::unordered_set<BlockPos> tmp;
+                        region->forEachLine([&](const BlockPos& pos1, const BlockPos& pos2) {
+                            if (extraLength > 1 && (pos1.x != pos2.x || pos1.z != pos2.z)) {
+                                double d = pos1.distanceTo(pos2);
+                                double dh = sqrt(pow2(pos1.x - pos2.x) + pow2(pos1.z - pos2.z));
+                                double h = pos2.y - pos1.y;
+                                double L = pos1.distanceTo(pos2) * extraLength;
+                                double a = getCatenaryParameter(dh, h, L);
+                                double x0 = (a * log((L - h) / (L + h)) - dh) * 0.5;
+                                double y0 = a * cosh(x0 / a);
+                                int dx = pos2.x - pos1.x;
+                                int dz = pos2.z - pos1.z;
+                                x0 += dh;
+                                y0 -= h;
+                                double df = 1.0 / (10 * L);
+                                for (double i = 0; i <= 1; i += df) {
+                                    double kx, kz, ky = a * cosh((i * dh - x0) / a) - y0;
+                                    ky += pos1.y;
+                                    kx = pos1.x + dx * i;
+                                    kz = pos1.z + dz * i;
+                                    BlockPos kpos = {static_cast<int>(kx + 0.5), static_cast<int>(ky + 0.5),
+                                                     static_cast<int>(kz + 0.5)};
+                                    if (radius == 0) {
+                                        tmp.insert(kpos);
+                                        boundingBox = boundingBox.merge(kpos);
+                                    } else {
+                                        BoundingBox(kpos - static_cast<int>(radius + 1),
+                                                    kpos + static_cast<int>(radius + 1))
+                                            .forEachBlockInBox([&](const BlockPos& posk) {
+                                                if (sqrt(pow2(posk.x - kx) + pow2(posk.y - ky) + pow2(posk.z - kz)) <=
+                                                    0.5 + radius) {
+                                                    tmp.insert(posk);
+                                        boundingBox = boundingBox.merge(posk);
+                                                }
+                                            });
+                                    }
+                                }
+                            } else {
+                                plotLine(pos1, pos2, [&](const BlockPos& pos) {
+                                    BoundingBox(pos - static_cast<int>(radius), pos + static_cast<int>(radius))
+                                        .forEachBlockInBox([&](const BlockPos& posk) {
+                                            if ((pos - posk).length() <= 0.5 + radius) {
+                                                tmp.insert(posk);
+                                        boundingBox = boundingBox.merge(posk);
+                                            }
+                                        });
+                                });
+                            }
+                        });
+
+                        if (playerData.maxHistoryLength > 0) {
+                            auto history = playerData.getNextHistory();
+                            *history = Clipboard(boundingBox.max - boundingBox.min);
+                            history->playerRelPos.x = dimID;
+                            history->playerPos = boundingBox.min;
+
+                            boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
+                                auto localPos = pos - boundingBox.min;
+                                auto blockInstance = blockSource->getBlockInstance(pos);
+                                history->storeBlock(blockInstance, localPos);
+                            });
+                        }
+
+                        if (arg_h) {
+                            std::unordered_set<BlockPos> tmp2;
+                            boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
+                                if (tmp.find(pos) != tmp.end()) {
+                                    int counts = 0;
+
+                                    for (auto& calPos : pos.getNeighbors()) {
+                                        if (tmp.find(calPos) != tmp.end()) {
+                                            counts++;
+                                        }
+                                    }
+                                    if (counts < 6)
+                                        tmp2.insert(pos);
+                                }
+                            });
+                            tmp = std::move(tmp2);
+                        }
+
+                        long long i = 0;
+
+                        auto playerPos = player->getPosition();
+                        auto playerRot = player->getRotation();
+
+                        EvalFunctions f;
+                        f.setbs(blockSource);
+                        f.setbox(boundingBox);
+                        std::unordered_map<std::string, double> variables;
+                        playerData.setVarByPlayer(variables);
+
+                        std::string bps = "minecraft:air";
+                        if (results["blockPattern"].isSet) {
+                            bps = results["blockPattern"].get<std::string>();
+                        } else if (results["block"].isSet) {
+                            bps = results["block"].get<Block const*>()->getTypeName();
+                        }
+                        BlockPattern blockPattern(bps, xuid, region);
+
+                        for (auto& pos : tmp) {
+                            setFunction(variables, f, boundingBox, playerPos, pos, center);
+                            i += blockPattern.setBlock(variables, f, blockSource, pos);
+                        }
+
+                        output.trSuccess("worldedit.rope.success", i);
+                    } catch (std::bad_alloc) {
+                        output.trError("worldedit.memory.out");
+                        return;
+                    }
+
+                } else {
+                    output.trError("worldedit.error.incomplete-region");
+                }
+            },
+            CommandPermissionLevel::GameMasters);
+
+        DynamicCommand::setup(
             "line",                                    // command name
             tr("worldedit.command.description.line"),  // command description
             {},
             {
                 ParamData("block", ParamType::Block, "block"),
                 ParamData("blockPattern", ParamType::SoftEnum, "blockPattern"),
-                ParamData("radius", ParamType::Int, true, "radius"),
+                ParamData("radius", ParamType::Float, true, "radius"),
                 ParamData("args", ParamType::SoftEnum, true, "-h", "-h"),
             },
             {{"block", "radius", "args"}, {"blockPattern", "radius", "args"}},
@@ -120,13 +292,13 @@ namespace worldedit {
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = &player->getRegion();
 
-                    auto radius = 0;
+                    float radius = 0;
                     if (results["radius"].isSet) {
-                        radius = results["radius"].get<int>();
+                        radius = results["radius"].get<float>();
                     }
 
-                    boundingBox.min -= radius;
-                    boundingBox.max += radius;
+                    boundingBox.min -= static_cast<int>(radius);
+                    boundingBox.max += static_cast<int>(radius);
 
                     bool arg_h = false;
                     if (results["args"].isSet) {
@@ -160,12 +332,14 @@ namespace worldedit {
                         std::vector<bool> tmp(size, false);
                         region->forEachLine([&](const BlockPos& pos1, const BlockPos& pos2) {
                             plotLine(pos1, pos2, [&](const BlockPos& pos) {
-                                BoundingBox(pos - radius, pos + radius).forEachBlockInBox([&](const BlockPos& posk) {
-                                    if ((pos - posk).length() <= 0.5 + radius) {
-                                        auto localPos = posk - boundingBox.min + 1;
-                                        tmp.at((localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x) = true;
-                                    }
-                                });
+                                BoundingBox(pos - static_cast<int>(radius + 1), pos + static_cast<int>(radius + 1))
+                                    .forEachBlockInBox([&](const BlockPos& posk) {
+                                        if ((pos - posk).length() <= 0.5 + radius) {
+                                            auto localPos = posk - boundingBox.min + 1;
+                                            tmp.at((localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x) =
+                                                true;
+                                        }
+                                    });
                             });
                         });
 
@@ -234,7 +408,7 @@ namespace worldedit {
             {
                 ParamData("block", ParamType::Block, "block"),
                 ParamData("blockPattern", ParamType::SoftEnum, "blockPattern"),
-                ParamData("radius", ParamType::Int, true, "radius"),
+                ParamData("radius", ParamType::Float, true, "radius"),
                 ParamData("args", ParamType::SoftEnum, true, "-hcr", "-hcr"),
             },
             {{"block", "radius", "args"}, {"blockPattern", "radius", "args"}},
@@ -257,9 +431,9 @@ namespace worldedit {
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = &player->getRegion();
 
-                    auto radius = 0;
+                    float radius = 0;
                     if (results["radius"].isSet) {
-                        radius = results["radius"].get<int>();
+                        radius = results["radius"].get<float>();
                     }
                     bool arg_h = false, arg_r = false, arg_c = false;
                     if (results["args"].isSet) {
@@ -313,7 +487,7 @@ namespace worldedit {
                             }
                             f.setbox(boundingBox);
                             auto* loft = static_cast<LoftRegion*>(region);
-                            loft->forEachBlockInLines(radius, !arg_h, [&](const BlockPos& pos) {
+                            loft->forEachBlockInLines(static_cast<int>(radius), !arg_h, [&](const BlockPos& pos) {
                                 setFunction(variables, f, boundingBox, playerPos, pos, center);
                                 i += blockPattern.setBlock(variables, f, blockSource, pos);
                             });
@@ -347,8 +521,8 @@ namespace worldedit {
                             boundingBox = boundingBox.merge(pos.toBlockPos());
                             points.push_back(pos);
                         }
-                        boundingBox.min -= radius + 1;
-                        boundingBox.max += radius + 1;
+                        boundingBox.min -= static_cast<int>(radius) + 1;
+                        boundingBox.max += static_cast<int>(radius) + 1;
                         try {
                             if (playerData.maxHistoryLength > 0) {
                                 auto history = playerData.getNextHistory();
@@ -369,7 +543,8 @@ namespace worldedit {
 
                             std::vector<bool> tmp(size, false);
                             for (auto& pos : points) {
-                                BoundingBox(pos.toBlockPos() - (radius + 1), pos.toBlockPos() + (radius + 1))
+                                BoundingBox(pos.toBlockPos() - (static_cast<int>(radius) + 1),
+                                            pos.toBlockPos() + (static_cast<int>(radius) + 1))
                                     .forEachBlockInBox([&](const BlockPos& posk) {
                                         if ((pos.toBlockPos() - posk).length() <= 0.5 + radius) {
                                             auto localPos = posk - boundingBox.min + 1;
@@ -425,9 +600,9 @@ namespace worldedit {
             {
                 ParamData("block", ParamType::Block, "block"),
                 ParamData("blockPattern", ParamType::SoftEnum, "blockPattern"),
-                ParamData("radius1", ParamType::Int, false, "radius1"),
-                ParamData("radius2", ParamType::Int, false, "radius2"),
-                ParamData("radius3", ParamType::Int, true, "radius3"),
+                ParamData("radius1", ParamType::Float, false, "radius1"),
+                ParamData("radius2", ParamType::Float, false, "radius2"),
+                ParamData("radius3", ParamType::Float, true, "radius3"),
                 ParamData("args", ParamType::SoftEnum, true, "-hcr", "-hcr"),
             },
             {
@@ -453,17 +628,17 @@ namespace worldedit {
                     auto boundingBox = region->getBoundBox();
                     auto blockSource = &player->getRegion();
 
-                    auto radius1 = 0;
+                    float radius1 = 0;
                     if (results["radius1"].isSet) {
-                        radius1 = results["radius1"].get<int>();
+                        radius1 = results["radius1"].get<float>();
                     }
-                    auto radius2 = 0;
+                    float radius2 = 0;
                     if (results["radius2"].isSet) {
-                        radius2 = results["radius2"].get<int>();
+                        radius2 = results["radius2"].get<float>();
                     }
-                    auto radius3 = -1;
+                    float radius3 = -1;
                     if (results["radius3"].isSet) {
-                        radius3 = results["radius3"].get<int>();
+                        radius3 = results["radius3"].get<float>();
                     }
                     auto radius = std::max(radius3, std::max(radius1, radius2));
 
@@ -524,8 +699,8 @@ namespace worldedit {
                         points.push_back(pos);
                         radiuses.push_back(std::max(getRadius(t), 0.1));
                     }
-                    boundingBox.min -= radius + 1;
-                    boundingBox.max += radius + 1;
+                    boundingBox.min -= static_cast<int>(radius) + 1;
+                    boundingBox.max += static_cast<int>(radius) + 1;
                     try {
                         if (playerData.maxHistoryLength > 0) {
                             auto history = playerData.getNextHistory();
@@ -547,7 +722,8 @@ namespace worldedit {
                         std::vector<bool> tmp(size, false);
                         int iter = 0;
                         for (auto& pos : points) {
-                            BoundingBox(pos.toBlockPos() - (radius + 1), pos.toBlockPos() + (radius + 1))
+                            BoundingBox(pos.toBlockPos() - (static_cast<int>(radius) + 1),
+                                        pos.toBlockPos() + (static_cast<int>(radius) + 1))
                                 .forEachBlockInBox([&](const BlockPos& posk) {
                                     if ((pos - (posk.toVec3() + 0.5)).length() <= 0.5 + radiuses[iter]) {
                                         auto localPos = posk - boundingBox.min + 1;
