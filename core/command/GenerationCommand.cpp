@@ -19,7 +19,7 @@ namespace worldedit {
             tr("worldedit.command.description.cyl"),  // command description
             {},
             {ParamData("block", ParamType::Block, "block"),
-             ParamData("blockPattern", ParamType::String, "blockPattern"),
+             ParamData("blockPattern", ParamType::SoftEnum, "blockPattern"),
              ParamData("radius", ParamType::Int, "radius"), ParamData("height", ParamType::Int, true, "height"),
              ParamData("args", ParamType::SoftEnum, true, "-h", "-h")},
             {{"block", "radius", "height", "args"}, {"blockPattern", "radius", "height", "args"}},
@@ -69,7 +69,7 @@ namespace worldedit {
             tr("worldedit.command.description.hcyl"),  // command description
             {},
             {ParamData("block", ParamType::Block, "block"),
-             ParamData("blockPattern", ParamType::String, "blockPattern"),
+             ParamData("blockPattern", ParamType::SoftEnum, "blockPattern"),
              ParamData("radius", ParamType::Int, "radius"), ParamData("height", ParamType::Int, true, "height")},
             {{"block", "radius", "height"}, {"blockPattern", "radius", "height"}},
             // dynamic command callback
@@ -109,7 +109,7 @@ namespace worldedit {
             tr("worldedit.command.description.sphere"),  // command description
             {},
             {ParamData("block", ParamType::Block, "block"),
-             ParamData("blockPattern", ParamType::String, "blockPattern"),
+             ParamData("blockPattern", ParamType::SoftEnum, "blockPattern"),
              ParamData("radius", ParamType::Int, "radius"), ParamData("args", ParamType::SoftEnum, true, "-h", "-h")},
             {{"block", "radius", "args"}, {"blockPattern", "radius", "args"}},
             // dynamic command callback
@@ -154,7 +154,7 @@ namespace worldedit {
             tr("worldedit.command.description.hsphere"),  // command description
             {},
             {ParamData("block", ParamType::Block, "block"),
-             ParamData("blockPattern", ParamType::String, "blockPattern"),
+             ParamData("blockPattern", ParamType::SoftEnum, "blockPattern"),
              ParamData("radius", ParamType::Int, "radius")},
             {{"block", "radius"}, {"blockPattern", "radius"}},
             // dynamic command callback

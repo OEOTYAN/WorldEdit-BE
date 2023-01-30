@@ -10,7 +10,10 @@
 #include <MC/BedrockBlocks.hpp>
 #include <MC/BlockActor.hpp>
 #include "WorldEdit.h"
+#include "MC/ItemStack.hpp"
 #include "MC/BlockPalette.hpp"
+#include "MC/StaticVanillaBlocks.hpp"
+#include "MC/Player.hpp"
 #include "region/Region.h"
 
 namespace worldedit {
@@ -30,9 +33,9 @@ namespace worldedit {
                 static_cast<unsigned int>(round(cpp_eval::eval<double>(blockIdfunc, variables, funcs)))));
         }
         int mId = blockId;
-        std::string blockName;
+        std::string blockName = "minecraft:air";
         if (mId == -2140000002) {
-            blockName = blockIdfunc;
+                blockName = blockIdfunc;
         } else {
             if (mId == INT_MIN) {
                 mId = static_cast<int>(round(cpp_eval::eval<double>(blockIdfunc, variables, funcs)));
@@ -110,7 +113,20 @@ namespace worldedit {
         auto strSize = str.size();
 
         playerData = &getPlayersData(xuid);
-        if (str.find("#clipboard") != std::string::npos) {
+        if (str == "#hand") {
+            blockNum = 1;
+            percents.resize(blockNum);
+            rawBlocks.resize(blockNum);
+            Player* player = Global<Level>->getPlayer(xuid);
+            if (player != nullptr) {
+                auto mBlock = player->getHandSlot()->getBlock();
+                if (mBlock != nullptr) {
+                    rawBlocks[0].block = const_cast<Block*>(mBlock);
+                }
+            }
+            return;
+
+        } else if (str.find("#clipboard") != std::string::npos) {
             if (!playerData->clipboard.used) {
                 return;
             }
@@ -189,6 +205,19 @@ namespace worldedit {
                                            (str[i] == ':' && i + 1 < strSize && isalpha(str[i + 1])))) {
                         ++i;
                     }
+                    int kb = 0;
+                    if (str[i] == '[') {
+                        kb = 1;
+                        ++i;
+                        while (kb > 0) {
+                            if (str[i] == '[') {
+                                ++kb;
+                            } else if (str[i] == ']') {
+                                --kb;
+                            }
+                            ++i;
+                        }
+                    }
                     form += string("block") + str[i];
                     raw.push_back(str.substr(head, i - head));
                 }
@@ -211,6 +240,9 @@ namespace worldedit {
         }
         auto blockList = SplitStrWithPattern(form, ",");
         blockNum = blockList.size();
+        // for (auto& x : blockList) {
+        //     std::cout << x << std::endl;
+        // }
         percents.resize(blockNum);
         rawBlocks.resize(blockNum);
         int rawPtr = 0;
@@ -305,7 +337,14 @@ namespace worldedit {
                 ++rawPtr;
             }
             if (rawBlockIter.constBlock) {
-                rawBlockIter.block = Block::create(rawBlockIter.blockIdfunc, rawBlockIter.blockData);
+                if (isBEBlock(rawBlockIter.blockIdfunc)) {
+                    rawBlockIter.block = Block::create(rawBlockIter.blockIdfunc, rawBlockIter.blockData);
+                }else if(isJEBlock(rawBlockIter.blockIdfunc)){
+                    rawBlockIter.block = getJavaBlockMap()[rawBlockIter.blockIdfunc];
+                    if (rawBlockIter.blockIdfunc.find("waterlogged=true") != std::string::npos) {
+                        rawBlockIter.exBlock = const_cast<Block*>(StaticVanillaBlocks::mWater);
+                    }
+                }
             }
         }
     }

@@ -2,7 +2,8 @@
 // Created by OEOTYAN on 2021/02/19.
 //
 #pragma once
-
+#include <string>
+#include <algorithm>
 namespace worldedit {
 
     namespace {

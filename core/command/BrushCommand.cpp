@@ -49,7 +49,7 @@ namespace worldedit {
                 ParamData("none", ParamType::Enum, "none"),
                 ParamData("args", ParamType::SoftEnum, true, "-aho", "-aho"),
                 ParamData("block", ParamType::Block, "block"),
-                ParamData("blockPattern", ParamType::String, "blockPattern"),
+                ParamData("blockPattern", ParamType::SoftEnum, "blockPattern"),
                 ParamData("radius", ParamType::Int, true, "radius"),
                 ParamData("kernelsize", ParamType::Int, true, "kernelsize"),
                 ParamData("height", ParamType::Int, true, "height"),
@@ -159,7 +159,7 @@ namespace worldedit {
                     return;
                 } else if (results["smooth"].isSet) {
                     playerData.brushMap[brushName] = new SmoothBrush(radius, ksize);
-                    output.trSuccess("worldedit.brush.set.smooth",brushrName);
+                    output.trSuccess("worldedit.brush.set.smooth", brushrName);
                     return;
                 } else if (results["gravity"].isSet) {
                     output.trSuccess("worldedit.brush.set.gravity", brushrName);

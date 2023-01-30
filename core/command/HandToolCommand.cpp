@@ -41,7 +41,7 @@ namespace worldedit {
                 ParamData("flood", ParamType::Enum, "flood"),
                 ParamData("none", ParamType::Enum, "none"),
                 ParamData("block", ParamType::Block, "block"),
-                ParamData("blockPattern", ParamType::String, "blockPattern"),
+                ParamData("blockPattern", ParamType::SoftEnum, "blockPattern"),
                 ParamData("dis", ParamType::Int, true, "dis"),
                 ParamData("needEdge", ParamType::Bool, true, "needEdge"),
             },

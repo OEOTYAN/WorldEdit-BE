@@ -16,7 +16,10 @@ namespace worldedit {
     std::unordered_map<int, std::string>& getBlockNameMap();
     std::unordered_map<std::string, int>& getBlockIdMap();
     std::unordered_map<mce::Color, int>& getBlockColorMap();
+    std::unordered_map<std::string, Block*>& getJavaBlockMap();
     std::string getBlockName(int id);
+    bool isBEBlock(const std::string& s);
+    bool isJEBlock(const std::string& s);
     int getBlockId(const std::string& name);
     void setFunction(std::unordered_map<::std::string, double>& variables,
                      class EvalFunctions& funcs,

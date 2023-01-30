@@ -9,6 +9,7 @@ goto end
 :process
 xcopy Release\WorldEdit.dll %TARGET_PATH%\plugins /Y
 xcopy Release\WorldEdit.pdb %TARGET_PATH%\plugins /Y
+
 wt %TARGET_PATH%\bedrock_server_mod.exe
 
 :end

@@ -32,7 +32,7 @@ namespace worldedit {
             tr("worldedit.command.description.set"),  // command description
             {},
             {ParamData("block", ParamType::Block, "block"),
-             ParamData("blockPattern", ParamType::String, "blockPattern")},
+             ParamData("blockPattern", ParamType::SoftEnum, "blockPattern")},
             {{"block"}, {"blockPattern"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
@@ -96,7 +96,7 @@ namespace worldedit {
             {},
             {
                 ParamData("block", ParamType::Block, "block"),
-                ParamData("blockPattern", ParamType::String, "blockPattern"),
+                ParamData("blockPattern", ParamType::SoftEnum, "blockPattern"),
                 ParamData("radius", ParamType::Int, true, "radius"),
                 ParamData("args", ParamType::SoftEnum, true, "-h", "-h"),
             },
@@ -233,7 +233,7 @@ namespace worldedit {
             {},
             {
                 ParamData("block", ParamType::Block, "block"),
-                ParamData("blockPattern", ParamType::String, "blockPattern"),
+                ParamData("blockPattern", ParamType::SoftEnum, "blockPattern"),
                 ParamData("radius", ParamType::Int, true, "radius"),
                 ParamData("args", ParamType::SoftEnum, true, "-hcr", "-hcr"),
             },
@@ -424,7 +424,7 @@ namespace worldedit {
             {},
             {
                 ParamData("block", ParamType::Block, "block"),
-                ParamData("blockPattern", ParamType::String, "blockPattern"),
+                ParamData("blockPattern", ParamType::SoftEnum, "blockPattern"),
                 ParamData("radius1", ParamType::Int, false, "radius1"),
                 ParamData("radius2", ParamType::Int, false, "radius2"),
                 ParamData("radius3", ParamType::Int, true, "radius3"),
@@ -696,7 +696,7 @@ namespace worldedit {
             tr("worldedit.command.description.center"),  // command description
             {},
             {ParamData("block", ParamType::Block, "block"),
-             ParamData("blockPattern", ParamType::String, "blockPattern")},
+             ParamData("blockPattern", ParamType::SoftEnum, "blockPattern")},
             {{"block"}, {"blockPattern"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
@@ -897,7 +897,7 @@ namespace worldedit {
             {ParamData("dis", ParamType::Int, true, "dis"), ParamData("dir", ParamType::Enum, true, "dir"),
              ParamData("args", ParamType::SoftEnum, true, "-sa", "-sa"),
              ParamData("block", ParamType::Block, true, "block"),
-             ParamData("blockPattern", ParamType::String, true, "blockPattern")},
+             ParamData("blockPattern", ParamType::SoftEnum, true, "blockPattern")},
             {{"dis", "dir", "block", "args"}, {"dis", "dir", "blockPattern", "args"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
@@ -1018,7 +1018,7 @@ namespace worldedit {
             tr("worldedit.command.description.gen"),  // command description
             {},
             {ParamData("block", ParamType::Block, "block"),
-             ParamData("blockPattern", ParamType::String, "blockPattern"),
+             ParamData("blockPattern", ParamType::SoftEnum, "blockPattern"),
              ParamData("function", ParamType::String, "function"),
              ParamData("args", ParamType::SoftEnum, true, "-h", "-h")},
             {{"block", "function", "args"}, {"blockPattern", "function", "args"}},
@@ -1147,7 +1147,7 @@ namespace worldedit {
             tr("worldedit.command.description.walls"),  // command description
             {},
             {ParamData("block", ParamType::Block, "block"),
-             ParamData("blockPattern", ParamType::String, "blockPattern")},
+             ParamData("blockPattern", ParamType::SoftEnum, "blockPattern")},
             {{"block"}, {"blockPattern"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
@@ -1234,7 +1234,7 @@ namespace worldedit {
             tr("worldedit.command.description.faces"),  // command description
             {},
             {ParamData("block", ParamType::Block, "block"),
-             ParamData("blockPattern", ParamType::String, "blockPattern")},
+             ParamData("blockPattern", ParamType::SoftEnum, "blockPattern")},
             {{"block"}, {"blockPattern"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
@@ -1301,7 +1301,7 @@ namespace worldedit {
             tr("worldedit.command.description.overlay"),  // command description
             {},
             {ParamData("block", ParamType::Block, "block"),
-             ParamData("blockPattern", ParamType::String, "blockPattern")},
+             ParamData("blockPattern", ParamType::SoftEnum, "blockPattern")},
             {{"block"}, {"blockPattern"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
@@ -1423,7 +1423,7 @@ namespace worldedit {
             tr("worldedit.command.description.hollow"),  // command description
             {},
             {ParamData("num", ParamType::Int, true, "num"), ParamData("block", ParamType::Block, true, "block"),
-             ParamData("blockPattern", ParamType::String, true, "blockPattern")},
+             ParamData("blockPattern", ParamType::SoftEnum, true, "blockPattern")},
             {{"num", "block"}, {"num", "blockPattern"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,

@@ -11,9 +11,9 @@ file(GLOB_RECURSE SRC_FILES_DIR
     ${PROJECT_SOURCE_DIR}/core/*/*.cpp
     ${PROJECT_SOURCE_DIR}/core/*/*.hpp
     ${PROJECT_SOURCE_DIR}/core/*/*.h
-    ${PROJECT_SOURCE_DIR}/Template/*.cpp
-    ${PROJECT_SOURCE_DIR}/Template/*.hpp
-    ${PROJECT_SOURCE_DIR}/Template/*.h
+    ${PROJECT_SOURCE_DIR}/WorldEdit/*.cpp
+    ${PROJECT_SOURCE_DIR}/WorldEdit/*.hpp
+    ${PROJECT_SOURCE_DIR}/WorldEdit/*.h
     ${PROJECT_SOURCE_DIR}/lodepng/*.cpp
     ${PROJECT_SOURCE_DIR}/lodepng/*.h
     ${PROJECT_SOURCE_DIR}/FastNoise/*.h
@@ -23,7 +23,7 @@ include_directories(FastNoise)
 include_directories(lodepng)
 include_directories(SDK/Header)
 include_directories(SDK/Header/third-party)
-include_directories(Template)
+include_directories(WorldEdit)
 
 link_directories(.)
 

@@ -7,11 +7,15 @@
 #include "filesys/file.h"
 #include "eval/Eval.h"
 #include "WorldEdit.h"
+#include "string/StringTool.h"
 
 #include "MC/Level.hpp"
+#include "MC/Block.hpp"
 #include "MC/MobSpawnRules.hpp"
 #include "MC/SpawnGroupData.hpp"
 #include "MC/SpawnGroupRegistry.hpp"
+
+#include "Nlohmann/json.hpp"
 
 namespace worldedit {
     void commandsSetup() {
@@ -40,6 +44,42 @@ namespace worldedit {
                 setArg("-hcr");
                 setArg("-sa");
                 setArg("-sale");
+                std::vector<std::string> blocksName;
+                blocksName.clear();
+                blocksName.push_back("#clipboard");
+                blocksName.push_back("#hand");
+
+                nlohmann::json blockList;
+                std::ifstream i(WE_DIR + "mappings/blocks.json");
+                i >> blockList;
+
+                for (auto& b : blockList.items()) {
+                    std::string key = b.key();
+                    if (!isBEBlock(key)) {
+                        Block* block = nullptr;
+                        if (b.value().contains("bedrock_states")) {
+                            std::string snbt = "{\"name\":\"";
+                            snbt += b.value()["bedrock_identifier"];
+                            snbt += "\",\"states\":";
+                            std::string states = b.value()["bedrock_states"].dump();
+                            stringReplace(states, ":false", ":0b");
+                            stringReplace(states, ":true", ":1b");
+                            snbt += states;
+                            snbt += "}";
+                            block = Block::create(CompoundTag::fromSNBT(snbt).get());
+                            // if (block == nullptr)
+                            //     std::cout << snbt << std::endl;
+                        } else {
+                            block = Block::create(b.value()["bedrock_identifier"], 0);
+                        }
+                        if (block != nullptr) {
+                            getJavaBlockMap()[key] = block;
+                            blocksName.push_back(key);
+                        }
+                    }
+                }
+
+                Global<CommandRegistry>->setSoftEnumValues("blockPattern", blocksName);
             },
             20);
 

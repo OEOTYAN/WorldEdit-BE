@@ -121,6 +121,12 @@ namespace worldedit {
         static std::unordered_map<std::string, int> blockId;
         return blockId;
     }
+
+    std::unordered_map<std::string, Block*>& getJavaBlockMap() {
+        static std::unordered_map<std::string, Block*> javaBlockMap;
+        return javaBlockMap;
+    }
+
     std::string getBlockName(int id) {
         auto& blockName = worldedit::getBlockNameMap();
         if (blockName.find(id) != blockName.end())
@@ -133,6 +139,16 @@ namespace worldedit {
             return blockId[name];
         return 0;
     }
+
+bool isBEBlock(const std::string& s){
+        auto& blockId = worldedit::getBlockIdMap();
+    return blockId.find(s) != blockId.end();
+}
+
+bool isJEBlock(const std::string& s){
+        auto& blockId = worldedit::getJavaBlockMap();
+    return blockId.find(s) != blockId.end();
+}
 
     void setFunction(std::unordered_map<::std::string, double>& variables,
                      EvalFunctions& funcs,
