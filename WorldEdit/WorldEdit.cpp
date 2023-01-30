@@ -10,12 +10,12 @@
 #include <MC/Block.hpp>
 #include <MC/Level.hpp>
 #include <MC/BlockLegacy.hpp>
-#include <MC/ServerNetworkHandler.hpp>
-#include <MC/NetworkPacketEventCoordinator.hpp>
-#include <MC/PacketHeader.hpp>
-#include <MC/Packet.hpp>
-#include <MC/NetworkIdentifier.hpp>
-#include <MC/PlayerActionPacket.hpp>
+// #include <MC/ServerNetworkHandler.hpp>
+// #include <MC/NetworkPacketEventCoordinator.hpp>
+// #include <MC/PacketHeader.hpp>
+// #include <MC/Packet.hpp>
+// #include <MC/NetworkIdentifier.hpp>
+// #include <MC/PlayerActionPacket.hpp>
 #include <MC/Player.hpp>
 #include <fstream>
 
@@ -51,10 +51,7 @@
 //     return sb;
 // }
 
-THook(void,
-      "?setRuntimeId@Block@@IEBAXAEBI@Z",
-      Block* block,
-      unsigned int const& id) {
+THook(void, "?buildSerializationId@Block@@IEAAXI@Z", Block* block, unsigned int id) {
     auto& blockName = worldedit::getBlockNameMap();
     auto& blockId = worldedit::getBlockIdMap();
     auto blockid = block->getId();

@@ -12,9 +12,10 @@
 #include "WorldEdit.h"
 #include "MC/ItemStack.hpp"
 #include "MC/BlockPalette.hpp"
-#include "MC/StaticVanillaBlocks.hpp"
+#include "MC/VanillaBlocks.hpp"
 #include "MC/Player.hpp"
 #include "region/Region.h"
+#include "RNG.h"
 
 namespace worldedit {
 
@@ -342,7 +343,7 @@ namespace worldedit {
                 }else if(isJEBlock(rawBlockIter.blockIdfunc)){
                     rawBlockIter.block = getJavaBlockMap()[rawBlockIter.blockIdfunc];
                     if (rawBlockIter.blockIdfunc.find("waterlogged=true") != std::string::npos) {
-                        rawBlockIter.exBlock = const_cast<Block*>(StaticVanillaBlocks::mWater);
+                        rawBlockIter.exBlock = const_cast<Block*>(VanillaBlocks::mStillWater);
                     }
                 }
             }

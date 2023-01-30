@@ -24,8 +24,9 @@ namespace worldedit {
             auto& playerDataMap = getPlayersDataMap();
             Schedule::repeat(
                 [&]() {
-                    Global<Level>->forEachPlayer([&](Player& player) -> bool {
-                        auto xuid = player.getXuid();
+                    // Global<Level>->forEachPlayer([&](Player& player) -> bool {
+                    for (auto& player : Level::getAllPlayers()) {
+                        auto xuid = player->getXuid();
                         if (playerDataMap.find(xuid) != playerDataMap.end()) {
                             auto& data = playerDataMap[xuid];
                             if (data.region != nullptr && data.region->hasSelected()) {
@@ -54,9 +55,10 @@ namespace worldedit {
                                 --data.vicePosTime;
                             }
                         }
+                    }
 
-                        return true;
-                    });
+                    //     return true;
+                    // });
                 },
                 1);
             // auto mapm = getBlockColorssMap();

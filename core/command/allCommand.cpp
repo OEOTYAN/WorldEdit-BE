@@ -12,8 +12,8 @@
 #include "MC/Level.hpp"
 #include "MC/Block.hpp"
 #include "MC/MobSpawnRules.hpp"
-#include "MC/SpawnGroupData.hpp"
-#include "MC/SpawnGroupRegistry.hpp"
+// #include "MC/SpawnGroupData.hpp"
+// #include "MC/SpawnGroupRegistry.hpp"
 
 #include "Nlohmann/json.hpp"
 

@@ -13,9 +13,10 @@
 #include "MC/Container.hpp"
 #include "MC/ItemStack.hpp"
 #include "MC/CompoundTag.hpp"
-#include "MC/StaticVanillaBlocks.hpp"
+#include "MC/VanillaBlocks.hpp"
 #include "MC/ListTag.hpp"
 #include "WorldEdit.h"
+#include "RNG.h"
 #include "region/Regions.h"
 
 namespace worldedit {
@@ -177,7 +178,7 @@ namespace worldedit {
                                                 if (sqrt(pow2(posk.x - kx) + pow2(posk.y - ky) + pow2(posk.z - kz)) <=
                                                     0.5 + radius) {
                                                     tmp.insert(posk);
-                                        boundingBox = boundingBox.merge(posk);
+                                                    boundingBox = boundingBox.merge(posk);
                                                 }
                                             });
                                     }
@@ -188,7 +189,7 @@ namespace worldedit {
                                         .forEachBlockInBox([&](const BlockPos& posk) {
                                             if ((pos - posk).length() <= 0.5 + radius) {
                                                 tmp.insert(posk);
-                                        boundingBox = boundingBox.merge(posk);
+                                                boundingBox = boundingBox.merge(posk);
                                             }
                                         });
                                 });
@@ -1572,18 +1573,18 @@ namespace worldedit {
 
                     region->forTopBlockInRegion([&](const BlockPos& posk) {
                         BlockPos pos(posk.x, posk.y - 1, posk.z);
-                        if (&blockSource->getBlock(pos) == StaticVanillaBlocks::mStone && region->contains(pos)) {
+                        if (&blockSource->getBlock(pos) == VanillaBlocks::mStone && region->contains(pos)) {
                             setFunction(variables, f, boundingBox, playerPos, pos, center);
                             playerData.setBlockSimple(blockSource, f, variables, pos,
-                                                      const_cast<Block*>(StaticVanillaBlocks::mGrass));
+                                                      const_cast<Block*>(VanillaBlocks::mGrass));
                         }
                         for (int mY = -2; mY >= -4; mY--) {
                             BlockPos pos(posk.x, posk.y + mY, posk.z);
-                            if (&blockSource->getBlock(pos) == StaticVanillaBlocks::mStone && region->contains(pos)) {
+                            if (&blockSource->getBlock(pos) == VanillaBlocks::mStone && region->contains(pos)) {
                                 setFunction(variables, f, boundingBox, playerPos, pos, center);
 
                                 playerData.setBlockSimple(blockSource, f, variables, pos,
-                                                          const_cast<Block*>(StaticVanillaBlocks::mDirt));
+                                                          const_cast<Block*>(VanillaBlocks::mDirt));
                             }
                         }
                     });
@@ -2096,139 +2097,139 @@ namespace worldedit {
             },
             CommandPermissionLevel::GameMasters);
 
-        DynamicCommand::setup(
-            "removeitem",                                    // command name
-            tr("worldedit.command.description.removeitem"),  // command description
-            {},
-            {ParamData("item", ParamType::Item, "item"), ParamData("num", ParamType::Int, true, "num"),
-             ParamData("data", ParamType::Int, true, "data")},
-            {{"item", "num", "data"}},
-            // dynamic command callback
-            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
-               std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                auto player = origin.getPlayer();
-                auto xuid = player->getXuid();
-                auto& playerData = getPlayersData(xuid);
-                if (playerData.region != nullptr && playerData.region->hasSelected()) {
-                    Region* region = playerData.region;
-                    auto center = region->getCenter();
-                    auto dimID = region->getDimensionID();
-                    auto boundingBox = region->getBoundBox();
-                    auto blockSource = &player->getRegion();
+        // DynamicCommand::setup(
+        //     "removeitem",                                    // command name
+        //     tr("worldedit.command.description.removeitem"),  // command description
+        //     {},
+        //     {ParamData("item", ParamType::Item, "item"), ParamData("num", ParamType::Int, true, "num"),
+        //      ParamData("data", ParamType::Int, true, "data")},
+        //     {{"item", "num", "data"}},
+        //     // dynamic command callback
+        //     [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+        //        std::unordered_map<std::string, DynamicCommand::Result>& results) {
+        //         auto player = origin.getPlayer();
+        //         auto xuid = player->getXuid();
+        //         auto& playerData = getPlayersData(xuid);
+        //         if (playerData.region != nullptr && playerData.region->hasSelected()) {
+        //             Region* region = playerData.region;
+        //             auto center = region->getCenter();
+        //             auto dimID = region->getDimensionID();
+        //             auto boundingBox = region->getBoundBox();
+        //             auto blockSource = &player->getRegion();
 
-                    if (playerData.maxHistoryLength > 0) {
-                        auto history = playerData.getNextHistory();
-                        *history = Clipboard(boundingBox.max - boundingBox.min);
-                        history->playerRelPos.x = dimID;
-                        history->playerPos = boundingBox.min;
+        //             if (playerData.maxHistoryLength > 0) {
+        //                 auto history = playerData.getNextHistory();
+        //                 *history = Clipboard(boundingBox.max - boundingBox.min);
+        //                 history->playerRelPos.x = dimID;
+        //                 history->playerPos = boundingBox.min;
 
-                        region->forEachBlockInRegion([&](const BlockPos& pos) {
-                            auto localPos = pos - boundingBox.min;
-                            auto blockInstance = blockSource->getBlockInstance(pos);
-                            history->storeBlock(blockInstance, localPos);
-                        });
-                    }
-                    int num = -1;
-                    if (results["num"].isSet) {
-                        num = results["num"].get<int>();
-                    }
-                    int data = -2144000000;
-                    if (results["data"].isSet) {
-                        data = results["data"].get<int>();
-                    }
-                    long long i = 0;
+        //                 region->forEachBlockInRegion([&](const BlockPos& pos) {
+        //                     auto localPos = pos - boundingBox.min;
+        //                     auto blockInstance = blockSource->getBlockInstance(pos);
+        //                     history->storeBlock(blockInstance, localPos);
+        //                 });
+        //             }
+        //             int num = -1;
+        //             if (results["num"].isSet) {
+        //                 num = results["num"].get<int>();
+        //             }
+        //             int data = -2144000000;
+        //             if (results["data"].isSet) {
+        //                 data = results["data"].get<int>();
+        //             }
+        //             long long i = 0;
 
-                    auto playerPos = player->getPosition();
-                    auto playerRot = player->getRotation();
-                    EvalFunctions f;
-                    f.setbs(blockSource);
-                    f.setbox(boundingBox);
-                    std::unordered_map<std::string, double> variables;
-                    playerData.setVarByPlayer(variables);
+        //             auto playerPos = player->getPosition();
+        //             auto playerRot = player->getRotation();
+        //             EvalFunctions f;
+        //             f.setbs(blockSource);
+        //             f.setbox(boundingBox);
+        //             std::unordered_map<std::string, double> variables;
+        //             playerData.setVarByPlayer(variables);
 
-                    auto cmdItem = results["item"]
-                                       .getRaw<CommandItem>()
-                                       .createInstance(1, data, nullptr, true)
-                                       .value_or(ItemInstance::EMPTY_ITEM);
-                    region->forEachBlockInRegion([&](const BlockPos& pos) {
-                        setFunction(variables, f, boundingBox, playerPos, pos, center);
-                        auto blockInstance = blockSource->getBlockInstance(pos);
-                        if (blockInstance.hasContainer()) {
-                            auto container = blockInstance.getContainer();
-                            for (auto& constItem : container->getAllSlots()) {
-                                auto item = const_cast<ItemStack*>(constItem);
-                                int count = item->getCount();
-                                if (count <= 0) {
-                                    continue;
-                                }
-                                auto iNbt = item->getNbt();
-                                auto* vmap = &iNbt->value();
-                                if (vmap->find("tag") != vmap->end()) {
-                                    if (count != 1) {
-                                        continue;
-                                    }
-                                    auto* imap = &vmap->at("tag").asCompoundTag()->value();
-                                    if (imap->find("Items") != imap->end()) {
-                                        auto* cmap = &imap->at("Items").asListTag()->value();
-                                        std::vector<Tag*> afterVal;
-                                        afterVal.clear();
-                                        for (auto& mItem : *cmap) {
-                                            auto* shulkItem = ItemStack::create(mItem->asCompoundTag()->clone());
-                                            int count2 = shulkItem->getCount();
+        //             auto cmdItem = results["item"]
+        //                                .getRaw<CommandItem>()
+        //                                .createInstance(1, data, nullptr, true)
+        //                                .value_or(ItemInstance::EMPTY_ITEM);
+        //             region->forEachBlockInRegion([&](const BlockPos& pos) {
+        //                 setFunction(variables, f, boundingBox, playerPos, pos, center);
+        //                 auto blockInstance = blockSource->getBlockInstance(pos);
+        //                 if (blockInstance.hasContainer()) {
+        //                     auto container = blockInstance.getContainer();
+        //                     for (auto& constItem : container->getAllSlots()) {
+        //                         auto item = const_cast<ItemStack*>(constItem);
+        //                         int count = item->getCount();
+        //                         if (count <= 0) {
+        //                             continue;
+        //                         }
+        //                         auto iNbt = item->getNbt();
+        //                         auto* vmap = &iNbt->value();
+        //                         if (vmap->find("tag") != vmap->end()) {
+        //                             if (count != 1) {
+        //                                 continue;
+        //                             }
+        //                             auto* imap = &vmap->at("tag").asCompoundTag()->value();
+        //                             if (imap->find("Items") != imap->end()) {
+        //                                 auto* cmap = &imap->at("Items").asListTag()->value();
+        //                                 std::vector<Tag*> afterVal;
+        //                                 afterVal.clear();
+        //                                 for (auto& mItem : *cmap) {
+        //                                     auto* shulkItem = ItemStack::create(mItem->asCompoundTag()->clone());
+        //                                     int count2 = shulkItem->getCount();
 
-                                            if (count2 <= 0 || !(shulkItem->sameItem(cmdItem)) ||
-                                                (data >= -2140000000 && data != shulkItem->getAuxValue())) {
-                                                continue;
-                                            }
-                                            int removeNum2 = num > 0 ? std::min(num, count2) : count2;
-                                            i += removeNum2;
-                                            if (num > 0) {
-                                                num -= removeNum2;
-                                            }
-                                            if (removeNum2 == count2) {
-                                                continue;
-                                            }
-                                            shulkItem->remove(removeNum2);
-                                            afterVal.push_back(shulkItem->getNbt().get());
-                                            delete shulkItem;
-                                            item = nullptr;
-                                        }
-                                        if (afterVal.size() < 1) {
-                                            imap->erase("Items");
-                                            if (imap->size() < 1) {
-                                                vmap->erase("tag");
-                                            }
-                                        } else {
-                                            *cmap = afterVal;
-                                        }
-                                        item->setNbt(iNbt.get());
-                                        continue;
-                                    }
-                                }
+        //                                     if (count2 <= 0 || !(shulkItem->sameItem(cmdItem)) ||
+        //                                         (data >= -2140000000 && data != shulkItem->getAuxValue())) {
+        //                                         continue;
+        //                                     }
+        //                                     int removeNum2 = num > 0 ? std::min(num, count2) : count2;
+        //                                     i += removeNum2;
+        //                                     if (num > 0) {
+        //                                         num -= removeNum2;
+        //                                     }
+        //                                     if (removeNum2 == count2) {
+        //                                         continue;
+        //                                     }
+        //                                     shulkItem->remove(removeNum2);
+        //                                     afterVal.push_back(shulkItem->getNbt().get());
+        //                                     delete shulkItem;
+        //                                     item = nullptr;
+        //                                 }
+        //                                 if (afterVal.size() < 1) {
+        //                                     imap->erase("Items");
+        //                                     if (imap->size() < 1) {
+        //                                         vmap->erase("tag");
+        //                                     }
+        //                                 } else {
+        //                                     *cmap = afterVal;
+        //                                 }
+        //                                 item->setNbt(iNbt.get());
+        //                                 continue;
+        //                             }
+        //                         }
 
-                                if (!(item->sameItem(cmdItem)) ||
-                                    (data >= -2140000000 && data != item->getAuxValue())) {
-                                    continue;
-                                }
+        //                         if (!(item->sameItem(cmdItem)) ||
+        //                             (data >= -2140000000 && data != item->getAuxValue())) {
+        //                             continue;
+        //                         }
 
-                                int removeNum = num > 0 ? std::min(num, count) : count;
-                                item->remove(removeNum);
-                                i += removeNum;
-                                if (num > 0) {
-                                    num -= removeNum;
-                                }
-                                if (num == 0) {
-                                    return;
-                                }
-                            }
-                        }
-                    });
+        //                         int removeNum = num > 0 ? std::min(num, count) : count;
+        //                         item->remove(removeNum);
+        //                         i += removeNum;
+        //                         if (num > 0) {
+        //                             num -= removeNum;
+        //                         }
+        //                         if (num == 0) {
+        //                             return;
+        //                         }
+        //                     }
+        //                 }
+        //             });
 
-                    output.trSuccess("worldedit.removeitem.success", i);
-                } else {
-                    output.trError("worldedit.error.incomplete-region");
-                }
-            },
-            CommandPermissionLevel::GameMasters);
+        //             output.trSuccess("worldedit.removeitem.success", i);
+        //         } else {
+        //             output.trError("worldedit.error.incomplete-region");
+        //         }
+        //     },
+        //     CommandPermissionLevel::GameMasters);
     }
 }  // namespace worldedit

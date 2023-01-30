@@ -185,7 +185,7 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 BlockInstance blockInstance;
-                blockInstance = player->getBlockFromViewVector(true, false, 2048.0f, true, false);
+                blockInstance = playerData.getBlockFromViewVector(true, false, 2048.0f, true, false);
                 playerData.changeMainPos(blockInstance);
             },
             CommandPermissionLevel::GameMasters);
@@ -201,7 +201,7 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 BlockInstance blockInstance;
-                blockInstance = player->getBlockFromViewVector(true, false, 2048.0f, true, false);
+                blockInstance = playerData.getBlockFromViewVector(true, false, 2048.0f, true, false);
                 playerData.changeVicePos(blockInstance);
             },
             CommandPermissionLevel::GameMasters);
@@ -216,7 +216,7 @@ namespace worldedit {
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
-                auto heightRange = player->getDimensionConst().getHeightRange();
+                auto heightRange = Global<Level>->getDimension(player->getDimensionId())->getHeightRange();
                 if (playerData.region != nullptr && playerData.region->hasSelected()) {
                     delete playerData.region;
                     playerData.region = nullptr;
@@ -314,7 +314,7 @@ namespace worldedit {
                     std::vector<BlockPos> list;
                     list.resize(0);
                     if (results["vert"].isSet) {
-                        auto heightRange = player->getDimensionConst().getHeightRange();
+                        auto heightRange = Global<Level>->getDimension(player->getDimensionId())->getHeightRange();
                         Region* region = playerData.region;
                         auto boundingBox = region->getBoundBox();
                         list.push_back(BlockPos(0, std::min(heightRange.min - boundingBox.min.y, 0), 0));

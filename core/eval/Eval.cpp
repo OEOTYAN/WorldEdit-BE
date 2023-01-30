@@ -7,6 +7,7 @@
 #include <MC/Dimension.hpp>
 #include <MC/Player.hpp>
 #include "FastNoiseLite.h"
+#include "RNG.h"
 // #include <MC/ChunkBlockPos.hpp>
 
 #define tryGetParameter(size, params, n, f, t) \
@@ -295,78 +296,78 @@ namespace worldedit {
                 }
                 return 0;
                 break;
-            case do_hash("hsa"):
-                if (blockdataInitialized) {
-                    for (auto& hsa : blockSource->getChunkAt(tmp)->getSpawningAreas()) {
-                        if (((hsa.aabb.max.x - hsa.aabb.min.x + 1) / 2 + hsa.aabb.min.x == tmp.x) &&
-                            ((hsa.aabb.max.z - hsa.aabb.min.z + 1) / 2 + hsa.aabb.min.z == tmp.z) &&
-                            tmp.y >= hsa.aabb.min.y) {
-                            if (hsa.type == LevelChunk::HardcodedSpawnAreaType::SWAMP_HUT ||
-                                hsa.type == LevelChunk::HardcodedSpawnAreaType::PILLAGER_OUTPOST) {
-                                if (tmp.y <= hsa.aabb.max.y - 3) {
-                                    return static_cast<int>(hsa.type);
-                                }
-                            } else {
-                                if (tmp.y <= hsa.aabb.max.y) {
-                                    return static_cast<int>(hsa.type);
-                                }
-                            }
-                        }
-                    }
-                    return 0;
-                }
-                return 0;
-                break;
+            // case do_hash("hsa"):
+            //     if (blockdataInitialized) {
+            //         for (auto& hsa : blockSource->getChunkAt(tmp)->getSpawningAreas()) {
+            //             if (((hsa.aabb.max.x - hsa.aabb.min.x + 1) / 2 + hsa.aabb.min.x == tmp.x) &&
+            //                 ((hsa.aabb.max.z - hsa.aabb.min.z + 1) / 2 + hsa.aabb.min.z == tmp.z) &&
+            //                 tmp.y >= hsa.aabb.min.y) {
+            //                 if (hsa.type == LevelChunk::HardcodedSpawnAreaType::SWAMP_HUT ||
+            //                     hsa.type == LevelChunk::HardcodedSpawnAreaType::PILLAGER_OUTPOST) {
+            //                     if (tmp.y <= hsa.aabb.max.y - 3) {
+            //                         return static_cast<int>(hsa.type);
+            //                     }
+            //                 } else {
+            //                     if (tmp.y <= hsa.aabb.max.y) {
+            //                         return static_cast<int>(hsa.type);
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //         return 0;
+            //     }
+            //     return 0;
+            //     break;
             case do_hash("biome"):
                 if (blockdataInitialized) {
                     return blockSource->getConstBiome(tmp).getId();
                 }
                 return 0;
                 break;
-            case do_hash("hasplayer"):
-                if (blockdataInitialized) {
-                    auto& dimension = blockSource->getDimensionConst();
-                    if (size == 1) {
-                        return nullptr != dimension.fetchAnyPlayer(here.toVec3(), static_cast<float>(params[0]));
-                    } else if (size == 4) {
-                        return nullptr != dimension.fetchAnyPlayer(here.toVec3() +Vec3(params[1], params[2], params[3]),
-                                                                   static_cast<float>(params[0]));
-                    }
-                }
-                return 0;
-                break;
-            case do_hash("noplayer"):
-                if (blockdataInitialized) {
-                    auto& dimension = blockSource->getDimensionConst();
-                    Vec3 tmpVec;
-                    if (size == 1) {
-                        tmpVec = here.toVec3();
-                    } else if (size == 4) {
-                        tmpVec = here.toVec3()+ Vec3(params[1], params[2], params[3]);
-                    }
-                    float playerDistance = FLT_MAX;
-                    dimension.forEachPlayer([&](Player& player) {
-                        float dis = player.getPosition().distanceToSqr(tmpVec);
-                        playerDistance = std::min(dis, playerDistance);
-                        return true;
-                    });
-                    return playerDistance == FLT_MAX || playerDistance >= pow2(static_cast<float>(params[0]));
-                }
-                return 0;
-                break;
-            case do_hash("hasuntickedchunk"):
-                if (blockdataInitialized) {
-                    if (size == 1) {
-                        return blockSource->hasUntickedNeighborChunk(ChunkPos(here), static_cast<int>(params[0]));
-                    } else if (size == 4) {
-                        return blockSource->hasUntickedNeighborChunk(
-                            ChunkPos(here + BlockPos(static_cast<int>(floor(params[1])),
-                                                     static_cast<int>(floor(params[2])),
-                                                     static_cast<int>(floor(params[3])))),
-                            static_cast<int>(params[0]));
-                    }
-                }
-                return 0;
+            // case do_hash("hasplayer"):
+            //     if (blockdataInitialized) {
+            //         auto& dimension = blockSource->getDimensionConst();
+            //         if (size == 1) {
+            //             return nullptr != dimension.fetchAnyPlayer(here.toVec3(), static_cast<float>(params[0]));
+            //         } else if (size == 4) {
+            //             return nullptr != dimension.fetchAnyPlayer(here.toVec3() +Vec3(params[1], params[2], params[3]),
+            //                                                        static_cast<float>(params[0]));
+            //         }
+            //     }
+            //     return 0;
+            //     break;
+            // case do_hash("noplayer"):
+            //     if (blockdataInitialized) {
+            //         auto& dimension = blockSource->getDimensionConst();
+            //         Vec3 tmpVec;
+            //         if (size == 1) {
+            //             tmpVec = here.toVec3();
+            //         } else if (size == 4) {
+            //             tmpVec = here.toVec3()+ Vec3(params[1], params[2], params[3]);
+            //         }
+            //         float playerDistance = FLT_MAX;
+            //         dimension.forEachPlayer([&](Player& player) {
+            //             float dis = player.getPosition().distanceToSqr(tmpVec);
+            //             playerDistance = std::min(dis, playerDistance);
+            //             return true;
+            //         });
+            //         return playerDistance == FLT_MAX || playerDistance >= pow2(static_cast<float>(params[0]));
+            //     }
+            //     return 0;
+            //     break;
+            // case do_hash("hasuntickedchunk"):
+            //     if (blockdataInitialized) {
+            //         if (size == 1) {
+            //             return blockSource->hasUntickedNeighborChunk(ChunkPos(here), static_cast<int>(params[0]));
+            //         } else if (size == 4) {
+            //             return blockSource->hasUntickedNeighborChunk(
+            //                 ChunkPos(here + BlockPos(static_cast<int>(floor(params[1])),
+            //                                          static_cast<int>(floor(params[2])),
+            //                                          static_cast<int>(floor(params[3])))),
+            //                 static_cast<int>(params[0]));
+            //         }
+            //     }
+            //     return 0;
             case do_hash("chunksfullyloaded"):
                 if (blockdataInitialized) {
                     if (size == 1) {
@@ -386,18 +387,18 @@ namespace worldedit {
                 }
                 return 0;
                 break;
-            case do_hash("issolid"):
-                if (blockdataInitialized) {
-                    return blockSource->getBlock(tmp).isSolid();
-                }
-                return 0;
-                break;
-            case do_hash("iswaterblocking"):
-                if (blockdataInitialized) {
-                    return blockSource->getBlock(tmp).isWaterBlocking();
-                }
-                return 0;
-                break;
+            // case do_hash("issolid"):
+            //     if (blockdataInitialized) {
+            //         return blockSource->getBlock(tmp).isSolid();
+            //     }
+            //     return 0;
+            //     break;
+            // case do_hash("iswaterblocking"):
+            //     if (blockdataInitialized) {
+            //         return blockSource->getBlock(tmp).isWaterBlocking();
+            //     }
+            //     return 0;
+            //     break;
             case do_hash("issbblock"):
                 if (blockdataInitialized) {
                     return blockSource->getBlock(tmp).isSolidBlockingBlock();
@@ -410,36 +411,36 @@ namespace worldedit {
                 }
                 return 0;
                 break;
-            case do_hash("destroyspeed"):
-                if (blockdataInitialized) {
-                    return blockSource->getBlock(tmp).getDestroySpeed();
-                }
-                return 0;
-                break;
-            case do_hash("thickness"):
-                if (blockdataInitialized) {
-                    return blockSource->getBlock(tmp).getThickness();
-                }
-                return 0;
-                break;
-            case do_hash("translucency"):
-                if (blockdataInitialized) {
-                    return blockSource->getBlock(tmp).getTranslucency();
-                }
-                return 0;
-                break;
-            case do_hash("light"):
-                if (blockdataInitialized) {
-                    return blockSource->getBlock(tmp).getLight().value;
-                }
-                return 0;
-                break;
-            case do_hash("emissive"):
-                if (blockdataInitialized) {
-                    return blockSource->getBlock(tmp).getLightEmission().value;
-                }
-                return 0;
-                break;
+            // case do_hash("destroyspeed"):
+            //     if (blockdataInitialized) {
+            //         return blockSource->getBlock(tmp).getDestroySpeed();
+            //     }
+            //     return 0;
+            //     break;
+            // case do_hash("thickness"):
+            //     if (blockdataInitialized) {
+            //         return blockSource->getBlock(tmp).getThickness();
+            //     }
+            //     return 0;
+            //     break;
+            // case do_hash("translucency"):
+            //     if (blockdataInitialized) {
+            //         return blockSource->getBlock(tmp).getTranslucency();
+            //     }
+            //     return 0;
+            //     break;
+            // case do_hash("light"):
+            //     if (blockdataInitialized) {
+            //         return blockSource->getBlock(tmp).getLight().value;
+            //     }
+            //     return 0;
+            //     break;
+            // case do_hash("emissive"):
+            //     if (blockdataInitialized) {
+            //         return blockSource->getBlock(tmp).getLightEmission().value;
+            //     }
+            //     return 0;
+            //     break;
             case do_hash("normalx"):
                 if (searchBoxInitialized) {
                     if (size == 0) {

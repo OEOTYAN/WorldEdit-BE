@@ -138,8 +138,7 @@ namespace worldedit {
 
     long long FloodFillTool::set(Player* player, class BlockInstance blockInstance) {
         if (blockInstance == BlockInstance::Null) {
-            
-        return -2;
+            return -2;
         }
         std::queue<BlockPos> q;
         auto pos0 = blockInstance.getPosition();
@@ -233,36 +232,34 @@ namespace worldedit {
             pattern->setBlock(variables, f, blockSource, pos1);
         }
 
-        
         return -2;
     }
 
     ////////
     long long TreeTool::set(Player* player, class BlockInstance blockInstance) {
         // if (blockInstance == BlockInstance::Null) {
-        //     
+        //
         return -2;
         // }
         // auto bs = Level::getBlockSource(player);
         // auto pos = blockInstance.getPosition();
         // setBlockSimple(bs, pos,
-        // const_cast<Block*>(StaticVanillaBlocks::mGrass)); pos.y += 1;
+        // const_cast<Block*>(VanillaBlocks::mGrass)); pos.y += 1;
         // setBlockSimple(bs, pos,
-        // const_cast<Block*>(StaticVanillaBlocks::mSapling)); auto& legacyBlock
+        // const_cast<Block*>(VanillaBlocks::mSapling)); auto& legacyBlock
         // = blockInstance.getBlock()->getLegacyBlock(); return
         // ((Sapling&)legacyBlock)._growTree(*bs, pos,
         // Global<Level>->getRandom(), false);
-        
+
         return -2;
     }
 
     ////////
     long long DelTreeTool::set(Player* player, class BlockInstance blockInstance) {
         if (blockInstance == BlockInstance::Null) {
-            
-        return -2;
+            return -2;
         }
-        
+
         return -2;
     }
 

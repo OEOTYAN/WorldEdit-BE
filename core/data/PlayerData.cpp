@@ -7,10 +7,11 @@
 #include "eval/CppEval.h"
 #include <MC/Player.hpp>
 #include <MC/Block.hpp>
-#include <MC/StaticVanillaBlocks.hpp>
+#include <MC/VanillaBlocks.hpp>
 #include <MC/BlockSource.hpp>
 #include <MC/CommandUtils.hpp>
 #include <MC/Level.hpp>
+#include <MC/HitResult.hpp>
 #include "region/Regions.h"
 namespace worldedit {
 
@@ -114,23 +115,25 @@ namespace worldedit {
                                         Block* exblock) {
         CommandUtils::clearBlockEntityContents(*blockSource, pos);
         blockSource->setExtraBlock(pos, *BedrockBlocks::mAir, 16 + updateArg);
-        if (updateExArg % 2 == 1) {
+        // if (updateExArg % 2 == 1) {
             blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
-        } else {
-            blockSource->setBlockNoUpdate(pos.x, pos.y, pos.z, *block);
-        }
-        if (block != StaticVanillaBlocks::mBubbleColumn) {
+        // }
+        //  else {
+        //     blockSource->setBlockNoUpdate(pos.x, pos.y, pos.z, *block);
+        // }
+        if (block != VanillaBlocks::mBubbleColumn) {
             if (exblock != BedrockBlocks::mAir) {
                 blockSource->setExtraBlock(pos, *exblock, 16 + updateArg);
             }
         } else {
-            blockSource->setExtraBlock(pos, *StaticVanillaBlocks::mFlowingWater,
+            blockSource->setExtraBlock(pos, *VanillaBlocks::mFlowingWater,
                                        16 + updateArg);
-            if (updateExArg % 2 == 1) {
+            // if (updateExArg % 2 == 1) {
                 blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
-            } else {
-                blockSource->setBlockNoUpdate(pos.x, pos.y, pos.z, *block);
-            }
+            // } 
+            // else {
+            //     blockSource->setBlockNoUpdate(pos.x, pos.y, pos.z, *block);
+            // }
         }
         return true;
     }
@@ -150,23 +153,23 @@ namespace worldedit {
 
         CommandUtils::clearBlockEntityContents(*blockSource, pos);
         blockSource->setExtraBlock(pos, *BedrockBlocks::mAir, 16 + updateArg);
-        if (updateExArg % 2 == 1) {
+        // if (updateExArg % 2 == 1) {
             blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
-        } else {
-            blockSource->setBlockNoUpdate(pos.x, pos.y, pos.z, *block);
-        }
-        if (block != StaticVanillaBlocks::mBubbleColumn) {
+        // } else {
+        //     blockSource->setBlockNoUpdate(pos.x, pos.y, pos.z, *block);
+        // }
+        if (block != VanillaBlocks::mBubbleColumn) {
             if (exblock != BedrockBlocks::mAir) {
                 blockSource->setExtraBlock(pos, *exblock, 16 + updateArg);
             }
         } else {
-            blockSource->setExtraBlock(pos, *StaticVanillaBlocks::mFlowingWater,
+            blockSource->setExtraBlock(pos, *VanillaBlocks::mFlowingWater,
                                        16 + updateArg);
-            if (updateExArg % 2 == 1) {
+            // if (updateExArg % 2 == 1) {
                 blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
-            } else {
-                blockSource->setBlockNoUpdate(pos.x, pos.y, pos.z, *block);
-            }
+            // } else {
+            //     blockSource->setBlockNoUpdate(pos.x, pos.y, pos.z, *block);
+            // }
         }
         return true;
     }
@@ -218,4 +221,44 @@ namespace worldedit {
         historyFlag2 = current;
         return result;
     }
+
+    BlockInstance PlayerData::getBlockFromViewVector(FaceID& face,
+                                                     bool includeLiquid,
+                                                     bool solidOnly,
+                                                     float maxDistance,
+                                                     bool ignoreBorderBlocks,
+                                                     bool fullOnly) {
+        Player* player = Global<Level>->getPlayer(xuid);
+
+        auto* bs = &player->getRegion();
+        auto pos = player->getCameraPos();
+        auto viewVec = player->getViewVector(1.0f);
+        auto viewPos = pos + (viewVec * maxDistance);
+        int maxDisManhattan = (int)((maxDistance + 1) * 2);
+        HitResult result = const_cast<BlockSource*>(bs)->clip(pos, viewPos, includeLiquid, solidOnly, maxDisManhattan,
+                                                              ignoreBorderBlocks, fullOnly);
+        if (result.isHit() || (includeLiquid && result.isHitLiquid())) {
+            BlockPos bpos{};
+            if (includeLiquid && result.isHitLiquid()) {
+                bpos = result.getLiquidPos();
+                face = result.getLiquidFacing();
+            } else {
+                bpos = result.getBlockPos();
+                face = result.getFacing();
+            }
+            // auto block = const_cast<Block*>(&bs.getBlock(bpos));
+            return Level::getBlockInstance(bpos, bs->getDimensionId());
+        }
+        return BlockInstance::Null;
+    }
+
+    BlockInstance PlayerData::getBlockFromViewVector(bool includeLiquid,
+                                                     bool solidOnly,
+                                                     float maxDistance,
+                                                     bool ignoreBorderBlocks,
+                                                     bool fullOnly) {
+        FaceID face = FaceID::Unknown;
+        return getBlockFromViewVector(face, includeLiquid, solidOnly, maxDistance, ignoreBorderBlocks, fullOnly);
+    }
+
 }  // namespace worldedit
