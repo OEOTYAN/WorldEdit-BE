@@ -247,7 +247,7 @@ namespace worldedit {
                 face = result.getFacing();
             }
             // auto block = const_cast<Block*>(&bs.getBlock(bpos));
-            return Level::getBlockInstance(bpos, bs->getDimensionId());
+            return Level::getBlockInstance(bpos, player->getDimensionId());
         }
         return BlockInstance::Null;
     }

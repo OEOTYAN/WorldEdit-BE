@@ -56,7 +56,7 @@ namespace worldedit {
 
                         region->forEachBlockInRegion([&](const BlockPos& pos) {
                             auto localPos = pos - boundingBox.min;
-                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
                             history->storeBlock(blockInstance, localPos);
                         });
                     }
@@ -204,7 +204,7 @@ namespace worldedit {
 
                             boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
                                 auto localPos = pos - boundingBox.min;
-                                auto blockInstance = blockSource->getBlockInstance(pos);
+                                auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
                                 history->storeBlock(blockInstance, localPos);
                             });
                         }
@@ -321,7 +321,7 @@ namespace worldedit {
 
                         boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
                             auto localPos = pos - boundingBox.min;
-                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
                             history->storeBlock(blockInstance, localPos);
                         });
                     }
@@ -482,7 +482,7 @@ namespace worldedit {
 
                                 boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
                                     auto localPos = pos - boundingBox.min;
-                                    auto blockInstance = blockSource->getBlockInstance(pos);
+                                    auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
                                     history->storeBlock(blockInstance, localPos);
                                 });
                             }
@@ -533,7 +533,7 @@ namespace worldedit {
 
                                 boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
                                     auto localPos = pos - boundingBox.min;
-                                    auto blockInstance = blockSource->getBlockInstance(pos);
+                                    auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
                                     history->storeBlock(blockInstance, localPos);
                                 });
                             }
@@ -711,7 +711,7 @@ namespace worldedit {
 
                             boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
                                 auto localPos = pos - boundingBox.min;
-                                auto blockInstance = blockSource->getBlockInstance(pos);
+                                auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
                                 history->storeBlock(blockInstance, localPos);
                             });
                         }
@@ -825,7 +825,7 @@ namespace worldedit {
 
                         region->forEachBlockInRegion([&](const BlockPos& pos) {
                             auto localPos = pos - boundingBox.min;
-                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
                             history->storeBlock(blockInstance, localPos);
                         });
                     }
@@ -902,7 +902,7 @@ namespace worldedit {
 
                         boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
                             auto localPos = pos - boundingBox.min;
-                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
                             history->storeBlock(blockInstance, localPos);
                         });
                     }
@@ -1015,7 +1015,7 @@ namespace worldedit {
 
                     boundingBoxHistory.forEachBlockInBox([&](const BlockPos& pos) {
                         auto localPos = pos - boundingBoxHistory.min;
-                        auto blockInstance = blockSource->getBlockInstance(pos);
+                        auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
                         history->storeBlock(blockInstance, localPos);
                     });
 
@@ -1135,13 +1135,13 @@ namespace worldedit {
 
                     boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
                         auto localPos = pos - boundingBoxHistory.min;
-                        auto blockInstance = blockSource->getBlockInstance(pos);
+                        auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
                         history->storeBlock(blockInstance, localPos);
                     });
                     boundingBoxLast.forEachBlockInBox([&](const BlockPos& pos) {
                         auto localPos = pos - boundingBoxHistory.min;
                         if (!history->getSet(localPos).hasBlock) {
-                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
                             history->storeBlock(blockInstance, localPos);
                         }
                     });
@@ -1232,7 +1232,7 @@ namespace worldedit {
 
                         region->forEachBlockInRegion([&](const BlockPos& pos) {
                             auto localPos = pos - boundingBox.min;
-                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
                             history->storeBlock(blockInstance, localPos);
                         });
                     }
@@ -1347,7 +1347,7 @@ namespace worldedit {
 
                         region->forEachBlockInRegion([&](const BlockPos& pos) {
                             auto localPos = pos - boundingBox.min;
-                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
                             history->storeBlock(blockInstance, localPos);
                         });
                     }
@@ -1434,7 +1434,7 @@ namespace worldedit {
 
                         region->forEachBlockInRegion([&](const BlockPos& pos) {
                             auto localPos = pos - boundingBox.min;
-                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
                             history->storeBlock(blockInstance, localPos);
                         });
                     }
@@ -1501,7 +1501,7 @@ namespace worldedit {
 
                         region->forTopBlockInRegion([&](const BlockPos& pos) {
                             auto localPos = pos - boundingBox.min;
-                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
                             history->storeBlock(blockInstance, localPos);
                         });
                     }
@@ -1558,7 +1558,7 @@ namespace worldedit {
 
                         region->forEachBlockInRegion([&](const BlockPos& pos) {
                             auto localPos = pos - boundingBox.min;
-                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
                             history->storeBlock(blockInstance, localPos);
                         });
                     }
@@ -1628,7 +1628,7 @@ namespace worldedit {
 
                         region->forEachBlockInRegion([&](const BlockPos& pos) {
                             auto localPos = pos - boundingBox.min;
-                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
                             history->storeBlock(blockInstance, localPos);
                         });
                     }
@@ -1735,7 +1735,7 @@ namespace worldedit {
 
                         boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
                             auto localPos = pos - boundingBox.min;
-                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
                             history->storeBlock(blockInstance, localPos);
                         });
                     }
@@ -1848,7 +1848,7 @@ namespace worldedit {
                                     blocksMap[exBlockName] = 1;
                                 }
                             }
-                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
 
                             if (blockInstance.hasContainer()) {
                                 auto container = blockInstance.getContainer();
@@ -1995,7 +1995,7 @@ namespace worldedit {
 
                         boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
                             auto localPos = pos - boundingBox.min;
-                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
                             history->storeBlock(blockInstance, localPos);
                         });
                     }
@@ -2125,7 +2125,7 @@ namespace worldedit {
 
         //                 region->forEachBlockInRegion([&](const BlockPos& pos) {
         //                     auto localPos = pos - boundingBox.min;
-        //                     auto blockInstance = blockSource->getBlockInstance(pos);
+        //                     auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
         //                     history->storeBlock(blockInstance, localPos);
         //                 });
         //             }
@@ -2153,7 +2153,7 @@ namespace worldedit {
         //                                .value_or(ItemInstance::EMPTY_ITEM);
         //             region->forEachBlockInRegion([&](const BlockPos& pos) {
         //                 setFunction(variables, f, boundingBox, playerPos, pos, center);
-        //                 auto blockInstance = blockSource->getBlockInstance(pos);
+        //                 auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
         //                 if (blockInstance.hasContainer()) {
         //                     auto container = blockInstance.getContainer();
         //                     for (auto& constItem : container->getAllSlots()) {

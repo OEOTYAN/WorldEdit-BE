@@ -145,7 +145,7 @@ namespace worldedit {
                     long long all = 0;
                     if (arg_c) {
                         region->forEachBlockInRegion([&](const BlockPos& pos) {
-                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            auto blockInstance = Level::getBlockInstance(pos, player->getDimensionId());
 
                             if (blockInstance.hasContainer()) {
                                 auto container = blockInstance.getContainer();

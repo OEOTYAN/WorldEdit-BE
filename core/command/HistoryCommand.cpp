@@ -72,7 +72,7 @@ namespace worldedit {
                     auto blockSource = &player->getRegion();
                     res.first->forEachBlockInClipboard([&](const BlockPos& pos) {
                         auto worldPos = pos + res.first->playerPos;
-                        auto blockInstance = blockSource->getBlockInstance(worldPos);
+                        auto blockInstance = Level::getBlockInstance(worldPos, dimID);
                         tmp.storeBlock(blockInstance, pos);
                     });
                     tmp.playerRelPos.x = dimID;
@@ -123,7 +123,7 @@ namespace worldedit {
                     auto blockSource = &player->getRegion();
                     res.first->forEachBlockInClipboard([&](const BlockPos& pos) {
                         auto worldPos = pos + res.first->playerPos;
-                        auto blockInstance = blockSource->getBlockInstance(worldPos);
+                        auto blockInstance = Level::getBlockInstance(worldPos, dimID);
                         tmp.storeBlock(blockInstance, pos);
                     });
                     tmp.playerRelPos.x = dimID;

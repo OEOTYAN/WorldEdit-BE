@@ -32,7 +32,12 @@ namespace worldedit {
             [&]() {
                 std::vector<std::string> imagesName;
                 getImageFiles(WE_DIR + "image", imagesName);
-                Global<CommandRegistry>->setSoftEnumValues("filename", imagesName);
+                // try {
+                    Global<CommandRegistry>->setSoftEnumValues("filename", imagesName);
+                //     std::cout << "setSoftEnumValues" << std::endl;
+                // } catch (...) {
+                //     std::cout << "setSoftEnumValues error" << std::endl;
+                // }
                 setArg("-aho");
                 setArg("-anose");
                 setArg("-h");
@@ -55,6 +60,7 @@ namespace worldedit {
 
                 for (auto& b : blockList.items()) {
                     std::string key = b.key();
+                    std::cout << key << std::endl;
                     if (!isBEBlock(key)) {
                         Block* block = nullptr;
                         if (b.value().contains("bedrock_states")) {
@@ -66,11 +72,19 @@ namespace worldedit {
                             stringReplace(states, ":true", ":1b");
                             snbt += states;
                             snbt += "}";
-                            block = Block::create(CompoundTag::fromSNBT(snbt).get());
+                            try {
+                                block = Block::create(CompoundTag::fromSNBT(snbt).get());
+                            } catch (...) {
+                                    std::cout << snbt << std::endl;
+                            }
                             // if (block == nullptr)
                             //     std::cout << snbt << std::endl;
                         } else {
-                            block = Block::create(b.value()["bedrock_identifier"], 0);
+                            try {
+                                    block = Block::create(b.value()["bedrock_identifier"], 0);
+                            } catch (...) {
+                                    std::cout << b.value()["bedrock_identifier"] << std::endl;
+                            }
                         }
                         if (block != nullptr) {
                             getJavaBlockMap()[key] = block;
@@ -79,7 +93,12 @@ namespace worldedit {
                     }
                 }
 
+                try {
                 Global<CommandRegistry>->setSoftEnumValues("blockPattern", blocksName);
+                    std::cout << "blockPattern" << std::endl;
+                } catch (...) {
+                    std::cout << "blockPattern error" << std::endl;
+                }
             },
             20);
 

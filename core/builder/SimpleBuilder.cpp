@@ -74,7 +74,7 @@ namespace worldedit {
 
             box.forEachBlockInBox([&](const BlockPos& blockPos) {
                 auto localPos = blockPos - box.min;
-                auto blockInstance = blockSource->getBlockInstance(blockPos);
+                auto blockInstance = Level::getBlockInstance(blockPos, player->getDimensionId());
                 history->storeBlock(blockInstance, localPos);
             });
         }
@@ -242,7 +242,7 @@ namespace worldedit {
 
             box.forEachBlockInBox([&](const BlockPos& blockPos) {
                 auto localPos = blockPos - box.min;
-                auto blockInstance = blockSource->getBlockInstance(blockPos);
+                auto blockInstance = Level::getBlockInstance(blockPos, player->getDimensionId());
                 history->storeBlock(blockInstance, localPos);
             });
         }
@@ -415,7 +415,7 @@ namespace worldedit {
 
             box.forEachBlockInBox([&](const BlockPos& blockPos) {
                 auto localPos = blockPos - box.min;
-                auto blockInstance = blockSource->getBlockInstance(blockPos);
+                auto blockInstance = Level::getBlockInstance(blockPos, player->getDimensionId());
                 history->storeBlock(blockInstance, localPos);
             });
         }

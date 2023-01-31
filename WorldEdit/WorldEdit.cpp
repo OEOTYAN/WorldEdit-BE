@@ -57,6 +57,7 @@ THook(void, "?buildSerializationId@Block@@IEAAXI@Z", Block* block, unsigned int 
     auto blockid = block->getId();
     blockName[blockid] = block->getTypeName();
     blockId[block->getTypeName()] = blockid;
+    // std::cout << const_cast<BlockLegacy*>(&block->getLegacyBlock())->getTypeName() << std::endl;
     // auto color = block->getLegacyBlock().getMapColor().toHexString();
     // if (getBlockColorssMap().find(color) != getBlockColorssMap().end()) {
     //     getBlockColorssMap()[color] += ",\n" + block->getNbt()->toSNBT(0,
@@ -137,15 +138,15 @@ namespace worldedit {
         return 0;
     }
 
-bool isBEBlock(const std::string& s){
+    bool isBEBlock(const std::string& s) {
         auto& blockId = worldedit::getBlockIdMap();
-    return blockId.find(s) != blockId.end();
-}
+        return blockId.find(s) != blockId.end();
+    }
 
-bool isJEBlock(const std::string& s){
+    bool isJEBlock(const std::string& s) {
         auto& blockId = worldedit::getJavaBlockMap();
-    return blockId.find(s) != blockId.end();
-}
+        return blockId.find(s) != blockId.end();
+    }
 
     void setFunction(std::unordered_map<::std::string, double>& variables,
                      EvalFunctions& funcs,

@@ -57,7 +57,7 @@ namespace worldedit {
                     auto blockSource = &player->getRegion();
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
                         auto localPos = pos - boundingBox.min;
-                        auto blockInstance = blockSource->getBlockInstance(pos);
+                        auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
                         playerData.clipboard.storeBlock(blockInstance, localPos);
                     });
                     if (true) {
@@ -110,7 +110,7 @@ namespace worldedit {
 
                         region->forEachBlockInRegion([&](const BlockPos& pos) {
                             auto localPos = pos - boundingBox.min;
-                            auto blockInstance = blockSource->getBlockInstance(pos);
+                            auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
                             history->storeBlock(blockInstance, localPos);
                         });
                     }
@@ -122,7 +122,7 @@ namespace worldedit {
                     playerData.clipboard.playerRelPos = pPos.toBlockPos() - boundingBox.min;
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
                         auto localPos = pos - boundingBox.min;
-                        auto blockInstance = blockSource->getBlockInstance(pos);
+                        auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
                         playerData.clipboard.storeBlock(blockInstance, localPos);
                     });
 
@@ -218,7 +218,7 @@ namespace worldedit {
 
                             box.forEachBlockInBox([&](const BlockPos& pos) {
                                 auto localPos = pos - box.min;
-                                auto blockInstance = blockSource->getBlockInstance(pos);
+                                auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
                                 history->storeBlock(blockInstance, localPos);
                             });
                         }

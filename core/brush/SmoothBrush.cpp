@@ -28,7 +28,7 @@ namespace worldedit {
             history->playerPos = box.min;
             box.forEachBlockInBox([&](const BlockPos& pos) {
                 auto localPos = pos - box.min;
-                auto blockInstance = blockSource->getBlockInstance(pos);
+                auto blockInstance = Level::getBlockInstance(pos,player->getDimensionId());
                 history->storeBlock(blockInstance, localPos);
             });
         }

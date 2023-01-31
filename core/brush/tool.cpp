@@ -29,14 +29,21 @@ namespace worldedit {
         auto xuid = player->getXuid();
         auto& playerData = getPlayersData(xuid);
         auto bs = Level::getBlockSource(player);
-        playerData.changeMainPos(bs->getBlockInstance((player->getPosition() - Vec3(0.0, 1.62, 0.0)).toBlockPos()));
+        std::cout << " nmb" << std::endl;
+        if (bs == nullptr) {
+            std::cout << "nullptr nmb" << std::endl;
+        }
+        auto* b = &bs->getBlock((player->getPosition() - Vec3(0.0, 1.62, 0.0)).toBlockPos());
+
+        playerData.changeMainPos(Level::getBlockInstance((player->getPosition() - Vec3(0.0, 1.62, 0.0)).toBlockPos(),
+                                                         player->getDimensionId()));
         return -2;
     }
     long long AirWand::set(Player* player, class BlockInstance blockInstance) {
         auto xuid = player->getXuid();
         auto& playerData = getPlayersData(xuid);
-        auto bs = Level::getBlockSource(player);
-        playerData.changeVicePos(bs->getBlockInstance((player->getPosition() - Vec3(0.0, 1.62, 0.0)).toBlockPos()));
+        playerData.changeVicePos(Level::getBlockInstance((player->getPosition() - Vec3(0.0, 1.62, 0.0)).toBlockPos(),
+                                                         player->getDimensionId()));
         return -2;
     }
 
@@ -226,7 +233,7 @@ namespace worldedit {
         for (auto& pos1 : s) {
             if (history != nullptr) {
                 auto localPos = pos1 - boundingBox.min;
-                auto bi = blockSource->getBlockInstance(pos1);
+                auto bi = Level::getBlockInstance(pos1, player->getDimensionId());
                 history->storeBlock(bi, localPos);
             }
             pattern->setBlock(variables, f, blockSource, pos1);
