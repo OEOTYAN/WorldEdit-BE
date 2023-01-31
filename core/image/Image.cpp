@@ -3,7 +3,7 @@
 //
 #include "Image.h"
 #include "eval/Eval.h"
-#include "MC/Level.hpp"
+#include "mc/Level.hpp"
 namespace worldedit {
     double Sampler::setUV(double u) const {
         switch (edgeType) {

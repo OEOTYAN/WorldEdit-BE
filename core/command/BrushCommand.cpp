@@ -4,7 +4,8 @@
 #include "allCommand.hpp"
 #include <DynamicCommandAPI.h>
 #include "brush/Brushs.h"
-#include <MC/ItemStack.hpp>
+#include <mc/ItemStack.hpp>
+#include <mc/CommandBlockNameResult.hpp>
 #include "store/BlockPattern.hpp"
 #include "filesys/download.h"
 #include "WorldEdit.h"
@@ -128,7 +129,7 @@ namespace worldedit {
                 if (results["blockPattern"].isSet) {
                     bps = results["blockPattern"].get<std::string>();
                 } else if (results["block"].isSet) {
-                    bps = results["block"].get<Block const*>()->getTypeName();
+                    bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                 }
 
                 if (results["sphere"].isSet) {

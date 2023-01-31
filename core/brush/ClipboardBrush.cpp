@@ -5,7 +5,7 @@
 #include "ClipboardBrush.h"
 #include "store/BlockPattern.hpp"
 #include "store/BlockNBTSet.hpp"
-#include <MC/Player.hpp>
+#include <mc/Player.hpp>
 #include "WorldEdit.h"
 
 namespace worldedit {

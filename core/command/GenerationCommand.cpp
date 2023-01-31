@@ -5,6 +5,7 @@
 #include "builder/SimpleBuilder.h"
 #include "store/BlockPattern.hpp"
 #include "WorldEdit.h"
+#include <mc/CommandBlockNameResult.hpp>
 #include "region/Regions.h"
 
 namespace worldedit {
@@ -55,7 +56,7 @@ namespace worldedit {
                 if (results["blockPattern"].isSet) {
                     bps = results["blockPattern"].get<std::string>();
                 } else if (results["block"].isSet) {
-                    bps = results["block"].get<Block const*>()->getTypeName();
+                    bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                 }
                 CuboidRegion region(BoundingBox(pos, pos), dimID);
                 BlockPattern blockPattern(bps, xuid, &region);
@@ -94,7 +95,7 @@ namespace worldedit {
                 if (results["blockPattern"].isSet) {
                     bps = results["blockPattern"].get<std::string>();
                 } else if (results["block"].isSet) {
-                    bps = results["block"].get<Block const*>()->getTypeName();
+                    bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                 }
                 CuboidRegion region(BoundingBox(pos, pos), dimID);
                 BlockPattern blockPattern(bps, xuid, &region);
@@ -140,7 +141,7 @@ namespace worldedit {
                 if (results["blockPattern"].isSet) {
                     bps = results["blockPattern"].get<std::string>();
                 } else if (results["block"].isSet) {
-                    bps = results["block"].get<Block const*>()->getTypeName();
+                    bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                 }
                 CuboidRegion region(BoundingBox(pos, pos), dimID);
                 BlockPattern blockPattern(bps, xuid, &region);
@@ -175,7 +176,7 @@ namespace worldedit {
                 if (results["blockPattern"].isSet) {
                     bps = results["blockPattern"].get<std::string>();
                 } else if (results["block"].isSet) {
-                    bps = results["block"].get<Block const*>()->getTypeName();
+                    bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                 }
                 CuboidRegion region(BoundingBox(pos, pos), dimID);
                 BlockPattern blockPattern(bps, xuid, &region);

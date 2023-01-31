@@ -5,12 +5,12 @@
 #include "PlayerData.h"
 #include "eval/Eval.h"
 #include "eval/CppEval.h"
-#include <MC/Player.hpp>
-#include <MC/Block.hpp>
-#include <MC/StaticVanillaBlocks.hpp>
-#include <MC/BlockSource.hpp>
-#include <MC/CommandUtils.hpp>
-#include <MC/Level.hpp>
+#include <mc/Player.hpp>
+#include <mc/Block.hpp>
+#include <mc/StaticVanillaBlocks.hpp>
+#include <mc/BlockSource.hpp>
+#include <mc/CommandUtils.hpp>
+#include <mc/Level.hpp>
 #include "region/Regions.h"
 namespace worldedit {
 
@@ -51,8 +51,8 @@ namespace worldedit {
         }
         if (region->setVicePos(pos, player->getDimensionId())) {
             if (output)
-                player->sendText("worldedit.selection." + region->getName() + ".explain.secondary",
-                                          pos.toString(), region->size());
+                player->sendText("worldedit.selection." + region->getName() + ".explain.secondary", pos.toString(),
+                                 region->size());
             vicePos = pos;
             vicePosTime = 0;
             vicePosDim = player->getDimensionId();
@@ -80,8 +80,8 @@ namespace worldedit {
         }
         if (region->setMainPos(pos, player->getDimensionId())) {
             if (output)
-                player->sendText("worldedit.selection." + region->getName() + ".explain.primary",
-                                          pos.toString(), region->size());
+                player->sendText("worldedit.selection." + region->getName() + ".explain.primary", pos.toString(),
+                                 region->size());
             mainPos = pos;
             mainPosTime = 0;
             mainPosDim = player->getDimensionId();
@@ -96,8 +96,7 @@ namespace worldedit {
         return false;
     }
 
-    void PlayerData::setVarByPlayer(
-        std::unordered_map<::std::string, double>& variables) {
+    void PlayerData::setVarByPlayer(std::unordered_map<::std::string, double>& variables) {
         Player* player = Global<Level>->getPlayer(xuid);
         auto playerPos = player->getPosition();
         auto playerRot = player->getRotation();
@@ -108,10 +107,7 @@ namespace worldedit {
         variables["pt"] = playerRot.y;
     }
 
-    bool PlayerData::setBlockForHistory(BlockSource* blockSource,
-                                        const BlockPos& pos,
-                                        Block* block,
-                                        Block* exblock) {
+    bool PlayerData::setBlockForHistory(BlockSource* blockSource, const BlockPos& pos, Block* block, Block* exblock) {
         CommandUtils::clearBlockEntityContents(*blockSource, pos);
         blockSource->setExtraBlock(pos, *BedrockBlocks::mAir, 16 + updateArg);
         if (updateExArg % 2 == 1) {
@@ -124,8 +120,7 @@ namespace worldedit {
                 blockSource->setExtraBlock(pos, *exblock, 16 + updateArg);
             }
         } else {
-            blockSource->setExtraBlock(pos, *StaticVanillaBlocks::mFlowingWater,
-                                       16 + updateArg);
+            blockSource->setExtraBlock(pos, *StaticVanillaBlocks::mFlowingWater, 16 + updateArg);
             if (updateExArg % 2 == 1) {
                 blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
             } else {
@@ -135,13 +130,12 @@ namespace worldedit {
         return true;
     }
 
-    bool PlayerData::setBlockSimple(
-        BlockSource* blockSource,
-        class EvalFunctions& funcs,
-        std::unordered_map<std::string, double> const& var,
-        const BlockPos& pos,
-        Block* block,
-        Block* exblock) {
+    bool PlayerData::setBlockSimple(BlockSource* blockSource,
+                                    class EvalFunctions& funcs,
+                                    std::unordered_map<std::string, double> const& var,
+                                    const BlockPos& pos,
+                                    Block* block,
+                                    Block* exblock) {
         if (gMask != "") {
             if (cpp_eval::eval<double>(gMask, var, funcs) <= 0.5) {
                 return false;
@@ -160,8 +154,7 @@ namespace worldedit {
                 blockSource->setExtraBlock(pos, *exblock, 16 + updateArg);
             }
         } else {
-            blockSource->setExtraBlock(pos, *StaticVanillaBlocks::mFlowingWater,
-                                       16 + updateArg);
+            blockSource->setExtraBlock(pos, *StaticVanillaBlocks::mFlowingWater, 16 + updateArg);
             if (updateExArg % 2 == 1) {
                 blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
             } else {

@@ -4,15 +4,15 @@
 #pragma once
 
 #include "Global.h"
-#include <MC/Level.hpp>
-// #include <MC/BlockInstance.hpp>
-#include <MC/Block.hpp>
-#include <MC/BlockActor.hpp>
-#include <MC/CommandUtils.hpp>
-#include <MC/BlockSource.hpp>
-#include <MC/BedrockBlocks.hpp>
-#include <MC/StructureSettings.hpp>
-#include <MC/VanillaBlockStateTransformUtils.hpp>
+#include <mc/Level.hpp>
+// #include <mc/BlockInstance.hpp>
+#include <mc/Block.hpp>
+#include <mc/BlockActor.hpp>
+#include <mc/CommandUtils.hpp>
+#include <mc/BlockSource.hpp>
+#include <mc/BedrockBlocks.hpp>
+#include <mc/StructureSettings.hpp>
+#include <mc/VanillaBlockStateTransformUtils.hpp>
 #include "particle/Graphics.h"
 
 namespace worldedit {

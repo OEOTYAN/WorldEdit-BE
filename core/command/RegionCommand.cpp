@@ -2,7 +2,7 @@
 // Created by OEOTYAN on 2022/05/17.
 //
 #include "allCommand.hpp"
-#include <MC/Dimension.hpp>
+#include <mc/Dimension.hpp>
 #include "WorldEdit.h"
 #include "region/Regions.h"
 

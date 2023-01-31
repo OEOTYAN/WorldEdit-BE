@@ -3,11 +3,11 @@
 //
 
 #include "ExpandRegion.h"
-#include "MC/Level.hpp"
-#include "MC/Dimension.hpp"
+#include "mc/Level.hpp"
+#include "mc/Dimension.hpp"
 namespace worldedit {
     void ExpandRegion::updateBoundingBox() {
-        auto range = Global<Level>->getDimension(dimensionID)->getHeightRange();
+        auto range = reinterpret_cast<Dimension*>(Global<Level>->getDimension(dimensionID).mHandle.lock().get())->getHeightRange();
         rendertick = 0;
         boundingBox.min.x = std::min(mainPos.x, vicePos.x);
         boundingBox.min.y = std::max(std::min(mainPos.y, vicePos.y), static_cast<int>(range.min));

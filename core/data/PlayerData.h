@@ -2,9 +2,9 @@
 // Created by OEOTYAN on 2023/01/28.
 //
 #pragma once
-#include <MC/Block.hpp>
+#include <mc/Block.hpp>
 #include "store/Clipboard.hpp"
-#include <MC/BedrockBlocks.hpp>
+#include <mc/BedrockBlocks.hpp>
 namespace worldedit {
     class PlayerData {
        public:

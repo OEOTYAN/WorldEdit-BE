@@ -5,8 +5,8 @@
 
 #include "string/StringTool.h"
 #include "WorldEdit.h"
-#include "MC/Sapling.hpp"
-#include "MC/BlockInstance.hpp"
+#include "mc/Sapling.hpp"
+#include "mc/BlockInstance.hpp"
 #include "store/BlockPattern.hpp"
 namespace worldedit {
 
@@ -138,8 +138,7 @@ namespace worldedit {
 
     long long FloodFillTool::set(Player* player, class BlockInstance blockInstance) {
         if (blockInstance == BlockInstance::Null) {
-            
-        return -2;
+            return -2;
         }
         std::queue<BlockPos> q;
         auto pos0 = blockInstance.getPosition();
@@ -169,7 +168,7 @@ namespace worldedit {
         while (!q.empty()) {
             auto pos1 = q.front();
             q.pop();
-            boundingBox = boundingBox.merge(pos1);
+            boundingBox.merge(pos1);
             if (needEdge) {
                 BoundingBox(pos1 - 1, pos1 + 1).forEachBlockInBox([&](const BlockPos& tmpPos) {
                     if (tmpPos != pos1 && pos0.distanceTo(tmpPos) <= 0.5 + size &&
@@ -233,14 +232,13 @@ namespace worldedit {
             pattern->setBlock(variables, f, blockSource, pos1);
         }
 
-        
         return -2;
     }
 
     ////////
     long long TreeTool::set(Player* player, class BlockInstance blockInstance) {
         // if (blockInstance == BlockInstance::Null) {
-        //     
+        //
         return -2;
         // }
         // auto bs = Level::getBlockSource(player);
@@ -252,17 +250,16 @@ namespace worldedit {
         // = blockInstance.getBlock()->getLegacyBlock(); return
         // ((Sapling&)legacyBlock)._growTree(*bs, pos,
         // Global<Level>->getRandom(), false);
-        
+
         return -2;
     }
 
     ////////
     long long DelTreeTool::set(Player* player, class BlockInstance blockInstance) {
         if (blockInstance == BlockInstance::Null) {
-            
-        return -2;
+            return -2;
         }
-        
+
         return -2;
     }
 

@@ -4,11 +4,12 @@
 
 #include "ConvexRegion.h"
 #include "Global.h"
-#include "MC/Level.hpp"
-#include "MC/Dimension.hpp"
+#include "mc/Level.hpp"
+#include "mc/Dimension.hpp"
 namespace worldedit {
     void ConvexRegion::updateBoundingBox() {
-        auto range = Global<Level>->getDimension(dimensionID)->getHeightRange();
+        auto range = reinterpret_cast<Dimension*>(Global<Level>->getDimension(dimensionID).mHandle.lock().get())
+                         ->getHeightRange();
         rendertick = 0;
         boundingBox.min = *vertices.begin();
         boundingBox.max = *vertices.begin();

@@ -4,7 +4,7 @@
 
 #include "ImageHeightmapBrush.h"
 #include "store/BlockPattern.hpp"
-#include "MC/Dimension.hpp"
+#include "mc/Dimension.hpp"
 #include "WorldEdit.h"
 
 namespace worldedit {
@@ -22,7 +22,7 @@ namespace worldedit {
         auto& playerData = getPlayersData(xuid);
         auto dimID = player->getDimensionId();
         auto blockSource = &player->getRegion();
-        auto range = Global<Level>->getDimension(dimID)->getHeightRange();
+        auto range = reinterpret_cast<Dimension*>(Global<Level>->getDimension(dimID).mHandle.lock().get())->getHeightRange();
         int minY = 2147483647;
         int maxY = -2147483648;
         int volume = (size * 2 + 1) * (size * 2 + 1);

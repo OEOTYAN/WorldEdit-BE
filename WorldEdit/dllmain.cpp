@@ -10,14 +10,14 @@
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {
     switch (ul_reason_for_call) {
         case DLL_PROCESS_ATTACH:
-            LL::registerPlugin(PLUGIN_NAME, PLUGIN_INTRODUCTION,
-                               LL::Version(PLUGIN_VERSION_MAJOR, PLUGIN_VERSION_MINOR, PLUGIN_VERSION_REVISION,
-                                           PLUGIN_LLVERSION_STATUS),
+            ll::registerPlugin(PLUGIN_NAME, PLUGIN_INTRODUCTION,
+                               ll::Version(PLUGIN_VERSION_MAJOR, PLUGIN_VERSION_MINOR, PLUGIN_VERSION_REVISION,
+                                           static_cast<ll::Version::Status>(PLUGIN_LLVERSION_STATUS)),
                                std::map<std::string, std::string>{
 #ifdef PLUGIN_AUTHOR
                                    {"Author", PLUGIN_AUTHOR},
-#endif 
-                          });
+#endif
+                               });
             break;
         case DLL_THREAD_ATTACH:
         case DLL_THREAD_DETACH:

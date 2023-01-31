@@ -2,8 +2,8 @@
 // Created by OEOTYAN on 2022/06/10.
 //
 #include "CylinderRegion.h"
-#include "MC/Level.hpp"
-#include "MC/Dimension.hpp"
+#include "mc/Level.hpp"
+#include "mc/Dimension.hpp"
 #include "ParticleAPI.h"
 namespace worldedit {
     CylinderRegion::CylinderRegion(const BoundingBox& region, const int& dim) : Region(region, dim) {
@@ -27,7 +27,7 @@ namespace worldedit {
 
     void CylinderRegion::updateBoundingBox() {
         if (hasY) {
-            auto range = Global<Level>->getDimension(dimensionID)->getHeightRange();
+            auto range = reinterpret_cast<Dimension*>(Global<Level>->getDimension(dimensionID).mHandle.lock().get())->getHeightRange();
             rendertick = 0;
             auto newRadius = (int)(radius);
             boundingBox.min.x = center.x - newRadius;

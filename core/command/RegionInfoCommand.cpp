@@ -2,12 +2,13 @@
 // Created by OEOTYAN on 2022/05/18.
 //
 #include "allCommand.hpp"
-#include <MC/Container.hpp>
-#include <MC/ListTag.hpp>
+#include <mc/Container.hpp>
+#include <mc/ListTag.hpp>
 #include "string/StringTool.h"
-#include "MC/ItemStack.hpp"
+#include "mc/ItemStack.hpp"
 #include "WorldEdit.h"
 #include "region/Regions.h"
+#include <mc/CommandBlockNameResult.hpp>
 namespace worldedit {
     using ParamType = DynamicCommand::ParameterType;
     using ParamData = DynamicCommand::ParameterData;
@@ -82,10 +83,14 @@ namespace worldedit {
 
                 auto& playerData = getPlayersData(xuid);
                 int data = -1;
-                auto blockname = results["block"].get<Block const*>()->getTypeName();
                 if (results["data"].isSet) {
                     data = results["data"].getRaw<int>();
                 }
+                auto blockname = results["block"]
+                                     .get<CommandBlockName>()
+                                     .resolveBlock(data >= 0 ? data : 0)
+                                     .getBlock()
+                                     ->getTypeName();
                 if (playerData.region != nullptr && playerData.region->hasSelected()) {
                     Region* region = playerData.region;
                     auto dimID = region->getDimensionID();

@@ -6,7 +6,7 @@
 #include "Graphics.h"
 #include "eval/Bresenham.hpp"
 
-// #include "MC/Level.hpp"
+// #include "mc/Level.hpp"
 
 #define MAX_LENGTH (64.0f)
 namespace worldedit {

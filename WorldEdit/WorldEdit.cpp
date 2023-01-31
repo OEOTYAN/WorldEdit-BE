@@ -7,16 +7,16 @@
 #include "ParticleAPI.h"
 #include "particle/Graphics.h"
 #include "eval/Eval.h"
-#include <MC/Block.hpp>
-#include <MC/Level.hpp>
-#include <MC/BlockLegacy.hpp>
-#include <MC/ServerNetworkHandler.hpp>
-#include <MC/NetworkPacketEventCoordinator.hpp>
-#include <MC/PacketHeader.hpp>
-#include <MC/Packet.hpp>
-#include <MC/NetworkIdentifier.hpp>
-#include <MC/PlayerActionPacket.hpp>
-#include <MC/Player.hpp>
+#include <mc/Block.hpp>
+#include <mc/Level.hpp>
+#include <mc/BlockLegacy.hpp>
+#include <mc/ServerNetworkHandler.hpp>
+#include <mc/NetworkPacketEventCoordinator.hpp>
+#include <mc/PacketHeader.hpp>
+#include <mc/Packet.hpp>
+#include <mc/NetworkIdentifier.hpp>
+#include <mc/PlayerActionPacket.hpp>
+#include <mc/Player.hpp>
 #include <fstream>
 
 //?handle@ServerNetworkHandler@@UEAAXAEBVNetworkIdentifier@@AEBVPlayerActionPacket@@@Z
@@ -51,10 +51,7 @@
 //     return sb;
 // }
 
-THook(void,
-      "?setRuntimeId@Block@@IEBAXAEBI@Z",
-      Block* block,
-      unsigned int const& id) {
+THook(void, "?setRuntimeId@Block@@IEBAXAEBI@Z", Block* block, unsigned int const& id) {
     auto& blockName = worldedit::getBlockNameMap();
     auto& blockId = worldedit::getBlockIdMap();
     auto blockid = block->getId();
@@ -140,15 +137,15 @@ namespace worldedit {
         return 0;
     }
 
-bool isBEBlock(const std::string& s){
+    bool isBEBlock(const std::string& s) {
         auto& blockId = worldedit::getBlockIdMap();
-    return blockId.find(s) != blockId.end();
-}
+        return blockId.find(s) != blockId.end();
+    }
 
-bool isJEBlock(const std::string& s){
+    bool isJEBlock(const std::string& s) {
         auto& blockId = worldedit::getJavaBlockMap();
-    return blockId.find(s) != blockId.end();
-}
+        return blockId.find(s) != blockId.end();
+    }
 
     void setFunction(std::unordered_map<::std::string, double>& variables,
                      EvalFunctions& funcs,

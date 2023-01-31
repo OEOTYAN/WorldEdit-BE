@@ -3,11 +3,11 @@
 //
 
 #include "Regions.h"
-#include "MC/Level.hpp"
-#include "MC/BlockSource.hpp"
-#include "MC/Block.hpp"
-#include <MC/BedrockBlocks.hpp>
-#include <MC/Player.hpp>
+#include "mc/Level.hpp"
+#include "mc/BlockSource.hpp"
+#include "mc/Block.hpp"
+#include <mc/BedrockBlocks.hpp>
+#include <mc/Player.hpp>
 #include "eval/Eval.h"
 #include "WorldEdit.h"
 namespace worldedit {

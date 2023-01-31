@@ -4,12 +4,12 @@
 //
 
 #include "Global.h"
-#include <MC/Biome.hpp>
-// #include <MC/BlockInstance.hpp>
-#include <MC/Block.hpp>
-#include <MC/BedrockBlocks.hpp>
-#include <MC/BlockSource.hpp>
-#include <MC/Level.hpp>
+#include <mc/Biome.hpp>
+// #include <mc/BlockInstance.hpp>
+#include <mc/Block.hpp>
+#include <mc/BedrockBlocks.hpp>
+#include <mc/BlockSource.hpp>
+#include <mc/Level.hpp>
 #include "CppEval.h"
 #include "FastNoiseLite.h"
 

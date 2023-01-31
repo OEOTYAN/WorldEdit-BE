@@ -2,8 +2,8 @@
 // Created by OEOTYAN on 2022/06/09.
 //
 #pragma once
-#include <MC/BlockInstance.hpp>
-#include <MC/Player.hpp>
+#include <mc/BlockInstance.hpp>
+#include <mc/Player.hpp>
 #include "eval/Eval.h"
 namespace worldedit {
     class Brush {

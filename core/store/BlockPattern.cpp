@@ -3,18 +3,19 @@
 //
 #include "BlockPattern.hpp"
 #include "BlockNBTSet.hpp"
-#include "MC/BlockPalette.hpp"
-#include "MC/Level.hpp"
-#include "Utils/StringHelper.h"
-#include <MC/Block.hpp>
-#include <MC/BedrockBlocks.hpp>
-#include <MC/BlockActor.hpp>
+#include "mc/BlockPalette.hpp"
+#include "mc/Level.hpp"
+#include "utils/StringHelper.h"
+#include <mc/Block.hpp>
+#include <mc/BedrockBlocks.hpp>
+#include <mc/BlockActor.hpp>
 #include "WorldEdit.h"
-#include "MC/ItemStack.hpp"
-#include "MC/BlockPalette.hpp"
-#include "MC/StaticVanillaBlocks.hpp"
-#include "MC/Player.hpp"
+#include "mc/ItemStack.hpp"
+#include "mc/BlockPalette.hpp"
+#include "mc/StaticVanillaBlocks.hpp"
+#include "mc/Player.hpp"
 #include "region/Region.h"
+#include "utils/RNG.h"
 
 namespace worldedit {
 
@@ -35,7 +36,7 @@ namespace worldedit {
         int mId = blockId;
         std::string blockName = "minecraft:air";
         if (mId == -2140000002) {
-                blockName = blockIdfunc;
+            blockName = blockIdfunc;
         } else {
             if (mId == INT_MIN) {
                 mId = static_cast<int>(round(cpp_eval::eval<double>(blockIdfunc, variables, funcs)));
@@ -339,7 +340,7 @@ namespace worldedit {
             if (rawBlockIter.constBlock) {
                 if (isBEBlock(rawBlockIter.blockIdfunc)) {
                     rawBlockIter.block = Block::create(rawBlockIter.blockIdfunc, rawBlockIter.blockData);
-                }else if(isJEBlock(rawBlockIter.blockIdfunc)){
+                } else if (isJEBlock(rawBlockIter.blockIdfunc)) {
                     rawBlockIter.block = getJavaBlockMap()[rawBlockIter.blockIdfunc];
                     if (rawBlockIter.blockIdfunc.find("waterlogged=true") != std::string::npos) {
                         rawBlockIter.exBlock = const_cast<Block*>(StaticVanillaBlocks::mWater);

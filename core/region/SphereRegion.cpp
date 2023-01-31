@@ -3,12 +3,12 @@
 //
 
 #include "SphereRegion.h"
-#include "MC/Level.hpp"
+#include "mc/Level.hpp"
 #include "eval/Eval.h"
-#include "MC/Dimension.hpp"
+#include "mc/Dimension.hpp"
 namespace worldedit {
     void SphereRegion::updateBoundingBox() {
-        auto range = Global<Level>->getDimension(dimensionID)->getHeightRange();
+        auto range = reinterpret_cast<Dimension*>(Global<Level>->getDimension(dimensionID).mHandle.lock().get())->getHeightRange();
         rendertick = 0;
         auto newRadius = (int)(ceil(radius));
         boundingBox.min.x = center.x - newRadius;

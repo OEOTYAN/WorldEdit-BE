@@ -1,7 +1,7 @@
 //
 // Created by OEOTYAN on 2022/05/27.
 //
-#include "MC/ItemInstance.hpp"
+#include "mc/ItemInstance.hpp"
 #include "allCommand.hpp"
 #include "store/BlockPattern.hpp"
 #include "store/BlockNBTSet.hpp"
@@ -9,14 +9,16 @@
 #include "image/Image.h"
 #include "eval/Bresenham.hpp"
 #include "filesys/download.h"
-#include "MC/StructureTemplate.hpp"
-#include "MC/Container.hpp"
-#include "MC/ItemStack.hpp"
-#include "MC/CompoundTag.hpp"
-#include "MC/StaticVanillaBlocks.hpp"
-#include "MC/ListTag.hpp"
+#include "mc/StructureTemplate.hpp"
+#include "mc/Container.hpp"
+#include "mc/ItemStack.hpp"
+#include "mc/CompoundTag.hpp"
+#include "mc/StaticVanillaBlocks.hpp"
+#include <mc/CommandBlockNameResult.hpp>
+#include "mc/ListTag.hpp"
 #include "WorldEdit.h"
 #include "region/Regions.h"
+#include "utils/RNG.h"
 
 namespace worldedit {
 
@@ -74,7 +76,7 @@ namespace worldedit {
                     if (results["blockPattern"].isSet) {
                         bps = results["blockPattern"].get<std::string>();
                     } else if (results["block"].isSet) {
-                        bps = results["block"].get<Block const*>()->getTypeName();
+                        bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                     }
                     BlockPattern blockPattern(bps, xuid, region);
 
@@ -169,7 +171,7 @@ namespace worldedit {
                                                      static_cast<int>(kz + 0.5)};
                                     if (radius == 0) {
                                         tmp.insert(kpos);
-                                        boundingBox = boundingBox.merge(kpos);
+                                        boundingBox.merge(kpos);
                                     } else {
                                         BoundingBox(kpos - static_cast<int>(radius + 1),
                                                     kpos + static_cast<int>(radius + 1))
@@ -177,7 +179,7 @@ namespace worldedit {
                                                 if (sqrt(pow2(posk.x - kx) + pow2(posk.y - ky) + pow2(posk.z - kz)) <=
                                                     0.5 + radius) {
                                                     tmp.insert(posk);
-                                        boundingBox = boundingBox.merge(posk);
+                                                    boundingBox.merge(posk);
                                                 }
                                             });
                                     }
@@ -188,7 +190,7 @@ namespace worldedit {
                                         .forEachBlockInBox([&](const BlockPos& posk) {
                                             if ((pos - posk).length() <= 0.5 + radius) {
                                                 tmp.insert(posk);
-                                        boundingBox = boundingBox.merge(posk);
+                                                boundingBox.merge(posk);
                                             }
                                         });
                                 });
@@ -241,7 +243,7 @@ namespace worldedit {
                         if (results["blockPattern"].isSet) {
                             bps = results["blockPattern"].get<std::string>();
                         } else if (results["block"].isSet) {
-                            bps = results["block"].get<Block const*>()->getTypeName();
+                            bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                         }
                         BlockPattern blockPattern(bps, xuid, region);
 
@@ -377,7 +379,7 @@ namespace worldedit {
                         if (results["blockPattern"].isSet) {
                             bps = results["blockPattern"].get<std::string>();
                         } else if (results["block"].isSet) {
-                            bps = results["block"].get<Block const*>()->getTypeName();
+                            bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                         }
                         BlockPattern blockPattern(bps, xuid, region);
 
@@ -462,7 +464,7 @@ namespace worldedit {
                     if (results["blockPattern"].isSet) {
                         bps = results["blockPattern"].get<std::string>();
                     } else if (results["block"].isSet) {
-                        bps = results["block"].get<Block const*>()->getTypeName();
+                        bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                     }
                     BlockPattern blockPattern(bps, xuid, region);
 
@@ -518,7 +520,7 @@ namespace worldedit {
                         points.clear();
                         for (double t = 0; t <= 1; t += step) {
                             auto pos = interpol.getPosition(t);
-                            boundingBox = boundingBox.merge(pos.toBlockPos());
+                            boundingBox.merge(pos.toBlockPos());
                             points.push_back(pos);
                         }
                         boundingBox.min -= static_cast<int>(radius) + 1;
@@ -695,7 +697,7 @@ namespace worldedit {
                     radiuses.clear();
                     for (double t = 0; t <= 1; t += step) {
                         auto pos = interpol.getPosition(t);
-                        boundingBox = boundingBox.merge(pos.toBlockPos());
+                        boundingBox.merge(pos.toBlockPos());
                         points.push_back(pos);
                         radiuses.push_back(std::max(getRadius(t), 0.1));
                     }
@@ -767,7 +769,7 @@ namespace worldedit {
                         if (results["blockPattern"].isSet) {
                             bps = results["blockPattern"].get<std::string>();
                         } else if (results["block"].isSet) {
-                            bps = results["block"].get<Block const*>()->getTypeName();
+                            bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                         }
                         BlockPattern blockPattern(bps, xuid, region);
 
@@ -843,13 +845,13 @@ namespace worldedit {
                     if (results["blockAfterS"].isSet) {
                         bps = results["blockAfterS"].get<std::string>();
                     } else if (results["blockAfter"].isSet) {
-                        bps = results["blockAfter"].get<Block const*>()->getTypeName();
+                        bps = results["blockAfter"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                     }
                     std::string bps2 = "minecraft:air";
                     if (results["blockBeforeS"].isSet) {
                         bps2 = results["blockBeforeS"].get<std::string>();
                     } else if (results["blockBefore"].isSet) {
-                        bps2 = results["blockBefore"].get<Block const*>()->getTypeName();
+                        bps2 = results["blockBefore"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                     }
                     BlockPattern blockPattern(bps, xuid, region);
                     BlockPattern blockFilter(bps2);
@@ -918,7 +920,7 @@ namespace worldedit {
                     if (results["blockPattern"].isSet) {
                         bps = results["blockPattern"].get<std::string>();
                     } else if (results["block"].isSet) {
-                        bps = results["block"].get<Block const*>()->getTypeName();
+                        bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                     }
                     BlockPattern blockPattern(bps, xuid, region);
                     boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
@@ -1159,7 +1161,7 @@ namespace worldedit {
                     if (results["blockPattern"].isSet) {
                         bps = results["blockPattern"].get<std::string>();
                     } else if (results["block"].isSet) {
-                        bps = results["block"].get<Block const*>()->getTypeName();
+                        bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                     }
                     BlockPattern blockPattern(bps, xuid, region);
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
@@ -1296,7 +1298,7 @@ namespace worldedit {
                         if (results["blockPattern"].isSet) {
                             bps = results["blockPattern"].get<std::string>();
                         } else if (results["block"].isSet) {
-                            bps = results["block"].get<Block const*>()->getTypeName();
+                            bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                         }
                         BlockPattern blockPattern(bps, xuid, region);
                         region->forEachBlockInRegion([&](const BlockPos& pos) {
@@ -1365,7 +1367,7 @@ namespace worldedit {
                     if (results["blockPattern"].isSet) {
                         bps = results["blockPattern"].get<std::string>();
                     } else if (results["block"].isSet) {
-                        bps = results["block"].get<Block const*>()->getTypeName();
+                        bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                     }
                     BlockPattern blockPattern(bps, xuid, region);
                     if (region->regionType == RegionType::LOFT) {
@@ -1451,7 +1453,7 @@ namespace worldedit {
                     if (results["blockPattern"].isSet) {
                         bps = results["blockPattern"].get<std::string>();
                     } else if (results["block"].isSet) {
-                        bps = results["block"].get<Block const*>()->getTypeName();
+                        bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                     }
                     BlockPattern blockPattern(bps, xuid, region);
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
@@ -1518,7 +1520,7 @@ namespace worldedit {
                     if (results["blockPattern"].isSet) {
                         bps = results["blockPattern"].get<std::string>();
                     } else if (results["block"].isSet) {
-                        bps = results["block"].get<Block const*>()->getTypeName();
+                        bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                     }
                     BlockPattern blockPattern(bps, xuid, region);
                     region->forTopBlockInRegion([&](const BlockPos& pos) {
@@ -1682,7 +1684,7 @@ namespace worldedit {
                         if (results["blockPattern"].isSet) {
                             bps = results["blockPattern"].get<std::string>();
                         } else if (results["block"].isSet) {
-                            bps = results["block"].get<Block const*>()->getTypeName();
+                            bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                         }
                         BlockPattern blockPattern(bps, xuid, region);
                         region->forEachBlockInRegion([&](const BlockPos& pos) {

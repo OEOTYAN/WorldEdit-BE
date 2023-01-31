@@ -3,9 +3,9 @@
 //
 // #include "Global.h"
 #include "allCommand.hpp"
-#include <MC/CommandUtils.hpp>
-#include <MC/BlockSource.hpp>
-#include "MC/StructureTemplate.hpp"
+#include <mc/CommandUtils.hpp>
+#include <mc/BlockSource.hpp>
+#include "mc/StructureTemplate.hpp"
 #include "WorldEdit.h"
 #include "data/PlayerData.h"
 #include "region/Regions.h"

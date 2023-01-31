@@ -4,9 +4,9 @@
 #pragma once
 
 #include "Global.h"
-#include <MC/Level.hpp>
-#include <MC/BlockInstance.hpp>
-#include <MC/StructureSettings.hpp>
+#include <mc/Level.hpp>
+#include <mc/BlockInstance.hpp>
+#include <mc/StructureSettings.hpp>
 #include "BlockNBTSet.hpp"
 
 namespace worldedit {

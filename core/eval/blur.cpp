@@ -2,7 +2,7 @@
 // Created by OEOTYAN on 2022/05/30.
 //
 #include "blur.hpp"
-#include "MC/Level.hpp"
+#include "mc/Level.hpp"
 
 namespace worldedit {
 

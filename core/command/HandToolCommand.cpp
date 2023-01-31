@@ -4,8 +4,9 @@
 #include "allCommand.hpp"
 #include "Global.h"
 #include "string/StringTool.h"
-#include "MC/ItemStack.hpp"
+#include "mc/ItemStack.hpp"
 #include "WorldEdit.h"
+#include <mc/CommandBlockNameResult.hpp>
 #include "store/BlockPattern.hpp"
 #include "brush/Brushs.h"
 
@@ -101,7 +102,7 @@ namespace worldedit {
                     if (results["blockPattern"].isSet) {
                         bps = results["blockPattern"].get<std::string>();
                     } else if (results["block"].isSet) {
-                        bps = results["block"].get<Block const*>()->getTypeName();
+                        bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                     }
 
                     int radius = 5;

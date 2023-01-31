@@ -2,12 +2,14 @@
 // Created by OEOTYAN on 2022/06/10.
 //
 #include "Eval.h"
-#include <MC/LevelChunk.hpp>
-#include <MC/Brightness.hpp>
-#include <MC/Dimension.hpp>
-#include <MC/Player.hpp>
+#include <mc/LevelChunk.hpp>
+#include <mc/Brightness.hpp>
+#include <mc/Dimension.hpp>
+#include <mc/Player.hpp>
+#include <mc/ChunkPos.hpp>
 #include "FastNoiseLite.h"
-// #include <MC/ChunkBlockPos.hpp>
+#include "utils/RNG.h"
+#include "utils/RNG.h"
 
 #define tryGetParameter(size, params, n, f, t) \
     if (size >= n) {                           \
@@ -327,10 +329,11 @@ namespace worldedit {
                 if (blockdataInitialized) {
                     auto& dimension = blockSource->getDimensionConst();
                     if (size == 1) {
-                        return nullptr != dimension.fetchAnyPlayer(here.toVec3(), static_cast<float>(params[0]));
+                        return nullptr != dimension.fetchAnyInteractablePlayer(here.toVec3(), static_cast<float>(params[0]));
                     } else if (size == 4) {
-                        return nullptr != dimension.fetchAnyPlayer(here.toVec3() +Vec3(params[1], params[2], params[3]),
-                                                                   static_cast<float>(params[0]));
+                        return nullptr != dimension.fetchAnyInteractablePlayer(
+                                              here.toVec3() + Vec3(params[1], params[2], params[3]),
+                                              static_cast<float>(params[0]));
                     }
                 }
                 return 0;

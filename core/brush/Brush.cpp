@@ -2,8 +2,8 @@
 // Created by OEOTYAN on 2022/06/10.
 //
 #include "Brush.h"
-#include <MC/BlockInstance.hpp>
-#include <MC/Player.hpp>
+#include <mc/BlockInstance.hpp>
+#include <mc/Player.hpp>
 #include "store/BlockPattern.hpp"
 namespace worldedit {
     Brush::~Brush() {

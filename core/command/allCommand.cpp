@@ -8,12 +8,13 @@
 #include "eval/Eval.h"
 #include "WorldEdit.h"
 #include "string/StringTool.h"
+#include <mc/CommandBlockNameResult.hpp>
 
-#include "MC/Level.hpp"
-#include "MC/Block.hpp"
-#include "MC/MobSpawnRules.hpp"
-#include "MC/SpawnGroupData.hpp"
-#include "MC/SpawnGroupRegistry.hpp"
+#include "mc/Level.hpp"
+#include "mc/Block.hpp"
+#include "mc/MobSpawnRules.hpp"
+#include "mc/SpawnGroupData.hpp"
+#include "mc/SpawnGroupRegistry.hpp"
 
 #include "Nlohmann/json.hpp"
 
@@ -172,26 +173,19 @@ namespace worldedit {
             CommandPermissionLevel::GameMasters);
 
         // DynamicCommand::setup(
-        //     "wetest",                    // command name
-        //     "calculate expression",  // command description
-        //     {}, {ParamData("exp", ParamType::Message, "exp")}, {{"exp"}},
+        //     "wetest",  // command name
+        //     "wetest",  // command description
+        //     {}, {
+        //         ParamData("block", ParamType::Block, "block"),}, {{"block"}},
         //     // dynamic command callback
-        //     [](DynamicCommand const& command, CommandOrigin const& origin,
-        //     CommandOutput& output,
-        //        std::unordered_map<std::string, DynamicCommand::Result>&
-        //        results) {
-        //
+        //     [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+        //        std::unordered_map<std::string, DynamicCommand::Result>& results) {
+
         //         auto player = origin.getPlayer();
         //         auto dimID = player->getDimensionId();
         //         auto blockSource = &player->getRegion();
 
-        //         auto* spawnGroupRegistry =
-        //         blockSource->getLevel().getSpawnGroupRegistry();
-
-        //         for (auto& m : spawnGroupRegistry->mSpawnGroupLookupMap) {
-        //             std::cout << m.first << std::endl;
-        //         }
-        //         output.trSuccess("");
+        //         output.trSuccess(results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName());
         //     },
         //     CommandPermissionLevel::GameMasters);
     }

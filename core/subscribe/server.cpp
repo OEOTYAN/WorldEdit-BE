@@ -5,10 +5,10 @@
 #include "WorldEdit.h"
 #include <EventAPI.h>
 #include <ScheduleAPI.h>
-#include <MC/Level.hpp>
-#include <MC/Player.hpp>
-// #include <MC/HashedString.hpp>
-// #include <MC/BlockSerializationUtils.hpp>
+#include <mc/Level.hpp>
+#include <mc/Player.hpp>
+// #include <mc/HashedString.hpp>
+// #include <mc/BlockSerializationUtils.hpp>
 #include "region/Region.h"
 #include "command/allCommand.hpp"
 

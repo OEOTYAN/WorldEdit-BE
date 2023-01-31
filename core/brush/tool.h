@@ -6,10 +6,10 @@
 #define WORLDEDIT_TOOL_H
 
 #include "Brush.h"
-#include <MC/BlockInstance.hpp>
-#include <MC/Player.hpp>
-#include <MC/Block.hpp>
-#include <MC/BlockSource.hpp>
+#include <mc/BlockInstance.hpp>
+#include <mc/Player.hpp>
+#include <mc/Block.hpp>
+#include <mc/BlockSource.hpp>
 #include "store/BlockNBTSet.hpp"
 
 namespace worldedit {

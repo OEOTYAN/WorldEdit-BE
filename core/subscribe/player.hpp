@@ -5,16 +5,16 @@
 #include "Global.h"
 #include <EventAPI.h>
 // #include <LoggerAPI.h>
-// #include <MC/Level.hpp>
-// #include <MC/BlockInstance.hpp>
-// #include <MC/Block.hpp>
-// #include <MC/BlockSource.hpp>
-#include <MC/BedrockBlocks.hpp>
-// #include <MC/Actor.hpp>
-// #include <MC/Player.hpp>
-#include <MC/ServerPlayer.hpp>
-#include <MC/ItemStack.hpp>
-#include <MC/AnimatePacket.hpp>
+// #include <mc/Level.hpp>
+// #include <mc/BlockInstance.hpp>
+// #include <mc/Block.hpp>
+// #include <mc/BlockSource.hpp>
+#include <mc/BedrockBlocks.hpp>
+// #include <mc/Actor.hpp>
+// #include <mc/Player.hpp>
+#include <mc/ServerPlayer.hpp>
+#include <mc/ItemStack.hpp>
+#include <mc/AnimatePacket.hpp>
 #include "WorldEdit.h"
 
 namespace worldedit {

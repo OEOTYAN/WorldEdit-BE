@@ -2,11 +2,11 @@
 // Created by OEOTYAN on 2022/06/10.
 //
 #include "Global.h"
-#include "MC/BlockPos.hpp"
-#include <MC/Player.hpp>
+#include "mc/BlockPos.hpp"
+#include <mc/Player.hpp>
 #include "SimpleBuilder.h"
 #include "WorldEdit.h"
-#include <MC/Dimension.hpp>
+#include <mc/Dimension.hpp>
 #include "eval/Eval.h"
 #include "store/BlockPattern.hpp"
 namespace worldedit {
@@ -25,7 +25,8 @@ namespace worldedit {
             pos.y += height;
             height = -height;
         }
-        auto range = Global<Level>->getDimension(dim)->getHeightRange();
+
+        auto range = Global<Level>->getPlayer(dim)->getDimension().getHeightRange();
 
         if (pos.y < range.min) {
             pos.y = range.min;
@@ -35,11 +36,8 @@ namespace worldedit {
         BoundingBox box({pos.x - radius, pos.y, pos.z - radius}, {pos.x + radius, pos.y + height, pos.z + radius});
         long long i = 0;
 
-        
         auto& playerData = getPlayersData(xuid);
         auto blockSource = Level::getBlockSource(dim);
-
-        
 
         std::function<void(EvalFunctions&, std::unordered_map<std::string, double> const&,
                            std::function<void()> const&)>
@@ -96,90 +94,74 @@ namespace worldedit {
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
-                    
-                        maskLambda(f, variables, [&]() mutable {
-                            blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            ++i;
-                        });
-                    
+                    maskLambda(f, variables, [&]() mutable {
+                        blockPattern->setBlock(variables, f, blockSource, blockPos);
+                        ++i;
+                    });
 
                     blockPos.z = pos.z - Yi;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
-                    
-                        maskLambda(f, variables, [&]() mutable {
-                            blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            ++i;
-                        });
-                    
+                    maskLambda(f, variables, [&]() mutable {
+                        blockPattern->setBlock(variables, f, blockSource, blockPos);
+                        ++i;
+                    });
 
                     blockPos.x = pos.x - X;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
-                    
-                        maskLambda(f, variables, [&]() mutable {
-                            blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            ++i;
-                        });
-                    
+                    maskLambda(f, variables, [&]() mutable {
+                        blockPattern->setBlock(variables, f, blockSource, blockPos);
+                        ++i;
+                    });
 
                     blockPos.z = pos.z + Yi;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
-                    
-                        maskLambda(f, variables, [&]() mutable {
-                            blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            ++i;
-                        });
-                    
+                    maskLambda(f, variables, [&]() mutable {
+                        blockPattern->setBlock(variables, f, blockSource, blockPos);
+                        ++i;
+                    });
 
                     blockPos.x = pos.x + Yi;
                     blockPos.z = pos.z + X;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
-                    
-                        maskLambda(f, variables, [&]() mutable {
-                            blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            ++i;
-                        });
-                    
+                    maskLambda(f, variables, [&]() mutable {
+                        blockPattern->setBlock(variables, f, blockSource, blockPos);
+                        ++i;
+                    });
 
                     blockPos.z = pos.z - X;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
-                    
-                        maskLambda(f, variables, [&]() mutable {
-                            blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            ++i;
-                        });
-                    
+                    maskLambda(f, variables, [&]() mutable {
+                        blockPattern->setBlock(variables, f, blockSource, blockPos);
+                        ++i;
+                    });
 
                     blockPos.x = pos.x - Yi;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
-                    
-                        maskLambda(f, variables, [&]() mutable {
-                            blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            ++i;
-                        });
-                    
+                    maskLambda(f, variables, [&]() mutable {
+                        blockPattern->setBlock(variables, f, blockSource, blockPos);
+                        ++i;
+                    });
 
                     blockPos.z = pos.z + X;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
-                    
-                        maskLambda(f, variables, [&]() mutable {
-                            blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            ++i;
-                        });
-                    
+                    maskLambda(f, variables, [&]() mutable {
+                        blockPattern->setBlock(variables, f, blockSource, blockPos);
+                        ++i;
+                    });
                 }
             }
             if (p >= 0) {
@@ -203,11 +185,8 @@ namespace worldedit {
         BoundingBox box(pos - radius, pos + radius);
         long long i = 0;
 
-        
         auto& playerData = getPlayersData(xuid);
         auto blockSource = Level::getBlockSource(dim);
-
-        
 
         std::function<void(EvalFunctions&, std::unordered_map<std::string, double> const&,
                            std::function<void()> const&)>
@@ -276,90 +255,74 @@ namespace worldedit {
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
-                    
-                        maskLambda(f, variables, [&]() mutable {
-                            blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            ++i;
-                        });
-                    
+                    maskLambda(f, variables, [&]() mutable {
+                        blockPattern->setBlock(variables, f, blockSource, blockPos);
+                        ++i;
+                    });
 
                     blockPos.y = pos.y - y;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
-                    
-                        maskLambda(f, variables, [&]() mutable {
-                            blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            ++i;
-                        });
-                    
+                    maskLambda(f, variables, [&]() mutable {
+                        blockPattern->setBlock(variables, f, blockSource, blockPos);
+                        ++i;
+                    });
 
                     blockPos.z = pos.z - z;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
-                    
-                        maskLambda(f, variables, [&]() mutable {
-                            blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            ++i;
-                        });
-                    
+                    maskLambda(f, variables, [&]() mutable {
+                        blockPattern->setBlock(variables, f, blockSource, blockPos);
+                        ++i;
+                    });
 
                     blockPos.x = pos.x - x;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
-                    
-                        maskLambda(f, variables, [&]() mutable {
-                            blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            ++i;
-                        });
-                    
+                    maskLambda(f, variables, [&]() mutable {
+                        blockPattern->setBlock(variables, f, blockSource, blockPos);
+                        ++i;
+                    });
 
                     blockPos.y = pos.y + y;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
-                    
-                        maskLambda(f, variables, [&]() mutable {
-                            blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            ++i;
-                        });
-                    
+                    maskLambda(f, variables, [&]() mutable {
+                        blockPattern->setBlock(variables, f, blockSource, blockPos);
+                        ++i;
+                    });
 
                     blockPos.x = pos.x + x;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
-                    
-                        maskLambda(f, variables, [&]() mutable {
-                            blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            ++i;
-                        });
-                    
+                    maskLambda(f, variables, [&]() mutable {
+                        blockPattern->setBlock(variables, f, blockSource, blockPos);
+                        ++i;
+                    });
 
                     blockPos.x = pos.x - x;
                     blockPos.z = pos.z + z;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
-                    
-                        maskLambda(f, variables, [&]() mutable {
-                            blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            ++i;
-                        });
-                    
+                    maskLambda(f, variables, [&]() mutable {
+                        blockPattern->setBlock(variables, f, blockSource, blockPos);
+                        ++i;
+                    });
 
                     blockPos.y = pos.y - y;
 
                     setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
-                    
-                        maskLambda(f, variables, [&]() mutable {
-                            blockPattern->setBlock(variables, f, blockSource, blockPos);
-                            ++i;
-                        });
-                    
+                    maskLambda(f, variables, [&]() mutable {
+                        blockPattern->setBlock(variables, f, blockSource, blockPos);
+                        ++i;
+                    });
                 }
             }
         }
@@ -376,11 +339,8 @@ namespace worldedit {
         BoundingBox box(pos - size, pos + size);
         long long i = 0;
 
-        
         auto& playerData = getPlayersData(xuid);
         auto blockSource = Level::getBlockSource(dim);
-
-        
 
         std::function<void(EvalFunctions&, std::unordered_map<std::string, double> const&,
                            std::function<void()> const&)>
@@ -425,10 +385,9 @@ namespace worldedit {
                             blockPos.y == box.max.y || blockPos.z == box.min.z || blockPos.z == box.max.z)) {
                 setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
-                
-                    maskLambda(f, variables, [&]() mutable {
-                        blockPattern->setBlock(variables, f, blockSource, blockPos);
-                        ++i;
+                maskLambda(f, variables, [&]() mutable {
+                    blockPattern->setBlock(variables, f, blockSource, blockPos);
+                    ++i;
                 });
             }
         });
