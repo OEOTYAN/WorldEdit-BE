@@ -84,7 +84,11 @@ namespace worldedit {
     }
 
     Block* BlockPattern::getBlock(const std::unordered_map<::std::string, double>& variables, EvalFunctions& funcs) {
-        return getRawBlock(variables, funcs)->getBlock(variables, funcs);
+        auto* rawBlock = getRawBlock(variables, funcs);
+        if (rawBlock == nullptr) {
+            return nullptr;
+        }
+        return rawBlock->getBlock(variables, funcs);
     }
 
     bool BlockPattern::setBlock(const std::unordered_map<::std::string, double>& variables,
@@ -345,6 +349,8 @@ namespace worldedit {
                     if (rawBlockIter.blockIdfunc.find("waterlogged=true") != std::string::npos) {
                         rawBlockIter.exBlock = const_cast<Block*>(StaticVanillaBlocks::mWater);
                     }
+                    rawBlockIter.blockIdfunc = rawBlockIter.block->getTypeName();
+                    rawBlockIter.blockData = rawBlockIter.block->getVariant();
                 }
             }
         }
@@ -352,7 +358,7 @@ namespace worldedit {
 
     bool BlockPattern::hasBlock(Block* block) {
         for (auto& rawBlock : rawBlocks) {
-            if (block->getTypeName() == getBlockName(rawBlock.blockId) &&
+            if (rawBlock.constBlock && (block->getTypeName() == rawBlock.blockIdfunc) &&
                 (rawBlock.blockData < 0 || rawBlock.blockData == block->getTileData())) {
                 return true;
             }

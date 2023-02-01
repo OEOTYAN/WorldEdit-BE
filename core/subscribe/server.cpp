@@ -19,7 +19,11 @@ namespace worldedit {
             //     std::cout << k.first.getString() << std::endl;
             // }
 
-            worldedit::commandsSetup();
+            javaBlockMapInit();
+
+            commandsSetup();
+
+            blockColorMapInit();
 
             auto& playerDataMap = getPlayersDataMap();
             Schedule::repeat(

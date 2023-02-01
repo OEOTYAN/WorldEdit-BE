@@ -11,6 +11,9 @@
 namespace worldedit {
     SmoothBrush::SmoothBrush(unsigned short s, int a) : Brush(s, nullptr), ksize(a) {}
     long long SmoothBrush::set(Player* player, BlockInstance blockInstance) {
+        if (blockInstance == BlockInstance::Null) {
+            return -2;
+        }
         auto pos = blockInstance.getPosition();
         
         auto xuid = player->getXuid();

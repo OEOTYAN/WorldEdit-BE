@@ -2001,7 +2001,7 @@ namespace worldedit {
                         });
                     }
 
-                    auto blockColorMap = getBlockColorMap();
+                    auto blockColorMap = getColorBlockMap();
 
                     auto playerPos = player->getPosition();
                     auto playerRot = player->getRotation();
@@ -2077,17 +2077,17 @@ namespace worldedit {
                         auto color = texture2D.sample(sampler, u, v);
 
                         double minDist = DBL_MAX;
-                        int minTile = 15;
+                        Block* minBlock = Block::create("minecraft:air", 0);
                         for (auto& i : blockColorMap) {
+                            if(i.first.a==1){
                             auto dst = i.first.distanceTo(color);
                             if (dst < minDist) {
                                 minDist = dst;
-                                minTile = i.second;
-                            }
+                                minBlock = i.second;
+                            }}
                         }
                         if (RNG::rand<double>() <= color.a) {
-                            i += playerData.setBlockSimple(blockSource, f, variables, pos,
-                                                           Block::create("minecraft:concrete", minTile));
+                            i += playerData.setBlockSimple(blockSource, f, variables, pos,minBlock);
                         }
                     });
 

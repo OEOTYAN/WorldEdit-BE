@@ -6,7 +6,6 @@
 #include "WorldEdit.h"
 #include <filesystem>
 
-
 void preparePath(std::string_view path) {
     namespace fs = std::filesystem;
     if (!fs::exists(path)) {
@@ -15,7 +14,6 @@ void preparePath(std::string_view path) {
 }
 
 void PluginInit() {
-
     preparePath("./plugins/WorldEdit");
     preparePath("./plugins/WorldEdit/lang");
     preparePath("./plugins/WorldEdit/image");
@@ -31,11 +29,10 @@ void PluginInit() {
     worldedit::serverSubscribe();
     worldedit::playerSubscribe();
 
-    Logger logger(PLUGIN_NAME);
-
-    logger.info("");
-    logger.info(tr("worldedit.version"), PLUGIN_VERSION_MAJOR, PLUGIN_VERSION_MINOR, PLUGIN_VERSION_REVISION,
-                PLUGIN_VERSION_STATUS == 0 ? "dev" : (PLUGIN_VERSION_STATUS == 1 ? "beta" : "release"));
-    logger.info(tr("worldedit.wiki"));
-    logger.info("");
+    worldedit::logger().info("");
+    worldedit::logger().info(tr("worldedit.version"), PLUGIN_VERSION_MAJOR, PLUGIN_VERSION_MINOR,
+                             PLUGIN_VERSION_REVISION,
+                             PLUGIN_VERSION_STATUS == 0 ? "dev" : (PLUGIN_VERSION_STATUS == 1 ? "beta" : "release"));
+    worldedit::logger().info(tr("worldedit.wiki"));
+    worldedit::logger().info("");
 }

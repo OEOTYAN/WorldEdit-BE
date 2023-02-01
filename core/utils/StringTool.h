@@ -44,5 +44,26 @@ namespace worldedit {
                     pos += b;
                 }
         }
+
+        bool isHex(char s) {
+            if ('A' <= s && s <= 'F') {
+                return true;
+            }
+            if ('a' <= s && s <= 'f') {
+                return true;
+            }
+            if ('0' <= s && s <= '9') {
+                return true;
+            }
+            return false;
+        }
+
+        bool isColorHex(const std::string& x) {
+            if (x[0] == '#' && (isHex(x[1]) && isHex(x[2]) && isHex(x[3])) &&
+                (x.length() == 4 || (x.length() == 7 && (isHex(x[4]) && isHex(x[5]) && isHex(x[6]))))) {
+                return true;
+            }
+            return false;
+        }
     }  // namespace
 }  // namespace worldedit

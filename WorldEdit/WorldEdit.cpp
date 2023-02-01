@@ -6,6 +6,7 @@
 #include "HookAPI.h"
 #include "ParticleAPI.h"
 #include "particle/Graphics.h"
+#include "utils/StringTool.h"
 #include "eval/Eval.h"
 #include <mc/Block.hpp>
 #include <mc/Level.hpp>
@@ -18,6 +19,8 @@
 #include <mc/PlayerActionPacket.hpp>
 #include <mc/Player.hpp>
 #include <fstream>
+#include "Version.h"
+#include "Nlohmann/json.hpp"
 
 //?handle@ServerNetworkHandler@@UEAAXAEBVNetworkIdentifier@@AEBVPlayerActionPacket@@@Z
 // THook(void,
@@ -70,6 +73,14 @@ THook(void, "?setRuntimeId@Block@@IEBAXAEBI@Z", Block* block, unsigned int const
 
 namespace worldedit {
 
+ Logger& logger(){
+     static Logger l(PLUGIN_NAME);
+#if PLUGIN_VERSION_STATUS == PLUGIN_VERSION_DEV
+     l.consoleLevel = 8;
+#endif
+     return l;
+ }
+
     std::unordered_map<std::string, class PlayerData>& getPlayersDataMap() {
         static std::unordered_map<std::string, class PlayerData> data;
         return data;
@@ -83,29 +94,13 @@ namespace worldedit {
         return playerDataMap[xuid];
     }
 
-    std::unordered_map<mce::Color, int>& getBlockColorMap() {
-        static std::unordered_map<mce::Color, int> blockColorMap;
+    std::unordered_map<mce::Color, Block*>& getColorBlockMap() {
+        static std::unordered_map<mce::Color, Block*> colorBlockMap;
+        return colorBlockMap;
+    }
 
-        static bool lized = false;
-        if (!lized) {
-            blockColorMap[mce::Color(208, 214, 215)] = 0;
-            blockColorMap[mce::Color(224, 96, 0)] = 1;
-            blockColorMap[mce::Color(170, 45, 160)] = 2;
-            blockColorMap[mce::Color(30, 138, 200)] = 3;
-            blockColorMap[mce::Color(240, 175, 13)] = 4;
-            blockColorMap[mce::Color(93, 168, 16)] = 5;
-            blockColorMap[mce::Color(215, 102, 145)] = 6;
-            blockColorMap[mce::Color(52, 56, 60)] = 7;
-            blockColorMap[mce::Color(125, 125, 125)] = 8;
-            blockColorMap[mce::Color(13, 119, 136)] = 9;
-            blockColorMap[mce::Color(100, 25, 157)] = 10;
-            blockColorMap[mce::Color(40, 42, 144)] = 11;
-            blockColorMap[mce::Color(96, 57, 25)] = 12;
-            blockColorMap[mce::Color(72, 91, 31)] = 13;
-            blockColorMap[mce::Color(144, 30, 30)] = 14;
-            blockColorMap[mce::Color(2, 3, 7)] = 15;
-            lized = true;
-        }
+    std::unordered_map<Block*, mce::Color>& getBlockColorMap() {
+        static std::unordered_map<Block*, mce::Color> blockColorMap;
         return blockColorMap;
     }
 
@@ -145,6 +140,61 @@ namespace worldedit {
     bool isJEBlock(const std::string& s) {
         auto& blockId = worldedit::getJavaBlockMap();
         return blockId.find(s) != blockId.end();
+    }
+
+    Block* tryGetBlockFromAllVersion(const std::string& name) {
+        if (isJEBlock(name)) {
+            return getJavaBlockMap()[name];
+        } else if (isBEBlock(name)) {
+            return Block::create(name, 0);
+        }
+        return nullptr;
+    }
+
+    void javaBlockMapInit() {
+        nlohmann::json blockList;
+        std::ifstream i(WE_DIR + "mappings/blocks.json");
+        i >> blockList;
+
+        for (auto& b : blockList.items()) {
+            std::string key = b.key();
+            Block* block = nullptr;
+            if (b.value().contains("bedrock_states")) {
+                std::string snbt = "{\"name\":\"";
+                snbt += b.value()["bedrock_identifier"];
+                snbt += "\",\"states\":";
+                std::string states = b.value()["bedrock_states"].dump();
+                stringReplace(states, ":false", ":0b");
+                stringReplace(states, ":true", ":1b");
+                snbt += states;
+                snbt += "}";
+                block = Block::create(CompoundTag::fromSNBT(snbt).get());
+            } else {
+                block = Block::create(b.value()["bedrock_identifier"], 0);
+            }
+            if (block != nullptr) {
+                getJavaBlockMap()[key] = block;
+            }
+        }
+    }
+
+    void blockColorMapInit() {
+        nlohmann::json blockColorList;
+        std::ifstream i(WE_DIR + "mappings/block_colors.json");
+        i >> blockColorList;
+        for (auto& blockColor : blockColorList["blocks"]) {
+            Block* block = tryGetBlockFromAllVersion(blockColor["name"]);
+            if (block != nullptr) {
+                auto color = mce::Color(
+                    static_cast<double>(blockColor["colour"]["r"]), static_cast<double>(blockColor["colour"]["g"]),
+                    static_cast<double>(blockColor["colour"]["b"]), static_cast<double>(blockColor["colour"]["a"]));
+                getColorBlockMap()[color] = block;
+                getBlockColorMap()[block] = color;
+            }
+            //  else {
+            //     std::cout << blockColor["name"] << std::endl;
+            // }
+        }
     }
 
     void setFunction(std::unordered_map<::std::string, double>& variables,

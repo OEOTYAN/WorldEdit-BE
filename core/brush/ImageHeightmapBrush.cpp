@@ -14,8 +14,10 @@ namespace worldedit {
                                              bool r)
         : Brush(s, nullptr), height(a), texture(tex), rotation(r) {}
 
-    long long ImageHeightmapBrush::set(Player* player,
-                                       BlockInstance blockInstance) {
+    long long ImageHeightmapBrush::set(Player* player, BlockInstance blockInstance) {
+        if (blockInstance == BlockInstance::Null) {
+            return -2;
+        }
         auto pos = blockInstance.getPosition();
         
         auto xuid = player->getXuid();

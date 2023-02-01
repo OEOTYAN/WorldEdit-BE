@@ -3,7 +3,7 @@
 //
 #include "tool.h"
 
-#include "string/StringTool.h"
+#include "utils/StringTool.h"
 #include "WorldEdit.h"
 #include "mc/Sapling.hpp"
 #include "mc/BlockInstance.hpp"
@@ -175,6 +175,9 @@ namespace worldedit {
                         (&blockSource->getBlock(tmpPos) == block && &blockSource->getExtraBlock(tmpPos) == exBlock) &&
                         s.find(tmpPos) == s.end()) {
                         f.setPos(tmpPos);
+            variables["x"] = static_cast<double>(tmpPos.x - pos0.x)/size;
+            variables["y"] = static_cast<double>(tmpPos.y - pos0.y)/size;
+            variables["z"] = static_cast<double>(tmpPos.z - pos0.z)/size;
                         variables["rx"] = tmpPos.x;
                         variables["ry"] = tmpPos.y;
                         variables["rz"] = tmpPos.z;
@@ -196,6 +199,9 @@ namespace worldedit {
                         (&blockSource->getBlock(tmpPos) == block && &blockSource->getExtraBlock(tmpPos) == exBlock) &&
                         s.find(tmpPos) == s.end()) {
                         f.setPos(tmpPos);
+            variables["x"] = static_cast<double>(tmpPos.x - pos0.x)/size;
+            variables["y"] = static_cast<double>(tmpPos.y - pos0.y)/size;
+            variables["z"] = static_cast<double>(tmpPos.z - pos0.z)/size;
                         variables["rx"] = tmpPos.x;
                         variables["ry"] = tmpPos.y;
                         variables["rz"] = tmpPos.z;
@@ -221,14 +227,27 @@ namespace worldedit {
             *history = Clipboard(boundingBox.max - boundingBox.min);
             history->playerRelPos.x = blockInstance.getDimensionId();
             history->playerPos = boundingBox.min;
-        }
-
-        for (auto& pos1 : s) {
-            if (history != nullptr) {
+            for (auto& pos1 : s) {
                 auto localPos = pos1 - boundingBox.min;
                 auto bi = blockSource->getBlockInstance(pos1);
                 history->storeBlock(bi, localPos);
             }
+        }
+
+        for (auto& pos1 : s) {
+            f.setPos(pos1);
+            variables["x"] = static_cast<double>(pos1.x - pos0.x)/size;
+            variables["y"] = static_cast<double>(pos1.y - pos0.y)/size;
+            variables["z"] = static_cast<double>(pos1.z - pos0.z)/size;
+            variables["rx"] = pos1.x;
+            variables["ry"] = pos1.y;
+            variables["rz"] = pos1.z;
+            variables["cx"] = pos1.x - pos0.x;
+            variables["cy"] = pos1.y - pos0.y;
+            variables["cz"] = pos1.z - pos0.z;
+            variables["ox"] = pos1.x - playerPos.x;
+            variables["oy"] = pos1.y - playerPos.y;
+            variables["oz"] = pos1.z - playerPos.z;
             pattern->setBlock(variables, f, blockSource, pos1);
         }
 

@@ -7,6 +7,9 @@
 namespace worldedit {
     SphereBrush::SphereBrush(unsigned short s, BlockPattern* bp, bool a) : Brush(s, bp), hollow(a) {}
     long long SphereBrush::set(Player* player, BlockInstance blockInstance) {
+        if (blockInstance == BlockInstance::Null) {
+            return -2;
+        }
         return SimpleBuilder::buildSphere(blockInstance.getPosition(), blockInstance.getDimensionId(),
                                           player->getXuid(), pattern, size, hollow,mask);
     }

@@ -9,7 +9,7 @@
 #include "store/BlockPattern.hpp"
 #include "filesys/download.h"
 #include "WorldEdit.h"
-#include "string/StringTool.h"
+#include "utils/StringTool.h"
 
 namespace worldedit {
     using ParamType = DynamicCommand::ParameterType;
@@ -24,8 +24,10 @@ namespace worldedit {
             {
                 // enums{enumName, {values...}}
                 {"sphere", {"sphere"}},
+                {"mix", {"mix"}},
                 {"cyl", {"cyl"}},
                 {"cube", {"cube"}},
+                {"color", {"color"}},
                 {"clipboard", {"clipboard"}},
                 {"smooth", {"smooth"}},
                 {"heightmap", {"heightmap"}},
@@ -41,15 +43,23 @@ namespace worldedit {
                 //   = enumOptions.empty() ? name:enumOptions)
                 ParamData("sphere", ParamType::Enum, "sphere"),
                 ParamData("cyl", ParamType::Enum, "cyl"),
+                ParamData("mix", ParamType::Enum, "mix"),
                 ParamData("cube", ParamType::Enum, "cube"),
+                ParamData("color", ParamType::Enum, "color"),
                 ParamData("clipboard", ParamType::Enum, "clipboard"),
                 ParamData("smooth", ParamType::Enum, "smooth"),
                 ParamData("heightmap", ParamType::Enum, "heightmap"),
                 ParamData("none", ParamType::Enum, "none"),
-                ParamData("args", ParamType::SoftEnum, true, "-aho", "-aho"),
+                ParamData("args", ParamType::SoftEnum, true, "-ahor", "-ahor"),
                 ParamData("block", ParamType::Block, "block"),
                 ParamData("blockPattern", ParamType::SoftEnum, "blockPattern"),
                 ParamData("radius", ParamType::Int, true, "radius"),
+                ParamData("Rf", ParamType::Float, "Rf"),
+                ParamData("Gf", ParamType::Float, "Gf"),
+                ParamData("Bf", ParamType::Float, "Bf"),
+                ParamData("mixBoxLerp", ParamType::Bool, true, "mixBoxLerp"),
+                ParamData("density", ParamType::Float, true, "density"),
+                ParamData("opacity", ParamType::Float, true, "opacity"),
                 ParamData("kernelsize", ParamType::Int, true, "kernelsize"),
                 ParamData("height", ParamType::Int, true, "height"),
                 ParamData("filename", ParamType::SoftEnum, "filename"),
@@ -64,6 +74,10 @@ namespace worldedit {
                 {"cube", "blockPattern", "radius", "args"},
                 {"sphere", "block", "radius", "args"},
                 {"sphere", "blockPattern", "radius", "args"},
+                {"mix", "radius", "density", "opacity", "mixBoxLerp"},
+                {"color", "Rf", "Gf", "Bf", "radius", "density", "opacity", "mixBoxLerp"},
+                {"color", "block", "radius", "density", "opacity", "mixBoxLerp"},
+                {"color", "blockPattern", "radius", "density", "opacity", "mixBoxLerp"},
                 {"cyl", "block", "radius", "height", "args"},
                 {"cyl", "blockPattern", "radius", "height", "args"},
                 {"smooth", "radius", "kernelsize"},
@@ -125,6 +139,22 @@ namespace worldedit {
                     }
                 }
 
+                float density = 0.8f;
+                float opacity = 1.0f;
+                float mixBoxLerp = true;
+
+                if (results["density"].isSet) {
+                    density = results["density"].get<float>();
+                }
+
+                if (results["opacity"].isSet) {
+                    opacity = results["opacity"].get<float>();
+                }
+
+                if (results["mixBoxLerp"].isSet) {
+                    mixBoxLerp = results["mixBoxLerp"].get<bool>();
+                }
+
                 std::string bps = "minecraft:air";
                 if (results["blockPattern"].isSet) {
                     bps = results["blockPattern"].get<std::string>();
@@ -136,6 +166,25 @@ namespace worldedit {
                     playerData.brushMap[brushName] =
                         new SphereBrush(radius, new BlockPattern(bps, xuid, nullptr), arg_h);
                     output.trSuccess("worldedit.brush.set.sphere", brushrName);
+                    return;
+                } else if (results["color"].isSet) {
+                   if (results["Rf"].isSet) {
+                        playerData.brushMap[brushName] = new ColorBrush(
+                            radius, density, opacity,
+                            mce::Color(results["Rf"].get<float>(), results["Gf"].get<float>(), results["Bf"].get<float>()),
+                            nullptr, mixBoxLerp);
+                    } else if (isColorHex(bps)) {
+                        playerData.brushMap[brushName] =
+                            new ColorBrush(radius, density, opacity, mce::Color(bps), nullptr, mixBoxLerp);
+                    } else {
+                        playerData.brushMap[brushName] = new ColorBrush(
+                            radius, density, opacity, mce::Color(), new BlockPattern(bps, xuid, nullptr), mixBoxLerp);
+                    }
+                    output.trSuccess("worldedit.brush.set.color", brushrName);
+                    return;
+                } else if (results["mix"].isSet) {
+                    playerData.brushMap[brushName] = new MixBrush(radius, density, opacity, mixBoxLerp);
+                    output.trSuccess("worldedit.brush.set.mix", brushrName);
                     return;
                 } else if (results["cube"].isSet) {
                     playerData.brushMap[brushName] = new CubeBrush(radius, new BlockPattern(bps, xuid, nullptr), arg_h);

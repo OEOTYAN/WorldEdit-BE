@@ -15,11 +15,14 @@ file(GLOB_RECURSE SRC_FILES_DIR
     ${PROJECT_SOURCE_DIR}/WorldEdit/*.h
     ${PROJECT_SOURCE_DIR}/lodepng/*.cpp
     ${PROJECT_SOURCE_DIR}/lodepng/*.h
+    ${PROJECT_SOURCE_DIR}/mixbox/*.cpp
+    ${PROJECT_SOURCE_DIR}/mixbox/*.h
     ${PROJECT_SOURCE_DIR}/FastNoise/*.h
 )
 include_directories(core)
 include_directories(FastNoise)
 include_directories(lodepng)
+include_directories(mixbox)
 include_directories(SDK/include/llapi)
 include_directories(SDK/include)
 include_directories(WorldEdit)

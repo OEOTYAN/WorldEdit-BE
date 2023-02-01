@@ -4,7 +4,7 @@
 #include "allCommand.hpp"
 #include <mc/Container.hpp>
 #include <mc/ListTag.hpp>
-#include "string/StringTool.h"
+#include "utils/StringTool.h"
 #include "mc/ItemStack.hpp"
 #include "WorldEdit.h"
 #include "region/Regions.h"

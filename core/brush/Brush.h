@@ -10,7 +10,6 @@ namespace worldedit {
        public:
         unsigned short size = 0;
         class BlockPattern* pattern = nullptr;
-        bool setted = false;
         std::string mask = "";
         bool needFace = false;
         bool lneedFace = false;

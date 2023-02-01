@@ -32,6 +32,5 @@ namespace worldedit {
     }
 
     Brush::Brush(unsigned short s, BlockPattern* bp) : size(s), pattern(bp) {
-        setted = true;
     }
 }  // namespace worldedit

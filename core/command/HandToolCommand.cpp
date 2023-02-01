@@ -3,7 +3,7 @@
 //
 #include "allCommand.hpp"
 #include "Global.h"
-#include "string/StringTool.h"
+#include "utils/StringTool.h"
 #include "mc/ItemStack.hpp"
 #include "WorldEdit.h"
 #include <mc/CommandBlockNameResult.hpp>

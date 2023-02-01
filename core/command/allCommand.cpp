@@ -7,7 +7,7 @@
 #include "filesys/file.h"
 #include "eval/Eval.h"
 #include "WorldEdit.h"
-#include "string/StringTool.h"
+#include "utils/StringTool.h"
 #include <mc/CommandBlockNameResult.hpp>
 
 #include "mc/Level.hpp"
@@ -34,7 +34,7 @@ namespace worldedit {
                 std::vector<std::string> imagesName;
                 getImageFiles(WE_DIR + "image", imagesName);
                 Global<CommandRegistry>->setSoftEnumValues("filename", imagesName);
-                setArg("-aho");
+                setArg("-ahor");
                 setArg("-anose");
                 setArg("-h");
                 setArg("-l");
@@ -50,33 +50,9 @@ namespace worldedit {
                 blocksName.push_back("#clipboard");
                 blocksName.push_back("#hand");
 
-                nlohmann::json blockList;
-                std::ifstream i(WE_DIR + "mappings/blocks.json");
-                i >> blockList;
-
-                for (auto& b : blockList.items()) {
-                    std::string key = b.key();
-                    if (!isBEBlock(key)) {
-                        Block* block = nullptr;
-                        if (b.value().contains("bedrock_states")) {
-                            std::string snbt = "{\"name\":\"";
-                            snbt += b.value()["bedrock_identifier"];
-                            snbt += "\",\"states\":";
-                            std::string states = b.value()["bedrock_states"].dump();
-                            stringReplace(states, ":false", ":0b");
-                            stringReplace(states, ":true", ":1b");
-                            snbt += states;
-                            snbt += "}";
-                            block = Block::create(CompoundTag::fromSNBT(snbt).get());
-                            // if (block == nullptr)
-                            //     std::cout << snbt << std::endl;
-                        } else {
-                            block = Block::create(b.value()["bedrock_identifier"], 0);
-                        }
-                        if (block != nullptr) {
-                            getJavaBlockMap()[key] = block;
-                            blocksName.push_back(key);
-                        }
+                for (auto& b : getJavaBlockMap()) {
+                    if (!isBEBlock(b.first)) {
+                        blocksName.push_back(b.first);
                     }
                 }
 
