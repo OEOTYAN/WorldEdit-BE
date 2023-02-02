@@ -3,6 +3,7 @@
 //
 #include "blur.hpp"
 #include "mc/Level.hpp"
+#include "I18nAPI.h"
 
 namespace worldedit {
 
@@ -11,7 +12,8 @@ namespace worldedit {
             {1},
             {0.25, 0.5, 0.25},
             {0.0625, 0.25, 0.375, 0.25, 0.0625},
-            {0.03125, 0.109375, 0.21875, 0.28125, 0.21875, 0.109375, 0.03125}};
+            {0.03125, 0.109375, 0.21875, 0.28125, 0.21875, 0.109375, 0.03125},
+        };
         std::vector<double> res;
         int ksize = size * 2 + 1;
         res.resize(size * 2 + 1);
@@ -36,12 +38,12 @@ namespace worldedit {
         }
         return res;
     }
-    std::vector<double> blur2D(std::vector<double> heightMap, int ksize, int sizex, int sizez) {
+    std::vector<double> blur2D(std::vector<double> const& heightMap, int ksize, int sizex, int sizez) {
         std::vector<double> res;
         try {
             res.resize(heightMap.size());
         } catch (std::bad_alloc) {
-            Level::broadcastText("Out of memory", TextType::RAW);
+            Level::broadcastText(tr("worldedit.memory.out"), TextType::RAW);
             return std::vector<double>(0);
         }
         auto kernel = gaussianKernel(ksize);
@@ -60,18 +62,18 @@ namespace worldedit {
                     res[x * sizez + z] = sum / sumk;
                 }
             }
-        heightMap.assign(res.begin(), res.end());
+        std::vector<double> tmp(res);
         for (int x = 0; x < sizex; ++x)
             for (int z = 0; z < sizez; ++z) {
                 double sum = 0;
                 double sumk = 0;
                 for (int k = -ksize; k <= ksize; k++)
-                    if (z + k >= 0 && z + k < sizez && heightMap[x * sizez + (z + k)] > -1e100) {
-                        sum += heightMap[x * sizez + (z + k)] * kernel[k + ksize];
+                    if (z + k >= 0 && z + k < sizez && tmp[x * sizez + (z + k)] > -1e100) {
+                        sum += tmp[x * sizez + (z + k)] * kernel[k + ksize];
                         sumk += kernel[k + ksize];
                     }
                 if (sumk <= 0) {
-                    res[x * sizez + z] = heightMap[x * sizez + z];
+                    res[x * sizez + z] = tmp[x * sizez + z];
                 } else {
                     res[x * sizez + z] = sum / sumk;
                 }

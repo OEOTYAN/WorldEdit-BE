@@ -4,14 +4,15 @@
 
 #include "CubeBrush.h"
 #include "builder/SimpleBuilder.h"
+#include "store/Patterns.h"
 
 namespace worldedit {
-    CubeBrush::CubeBrush(unsigned short s, BlockPattern* bp, bool a) : Brush(s, bp), hollow(a) {}
+    CubeBrush::CubeBrush(unsigned short s, std::unique_ptr<Pattern> bp, bool a) : Brush(s, std::move(bp)), hollow(a) {}
     long long CubeBrush::set(Player* player, BlockInstance blockInstance) {
         if (blockInstance == BlockInstance::Null) {
             return -2;
         }
         return SimpleBuilder::buildCube(blockInstance.getPosition(), blockInstance.getDimensionId(), player->getXuid(),
-                                        pattern, size, hollow,mask);
+                                        pattern.get(), size, hollow, mask);
     }
 }  // namespace worldedit

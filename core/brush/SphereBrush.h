@@ -8,7 +8,7 @@ namespace worldedit {
     class SphereBrush : public Brush {
        public:
         bool hollow = false;
-        SphereBrush(unsigned short, BlockPattern*, bool);
+        SphereBrush(unsigned short, std::unique_ptr<Pattern>, bool);
         long long set(Player* player, BlockInstance blockInstance) override;
     };
 }  // namespace worldedit

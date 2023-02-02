@@ -1,10 +1,10 @@
 //
-// Created by OEOTYAN on 2022/05/18.
+// Created by OEOTYAN on 2023/02/02.
 //
+
 #pragma once
 
-#include "Global.h"
-#include "eval/Eval.h"
+#include "Pattern.h"
 
 namespace worldedit {
     class Percents {
@@ -31,25 +31,27 @@ namespace worldedit {
 
         class Block* getBlock(const std::unordered_map<::std::string, double>& variables, class EvalFunctions& funcs);
     };
-    class BlockPattern {
+
+    class BlockListPattern : public Pattern {
        public:
         size_t blockNum = 0;
         std::vector<Percents> percents;
         std::vector<RawBlock> rawBlocks;
-        class Clipboard* clipboard = nullptr;
-        class PlayerData* playerData = nullptr;
-        BlockPos bias = {0, 0, 0};
-        BlockPattern(std::string str, std::string xuid = "", class Region* region = nullptr);
 
-        RawBlock* getRawBlock(const std::unordered_map<::std::string, double>& variables, class EvalFunctions& funcs);
+        BlockListPattern(std::string str, std::string xuid);
 
-        class Block* getBlock(const std::unordered_map<::std::string, double>& variables, class EvalFunctions& funcs);
+        class Block* getBlock(const std::unordered_map<::std::string, double>& variables,
+                              class EvalFunctions& funcs) override;
 
-        bool hasBlock(class Block* block);
+        bool hasBlock(class Block* block) override;
 
         bool setBlock(const std::unordered_map<::std::string, double>& variables,
                       class EvalFunctions& funcs,
                       BlockSource* blockSource,
-                      const BlockPos& pos);
+                      const BlockPos& pos) override;
+
+       private:
+        RawBlock* getRawBlock(const std::unordered_map<::std::string, double>& variables, class EvalFunctions& funcs);
     };
+
 }  // namespace worldedit

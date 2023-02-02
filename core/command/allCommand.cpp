@@ -16,8 +16,6 @@
 #include "mc/SpawnGroupData.hpp"
 #include "mc/SpawnGroupRegistry.hpp"
 
-#include "Nlohmann/json.hpp"
-
 namespace worldedit {
     void commandsSetup() {
         brushCommandSetup();
@@ -48,6 +46,8 @@ namespace worldedit {
                 std::vector<std::string> blocksName;
                 blocksName.clear();
                 blocksName.push_back("#clipboard");
+                blocksName.push_back("#lighten");
+                blocksName.push_back("#darken");
                 blocksName.push_back("#hand");
 
                 for (auto& b : getJavaBlockMap()) {

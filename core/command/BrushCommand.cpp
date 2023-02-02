@@ -6,7 +6,7 @@
 #include "brush/Brushs.h"
 #include <mc/ItemStack.hpp>
 #include <mc/CommandBlockNameResult.hpp>
-#include "store/BlockPattern.hpp"
+#include "store/Patterns.h"
 #include "filesys/download.h"
 #include "WorldEdit.h"
 #include "utils/StringTool.h"
@@ -32,6 +32,7 @@ namespace worldedit {
                 {"smooth", {"smooth"}},
                 {"heightmap", {"heightmap"}},
                 {"none", {"none"}},
+                {"flat", {"flat"}},
                 {"file", {"file"}},
                 {"link", {"link"}},
             },
@@ -48,6 +49,7 @@ namespace worldedit {
                 ParamData("color", ParamType::Enum, "color"),
                 ParamData("clipboard", ParamType::Enum, "clipboard"),
                 ParamData("smooth", ParamType::Enum, "smooth"),
+                ParamData("flat", ParamType::Enum, "flat"),
                 ParamData("heightmap", ParamType::Enum, "heightmap"),
                 ParamData("none", ParamType::Enum, "none"),
                 ParamData("args", ParamType::SoftEnum, true, "-ahor", "-ahor"),
@@ -73,6 +75,7 @@ namespace worldedit {
                 {"cube", "block", "radius", "args"},
                 {"cube", "blockPattern", "radius", "args"},
                 {"sphere", "block", "radius", "args"},
+                {"flat", "radius", "density"},
                 {"sphere", "blockPattern", "radius", "args"},
                 {"mix", "radius", "density", "opacity", "mixBoxLerp"},
                 {"color", "Rf", "Gf", "Bf", "radius", "density", "opacity", "mixBoxLerp"},
@@ -80,7 +83,7 @@ namespace worldedit {
                 {"color", "blockPattern", "radius", "density", "opacity", "mixBoxLerp"},
                 {"cyl", "block", "radius", "height", "args"},
                 {"cyl", "blockPattern", "radius", "height", "args"},
-                {"smooth", "radius", "kernelsize"},
+                {"smooth", "radius", "kernelsize","density"},
                 {"heightmap", "file", "filename", "radius", "height", "args"},
                 {"heightmap", "link", "url", "radius", "height", "args"},
                 {"none"},
@@ -139,7 +142,7 @@ namespace worldedit {
                     }
                 }
 
-                float density = 0.8f;
+                float density = 0.5f;
                 float opacity = 1.0f;
                 float mixBoxLerp = true;
 
@@ -164,11 +167,11 @@ namespace worldedit {
 
                 if (results["sphere"].isSet) {
                     playerData.brushMap[brushName] =
-                        new SphereBrush(radius, new BlockPattern(bps, xuid, nullptr), arg_h);
+                        new SphereBrush(radius, Pattern::createPattern(bps, xuid), arg_h);
                     output.trSuccess("worldedit.brush.set.sphere", brushrName);
                     return;
                 } else if (results["color"].isSet) {
-                   if (results["Rf"].isSet) {
+                    if (results["Rf"].isSet) {
                         playerData.brushMap[brushName] = new ColorBrush(
                             radius, density, opacity,
                             mce::Color(results["Rf"].get<float>(), results["Gf"].get<float>(), results["Bf"].get<float>()),
@@ -178,7 +181,7 @@ namespace worldedit {
                             new ColorBrush(radius, density, opacity, mce::Color(bps), nullptr, mixBoxLerp);
                     } else {
                         playerData.brushMap[brushName] = new ColorBrush(
-                            radius, density, opacity, mce::Color(), new BlockPattern(bps, xuid, nullptr), mixBoxLerp);
+                            radius, density, opacity, mce::Color(), Pattern::createPattern(bps, xuid), mixBoxLerp);
                     }
                     output.trSuccess("worldedit.brush.set.color", brushrName);
                     return;
@@ -186,13 +189,17 @@ namespace worldedit {
                     playerData.brushMap[brushName] = new MixBrush(radius, density, opacity, mixBoxLerp);
                     output.trSuccess("worldedit.brush.set.mix", brushrName);
                     return;
+                } else if (results["flat"].isSet) {
+                    playerData.brushMap[brushName] = new FlatBrush(radius, density);
+                    output.trSuccess("worldedit.brush.set.flat", brushrName);
+                    return;
                 } else if (results["cube"].isSet) {
-                    playerData.brushMap[brushName] = new CubeBrush(radius, new BlockPattern(bps, xuid, nullptr), arg_h);
+                    playerData.brushMap[brushName] = new CubeBrush(radius, Pattern::createPattern(bps, xuid), arg_h);
                     output.trSuccess("worldedit.brush.set.cube", brushrName);
                     return;
                 } else if (results["cyl"].isSet) {
                     playerData.brushMap[brushName] =
-                        new CylinderBrush(radius, new BlockPattern(bps, xuid, nullptr), height, arg_h);
+                        new CylinderBrush(radius, Pattern::createPattern(bps, xuid), height, arg_h);
                     output.trSuccess("worldedit.brush.set.cylinder", brushrName);
                     return;
                 } else if (results["clipboard"].isSet) {
@@ -205,7 +212,7 @@ namespace worldedit {
                     output.trSuccess("worldedit.brush.set.clipboard", brushrName);
                     return;
                 } else if (results["smooth"].isSet) {
-                    playerData.brushMap[brushName] = new SmoothBrush(radius, ksize);
+                    playerData.brushMap[brushName] = new SmoothBrush(radius, ksize,density);
                     output.trSuccess("worldedit.brush.set.smooth", brushrName);
                     return;
                 } else if (results["heightmap"].isSet) {

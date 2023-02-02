@@ -3,7 +3,7 @@
 //
 
 #include "ImageHeightmapBrush.h"
-#include "store/BlockPattern.hpp"
+#include "store/Patterns.h"
 #include "mc/Dimension.hpp"
 #include "WorldEdit.h"
 

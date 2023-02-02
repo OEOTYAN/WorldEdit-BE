@@ -39,15 +39,15 @@ namespace worldedit {
     class FloodFillTool : public Brush {
        public:
         bool needEdge;
-        FloodFillTool(BlockPattern* bp,int r,bool needEdge):Brush(r,bp),needEdge(needEdge){}
+        FloodFillTool(std::unique_ptr<Pattern> bp, unsigned short r, bool needEdge) : Brush(r, std::move(bp)), needEdge(needEdge) {}
         long long set(Player* player, class BlockInstance blockInstance) override;
     };
     class RepTool : public Brush {
        public:
-       class BlockNBTSet blockSet;
-       RepTool() = default;
-       long long lset(Player* player, class BlockInstance blockInstance) override;
-       long long set(Player* player, class BlockInstance blockInstance) override;
+        class BlockNBTSet blockSet;
+        RepTool() = default;
+        long long lset(Player* player, class BlockInstance blockInstance) override;
+        long long set(Player* player, class BlockInstance blockInstance) override;
     };
     class TreeTool : public Brush {
        public:

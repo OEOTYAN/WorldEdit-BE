@@ -1,7 +1,7 @@
 //
-// Created by OEOTYAN on 2022/06/10.
+// Created by OEOTYAN on 2023/02/02.
 //
-#include "BlockPattern.hpp"
+
 #include "BlockNBTSet.hpp"
 #include "mc/BlockPalette.hpp"
 #include "mc/Level.hpp"
@@ -14,11 +14,10 @@
 #include "mc/BlockPalette.hpp"
 #include "mc/StaticVanillaBlocks.hpp"
 #include "mc/Player.hpp"
-#include "region/Region.h"
 #include "utils/RNG.h"
+#include "BlockListPattern.h"
 
 namespace worldedit {
-
     double Percents::getPercents(const std::unordered_map<::std::string, double>& variables, EvalFunctions& funcs) {
         if (isNum) {
             return value;
@@ -55,8 +54,8 @@ namespace worldedit {
         return Block::create(blockName, mData);
     }
 
-    RawBlock* BlockPattern::getRawBlock(const std::unordered_map<::std::string, double>& variables,
-                                        EvalFunctions& funcs) {
+    RawBlock* BlockListPattern::getRawBlock(const std::unordered_map<::std::string, double>& variables,
+                                            EvalFunctions& funcs) {
         std::vector<double> weights;
         double total = 0;
         weights.resize(blockNum);
@@ -83,7 +82,8 @@ namespace worldedit {
         exBlock = const_cast<class Block*>(BedrockBlocks::mAir);
     }
 
-    Block* BlockPattern::getBlock(const std::unordered_map<::std::string, double>& variables, EvalFunctions& funcs) {
+    Block* BlockListPattern::getBlock(const std::unordered_map<::std::string, double>& variables,
+                                      EvalFunctions& funcs) {
         auto* rawBlock = getRawBlock(variables, funcs);
         if (rawBlock == nullptr) {
             return nullptr;
@@ -91,13 +91,10 @@ namespace worldedit {
         return rawBlock->getBlock(variables, funcs);
     }
 
-    bool BlockPattern::setBlock(const std::unordered_map<::std::string, double>& variables,
-                                EvalFunctions& funcs,
-                                BlockSource* blockSource,
-                                const BlockPos& pos) {
-        if (clipboard != nullptr) {
-            return clipboard->getSetLoop(pos - bias).setBlock(pos, blockSource, *playerData, funcs, variables);
-        }
+    bool BlockListPattern::setBlock(const std::unordered_map<::std::string, double>& variables,
+                                    EvalFunctions& funcs,
+                                    BlockSource* blockSource,
+                                    const BlockPos& pos) {
         auto* rawBlock = getRawBlock(variables, funcs);
         if (rawBlock == nullptr) {
             return false;
@@ -114,11 +111,13 @@ namespace worldedit {
         return true;
     }
 
-    BlockPattern::BlockPattern(std::string str, std::string xuid, Region* region) {
-        auto strSize = str.size();
+    BlockListPattern::BlockListPattern(std::string str, std::string xuid) : Pattern(xuid) {
+        type = Pattern::PatternType::BLOCKLIST;
 
+        auto strSize = str.size();
         playerData = &getPlayersData(xuid);
         if (str == "#hand") {
+            type = Pattern::PatternType::HAND;
             blockNum = 1;
             percents.resize(blockNum);
             rawBlocks.resize(blockNum);
@@ -128,46 +127,6 @@ namespace worldedit {
                 if (mBlock != nullptr) {
                     rawBlocks[0].block = const_cast<Block*>(mBlock);
                 }
-            }
-            return;
-
-        } else if (str.find("#clipboard") != std::string::npos) {
-            if (!playerData->clipboard.used) {
-                return;
-            }
-            clipboard = &playerData->clipboard;
-            if (region != nullptr) {
-                if (str.find("@c") != std::string::npos) {
-                    bias = region->getCenter().toBlockPos();
-                } else {
-                    bias = region->getBoundBox().min;
-                }
-            } else {
-                bias = BlockPos(0, 0, 0);
-            }
-            size_t mi = 0;
-            std::vector<int> poslist;
-            poslist.clear();
-            while (mi < strSize) {
-                if (str[mi] == '-' || isdigit(str[mi])) {
-                    auto head7 = mi;
-                    mi++;
-                    while (mi < strSize && (isdigit(str[mi]))) {
-                        mi++;
-                    }
-                    poslist.push_back(std::stoi(str.substr(head7, mi - head7)));
-                }
-                mi++;
-            }
-            auto poslistSize = poslist.size();
-            if (poslistSize > 0) {
-                bias.x -= poslist[0];
-            }
-            if (poslistSize > 1) {
-                bias.y -= poslist[1];
-            }
-            if (poslistSize > 2) {
-                bias.z -= poslist[2];
             }
             return;
         }
@@ -356,7 +315,7 @@ namespace worldedit {
         }
     }
 
-    bool BlockPattern::hasBlock(Block* block) {
+    bool BlockListPattern::hasBlock(Block* block) {
         for (auto& rawBlock : rawBlocks) {
             if (rawBlock.constBlock && (block->getTypeName() == rawBlock.blockIdfunc) &&
                 (rawBlock.blockData < 0 || rawBlock.blockData == block->getTileData())) {

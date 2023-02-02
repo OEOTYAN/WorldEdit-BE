@@ -3,7 +3,7 @@
 //
 #include "mc/ItemInstance.hpp"
 #include "allCommand.hpp"
-#include "store/BlockPattern.hpp"
+#include "store/Patterns.h"
 #include "store/BlockNBTSet.hpp"
 #include "eval/blur.hpp"
 #include "image/Image.h"
@@ -78,11 +78,11 @@ namespace worldedit {
                     } else if (results["block"].isSet) {
                         bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                     }
-                    BlockPattern blockPattern(bps, xuid, region);
+                    auto pattern = Pattern::createPattern(bps, xuid);
 
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
-                        i += blockPattern.setBlock(variables, f, blockSource, pos);
+                        i += pattern->setBlock(variables, f, blockSource, pos);
                     });
 
                     output.trSuccess("worldedit.set.success", i);
@@ -245,11 +245,11 @@ namespace worldedit {
                         } else if (results["block"].isSet) {
                             bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                         }
-                        BlockPattern blockPattern(bps, xuid, region);
+                        auto pattern = Pattern::createPattern(bps, xuid);
 
                         for (auto& pos : tmp) {
                             setFunction(variables, f, boundingBox, playerPos, pos, center);
-                            i += blockPattern.setBlock(variables, f, blockSource, pos);
+                            i += pattern->setBlock(variables, f, blockSource, pos);
                         }
 
                         output.trSuccess("worldedit.rope.success", i);
@@ -381,13 +381,13 @@ namespace worldedit {
                         } else if (results["block"].isSet) {
                             bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                         }
-                        BlockPattern blockPattern(bps, xuid, region);
+                        auto pattern = Pattern::createPattern(bps, xuid);
 
                         boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
                             setFunction(variables, f, boundingBox, playerPos, pos, center);
                             auto localPos = pos - boundingBox.min + 1;
                             if (tmp[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x]) {
-                                i += blockPattern.setBlock(variables, f, blockSource, pos);
+                                i += pattern->setBlock(variables, f, blockSource, pos);
                             }
                         });
 
@@ -466,7 +466,7 @@ namespace worldedit {
                     } else if (results["block"].isSet) {
                         bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                     }
-                    BlockPattern blockPattern(bps, xuid, region);
+                    auto pattern = Pattern::createPattern(bps, xuid);
 
                     EvalFunctions f;
                     f.setbs(blockSource);
@@ -491,7 +491,7 @@ namespace worldedit {
                             auto* loft = static_cast<LoftRegion*>(region);
                             loft->forEachBlockInLines(static_cast<int>(radius), !arg_h, [&](const BlockPos& pos) {
                                 setFunction(variables, f, boundingBox, playerPos, pos, center);
-                                i += blockPattern.setBlock(variables, f, blockSource, pos);
+                                i += pattern->setBlock(variables, f, blockSource, pos);
                             });
 
                         } catch (std::bad_alloc) {
@@ -580,7 +580,7 @@ namespace worldedit {
                                 setFunction(variables, f, boundingBox, playerPos, pos, center);
                                 auto localPos = pos - boundingBox.min + 1;
                                 if (tmp[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x]) {
-                                    i += blockPattern.setBlock(variables, f, blockSource, pos);
+                                    i += pattern->setBlock(variables, f, blockSource, pos);
                                 }
                             });
                         } catch (std::bad_alloc) {
@@ -771,13 +771,13 @@ namespace worldedit {
                         } else if (results["block"].isSet) {
                             bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                         }
-                        BlockPattern blockPattern(bps, xuid, region);
+                        auto pattern = Pattern::createPattern(bps, xuid);
 
                         boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
                             setFunction(variables, f, boundingBox, playerPos, pos, center);
                             auto localPos = pos - boundingBox.min + 1;
                             if (tmp[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x]) {
-                                i += blockPattern.setBlock(variables, f, blockSource, pos);
+                                i += pattern->setBlock(variables, f, blockSource, pos);
                             }
                         });
 
@@ -853,12 +853,12 @@ namespace worldedit {
                     } else if (results["blockBefore"].isSet) {
                         bps2 = results["blockBefore"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                     }
-                    BlockPattern blockPattern(bps, xuid, region);
-                    BlockPattern blockFilter(bps2);
+                    auto pattern = Pattern::createPattern(bps, xuid);
+                    auto blockFilter = Pattern::createPattern(bps2, xuid);
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
-                        if (blockFilter.hasBlock(const_cast<Block*>(&blockSource->getBlock(pos)))) {
-                            i += blockPattern.setBlock(variables, f, blockSource, pos);
+                        if (blockFilter->hasBlock(const_cast<Block*>(&blockSource->getBlock(pos)))) {
+                            i += pattern->setBlock(variables, f, blockSource, pos);
                         }
                     });
 
@@ -922,10 +922,10 @@ namespace worldedit {
                     } else if (results["block"].isSet) {
                         bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                     }
-                    BlockPattern blockPattern(bps, xuid, region);
+                    auto pattern = Pattern::createPattern(bps, xuid);
                     boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
-                        blockPattern.setBlock(variables, f, blockSource, pos);
+                        pattern->setBlock(variables, f, blockSource, pos);
                     });
 
                     output.trSuccess("worldedit.center.success");
@@ -1163,10 +1163,10 @@ namespace worldedit {
                     } else if (results["block"].isSet) {
                         bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                     }
-                    BlockPattern blockPattern(bps, xuid, region);
+                    auto pattern = Pattern::createPattern(bps, xuid);
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
-                        blockPattern.setBlock(variables, f, blockSource, pos);
+                        pattern->setBlock(variables, f, blockSource, pos);
                     });
 
                     region->forEachBlockInRegion([&](const BlockPos& posk) {
@@ -1300,12 +1300,12 @@ namespace worldedit {
                         } else if (results["block"].isSet) {
                             bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                         }
-                        BlockPattern blockPattern(bps, xuid, region);
+                        auto pattern = Pattern::createPattern(bps, xuid);
                         region->forEachBlockInRegion([&](const BlockPos& pos) {
                             auto localPos = pos - boundingBox.min + 1;
                             if (tmp[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x]) {
                                 setFunction(variables, f, boundingBox, playerPos, pos, center);
-                                i += blockPattern.setBlock(variables, f, blockSource, pos);
+                                i += pattern->setBlock(variables, f, blockSource, pos);
                             }
                         });
 
@@ -1369,18 +1369,18 @@ namespace worldedit {
                     } else if (results["block"].isSet) {
                         bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                     }
-                    BlockPattern blockPattern(bps, xuid, region);
+                    auto pattern = Pattern::createPattern(bps, xuid);
                     if (region->regionType == RegionType::LOFT) {
                         auto* loft = static_cast<LoftRegion*>(region);
                         loft->forEachBlockInLines(2, true, [&](const BlockPos& pos) {
                             setFunction(variables, f, boundingBox, playerPos, pos, center);
-                            i += blockPattern.setBlock(variables, f, blockSource, pos);
+                            i += pattern->setBlock(variables, f, blockSource, pos);
                         });
                         if (!(loft->circle)) {
                             loft->forEachBlockInLines(2, false, [&](const BlockPos& pos) {
                                 setFunction(variables, f, boundingBox, playerPos, pos, center);
 
-                                i += blockPattern.setBlock(variables, f, blockSource, pos);
+                                i += pattern->setBlock(variables, f, blockSource, pos);
                             });
                         }
                     } else {
@@ -1395,7 +1395,7 @@ namespace worldedit {
                                 }
                             }
                             if (counts < 6) {
-                                i += blockPattern.setBlock(variables, f, blockSource, pos);
+                                i += pattern->setBlock(variables, f, blockSource, pos);
                             }
                         });
                     }
@@ -1455,7 +1455,7 @@ namespace worldedit {
                     } else if (results["block"].isSet) {
                         bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                     }
-                    BlockPattern blockPattern(bps, xuid, region);
+                    auto pattern = Pattern::createPattern(bps, xuid);
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
                         int counts = 0;
@@ -1463,7 +1463,7 @@ namespace worldedit {
                             counts += region->contains(calPos);
                         }
                         if (counts < 6) {
-                            i += blockPattern.setBlock(variables, f, blockSource, pos);
+                            i += pattern->setBlock(variables, f, blockSource, pos);
                         }
                     });
 
@@ -1522,10 +1522,10 @@ namespace worldedit {
                     } else if (results["block"].isSet) {
                         bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                     }
-                    BlockPattern blockPattern(bps, xuid, region);
+                    auto pattern = Pattern::createPattern(bps, xuid);
                     region->forTopBlockInRegion([&](const BlockPos& pos) {
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
-                        i += blockPattern.setBlock(variables, f, blockSource, pos);
+                        i += pattern->setBlock(variables, f, blockSource, pos);
                     });
                     output.trSuccess("worldedit.overlay.success", i);
                 } else {
@@ -1686,12 +1686,12 @@ namespace worldedit {
                         } else if (results["block"].isSet) {
                             bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                         }
-                        BlockPattern blockPattern(bps, xuid, region);
+                        auto pattern = Pattern::createPattern(bps, xuid);
                         region->forEachBlockInRegion([&](const BlockPos& pos) {
                             auto localPos = pos - boundingBox.min + 1;
                             setFunction(variables, f, boundingBox, playerPos, pos, center);
                             if (tmp[(localPos.y + sizeDim.y * localPos.z) * sizeDim.x + localPos.x]) {
-                                i += blockPattern.setBlock(variables, f, blockSource, pos);
+                                i += pattern->setBlock(variables, f, blockSource, pos);
                             }
                         });
                         output.trSuccess("worldedit.hollow.success", i);
@@ -2079,15 +2079,16 @@ namespace worldedit {
                         double minDist = DBL_MAX;
                         Block* minBlock = Block::create("minecraft:air", 0);
                         for (auto& i : blockColorMap) {
-                            if(i.first.a==1){
-                            auto dst = i.first.distanceTo(color);
-                            if (dst < minDist) {
-                                minDist = dst;
-                                minBlock = i.second;
-                            }}
+                            if (i.first.a == 1) {
+                                auto dst = i.first.distanceTo(color);
+                                if (dst < minDist) {
+                                    minDist = dst;
+                                    minBlock = i.second;
+                                }
+                            }
                         }
                         if (RNG::rand<double>() <= color.a) {
-                            i += playerData.setBlockSimple(blockSource, f, variables, pos,minBlock);
+                            i += playerData.setBlockSimple(blockSource, f, variables, pos, minBlock);
                         }
                     });
 

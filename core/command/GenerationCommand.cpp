@@ -3,7 +3,7 @@
 //
 #include "allCommand.hpp"
 #include "builder/SimpleBuilder.h"
-#include "store/BlockPattern.hpp"
+#include "store/Patterns.h"
 #include "WorldEdit.h"
 #include <mc/CommandBlockNameResult.hpp>
 #include "region/Regions.h"
@@ -58,9 +58,8 @@ namespace worldedit {
                 } else if (results["block"].isSet) {
                     bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                 }
-                CuboidRegion region(BoundingBox(pos, pos), dimID);
-                BlockPattern blockPattern(bps, xuid, &region);
-                long long i = SimpleBuilder::buildCylinder(pos, dimID, xuid, &blockPattern, radius, height, arg_h);
+                auto pattern = Pattern::createPattern(bps, xuid);
+                long long i = SimpleBuilder::buildCylinder(pos, dimID, xuid, pattern.get(), radius, height, arg_h);
                 i = std::max(0ll, i);
                 output.trSuccess("worldedit.set.success", i);
             },
@@ -97,9 +96,8 @@ namespace worldedit {
                 } else if (results["block"].isSet) {
                     bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                 }
-                CuboidRegion region(BoundingBox(pos, pos), dimID);
-                BlockPattern blockPattern(bps, xuid, &region);
-                long long i = SimpleBuilder::buildCylinder(pos, dimID, xuid, &blockPattern, radius, height, arg_h);
+                auto pattern = Pattern::createPattern(bps, xuid);
+                long long i = SimpleBuilder::buildCylinder(pos, dimID, xuid, pattern.get(), radius, height, arg_h);
                 i = std::max(0ll, i);
                 output.trSuccess("worldedit.set.success", i);
             },
@@ -143,9 +141,8 @@ namespace worldedit {
                 } else if (results["block"].isSet) {
                     bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                 }
-                CuboidRegion region(BoundingBox(pos, pos), dimID);
-                BlockPattern blockPattern(bps, xuid, &region);
-                long long i = SimpleBuilder::buildSphere(pos, dimID, xuid, &blockPattern, radius, arg_h);
+                auto pattern = Pattern::createPattern(bps, xuid);
+                long long i = SimpleBuilder::buildSphere(pos, dimID, xuid, pattern.get(), radius, arg_h);
                 i = std::max(0ll, i);
                 output.trSuccess("worldedit.set.success", i);
             },
@@ -178,9 +175,8 @@ namespace worldedit {
                 } else if (results["block"].isSet) {
                     bps = results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName();
                 }
-                CuboidRegion region(BoundingBox(pos, pos), dimID);
-                BlockPattern blockPattern(bps, xuid, &region);
-                long long i = SimpleBuilder::buildSphere(pos, dimID, xuid, &blockPattern, radius, arg_h);
+                auto pattern = Pattern::createPattern(bps, xuid);
+                long long i = SimpleBuilder::buildSphere(pos, dimID, xuid, pattern.get(), radius, arg_h);
                 i = std::max(0ll, i);
                 output.trSuccess("worldedit.set.success", i);
             },

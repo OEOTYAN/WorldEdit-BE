@@ -1,19 +1,19 @@
 //
-// Created by OEOTYAN on 2022/06/10.
+// Created by OEOTYAN on 2023/02/03.
 //
 
 #include "Global.h"
-#include "SmoothBrush.h"
-#include "utils/ColorTool.h"
-#include "store/Patterns.h"
+#include "FlatBrush.h"
+#include "mc/Level.hpp"
 #include "WorldEdit.h"
 #include "mc/Dimension.hpp"
+#include "utils/ColorTool.h"
 #include "region/CuboidRegion.h"
-#include "eval/blur.hpp"
 
 namespace worldedit {
-    SmoothBrush::SmoothBrush(unsigned short s, int a,float d) : Brush(s, nullptr), ksize(a),density(d) {}
-    long long SmoothBrush::set(Player* player, BlockInstance blockInstance) {
+    FlatBrush::FlatBrush(unsigned short size, float density) : Brush(size, nullptr), density(density) {}
+
+    long long FlatBrush::set(Player* player, BlockInstance blockInstance) {
         if (blockInstance == BlockInstance::Null) {
             return -2;
         }
@@ -39,13 +39,16 @@ namespace worldedit {
                 if (topy >= range.min && topy <= range.max) {
                     int cx = x - box.min.x;
                     int cz = z - box.min.z;
-                    heightMap[cx * sizez + cz] = topy + 0.5;
+                    heightMap[cx * sizez + cz] =
+                        std::lerp(topy + 0.5, pos.y + 0.5,
+                                  static_cast<double>(smoothBrushAlpha(
+                                      static_cast<float>(sqrt(pow2(x - pos.x) + pow2(z - pos.z))), density, 1, size)));
                     box.merge(BlockPos(x, topy, z));
                 }
             }
         box.min.y = std::max(static_cast<int>(range.min), box.min.y - 1);
         box.max.y = std::min(static_cast<int>(range.max), box.max.y + 1);
-
+        
         if (playerData.maxHistoryLength > 0) {
             auto history = playerData.getNextHistory();
             *history = Clipboard(box.max - box.min);
@@ -58,19 +61,8 @@ namespace worldedit {
             });
         }
 
-        auto smoothedHeightMap = blur2D(heightMap, ksize, sizex, sizez);
-
-        for (int x = box.min.x; x <= box.max.x; ++x)
-            for (int z = box.min.z; z <= box.max.z; ++z) {
-                int cx = x - box.min.x;
-                int cz = z - box.min.z;
-                smoothedHeightMap[cx * sizez + cz] =
-                    std::lerp(heightMap[cx * sizez + cz], smoothedHeightMap[cx * sizez + cz],
-                              static_cast<double>(smoothBrushAlpha(
-                                  static_cast<float>(sqrt(pow2(x - pos.x) + pow2(z - pos.z))), density, 1, size)));
-            }
-
-        CuboidRegion(box, dimID).applyHeightMap(smoothedHeightMap,xuid, mask);
+        // logger().debug("applyHeightMap");
+        CuboidRegion(box, dimID).applyHeightMap(heightMap, xuid, mask);
 
         return -2;
     }

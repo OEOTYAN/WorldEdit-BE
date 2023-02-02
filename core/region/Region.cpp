@@ -104,7 +104,7 @@ namespace worldedit {
         return res;
     }
 
-    void Region::applyHeightMap(const std::vector<double>& data, std::string mask, std::string xuid) {
+    void Region::applyHeightMap(const std::vector<double>& data, std::string xuid, std::string mask) {
         auto& playerData = getPlayersData(xuid);
         auto* player = Global<Level>->getPlayer(xuid);
         int sizex = boundingBox.max.x - boundingBox.min.x + 1;

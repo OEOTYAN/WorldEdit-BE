@@ -7,7 +7,7 @@
 #include "WorldEdit.h"
 #include "mc/Sapling.hpp"
 #include "mc/BlockInstance.hpp"
-#include "store/BlockPattern.hpp"
+#include "store/Patterns.h"
 namespace worldedit {
 
     ////////

@@ -82,21 +82,7 @@ namespace worldedit {
             return -2;
         }
 
-        mce::Color finalColor;
-        int colorCount = 0;
-
-        for (auto& c : bColor) {
-            if (colorCount != 0) {
-                int lastColorCount = colorCount;
-                colorCount += c.second;
-                finalColor = useMixboxLerp
-                                 ? mixboxLerp(c.first, finalColor, static_cast<float>(lastColorCount) / colorCount)
-                                 : linearLerp(c.first, finalColor, static_cast<float>(lastColorCount) / colorCount);
-            } else {
-                colorCount = c.second;
-                finalColor = c.first;
-            }
-        }
+        mce::Color finalColor = useMixboxLerp ? mixboxAverage(bColor) : linearAverage(bColor);
 
         worldedit::Clipboard* history = nullptr;
 

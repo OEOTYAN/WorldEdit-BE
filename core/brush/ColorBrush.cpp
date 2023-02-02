@@ -8,19 +8,18 @@
 #include "WorldEdit.h"
 #include "utils/ColorTool.h"
 #include "mc/StaticVanillaBlocks.hpp"
-#include "mc/GrassBlock.hpp"
 #include "mc/BlockSource.hpp"
 #include "mc/BlockInstance.hpp"
-#include "store/BlockPattern.hpp"
+#include "store/Patterns.h"
 
 namespace worldedit {
     ColorBrush::ColorBrush(unsigned short size,
                            float density,
                            float opacity,
                            mce::Color color,
-                           class BlockPattern* bp,
+                           std::unique_ptr<Pattern> bp,
                            bool mixbox)
-        : Brush(size, bp), density(density), opacity(opacity), color(color), useMixboxLerp(mixbox) {}
+        : Brush(size, std::move(bp)), density(density), opacity(opacity), color(color), useMixboxLerp(mixbox) {}
 
     long long ColorBrush::set(Player* player, BlockInstance blockInstance) {
         long long iter = 0;
@@ -129,24 +128,14 @@ namespace worldedit {
                 if (cmap.find(block) != cmap.end()) {
                     hereColor = cmap[block];
                 }
-                //  else if (block == StaticVanillaBlocks::mGrass) {
-                //     mce::Color tmpColor =
-                //         dynamic_cast<GrassBlock*>(const_cast<BlockLegacy*>(block->getLegacyBlockPtr()))
-                //             ->getMapColor(*blockSource, pos1, *block);
-                //     if (tmpColor.a != 0) {
-                //         hereColor = cmap[block];
-                //     }
-                // }
-                // logger().debug("hereColor {}", finalColor.toHexString());
-                // logger().debug("finalColor {}", finalColor.toHexString());
+
                 hereColor = useMixboxLerp ? mixboxLerp(hereColor, finalColor,
                                                        smoothBrushAlpha(static_cast<float>(pos1.distanceTo(pos0)),
                                                                         density, opacity, size))
                                           : linearLerp(hereColor, finalColor,
                                                        smoothBrushAlpha(static_cast<float>(pos1.distanceTo(pos0)),
                                                                         density, opacity, size));
-                // logger().debug("hereColor {}", hereColor.toHexString());
-                // logger().debug("minDist");
+
                 double minDist = DBL_MAX;
                 Block* minBlock = nullptr;
                 for (auto& i : getColorBlockMap()) {
@@ -158,8 +147,7 @@ namespace worldedit {
                         }
                     }
                 }
-                // logger().debug("{}", (unsigned long long)(minBlock));
-                // logger().debug("setBlockSimple");
+
                 iter += playerData.setBlockSimple(blockSource, f, variables, pos1, minBlock);
             });
         }

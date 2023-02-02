@@ -8,8 +8,9 @@
 #include <mc/Player.hpp>
 #include <mc/ChunkPos.hpp>
 #include "FastNoiseLite.h"
+#include "utils/StringTool.h"
 #include "utils/RNG.h"
-#include "utils/RNG.h"
+#include "I18nAPI.h"
 
 #define tryGetParameter(size, params, n, f, t) \
     if (size >= n) {                           \
@@ -62,7 +63,7 @@ namespace worldedit {
             posMap.resize(size.x * size.y * size.z + 1);
             solidMap = std::vector<long long>(size.x * size.y * size.z + 1, 0);
         } catch (std::bad_alloc) {
-            Level::broadcastText("Out of memory", TextType::RAW);
+            Level::broadcastText(tr("worldedit.memory.out"), TextType::RAW);
             return;
         }
         posMap[size.x * size.y * size.z] = {0, 0, 0};
@@ -329,7 +330,8 @@ namespace worldedit {
                 if (blockdataInitialized) {
                     auto& dimension = blockSource->getDimensionConst();
                     if (size == 1) {
-                        return nullptr != dimension.fetchAnyInteractablePlayer(here.toVec3(), static_cast<float>(params[0]));
+                        return nullptr !=
+                               dimension.fetchAnyInteractablePlayer(here.toVec3(), static_cast<float>(params[0]));
                     } else if (size == 4) {
                         return nullptr != dimension.fetchAnyInteractablePlayer(
                                               here.toVec3() + Vec3(params[1], params[2], params[3]),
@@ -345,7 +347,7 @@ namespace worldedit {
                     if (size == 1) {
                         tmpVec = here.toVec3();
                     } else if (size == 4) {
-                        tmpVec = here.toVec3()+ Vec3(params[1], params[2], params[3]);
+                        tmpVec = here.toVec3() + Vec3(params[1], params[2], params[3]);
                     }
                     float playerDistance = FLT_MAX;
                     dimension.forEachPlayer([&](Player& player) {
@@ -622,14 +624,14 @@ namespace worldedit {
             default:
                 if (blockdataInitialized) {
                     std::string sname(name);
-                    if (sname.substr(0, 3) == "is_") {
+                    if (frontIs(sname, "is_")) {
                         if (sname.find(":") == std::string::npos) {
                             sname = "minecraft:" + sname.substr(3);
                         } else {
                             sname = sname.substr(3);
                         }
                         return sname == blockSource->getBlock(tmp).getTypeName();
-                    } else if (sname.substr(0, 4) == "has_") {
+                    } else if (frontIs(sname, "has_")) {
                         sname = sname.substr(4);
                         return blockSource->getBlock(tmp).getTypeName().find(sname) != std::string::npos;
                     }

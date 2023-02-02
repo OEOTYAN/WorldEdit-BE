@@ -3,11 +3,14 @@
 //
 
 #pragma once
+
 #include "Global.h"
 
 namespace worldedit {
     mce::Color linearLerp(const mce::Color& k, const mce::Color& l, float m);
     mce::Color mixboxLerp(const mce::Color& k, const mce::Color& l, float m);
+    mce::Color linearAverage(std::unordered_map<mce::Color, int> colorWithWeight);
+    mce::Color mixboxAverage(std::unordered_map<mce::Color, int> colorWithWeight);
 
     float clamp(float x, float lowerlimit, float upperlimit);
 

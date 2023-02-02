@@ -8,13 +8,13 @@
 #include "WorldEdit.h"
 #include <mc/Dimension.hpp>
 #include "eval/Eval.h"
-#include "store/BlockPattern.hpp"
+#include "store/Patterns.h"
 namespace worldedit {
 
     long long SimpleBuilder::buildCylinder(BlockPos pos,
                                            int dim,
                                            std::string xuid,
-                                           BlockPattern* blockPattern,
+                                           Pattern* pattern,
                                            unsigned short radius,
                                            int height,
                                            bool hollow,
@@ -25,8 +25,8 @@ namespace worldedit {
             pos.y += height;
             height = -height;
         }
-
-        auto range = Global<Level>->getPlayer(dim)->getDimension().getHeightRange();
+        auto range =
+            reinterpret_cast<Dimension*>(Global<Level>->getDimension(dim).mHandle.lock().get())->getHeightRange();
 
         if (pos.y < range.min) {
             pos.y = range.min;
@@ -77,92 +77,36 @@ namespace worldedit {
             });
         }
 
-        BlockPos blockPos;
-
         double R = radius;
         R += 0.5;
         int X, Y, p;
         X = 0;
         Y = (int)R;
         p = (int)(3 - 2 * R);
+
+        std::unordered_set<BlockPos> bset;
+
         for (; X <= Y; X++) {
             int k = hollow ? Y : X;
             for (int Yi = k; Yi <= Y; Yi++) {
-                for (int y = 0; y < height; y++) {
-                    blockPos = pos;
-                    blockPos += {X, y, Yi};
-
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-
-                    maskLambda(f, variables, [&]() mutable {
-                        blockPattern->setBlock(variables, f, blockSource, blockPos);
-                        ++i;
-                    });
-
-                    blockPos.z = pos.z - Yi;
-
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-
-                    maskLambda(f, variables, [&]() mutable {
-                        blockPattern->setBlock(variables, f, blockSource, blockPos);
-                        ++i;
-                    });
-
-                    blockPos.x = pos.x - X;
-
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-
-                    maskLambda(f, variables, [&]() mutable {
-                        blockPattern->setBlock(variables, f, blockSource, blockPos);
-                        ++i;
-                    });
-
-                    blockPos.z = pos.z + Yi;
-
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-
-                    maskLambda(f, variables, [&]() mutable {
-                        blockPattern->setBlock(variables, f, blockSource, blockPos);
-                        ++i;
-                    });
-
-                    blockPos.x = pos.x + Yi;
-                    blockPos.z = pos.z + X;
-
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-
-                    maskLambda(f, variables, [&]() mutable {
-                        blockPattern->setBlock(variables, f, blockSource, blockPos);
-                        ++i;
-                    });
-
-                    blockPos.z = pos.z - X;
-
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-
-                    maskLambda(f, variables, [&]() mutable {
-                        blockPattern->setBlock(variables, f, blockSource, blockPos);
-                        ++i;
-                    });
-
-                    blockPos.x = pos.x - Yi;
-
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-
-                    maskLambda(f, variables, [&]() mutable {
-                        blockPattern->setBlock(variables, f, blockSource, blockPos);
-                        ++i;
-                    });
-
-                    blockPos.z = pos.z + X;
-
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-
-                    maskLambda(f, variables, [&]() mutable {
-                        blockPattern->setBlock(variables, f, blockSource, blockPos);
-                        ++i;
-                    });
-                }
+                BlockPos blockPos = pos;
+                blockPos += {X, 0, Yi};
+                bset.insert(blockPos);
+                blockPos.z = pos.z - Yi;
+                bset.insert(blockPos);
+                blockPos.x = pos.x - X;
+                bset.insert(blockPos);
+                blockPos.z = pos.z + Yi;
+                bset.insert(blockPos);
+                blockPos.x = pos.x + Yi;
+                blockPos.z = pos.z + X;
+                bset.insert(blockPos);
+                blockPos.z = pos.z - X;
+                bset.insert(blockPos);
+                blockPos.x = pos.x - Yi;
+                bset.insert(blockPos);
+                blockPos.z = pos.z + X;
+                bset.insert(blockPos);
             }
             if (p >= 0) {
                 p += 4 * (X - Y) + 10;
@@ -171,6 +115,12 @@ namespace worldedit {
                 p += 4 * X + 6;
             }
         }
+        for (auto b : bset)
+            for (int y = 0; y < height; y++) {
+                setFunction(variables, f, box, playerPos, b, pos.toVec3() + 0.5f);
+                maskLambda(f, variables, [&]() mutable { i += pattern->setBlock(variables, f, blockSource, b); });
+                b.y += 1;
+            }
 
         return i;
     }
@@ -178,7 +128,7 @@ namespace worldedit {
     long long SimpleBuilder::buildSphere(BlockPos pos,
                                          int dim,
                                          std::string xuid,
-                                         BlockPattern* blockPattern,
+                                         Pattern* pattern,
                                          unsigned short radius,
                                          bool hollow,
                                          std::string mask) {
@@ -226,8 +176,7 @@ namespace worldedit {
             });
         }
 
-        BlockPos blockPos;
-
+        std::unordered_set<BlockPos> bset;
         double R = radius + 0.5;
         double nextXn = 0;
         for (int x = 0; x <= radius; ++x) {
@@ -250,81 +199,31 @@ namespace worldedit {
                             continue;
                         }
                     }
-                    blockPos = pos;
+
+                    BlockPos blockPos = pos;
                     blockPos += {x, y, z};
-
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-
-                    maskLambda(f, variables, [&]() mutable {
-                        blockPattern->setBlock(variables, f, blockSource, blockPos);
-                        ++i;
-                    });
-
+                    bset.insert(blockPos);
                     blockPos.y = pos.y - y;
-
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-
-                    maskLambda(f, variables, [&]() mutable {
-                        blockPattern->setBlock(variables, f, blockSource, blockPos);
-                        ++i;
-                    });
-
+                    bset.insert(blockPos);
                     blockPos.z = pos.z - z;
-
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-
-                    maskLambda(f, variables, [&]() mutable {
-                        blockPattern->setBlock(variables, f, blockSource, blockPos);
-                        ++i;
-                    });
-
+                    bset.insert(blockPos);
                     blockPos.x = pos.x - x;
-
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-
-                    maskLambda(f, variables, [&]() mutable {
-                        blockPattern->setBlock(variables, f, blockSource, blockPos);
-                        ++i;
-                    });
-
+                    bset.insert(blockPos);
                     blockPos.y = pos.y + y;
-
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-
-                    maskLambda(f, variables, [&]() mutable {
-                        blockPattern->setBlock(variables, f, blockSource, blockPos);
-                        ++i;
-                    });
-
+                    bset.insert(blockPos);
                     blockPos.x = pos.x + x;
-
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-
-                    maskLambda(f, variables, [&]() mutable {
-                        blockPattern->setBlock(variables, f, blockSource, blockPos);
-                        ++i;
-                    });
-
+                    bset.insert(blockPos);
                     blockPos.x = pos.x - x;
                     blockPos.z = pos.z + z;
-
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-
-                    maskLambda(f, variables, [&]() mutable {
-                        blockPattern->setBlock(variables, f, blockSource, blockPos);
-                        ++i;
-                    });
-
+                    bset.insert(blockPos);
                     blockPos.y = pos.y - y;
-
-                    setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
-
-                    maskLambda(f, variables, [&]() mutable {
-                        blockPattern->setBlock(variables, f, blockSource, blockPos);
-                        ++i;
-                    });
+                    bset.insert(blockPos);
                 }
             }
+        }
+        for (auto& b : bset) {
+            setFunction(variables, f, box, playerPos, b, pos.toVec3() + 0.5f);
+            maskLambda(f, variables, [&]() mutable { i += pattern->setBlock(variables, f, blockSource, b); });
         }
         return i;
     }
@@ -332,7 +231,7 @@ namespace worldedit {
     long long SimpleBuilder::buildCube(BlockPos pos,
                                        int dim,
                                        std::string xuid,
-                                       BlockPattern* blockPattern,
+                                       Pattern* pattern,
                                        unsigned short size,
                                        bool hollow,
                                        std::string mask) {
@@ -386,7 +285,7 @@ namespace worldedit {
                 setFunction(variables, f, box, playerPos, blockPos, pos.toVec3() + 0.5f);
 
                 maskLambda(f, variables, [&]() mutable {
-                    blockPattern->setBlock(variables, f, blockSource, blockPos);
+                    pattern->setBlock(variables, f, blockSource, blockPos);
                     ++i;
                 });
             }

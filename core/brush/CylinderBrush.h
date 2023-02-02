@@ -9,7 +9,7 @@ namespace worldedit {
        public:
         bool hollow = false;
         int height = 0;
-        CylinderBrush(unsigned short, BlockPattern*, int, bool);
+        CylinderBrush(unsigned short, std::unique_ptr<Pattern>, int, bool);
         long long set(Player* player, BlockInstance blockInstance) override;
     };
 }  // namespace worldedit

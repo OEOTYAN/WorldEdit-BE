@@ -3,7 +3,7 @@
 //
 
 #include "ClipboardBrush.h"
-#include "store/BlockPattern.hpp"
+#include "store/Patterns.h"
 #include "store/BlockNBTSet.hpp"
 #include <mc/Player.hpp>
 #include "WorldEdit.h"

@@ -4,11 +4,9 @@
 #include "Brush.h"
 #include <mc/BlockInstance.hpp>
 #include <mc/Player.hpp>
-#include "store/BlockPattern.hpp"
+#include "store/Patterns.h"
 namespace worldedit {
     Brush::~Brush() {
-        delete pattern;
-        pattern = nullptr;
     }
     long long Brush::set(Player* player, ::BlockInstance blockInstance) {
         return -2;
@@ -31,6 +29,5 @@ namespace worldedit {
         return false;
     }
 
-    Brush::Brush(unsigned short s, BlockPattern* bp) : size(s), pattern(bp) {
-    }
+    Brush::Brush(unsigned short s, std::unique_ptr<Pattern> p) : size(s), pattern(std::move(p)) {}
 }  // namespace worldedit

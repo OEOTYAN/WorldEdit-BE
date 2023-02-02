@@ -27,22 +27,7 @@ namespace worldedit {
         std::vector<class BlockNBTSet> blockslist;
         explicit Clipboard() = default;
         explicit Clipboard(const Clipboard&) = default;
-        explicit Clipboard(const BlockPos& sizes)
-            : size(sizes + 1),
-              board(sizes),
-              rotation(Rotation::None_14),
-              mirror(Mirror::None_15),
-              rotationAngle({0, 0, 0}) {
-            used = true;
-            vsize = size.x * size.y * size.z;
-            blockslist.clear();
-            try {
-                blockslist.resize(vsize);
-            } catch (std::bad_alloc) {
-                Level::broadcastText("Out of memory", TextType::RAW);
-                return;
-            }
-        }
+        explicit Clipboard(const BlockPos& sizes);
         long long getIter(const BlockPos& pos);
         long long getIterLoop(const BlockPos& pos);
         void storeBlock(BlockInstance& blockInstance, const BlockPos& pos);

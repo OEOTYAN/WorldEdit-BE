@@ -6,6 +6,7 @@
 #include "tool.h"
 #include "Brush.h"
 #include "MixBrush.h"
+#include "FlatBrush.h"
 #include "CubeBrush.h"
 #include "ColorBrush.h"
 #include "DeformBrush.h"

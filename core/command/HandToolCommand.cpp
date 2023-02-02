@@ -7,7 +7,7 @@
 #include "mc/ItemStack.hpp"
 #include "WorldEdit.h"
 #include <mc/CommandBlockNameResult.hpp>
-#include "store/BlockPattern.hpp"
+#include "store/Patterns.h"
 #include "brush/Brushs.h"
 
 namespace worldedit {
@@ -114,7 +114,7 @@ namespace worldedit {
                         needEdge = results["needEdge"].get<bool>();
                     }
                     playerData.brushMap[toolName] =
-                        new FloodFillTool(new BlockPattern(bps, xuid, nullptr), radius, needEdge);
+                        new FloodFillTool(Pattern::createPattern(bps, xuid), radius, needEdge);
                     output.trSuccess("worldedit.tool.set.flood", toolrName);
                 } else if (results["rep"].isSet) {
                     playerData.brushMap[toolName] = new RepTool();

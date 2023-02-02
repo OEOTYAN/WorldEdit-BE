@@ -3,6 +3,7 @@
 //
 
 #include "Clipboard.hpp"
+#include "I18nAPI.h"
 #include "eval/Eval.h"
 
 namespace worldedit {
@@ -10,6 +11,22 @@ namespace worldedit {
     long long Clipboard::getIter(const BlockPos& pos) {
         return (pos.y + size.y * pos.z) * size.x + pos.x;
     }
+    Clipboard::Clipboard(const BlockPos& sizes)
+            : size(sizes + 1),
+              board(sizes),
+              rotation(Rotation::None_14),
+              mirror(Mirror::None_15),
+              rotationAngle({0, 0, 0}) {
+            used = true;
+            vsize = size.x * size.y * size.z;
+            blockslist.clear();
+            try {
+                blockslist.resize(vsize);
+            } catch (std::bad_alloc) {
+                Level::broadcastText(tr("worldedit.memory.out"), TextType::RAW);
+                return;
+            }
+        }
     long long Clipboard::getIterLoop(const BlockPos& pos) {
         return (static_cast<int>(posfmod(pos.y, size.y)) + size.y * static_cast<int>(posfmod(pos.z, size.z))) * size.x +
                static_cast<int>(posfmod(pos.x, size.x));
