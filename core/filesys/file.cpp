@@ -24,15 +24,12 @@ namespace worldedit {
         }
     }
 
-    void getImageFiles(std::string path, std::vector<std::string>& files){
+    void getImageFiles(std::string path, std::vector<std::string>& files) {
         getFiles(path, files);
         for (auto& file : files) {
-            if (file.substr(file.length() - 4) != ".png") {
-                files.erase(std::remove(files.begin(), files.end(), file), files.end());
-            } else {
-                file = file.substr(path.length()+1);
-                file = file.substr(0, file.length()-4);
-            }
+            if (file.substr(file.length() - 4) == ".png")
+                file = file.substr(path.length() + 1);
+            file = file.substr(0, file.length() - 4);
         }
     }
 

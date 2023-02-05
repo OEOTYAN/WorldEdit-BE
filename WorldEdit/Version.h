@@ -11,9 +11,9 @@
 #define PLUGIN_AUTHOR               "OEOTYAN"
 #define PLUGIN_VERSION_MAJOR        0
 #define PLUGIN_VERSION_MINOR        1
-#define PLUGIN_VERSION_REVISION     1
+#define PLUGIN_VERSION_REVISION     2
 #define PLUGIN_VERSION_BUILD        1
-#define PLUGIN_VERSION_STATUS PLUGIN_VERSION_DEV
+#define PLUGIN_VERSION_STATUS PLUGIN_VERSION_BETA
 
 // File Version Information, used in Resource.rc
 #define __TO_VERSION_STRING(ver) #ver
