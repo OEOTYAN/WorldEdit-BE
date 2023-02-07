@@ -11,48 +11,11 @@
 #include <mc/Block.hpp>
 #include <mc/Level.hpp>
 #include <mc/BlockLegacy.hpp>
-#include <mc/ServerNetworkHandler.hpp>
-#include <mc/NetworkPacketEventCoordinator.hpp>
-#include <mc/PacketHeader.hpp>
 #include <mc/Packet.hpp>
-#include <mc/NetworkIdentifier.hpp>
-#include <mc/PlayerActionPacket.hpp>
 #include <mc/Player.hpp>
 #include <fstream>
 #include "Version.h"
 #include "Nlohmann/json.hpp"
-
-//?handle@ServerNetworkHandler@@UEAAXAEBVNetworkIdentifier@@AEBVPlayerActionPacket@@@Z
-// THook(void,
-//       "?handle@ServerNetworkHandler@@UEAAXAEBVNetworkIdentifier@@"
-//       "AEBVPlayerActionPacket@@@Z",
-//       ServerNetworkHandler* serverNetworkHandler,
-//       NetworkIdentifier const& networkIdentifier,
-//       PlayerActionPacket const& playerActionPacket) {
-//     std::cout
-//         <<
-//         const_cast<PlayerActionPacket&>(playerActionPacket).toDebugString()
-//         << std::endl;
-//     return original(serverNetworkHandler, networkIdentifier,
-//                     playerActionPacket);
-// }
-//?sendPacketReceivedFrom@NetworkPacketEventCoordinator@@QEAAXAEBVPacketHeader@@AEBVPacket@@@Z
-// THook(void,
-//       "?sendPacketReceivedFrom@NetworkPacketEventCoordinator@@"
-//       "QEAAXAEBVPacketHeader@@AEBVPacket@@@Z",
-//       NetworkPacketEventCoordinator* networkPacketEventCoordinator,
-//       PacketHeader const& packetHeader,
-//       Packet const& packet) {
-//     std::cout << fmt::format("{}({})->{}", packet.getName(), packet.getId(),
-//                              packet.clientSubId)
-//               << std::endl;
-//     return original(networkPacketEventCoordinator, packetHeader, packet);
-// }
-
-// std::unordered_map<std::string, std::string>& getBlockColorssMap() {
-//     static std::unordered_map<std::string, std::string> sb;
-//     return sb;
-// }
 
 THook(void, "?setRuntimeId@Block@@IEBAXAEBI@Z", Block* block, unsigned int const& id) {
     auto& blockName = worldedit::getBlockNameMap();
@@ -73,13 +36,21 @@ THook(void, "?setRuntimeId@Block@@IEBAXAEBI@Z", Block* block, unsigned int const
 
 namespace worldedit {
 
- Logger& logger(){
-     static Logger l(PLUGIN_NAME);
+    Logger& logger() {
+        static Logger l(PLUGIN_NAME);
 #if PLUGIN_VERSION_STATUS == PLUGIN_VERSION_DEV
-     l.consoleLevel = 8;
+        l.consoleLevel = 8;
 #endif
-     return l;
- }
+        return l;
+    }
+
+    void clearBlockEntity(class BlockActor* be) {
+        void* unknown = VirtualCall<void*>(be, 256);
+        //  logger().info("{}", (long long)unknown);
+        if (unknown != nullptr) {
+            VirtualCall<void>(unknown, 96);
+        }
+    }
 
     std::unordered_map<std::string, class PlayerData>& getPlayersDataMap() {
         static std::unordered_map<std::string, class PlayerData> data;

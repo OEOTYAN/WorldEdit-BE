@@ -28,7 +28,7 @@ namespace worldedit {
         BlockNBTSet(BlockInstance& blockInstance);
         Block* getBlock() const { return block; }
         Block* getExBlock() const { return exblock; }
-        bool setBlockForHistory(const BlockPos& pos,
+        bool setBlockWithoutcheckGMask(const BlockPos& pos,
                       BlockSource* blockSource,
                       class PlayerData& data) const;
         bool setBlock(const BlockPos& pos,

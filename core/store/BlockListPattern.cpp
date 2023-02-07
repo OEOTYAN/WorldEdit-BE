@@ -4,6 +4,7 @@
 
 #include "BlockNBTSet.hpp"
 #include "mc/BlockPalette.hpp"
+#include <mc/LevelChunk.hpp>
 #include "mc/Level.hpp"
 #include "utils/StringHelper.h"
 #include <mc/Block.hpp>
@@ -100,15 +101,25 @@ namespace worldedit {
             return false;
         }
         auto* block = rawBlock->getBlock(variables, funcs);
-        playerData->setBlockSimple(blockSource, funcs, variables, pos, block, rawBlock->exBlock);
+        bool res = playerData->setBlockSimple(blockSource, funcs, variables, pos, block, rawBlock->exBlock);
 
-        if (rawBlock->hasBE && block->hasBlockEntity()) {
+        if (rawBlock->hasBE && block->hasBlockEntity() && rawBlock->blockEntity != "") {
             auto be = blockSource->getBlockEntity(pos);
-            if (be != nullptr && rawBlock->blockEntity != "") {
-                be->setNbt(CompoundTag::fromBinaryNBT(rawBlock->blockEntity).get());
+            if (be != nullptr) {
+                return be->setNbt(CompoundTag::fromBinaryNBT(rawBlock->blockEntity).get());
+            } else {
+                LevelChunk* chunk = blockSource->getChunkAt(pos);
+                void* vtbl = dlsym("??_7DefaultDataLoadHelper@@6B@");
+                auto b =
+                    BlockActor::loadStatic(*Global<Level>, *CompoundTag::fromBinaryNBT(rawBlock->blockEntity).get(),
+                                           (class DataLoadHelper&)vtbl);
+                if (b != nullptr) {
+                    b->moveTo(pos);
+                    chunk->_placeBlockEntity(b);
+                }
             }
         }
-        return true;
+        return res;
     }
 
     BlockListPattern::BlockListPattern(std::string str, std::string xuid) : Pattern(xuid) {

@@ -2103,7 +2103,7 @@ namespace worldedit {
             "removeitem",                                    // command name
             tr("worldedit.command.description.removeitem"),  // command description
             {},
-            {ParamData("item", ParamType::Item, "item"), ParamData("num", ParamType::Int, true, "num"),
+            {ParamData("item", ParamType::Item, true, "item"), ParamData("num", ParamType::Int, true, "num"),
              ParamData("data", ParamType::Int, true, "data")},
             {{"item", "num", "data"}},
             // dynamic command callback
@@ -2179,7 +2179,9 @@ namespace worldedit {
                                             auto* shulkItem = ItemStack::create(mItem->asCompoundTag()->clone());
                                             int count2 = shulkItem->getCount();
 
-                                            if (count2 <= 0 || !(shulkItem->sameItem(cmdItem)) ||
+                                            if (count2 <= 0 ||
+                                                !(cmdItem == ItemInstance::EMPTY_ITEM ||
+                                                  shulkItem->sameItem(cmdItem)) ||
                                                 (data >= -2140000000 && data != shulkItem->getAuxValue())) {
                                                 continue;
                                             }
@@ -2209,7 +2211,7 @@ namespace worldedit {
                                     }
                                 }
 
-                                if (!(item->sameItem(cmdItem)) ||
+                                if (!(cmdItem == ItemInstance::EMPTY_ITEM || item->sameItem(cmdItem)) ||
                                     (data >= -2140000000 && data != item->getAuxValue())) {
                                     continue;
                                 }

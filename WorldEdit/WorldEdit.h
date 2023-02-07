@@ -12,7 +12,7 @@
 namespace worldedit {
 
     Logger& logger();
-
+    void clearBlockEntity(class BlockActor* be);
     std::unordered_map<std::string,class PlayerData>& getPlayersDataMap();
     class PlayerData& getPlayersData(std::string xuid);
     std::unordered_map<int, std::string>& getBlockNameMap();

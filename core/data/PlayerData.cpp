@@ -3,12 +3,18 @@
 //
 #pragma once
 #include "PlayerData.h"
+#include "WorldEdit.h"
 #include "eval/Eval.h"
 #include "eval/CppEval.h"
 #include <mc/Player.hpp>
 #include <mc/Block.hpp>
 #include <mc/StaticVanillaBlocks.hpp>
 #include <mc/BlockSource.hpp>
+#include <mc/ChunkSource.hpp>
+#include <mc/LevelChunk.hpp>
+#include <mc/SubChunk.hpp>
+#include <mc/Dimension.hpp>
+#include <mc/SubChunkPos.hpp>
 #include <mc/CommandUtils.hpp>
 #include <mc/Level.hpp>
 #include "region/Regions.h"
@@ -107,27 +113,62 @@ namespace worldedit {
         variables["pt"] = playerRot.y;
     }
 
-    bool PlayerData::setBlockForHistory(BlockSource* blockSource, const BlockPos& pos, Block* block, Block* exblock) {
-        CommandUtils::clearBlockEntityContents(*blockSource, pos);
-        blockSource->setExtraBlock(pos, *BedrockBlocks::mAir, 16 + updateArg);
+    bool PlayerData::setBlockWithoutcheckGMask(BlockSource* blockSource,
+                                               const BlockPos& pos,
+                                               Block* block,
+                                               Block* exblock) {
+        bool res = false;
+        BlockActor* be = blockSource->getBlockEntity(pos);
+        if (be != nullptr) {
+            clearBlockEntity(be);
+        }
         if (updateExArg % 2 == 1) {
-            blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
-        } else {
-            blockSource->setBlockNoUpdate(pos.x, pos.y, pos.z, *block);
-        }
-        if (block != StaticVanillaBlocks::mBubbleColumn) {
-            if (exblock != BedrockBlocks::mAir) {
-                blockSource->setExtraBlock(pos, *exblock, 16 + updateArg);
-            }
-        } else {
-            blockSource->setExtraBlock(pos, *StaticVanillaBlocks::mFlowingWater, 16 + updateArg);
-            if (updateExArg % 2 == 1) {
-                blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
+            res |= blockSource->setExtraBlock(pos, *BedrockBlocks::mAir, updateArg);
+            res |= blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
+            if (block != StaticVanillaBlocks::mBubbleColumn) {
+                if (exblock != BedrockBlocks::mAir) {
+                    res |= blockSource->setExtraBlock(pos, *exblock, updateArg);
+                }
+                if (res) {
+                    blockSource->getDimension().forEachPlayer([&](Player& player) -> bool {
+                        player.sendUpdateBlockPacket(pos, *exblock, UpdateBlockFlags::BlockUpdateAll,
+                                                     UpdateBlockLayer::UpdateBlockLiquid);
+                        return true;
+                    });
+                }
             } else {
-                blockSource->setBlockNoUpdate(pos.x, pos.y, pos.z, *block);
+                res |= blockSource->setExtraBlock(pos, *StaticVanillaBlocks::mFlowingWater, updateArg);
+                res |= blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
+            }
+        } else {
+            auto& dim = blockSource->getDimension();
+            ChunkBlockPos cpos(pos, dim.getMinHeight());
+            SubChunkPos scpos(pos);
+            LevelChunk* chunk = blockSource->getChunkAt(pos);
+            if (chunk == nullptr || chunk->isReadOnly()) {
+                return false;
+            }
+            auto* sc = chunk->getSubChunk(scpos.y);
+            auto index = cpos.toLegacyIndex();
+            if (&chunk->getBlock(cpos) != block) {
+                res = true;
+                sc->_setBlock(0, index, *block);
+            }
+            if (&chunk->getExtraBlock(cpos) != exblock) {
+                res = true;
+                sc->_setBlock(1, index, *exblock);
+            }
+            if (res) {
+                dim.forEachPlayer([&](Player& player) -> bool {
+                    player.sendUpdateBlockPacket(pos, *block, UpdateBlockFlags::BlockUpdateAll,
+                                                 UpdateBlockLayer::UpdateBlockDefault);
+                    player.sendUpdateBlockPacket(pos, *exblock, UpdateBlockFlags::BlockUpdateAll,
+                                                 UpdateBlockLayer::UpdateBlockLiquid);
+                    return true;
+                });
             }
         }
-        return true;
+        return res;
     }
 
     bool PlayerData::setBlockSimple(BlockSource* blockSource,
@@ -141,27 +182,7 @@ namespace worldedit {
                 return false;
             }
         }
-
-        CommandUtils::clearBlockEntityContents(*blockSource, pos);
-        blockSource->setExtraBlock(pos, *BedrockBlocks::mAir, 16 + updateArg);
-        if (updateExArg % 2 == 1) {
-            blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
-        } else {
-            blockSource->setBlockNoUpdate(pos.x, pos.y, pos.z, *block);
-        }
-        if (block != StaticVanillaBlocks::mBubbleColumn) {
-            if (exblock != BedrockBlocks::mAir) {
-                blockSource->setExtraBlock(pos, *exblock, 16 + updateArg);
-            }
-        } else {
-            blockSource->setExtraBlock(pos, *StaticVanillaBlocks::mFlowingWater, 16 + updateArg);
-            if (updateExArg % 2 == 1) {
-                blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
-            } else {
-                blockSource->setBlockNoUpdate(pos.x, pos.y, pos.z, *block);
-            }
-        }
-        return true;
+        return setBlockWithoutcheckGMask(blockSource, pos, block, exblock);
     }
 
     Clipboard* PlayerData::getNextHistory() {

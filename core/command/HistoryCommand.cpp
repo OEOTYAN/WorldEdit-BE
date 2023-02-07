@@ -81,7 +81,7 @@ namespace worldedit {
                     res.first->forEachBlockInClipboard([&](const BlockPos& pos) {
                         auto worldPos = pos + res.first->playerPos;
 
-                        i += res.first->blockslist[res.first->getIter(pos)].setBlockForHistory(worldPos, blockSource,
+                        i += res.first->blockslist[res.first->getIter(pos)].setBlockWithoutcheckGMask(worldPos, blockSource,
                                                                                                playerData);
                     });
                     *res.first = tmp;
@@ -131,7 +131,7 @@ namespace worldedit {
 
                     res.first->forEachBlockInClipboard([&](const BlockPos& pos) {
                         auto worldPos = pos + res.first->playerPos;
-                        i += res.first->blockslist[res.first->getIter(pos)].setBlockForHistory(worldPos, blockSource,
+                        i += res.first->blockslist[res.first->getIter(pos)].setBlockWithoutcheckGMask(worldPos, blockSource,
                                                                                                playerData);
                     });
                     *res.first = tmp;
