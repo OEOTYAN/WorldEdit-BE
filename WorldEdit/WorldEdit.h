@@ -3,7 +3,7 @@
 //
 #pragma once
 
-#include "Global.h"
+#include "Globals.h"
 #include <LoggerAPI.h>
 #include "data/PlayerData.h"
 

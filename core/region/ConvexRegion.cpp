@@ -3,7 +3,7 @@
 //
 
 #include "ConvexRegion.h"
-#include "Global.h"
+#include "Globals.h"
 #include "mc/Level.hpp"
 #include "mc/Dimension.hpp"
 namespace worldedit {

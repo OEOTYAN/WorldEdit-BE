@@ -64,7 +64,7 @@ namespace worldedit {
                 ParamData("opacity", ParamType::Float, true, "opacity"),
                 ParamData("kernelsize", ParamType::Int, true, "kernelsize"),
                 ParamData("height", ParamType::Int, true, "height"),
-                ParamData("filename", ParamType::SoftEnum, "filename"),
+                ParamData("imagefilename", ParamType::SoftEnum, "imagefilename"),
                 ParamData("url", ParamType::String, "url"),
                 ParamData("file", ParamType::Enum, "file"),
                 ParamData("link", ParamType::Enum, "link"),
@@ -83,8 +83,8 @@ namespace worldedit {
                 {"color", "blockPattern", "radius", "density", "opacity", "mixBoxLerp"},
                 {"cyl", "block", "radius", "height", "args"},
                 {"cyl", "blockPattern", "radius", "height", "args"},
-                {"smooth", "radius", "kernelsize","density"},
-                {"heightmap", "file", "filename", "radius", "height", "args"},
+                {"smooth", "radius", "kernelsize", "density"},
+                {"heightmap", "file", "imagefilename", "radius", "height", "args"},
                 {"heightmap", "link", "url", "radius", "height", "args"},
                 {"none"},
             },
@@ -217,8 +217,8 @@ namespace worldedit {
                     return;
                 } else if (results["heightmap"].isSet) {
                     std::string filename;
-                    if (results["filename"].isSet) {
-                        filename = results["filename"].get<std::string>();
+                    if (results["imagefilename"].isSet) {
+                        filename = results["imagefilename"].get<std::string>();
 
                         if (filename.find(".png") == std::string::npos) {
                             filename += ".png";
@@ -227,14 +227,14 @@ namespace worldedit {
                         filename = WE_DIR + "image/" + filename;
                     } else /* if (results["link"].isSet)*/ {
                         if (downloadImage(results["url"].get<std::string>())) {
-                            filename = WE_DIR + "imgtemp/0.png";
+                            filename = WE_DIR + "imgtemp/0image";
                         } else {
                             output.trError("worldedit.error.download-image");
                             return;
                         }
                     }
 
-                    playerData.brushMap[brushName] = new ImageHeightmapBrush(radius, height, loadpng(filename), arg_r);
+                    playerData.brushMap[brushName] = new ImageHeightmapBrush(radius, height, loadImage(filename), arg_r);
 
                     output.trSuccess("worldedit.brush.set.heightmap", brushrName);
                     return;

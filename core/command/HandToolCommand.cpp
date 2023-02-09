@@ -2,7 +2,7 @@
 // Created by OEOTYAN on 2022/05/20.
 //
 #include "allCommand.hpp"
-#include "Global.h"
+#include "Globals.h"
 #include "utils/StringTool.h"
 #include "mc/ItemStack.hpp"
 #include "WorldEdit.h"

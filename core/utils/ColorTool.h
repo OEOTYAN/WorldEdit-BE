@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "Global.h"
+#include "Globals.h"
 
 namespace worldedit {
     mce::Color linearLerp(const mce::Color& k, const mce::Color& l, float m);

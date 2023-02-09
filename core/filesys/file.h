@@ -3,8 +3,11 @@
 //
 #pragma once
 
-#include "Global.h"
+#include "Globals.h"
+#include <functional>
 namespace worldedit {
-    void getFiles(std::string path, std::vector<std::string>& files);
-    void getImageFiles(std::string path, std::vector<std::string>& files);
+    std::vector<std::string> getFiles(std::string path);
+    std::vector<std::string> getWEFiles(std::string path);
+    std::vector<std::string> getFiles(std::string path, std::function<bool(std::string const&)> filter);
+    std::vector<std::string> getWEFiles(std::string path, std::function<bool(std::string const&)> filter);
 }  // namespace worldedit

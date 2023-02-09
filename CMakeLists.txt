@@ -5,24 +5,14 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_BUILD_TYPE Release)
 
 file(GLOB_RECURSE SRC_FILES_DIR
-    ${PROJECT_SOURCE_DIR}/SDK/include/llapi/*.hpp
-    ${PROJECT_SOURCE_DIR}/SDK/include/llapi/*.h
     ${PROJECT_SOURCE_DIR}/core/*/*.cpp
-    ${PROJECT_SOURCE_DIR}/core/*/*.hpp
-    ${PROJECT_SOURCE_DIR}/core/*/*.h
     ${PROJECT_SOURCE_DIR}/WorldEdit/*.cpp
-    ${PROJECT_SOURCE_DIR}/WorldEdit/*.hpp
-    ${PROJECT_SOURCE_DIR}/WorldEdit/*.h
-    ${PROJECT_SOURCE_DIR}/lodepng/*.cpp
-    ${PROJECT_SOURCE_DIR}/lodepng/*.h
-    ${PROJECT_SOURCE_DIR}/mixbox/*.cpp
-    ${PROJECT_SOURCE_DIR}/mixbox/*.h
-    ${PROJECT_SOURCE_DIR}/FastNoise/*.h
+    ${PROJECT_SOURCE_DIR}/thirdparty/*/*.cpp
 )
 include_directories(core)
-include_directories(FastNoise)
-include_directories(lodepng)
-include_directories(mixbox)
+include_directories(thirdparty)
+include_directories(thirdparty/lodepng)
+include_directories(thirdparty/mixbox)
 include_directories(SDK/include/llapi)
 include_directories(SDK/include)
 include_directories(WorldEdit)

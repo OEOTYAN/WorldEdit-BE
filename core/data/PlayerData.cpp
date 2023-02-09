@@ -171,6 +171,66 @@ namespace worldedit {
         return res;
     }
 
+    bool PlayerData::setBlockWithBiomeWithoutcheckGMask(BlockSource* blockSource,
+                                                        const BlockPos& pos,
+                                                        Block* block,
+                                                        Block* exblock,
+                                                        int biomeId) {
+        bool res = false;
+        BlockActor* be = blockSource->getBlockEntity(pos);
+        if (be != nullptr) {
+            clearBlockEntity(be);
+        }
+        auto& dim = blockSource->getDimension();
+        ChunkBlockPos cpos(pos, dim.getMinHeight());
+        SubChunkPos scpos(pos);
+        LevelChunk* chunk = blockSource->getChunkAt(pos);
+        if (chunk == nullptr || chunk->isReadOnly()) {
+            return false;
+        }
+        chunk->_setBiome(*Biome::fromId(biomeId), cpos, false);
+        if (updateExArg % 2 == 1) {
+            res |= blockSource->setExtraBlock(pos, *BedrockBlocks::mAir, updateArg);
+            res |= blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
+            if (block != StaticVanillaBlocks::mBubbleColumn) {
+                if (exblock != BedrockBlocks::mAir) {
+                    res |= blockSource->setExtraBlock(pos, *exblock, updateArg);
+                }
+                if (res) {
+                    blockSource->getDimension().forEachPlayer([&](Player& player) -> bool {
+                        player.sendUpdateBlockPacket(pos, *exblock, UpdateBlockFlags::BlockUpdateAll,
+                                                     UpdateBlockLayer::UpdateBlockLiquid);
+                        return true;
+                    });
+                }
+            } else {
+                res |= blockSource->setExtraBlock(pos, *StaticVanillaBlocks::mFlowingWater, updateArg);
+                res |= blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
+            }
+        } else {
+            auto* sc = chunk->getSubChunk(scpos.y);
+            auto index = cpos.toLegacyIndex();
+            if (&chunk->getBlock(cpos) != block) {
+                res = true;
+                sc->_setBlock(0, index, *block);
+            }
+            if (&chunk->getExtraBlock(cpos) != exblock) {
+                res = true;
+                sc->_setBlock(1, index, *exblock);
+            }
+            if (res) {
+                dim.forEachPlayer([&](Player& player) -> bool {
+                    player.sendUpdateBlockPacket(pos, *block, UpdateBlockFlags::BlockUpdateAll,
+                                                 UpdateBlockLayer::UpdateBlockDefault);
+                    player.sendUpdateBlockPacket(pos, *exblock, UpdateBlockFlags::BlockUpdateAll,
+                                                 UpdateBlockLayer::UpdateBlockLiquid);
+                    return true;
+                });
+            }
+        }
+        return res;
+    }
+
     bool PlayerData::setBlockSimple(BlockSource* blockSource,
                                     class EvalFunctions& funcs,
                                     std::unordered_map<std::string, double> const& var,
@@ -183,6 +243,21 @@ namespace worldedit {
             }
         }
         return setBlockWithoutcheckGMask(blockSource, pos, block, exblock);
+    }
+
+    bool PlayerData::setBlockWithBiomeSimple(BlockSource* blockSource,
+                                             class EvalFunctions& funcs,
+                                             std::unordered_map<std::string, double> const& var,
+                                             const BlockPos& pos,
+                                             Block* block,
+                                             Block* exblock,
+                                             int biomeId) {
+        if (gMask != "") {
+            if (cpp_eval::eval<double>(gMask, var, funcs) <= 0.5) {
+                return false;
+            }
+        }
+        return setBlockWithBiomeWithoutcheckGMask(blockSource, pos, block, exblock, biomeId);
     }
 
     Clipboard* PlayerData::getNextHistory() {

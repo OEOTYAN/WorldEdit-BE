@@ -42,43 +42,42 @@ namespace worldedit {
             }
         } else {
             tickMap[xuid] = tick;
-                itemName += std::to_string(item->getAuxValue());
-                if (playerData.brushMap.find(itemName) != playerData.brushMap.end()) {
-                    if (!needDiscard) {
-                        auto& brush = playerData.brushMap[itemName];
-                        if (brush->lneedFace && blockInstance != BlockInstance::Null) {
-                            BlockPos bPos = blockInstance.getPosition();
-                            switch (mFace) {
-                                case FaceID::Down:
-                                    bPos.y -= 1;
-                                    break;
-                                case FaceID::Up:
-                                    bPos.y += 1;
-                                    break;
-                                case FaceID::North:
-                                    bPos.z -= 1;
-                                    break;
-                                case FaceID::South:
-                                    bPos.z += 1;
-                                    break;
-                                case FaceID::West:
-                                    bPos.x -= 1;
-                                    break;
-                                case FaceID::East:
-                                    bPos.x += 1;
-                                    break;
-                                default:
-                                    break;
-                            }
-                            auto bi = blockInstance.getBlockSource()->getBlockInstance(bPos);
-                            brush->lset(player, bi);
-                        } else {
-                            brush->lset(player, blockInstance);
+            itemName += std::to_string(item->getAuxValue());
+            if (playerData.brushMap.find(itemName) != playerData.brushMap.end()) {
+                if (!needDiscard) {
+                    auto& brush = playerData.brushMap[itemName];
+                    if (brush->lneedFace && blockInstance != BlockInstance::Null) {
+                        BlockPos bPos = blockInstance.getPosition();
+                        switch (mFace) {
+                            case FaceID::Down:
+                                bPos.y -= 1;
+                                break;
+                            case FaceID::Up:
+                                bPos.y += 1;
+                                break;
+                            case FaceID::North:
+                                bPos.z -= 1;
+                                break;
+                            case FaceID::South:
+                                bPos.z += 1;
+                                break;
+                            case FaceID::West:
+                                bPos.x -= 1;
+                                break;
+                            case FaceID::East:
+                                bPos.x += 1;
+                                break;
+                            default:
+                                break;
                         }
+                        auto bi = blockInstance.getBlockSource()->getBlockInstance(bPos);
+                        brush->lset(player, bi);
+                    } else {
+                        brush->lset(player, blockInstance);
                     }
-                    return false;
                 }
-            
+                return false;
+            }
         }
         return true;
     }
@@ -111,7 +110,7 @@ namespace worldedit {
             if (!isLong) {
                 tickMap[xuid] = tick;
                 if (!needDiscard) {
-                        playerData.changeVicePos(blockInstance);
+                    playerData.changeVicePos(blockInstance);
                 }
                 return false;
             }
@@ -122,38 +121,38 @@ namespace worldedit {
 
             if (playerData.brushMap.find(itemName) != playerData.brushMap.end()) {
                 if (!needDiscard) {
-                        auto& brush = playerData.brushMap[itemName];
-                        if (brush->needFace && blockInstance != BlockInstance::Null) {
-                            BlockPos bPos = blockInstance.getPosition();
-                            switch (mFace) {
-                                case FaceID::Down:
-                                    bPos.y -= 1;
-                                    break;
-                                case FaceID::Up:
-                                    bPos.y += 1;
-                                    break;
-                                case FaceID::North:
-                                    bPos.z -= 1;
-                                    break;
-                                case FaceID::South:
-                                    bPos.z += 1;
-                                    break;
-                                case FaceID::West:
-                                    bPos.x -= 1;
-                                    break;
-                                case FaceID::East:
-                                    bPos.x += 1;
-                                    break;
-                                default:
-                                    break;
-                            }
-                            auto bi = blockInstance.getBlockSource()->getBlockInstance(bPos);
-                            brush->set(player, bi);
-                        } else {
-                            brush->set(player, blockInstance);
+                    auto& brush = playerData.brushMap[itemName];
+                    if (brush->needFace && blockInstance != BlockInstance::Null) {
+                        BlockPos bPos = blockInstance.getPosition();
+                        switch (mFace) {
+                            case FaceID::Down:
+                                bPos.y -= 1;
+                                break;
+                            case FaceID::Up:
+                                bPos.y += 1;
+                                break;
+                            case FaceID::North:
+                                bPos.z -= 1;
+                                break;
+                            case FaceID::South:
+                                bPos.z += 1;
+                                break;
+                            case FaceID::West:
+                                bPos.x -= 1;
+                                break;
+                            case FaceID::East:
+                                bPos.x += 1;
+                                break;
+                            default:
+                                break;
                         }
+                        auto bi = blockInstance.getBlockSource()->getBlockInstance(bPos);
+                        brush->set(player, bi);
+                    } else {
+                        brush->set(player, blockInstance);
                     }
-                    return false;
+                }
+                return false;
             }
         }
         return true;
@@ -209,6 +208,17 @@ namespace worldedit {
             return playerRightClick(ev.mPlayer, false, ev.mPlayer->getHandSlot(), blockInstance, face);
         });
     }
+    // Event::PlayerSwingEvent::subscribe([](const Event::PlayerSwingEvent& ev) -> bool {
+    //     Player* player = ev.mPlayer;
+    //     bool requiereWater = true;
+    //     if (Level::getBlock(player->getPosition().toBlockPos(), player->getDimensionId()) != BedrockBlocks::mAir) {
+    //         requiereWater = false;
+    //     }
+    //     FaceID face;
+    //     BlockInstance blockInstance = player->getBlockFromViewVector(face, requiereWater, false, 2048.0f);
+    //     worldedit::playerLeftClick(player, true, player->getHandSlot(), blockInstance, face);
+    //     return true;
+    // });
 }  // namespace worldedit
 
 THook(void,

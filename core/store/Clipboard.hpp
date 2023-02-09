@@ -3,7 +3,7 @@
 //
 #pragma once
 
-#include "Global.h"
+#include "Globals.h"
 #include <mc/Level.hpp>
 #include <mc/BlockInstance.hpp>
 #include <mc/StructureSettings.hpp>
@@ -43,7 +43,7 @@ namespace worldedit {
                        BlockSource* blockSource,
                        class PlayerData& data,
                        class EvalFunctions& funcs,
-                       std::unordered_map<std::string, double> const& var);
+                       std::unordered_map<std::string, double> const& var, bool setBiome = false);
         void forEachBlockInClipboard(const std::function<void(const BlockPos&)>& todo);
     };
 }  // namespace worldedit

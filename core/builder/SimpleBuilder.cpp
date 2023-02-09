@@ -1,7 +1,7 @@
 //
 // Created by OEOTYAN on 2022/06/10.
 //
-#include "Global.h"
+#include "Globals.h"
 #include "mc/BlockPos.hpp"
 #include <mc/Player.hpp>
 #include "SimpleBuilder.h"

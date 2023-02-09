@@ -3,7 +3,10 @@
 //
 #include "Image.h"
 #include "eval/Eval.h"
+#include "WorldEdit.h"
 #include "mc/Level.hpp"
+#define STBI_FAILURE_USERMSG
+#include "stb_image.h"
 namespace worldedit {
     double Sampler::setUV(double u) const {
         switch (edgeType) {
@@ -68,25 +71,21 @@ namespace worldedit {
                 return load(sampler, u, v);
         }
     }
-    Texture2D loadpng(const std::string& filename) {
-        std::vector<unsigned char> image;
-
-        unsigned width, height;
-        unsigned error = lodepng::decode(image, width, height, filename);
-        if (error != 0) {
-            // std::cout << "error " << error << ": " << lodepng_error_text(error) << std::endl;
-            Level::broadcastText("§c" + std::string(lodepng_error_text(error)), TextType::RAW);
+    Texture2D loadImage(const std::string& filename) {
+        int width, height, channel;
+        unsigned char* data = stbi_load(filename.c_str(), &width, &height, &channel, 4);
+        if (data == nullptr) {
+            // logger().error("Image load error: {}", stbi_failure_reason());
+            Level::broadcastText("§c" + tr("stb.image." + std::string(stbi_failure_reason())), TextType::RAW);
             return Texture2D(0, 0);
         }
         Texture2D res(width, height);
         for (size_t v = 0; v < height; v++)
             for (size_t u = 0; u < width; u++) {
-                auto k = width * v + u;
-                res.rawColor[k].r = image[4 * k] / 255.0f;
-                res.rawColor[k].g = image[4 * k + 1] / 255.0f;
-                res.rawColor[k].b = image[4 * k + 2] / 255.0f;
-                res.rawColor[k].a = image[4 * k + 3] / 255.0f;
+                long long k = 4 * (width * v + u);
+                res.rawColor[k] = mce::Color(data[k], data[k + 1], data[k + 2], data[k + 3]);
             }
+        stbi_image_free(data);
         return res;
     }
 

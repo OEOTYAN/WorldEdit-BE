@@ -153,7 +153,7 @@ namespace worldedit {
                                 double d = pos1.distanceTo(pos2);
                                 double dh = sqrt(pow2(pos1.x - pos2.x) + pow2(pos1.z - pos2.z));
                                 double h = pos2.y - pos1.y;
-                                double L = pos1.distanceTo(pos2) * extraLength;
+                                double L = d * extraLength;
                                 double a = getCatenaryParameter(dh, h, L);
                                 double x0 = (a * log((L - h) / (L + h)) - dh) * 0.5;
                                 double y0 = a * cosh(x0 / a);
@@ -167,8 +167,9 @@ namespace worldedit {
                                     ky += pos1.y;
                                     kx = pos1.x + dx * i;
                                     kz = pos1.z + dz * i;
-                                    BlockPos kpos = {static_cast<int>(kx + 0.5), static_cast<int>(ky + 0.5),
-                                                     static_cast<int>(kz + 0.5)};
+                                    BlockPos kpos = {static_cast<int>(std::floor(kx + 0.5)),
+                                                     static_cast<int>(std::floor(ky + 0.5)),
+                                                     static_cast<int>(std::floor(kz + 0.5))};
                                     if (radius == 0) {
                                         tmp.insert(kpos);
                                         boundingBox.merge(kpos);
@@ -186,7 +187,7 @@ namespace worldedit {
                                 }
                             } else {
                                 plotLine(pos1, pos2, [&](const BlockPos& pos) {
-                                    BoundingBox(pos - static_cast<int>(radius), pos + static_cast<int>(radius))
+                                    BoundingBox(pos - static_cast<int>(radius + 1), pos + static_cast<int>(radius + 1))
                                         .forEachBlockInBox([&](const BlockPos& posk) {
                                             if ((pos - posk).length() <= 0.5 + radius) {
                                                 tmp.insert(posk);
@@ -1009,8 +1010,13 @@ namespace worldedit {
                     boundingBoxLast.max = boundingBoxLast.max + movingVec * times;
                     auto boundingBoxHistory = boundingBoxLast.merge(boundingBox);
 
-                    auto history = playerData.getNextHistory();
-                    *history = Clipboard(boundingBoxHistory.max - boundingBoxHistory.min);
+                    Clipboard* history = nullptr;
+                    if (playerData.maxHistoryLength > 0) {
+                        history = playerData.getNextHistory();
+                        *history = Clipboard(boundingBoxHistory.max - boundingBoxHistory.min);
+                    } else {
+                        history = new Clipboard(boundingBoxHistory.max - boundingBoxHistory.min);
+                    }
                     history->playerRelPos.x = dimID;
                     history->playerPos = boundingBoxHistory.min;
 
@@ -1043,6 +1049,9 @@ namespace worldedit {
                             }
                         }
                     });
+                    if (playerData.maxHistoryLength <= 0) {
+                        delete history;
+                    }
                     if (arg_e) {
                         auto st = StructureTemplate("worldedit_stack_cmd_tmp");
                         auto setting = StructureSettings();
@@ -1129,8 +1138,14 @@ namespace worldedit {
                     boundingBoxLast.max = boundingBoxLast.max + faceVec;
                     auto boundingBoxHistory = boundingBoxLast.merge(boundingBox);
 
-                    auto history = playerData.getNextHistory();
-                    *history = Clipboard(boundingBoxHistory.max - boundingBoxHistory.min);
+                    Clipboard* history = nullptr;
+                    if (playerData.maxHistoryLength > 0) {
+                        history = playerData.getNextHistory();
+                        *history = Clipboard(boundingBoxHistory.max - boundingBoxHistory.min);
+                    } else {
+                        history = new Clipboard(boundingBoxHistory.max - boundingBoxHistory.min);
+                    }
+
                     history->playerRelPos.x = dimID;
                     history->playerPos = boundingBoxHistory.min;
 
@@ -1139,6 +1154,7 @@ namespace worldedit {
                         auto blockInstance = blockSource->getBlockInstance(pos);
                         history->storeBlock(blockInstance, localPos);
                     });
+
                     boundingBoxLast.forEachBlockInBox([&](const BlockPos& pos) {
                         auto localPos = pos - boundingBoxHistory.min;
                         if (!history->getSet(localPos).hasBlock) {
@@ -1181,6 +1197,9 @@ namespace worldedit {
                             }
                         }
                     });
+                    if (playerData.maxHistoryLength <= 0) {
+                        delete history;
+                    }
                     if (arg_s) {
                         playerData.region->shift(faceVec);
                     }
@@ -1937,7 +1956,7 @@ namespace worldedit {
                 {"link", {"link"}},
             },
             {
-                ParamData("filename", ParamType::SoftEnum, "filename"),
+                ParamData("imagefilename", ParamType::SoftEnum, "imagefilename"),
                 ParamData("url", ParamType::String, "url"),
                 ParamData("fliptype", ParamType::Enum, true, "fliptype"),
                 ParamData("rotation", ParamType::Enum, true, "rotation"),
@@ -1945,7 +1964,7 @@ namespace worldedit {
                 ParamData("link", ParamType::Enum, "link"),
             },
             {
-                {"file", "filename", "fliptype", "rotation"},
+                {"file", "imagefilename", "fliptype", "rotation"},
                 {"link", "url", "fliptype", "rotation"},
             },
             // dynamic command callback
@@ -2014,8 +2033,8 @@ namespace worldedit {
                     long long i = 0;
 
                     std::string filename;
-                    if (results["filename"].isSet) {
-                        filename = results["filename"].get<std::string>();
+                    if (results["imagefilename"].isSet) {
+                        filename = results["imagefilename"].get<std::string>();
 
                         if (filename.find(".png") == std::string::npos) {
                             filename += ".png";
@@ -2024,14 +2043,14 @@ namespace worldedit {
                         filename = WE_DIR + "image/" + filename;
                     } else /* if (results["link"].isSet)*/ {
                         if (downloadImage(results["url"].get<std::string>())) {
-                            filename = WE_DIR + "imgtemp/0.png";
+                            filename = WE_DIR + "imgtemp/0image";
                         } else {
                             output.trError("worldedit.error.download-image");
                             return;
                         }
                     }
 
-                    auto texture2D = loadpng(filename);
+                    auto texture2D = loadImage(filename);
 
                     Sampler sampler(SamplerType::Bilinear, EdgeType::CLAMP);
 

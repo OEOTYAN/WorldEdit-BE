@@ -2,16 +2,15 @@
 
 #define PLUGIN_VERSION_DEV     0
 #define PLUGIN_VERSION_BETA    1
-#define PLUGIN_VERSION_RELEASE 2
+#define PLUGIN_VERSION_RELEASE 3
 
 // Plugin Information, used in dllmain.cpp for register plugin
-//static_assert(false, "Please modify your plugin registration details and delete this line");
 #define PLUGIN_NAME                 "WorldEdit"
 #define PLUGIN_INTRODUCTION         "WorldEdit-BE"
 #define PLUGIN_AUTHOR               "OEOTYAN"
 #define PLUGIN_VERSION_MAJOR        0
 #define PLUGIN_VERSION_MINOR        1
-#define PLUGIN_VERSION_REVISION     2
+#define PLUGIN_VERSION_REVISION     3
 #define PLUGIN_VERSION_BUILD        1
 #define PLUGIN_VERSION_STATUS PLUGIN_VERSION_BETA
 

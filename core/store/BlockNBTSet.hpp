@@ -3,7 +3,7 @@
 //
 #pragma once
 
-#include "Global.h"
+#include "Globals.h"
 #include <mc/Level.hpp>
 // #include <mc/BlockInstance.hpp>
 #include <mc/Block.hpp>
@@ -24,23 +24,25 @@ namespace worldedit {
         std::string blockEntity;
         bool hasBlock = false;
         bool hasBlockEntity = false;
+        bool hasBiome = false;
+        int biomeId = 0;
         BlockNBTSet() = default;
         BlockNBTSet(BlockInstance& blockInstance);
         Block* getBlock() const { return block; }
         Block* getExBlock() const { return exblock; }
         bool setBlockWithoutcheckGMask(const BlockPos& pos,
                       BlockSource* blockSource,
-                      class PlayerData& data) const;
+                      class PlayerData& data, bool needBiome = false) const;
         bool setBlock(const BlockPos& pos,
                       BlockSource* blockSource,
                       class PlayerData& data,
                       class EvalFunctions& funcs,
-                      std::unordered_map<std::string, double> const& var) const;
+                      std::unordered_map<std::string, double> const& var, bool needBiome = false) const;
         bool setBlock(const BlockPos& pos,
                       BlockSource* blockSource, class PlayerData& data,
                       class EvalFunctions& funcs,
                       std::unordered_map<std::string, double> const& var,
                       Rotation rotation,
-                      Mirror mirror) const;
+                      Mirror mirror, bool needBiome = false) const;
     };
 }  // namespace worldedit

@@ -3,7 +3,7 @@
 // Created by OEOTYAN on 2022/5/15.
 //
 
-#include "Global.h"
+#include "Globals.h"
 #include <mc/Biome.hpp>
 // #include <mc/BlockInstance.hpp>
 #include <mc/Block.hpp>

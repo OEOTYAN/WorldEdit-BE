@@ -17,7 +17,14 @@
 #include "mc/SpawnGroupRegistry.hpp"
 
 namespace worldedit {
+    void updateFile(){
+        Global<CommandRegistry>->setSoftEnumValues("imagefilename", getWEFiles("image"));
+        Global<CommandRegistry>->setSoftEnumValues(
+            "modelfilename",
+            getWEFiles("models", [](std::string const& s) -> bool { return s.substr(s.size() - 4) == ".obj"; }));
+    }
     void commandsSetup() {
+
         brushCommandSetup();
         regionCommandSetup();
         historyCommandSetup();
@@ -29,9 +36,7 @@ namespace worldedit {
 
         Schedule::delay(
             [&]() {
-                std::vector<std::string> imagesName;
-                getImageFiles(WE_DIR + "image", imagesName);
-                Global<CommandRegistry>->setSoftEnumValues("filename", imagesName);
+                updateFile();
                 setArg("-ahor");
                 setArg("-anose");
                 setArg("-h");
@@ -61,16 +66,14 @@ namespace worldedit {
             20);
 
         DynamicCommand::setup(
-            "updateimage",                                    // command name
-            tr("worldedit.command.description.updateimage"),  // command description
+            "updatefile",                                    // command name
+            tr("worldedit.command.description.updatefile"),  // command description
             {}, {}, {{}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                std::vector<std::string> test;
-                getImageFiles(WE_DIR + "image", test);
-                Global<CommandRegistry>->setSoftEnumValues("filename", test);
-                output.trSuccess("worldedit.updateimage.success");
+                updateFile();
+                output.trSuccess("worldedit.updatefile.success");
             },
             CommandPermissionLevel::GameMasters);
 

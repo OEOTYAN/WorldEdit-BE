@@ -2,7 +2,7 @@
 // Created by OEOTYAN on 2022/06/14.
 //
 #pragma once
-#include "Global.h"
+#include "Globals.h"
 namespace worldedit {
     double getCatenaryParameter(double d,double h,double L);
 

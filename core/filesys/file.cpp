@@ -1,36 +1,48 @@
 //
 // Created by OEOTYAN on 2022/06/20.
 //
-#include "file.h"
-#include <io.h>
-#include <stdio.h>
+// #include "file.h"
+// #include <io.h>
+// #include <stdio.h>
+#include <iostream>
+#include <filesystem>
+#include <utils/StringHelper.h>
+#include <WorldEdit.h>
 
 namespace worldedit {
-    void getFiles(std::string path, std::vector<std::string>& files) {
-        intptr_t hFile = 0;
-        struct _finddata_t fileinfo;
-        std::string p;
-
-        if ((hFile = _findfirst(p.assign(path).append("/*").c_str(), &fileinfo)) != -1) {
-            do {
-                if ((fileinfo.attrib & _A_SUBDIR)) {
-                    if (strcmp(fileinfo.name, ".") != 0 && strcmp(fileinfo.name, "..") != 0)
-                        getFiles(p.assign(path).append("/").append(fileinfo.name), files);
-                } else {
-                    files.push_back(p.assign(path).append("/").append(fileinfo.name));
-                }
-            } while (_findnext(hFile, &fileinfo) == 0);
-            _findclose(hFile);
+    std::vector<std::string> getFiles(std::string path) {
+        std::vector<std::string> res;
+        res.clear();
+        auto length = path.length();
+        if (path.back() != '\\' && path.back() != '/') {
+            length += 1;
         }
-    }
-
-    void getImageFiles(std::string path, std::vector<std::string>& files) {
-        getFiles(path, files);
-        for (auto& file : files) {
-            if (file.substr(file.length() - 4) == ".png")
-                file = file.substr(path.length() + 1);
-            file = file.substr(0, file.length() - 4);
+        for (auto& file : std::filesystem::recursive_directory_iterator(path)) {
+            const auto& str = UTF82String(file.path().u8string()).substr(length);
+            // std::cout << str << std::endl;
+            res.push_back(str);
         }
+        return res;
     }
-
+    std::vector<std::string> getWEFiles(std::string path) {
+        return getFiles(WE_DIR + path);
+    }
+    std::vector<std::string> getFiles(std::string path, std::function<bool(std::string const&)> filter) {
+        std::vector<std::string> res;
+        res.clear();
+        auto length = path.length();
+        if (path.back() != '\\' && path.back() != '/') {
+            length += 1;
+        }
+        for (auto& file : std::filesystem::recursive_directory_iterator(path)) {
+            const auto& str = UTF82String(file.path().u8string()).substr(length);
+            if (filter(str)) {
+                res.push_back(str);
+            }
+        }
+        return res;
+    }
+    std::vector<std::string> getWEFiles(std::string path, std::function<bool(std::string const&)> filter) {
+        return getFiles(WE_DIR + path, filter);
+    }
 }  // namespace worldedit

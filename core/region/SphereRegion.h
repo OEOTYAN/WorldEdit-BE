@@ -2,7 +2,7 @@
 // Created by OEOTYAN on 2021/2/8.
 //
 
-#include "Global.h"
+#include "Globals.h"
 #include "Region.h"
 
 namespace worldedit {

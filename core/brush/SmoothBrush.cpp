@@ -2,7 +2,7 @@
 // Created by OEOTYAN on 2022/06/10.
 //
 
-#include "Global.h"
+#include "Globals.h"
 #include "SmoothBrush.h"
 #include "utils/ColorTool.h"
 #include "store/Patterns.h"

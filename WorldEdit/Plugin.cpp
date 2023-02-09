@@ -1,4 +1,4 @@
-#include "Global.h"
+#include "Globals.h"
 #include <LoggerAPI.h>
 #include <I18nAPI.h>
 #include "Version.h"
@@ -17,6 +17,7 @@ void PluginInit() {
     preparePath("./plugins/WorldEdit");
     preparePath("./plugins/WorldEdit/lang");
     preparePath("./plugins/WorldEdit/image");
+    preparePath("./plugins/WorldEdit/models");
     preparePath("./plugins/WorldEdit/imgtemp");
     preparePath("./plugins/WorldEdit/mappings");
     preparePath("./plugins/WorldEdit/textures");

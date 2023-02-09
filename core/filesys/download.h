@@ -3,7 +3,7 @@
 //
 #pragma once
 
-#include "Global.h"
+#include "Globals.h"
 namespace worldedit {
     int download(std::string const& url, std::string const& outfilename);
     bool downloadImage(std::string const& url);

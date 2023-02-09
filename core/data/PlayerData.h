@@ -40,6 +40,17 @@ namespace worldedit {
         bool changeMainPos(BlockInstance blockInstance, bool output = true);
         bool changeVicePos(BlockInstance blockInstance, bool output = true);
         void setVarByPlayer(std::unordered_map<::std::string, double>& variables);
+        bool setBlockWithBiomeSimple(class BlockSource* blockSource,
+                                     class EvalFunctions& funcs,
+                                     std::unordered_map<std::string, double> const& var,
+                                     const BlockPos& pos,
+                                     class Block* block,
+                                     class Block* exblock,
+                                     int biomeId);
+        bool setBlockWithBiomeWithoutcheckGMask(class BlockSource* blockSource,
+                                       const BlockPos& pos,
+                                       class Block* block,
+                                       class Block* exblock,int biomeId);
         bool setBlockSimple(class BlockSource* blockSource,
                             class EvalFunctions& funcs,
                             std::unordered_map<std::string, double> const& var,

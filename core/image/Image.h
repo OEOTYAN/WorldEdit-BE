@@ -3,8 +3,8 @@
 //
 #pragma once
 
-#include "Global.h"
-#include "lodepng.h"
+#include "Globals.h"
+// #include "lodepng.h"
 
 namespace worldedit {
     enum class SamplerType {
@@ -48,7 +48,7 @@ namespace worldedit {
                         double offsetv = 0.0) const;
     };
 
-    Texture2D loadpng(const std::string& filename);
+    Texture2D loadImage(const std::string& filename);
 
     double colorToHeight(const mce::Color& color);
 }  // namespace worldedit

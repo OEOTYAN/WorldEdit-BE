@@ -2,7 +2,7 @@
 // Created by OEOTYAN on 2022/05/16.
 //
 #pragma once
-#include "Global.h"
+#include "Globals.h"
 #include <EventAPI.h>
 // #include <LoggerAPI.h>
 // #include <mc/Level.hpp>

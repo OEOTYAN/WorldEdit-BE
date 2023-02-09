@@ -1,7 +1,7 @@
 //
 // Created by OEOTYAN on 2022/05/20.
 //
-// #include "Global.h"
+// #include "Globals.h"
 #include "allCommand.hpp"
 #include <mc/CommandUtils.hpp>
 #include <mc/BlockSource.hpp>

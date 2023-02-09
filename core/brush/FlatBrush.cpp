@@ -2,7 +2,7 @@
 // Created by OEOTYAN on 2023/02/03.
 //
 
-#include "Global.h"
+#include "Globals.h"
 #include "FlatBrush.h"
 #include "mc/Level.hpp"
 #include "WorldEdit.h"

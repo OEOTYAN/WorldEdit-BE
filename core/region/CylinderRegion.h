@@ -2,7 +2,7 @@
 // Created by OEOTYAN on 2022/06/04.
 //
 #pragma once
-#include "Global.h"
+#include "Globals.h"
 #include "Region.h"
 
 namespace worldedit {

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "Global.h"
+#include "Globals.h"
 #include "Brush.h"
 
 namespace worldedit {

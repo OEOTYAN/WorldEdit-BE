@@ -2,7 +2,7 @@
 // Created by OEOTYAN on 2022/5/15.
 //
 #pragma once
-#include "Global.h"
+#include "Globals.h"
 #include "Graphics.h"
 #include "eval/Bresenham.hpp"
 

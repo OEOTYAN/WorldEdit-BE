@@ -25,7 +25,7 @@ namespace worldedit {
 
         DeleteUrlCacheEntryW(buffer);
 
-        HRESULT hr = URLDownloadToFileW(NULL, buffer, _T("plugins/WorldEdit/imgtemp/0.png"), 0, NULL);
+        HRESULT hr = URLDownloadToFileW(NULL, buffer, _T("plugins/WorldEdit/imgtemp/0image"), 0, NULL);
         if (hr == S_OK) {
             return true;
         } else {
