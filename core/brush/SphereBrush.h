@@ -5,7 +5,7 @@
 
 #include "Brush.h"
 namespace worldedit {
-    class SphereBrush : public Brush {
+    class SphereBrush final : public Brush {
        public:
         bool hollow = false;
         SphereBrush(unsigned short, std::unique_ptr<Pattern>, bool);

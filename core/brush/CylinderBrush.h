@@ -5,7 +5,7 @@
 
 #include "Brush.h"
 namespace worldedit {
-    class CylinderBrush : public Brush {
+    class CylinderBrush final : public Brush {
        public:
         bool hollow = false;
         int height = 0;

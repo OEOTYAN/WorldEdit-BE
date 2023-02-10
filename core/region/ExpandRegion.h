@@ -6,7 +6,7 @@
 #include "Globals.h"
 #include "Region.h"
 namespace worldedit {
-    class ExpandRegion : public Region {
+    class ExpandRegion final : public Region {
        public:
         BlockPos mainPos = BlockPos::MIN;
         BlockPos vicePos = BlockPos::MIN;

@@ -13,48 +13,48 @@
 #include "store/BlockNBTSet.hpp"
 
 namespace worldedit {
-    class FarWand : public Brush {
+    class FarWand final : public Brush {
        public:
         FarWand() = default;
         long long lset(Player* player, class BlockInstance blockInstance) override;
         long long set(Player* player, class BlockInstance blockInstance) override;
     };
-    class AirWand : public Brush {
+    class AirWand final : public Brush {
        public:
         AirWand() = default;
         long long lset(Player* player, class BlockInstance blockInstance) override;
         long long set(Player* player, class BlockInstance blockInstance) override;
     };
-    class InfoTool : public Brush {
+    class InfoTool final : public Brush {
        public:
         InfoTool() = default;
         long long set(Player* player, class BlockInstance blockInstance) override;
     };
-    class CyclerTool : public Brush {
+    class CyclerTool final : public Brush {
        public:
         CyclerTool() = default;
         long long lset(Player* player, class BlockInstance blockInstance) override;
         long long set(Player* player, class BlockInstance blockInstance) override;
     };
-    class FloodFillTool : public Brush {
+    class FloodFillTool final : public Brush {
        public:
         bool needEdge;
         FloodFillTool(std::unique_ptr<Pattern> bp, unsigned short r, bool needEdge) : Brush(r, std::move(bp)), needEdge(needEdge) {}
         long long set(Player* player, class BlockInstance blockInstance) override;
     };
-    class RepTool : public Brush {
+    class RepTool final : public Brush {
        public:
         class BlockNBTSet blockSet;
         RepTool() = default;
         long long lset(Player* player, class BlockInstance blockInstance) override;
         long long set(Player* player, class BlockInstance blockInstance) override;
     };
-    class TreeTool : public Brush {
+    class TreeTool final : public Brush {
        public:
         TreeTool() = default;
         long long set(Player* player, class BlockInstance blockInstance) override;
     };
-    class DelTreeTool : public Brush {
+    class DelTreeTool final : public Brush {
        public:
         DelTreeTool() = default;
         long long set(Player* player, class BlockInstance blockInstance) override;

@@ -5,5 +5,5 @@
 
 #include "Brush.h"
 namespace worldedit {
-    class DeformBrush : public Brush {};
+    class DeformBrush final : public Brush {};
 }  // namespace worldedit

@@ -6,7 +6,7 @@
 #include "Region.h"
 
 namespace worldedit {
-    class CylinderRegion : public Region {
+    class CylinderRegion final : public Region {
        private:
         BlockPos center = BlockPos::MIN;
         float radius = 0.5;

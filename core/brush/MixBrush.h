@@ -6,7 +6,7 @@
 
 #include "Brush.h"
 namespace worldedit {
-    class MixBrush : public Brush {
+    class MixBrush final : public Brush {
        public:
         float density = 1;
         float opacity = 1;

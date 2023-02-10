@@ -7,7 +7,7 @@
 #include "Pattern.h"
 
 namespace worldedit {
-    class ClipboardPattern : public Pattern {
+    class ClipboardPattern final : public Pattern {
        public:
         BlockPos bias;
         class Clipboard* clipboard;

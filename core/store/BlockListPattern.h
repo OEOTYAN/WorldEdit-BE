@@ -32,7 +32,7 @@ namespace worldedit {
         class Block* getBlock(const std::unordered_map<::std::string, double>& variables, class EvalFunctions& funcs);
     };
 
-    class BlockListPattern : public Pattern {
+    class BlockListPattern final : public Pattern {
        public:
         size_t blockNum = 0;
         std::vector<Percents> percents;

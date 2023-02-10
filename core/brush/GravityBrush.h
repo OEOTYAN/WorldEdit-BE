@@ -5,5 +5,5 @@
 
 #include "Brush.h"
 namespace worldedit {
-    class GravityBrush : public Brush {};
+    class GravityBrush final : public Brush {};
 }  // namespace worldedit

@@ -5,7 +5,7 @@
 
 #include "Brush.h"
 namespace worldedit {
-    class SmoothBrush : public Brush {
+    class SmoothBrush final : public Brush {
        public:
         float density = 1;
         int ksize = 0;

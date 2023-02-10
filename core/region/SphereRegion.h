@@ -6,7 +6,7 @@
 #include "Region.h"
 
 namespace worldedit {
-    class SphereRegion : public Region {
+    class SphereRegion final : public Region {
        private:
         BlockPos center = BlockPos::MIN;
         double radius = 0.5;

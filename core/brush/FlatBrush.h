@@ -7,7 +7,7 @@
 #include "Brush.h"
 
 namespace worldedit {
-    class FlatBrush : public Brush {
+    class FlatBrush final : public Brush {
        public:
         float density;
         FlatBrush(unsigned short size, float density);

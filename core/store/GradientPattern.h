@@ -7,7 +7,7 @@
 #include "Pattern.h"
 
 namespace worldedit {
-    class GradientPattern : public Pattern {
+    class GradientPattern final : public Pattern {
        public:
         std::unordered_map<class Block*, std::pair<std::string, int>> gradientNameMap;
         std::unordered_map<std::string, std::vector<class Block*>> blockGradientMap;

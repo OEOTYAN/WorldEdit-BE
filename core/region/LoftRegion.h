@@ -30,7 +30,7 @@ namespace worldedit {
         }
     };
 
-    class LoftRegion : public Region {
+    class LoftRegion final : public Region {
        public:
         std::vector<std::vector<BlockPos>> loftPoints;
         int maxPointCount = 1;

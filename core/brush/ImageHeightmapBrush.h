@@ -6,7 +6,7 @@
 #include "Brush.h"
 #include "image/Image.h"
 namespace worldedit {
-    class ImageHeightmapBrush : public Brush {
+    class ImageHeightmapBrush final : public Brush {
        public:
         int height = 0;
         bool rotation;

@@ -6,7 +6,7 @@
 #include "Brush.h"
 #include "store/Clipboard.hpp"
 namespace worldedit {
-    class ClipboardBrush : public Brush {
+    class ClipboardBrush final : public Brush {
        public:
         Clipboard clipboard;
         bool center = true;

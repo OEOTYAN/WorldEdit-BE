@@ -40,7 +40,7 @@ namespace worldedit {
 
     class Region;
 
-    class ConvexRegion : public Region {
+    class ConvexRegion final : public Region {
        private:
         bool addVertex(const BlockPos& vertex);
 

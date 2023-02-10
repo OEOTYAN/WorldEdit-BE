@@ -6,7 +6,7 @@
 #include "Globals.h"
 #include "Region.h"
 namespace worldedit {
-    class PolyRegion : public Region {
+    class PolyRegion final : public Region {
        public:
         std::vector<BlockPos> points;
         int minY = -2100000000;
