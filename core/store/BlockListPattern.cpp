@@ -109,10 +109,7 @@ namespace worldedit {
                 return be->setNbt(CompoundTag::fromBinaryNBT(rawBlock->blockEntity).get());
             } else {
                 LevelChunk* chunk = blockSource->getChunkAt(pos);
-                void* vtbl = dlsym("??_7DefaultDataLoadHelper@@6B@");
-                auto b =
-                    BlockActor::loadStatic(*Global<Level>, *CompoundTag::fromBinaryNBT(rawBlock->blockEntity).get(),
-                                           (class DataLoadHelper&)vtbl);
+                auto b = BlockActor::create(CompoundTag::fromBinaryNBT(rawBlock->blockEntity).get());
                 if (b != nullptr) {
                     b->moveTo(pos);
                     chunk->_placeBlockEntity(b);
