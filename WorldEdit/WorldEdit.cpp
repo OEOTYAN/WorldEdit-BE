@@ -52,11 +52,15 @@
 // }
 
 THook(void, "?buildSerializationId@Block@@IEAAXI@Z", Block* block, unsigned int id) {
+    original(block, id);
     auto& blockName = worldedit::getBlockNameMap();
     auto& blockId = worldedit::getBlockIdMap();
     auto blockid = block->getId();
     blockName[blockid] = block->getTypeName();
     blockId[block->getTypeName()] = blockid;
+    // std::cout << const_cast<BlockLegacy*>(&block->getLegacyBlock())->buildDescriptionId(*block) << " " << blockid
+    //           << std::endl;
+    // std::cout << block->getTypeName() << " " << blockid << std::endl;
     // std::cout << const_cast<BlockLegacy*>(&block->getLegacyBlock())->getTypeName() << std::endl;
     // auto color = block->getLegacyBlock().getMapColor().toHexString();
     // if (getBlockColorssMap().find(color) != getBlockColorssMap().end()) {
@@ -66,7 +70,7 @@ THook(void, "?buildSerializationId@Block@@IEAAXI@Z", Block* block, unsigned int 
     //     getBlockColorssMap()[color] = block->getNbt()->toSNBT(0,
     //     SnbtFormat::Minimize);
     // }
-    return original(block, id);
+    return;
 }
 
 namespace worldedit {
@@ -78,9 +82,10 @@ namespace worldedit {
 
     class PlayerData& getPlayersData(std::string xuid) {
         auto& playerDataMap = getPlayersDataMap();
-        if (playerDataMap.find(xuid) == playerDataMap.end()) {
+        if (playerDataMap.find(xuid) == playerDataMap.end() || (!playerDataMap[xuid].init)) {
             playerDataMap[xuid] = PlayerData(Global<Level>->getPlayer(xuid));
         }
+        // std::cout << "maxHistoryLength  " << playerDataMap[xuid].maxHistoryLength << std::endl;
         return playerDataMap[xuid];
     }
 

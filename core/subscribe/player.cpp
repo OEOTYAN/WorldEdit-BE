@@ -123,7 +123,6 @@ namespace worldedit {
             }
         } else {
             tickMap[xuid] = tick;
-            auto& playerDataMap = getPlayersDataMap();
             itemName += std::to_string(item->getAuxValue());
 
             if (playerData.brushMap.find(itemName) != playerData.brushMap.end()) {
@@ -167,13 +166,13 @@ namespace worldedit {
 
     void playerSubscribe() {
         Event::PlayerUseItemOnEvent::subscribe([](const Event::PlayerUseItemOnEvent& ev) {
-            std::cout << "PlayerUseItemOnEvent" << std::endl;
+            // std::cout << "PlayerUseItemOnEvent" << std::endl;
             return playerRightClick(ev.mPlayer, false, ev.mItemStack, *const_cast<BlockInstance*>(&ev.mBlockInstance),
                                     static_cast<FaceID>(ev.mFace));
         });
 
         Event::PlayerUseItemEvent::subscribe([](const Event::PlayerUseItemEvent& ev) {
-            std::cout << "PlayerUseItemEvent" << std::endl;
+            // std::cout << "PlayerUseItemEvent" << std::endl;
             bool requiereWater = true;
             if (Level::getBlock(ev.mPlayer->getPosition().toBlockPos(), ev.mPlayer->getDimensionId()) !=
                 BedrockBlocks::mAir) {
@@ -184,13 +183,13 @@ namespace worldedit {
             auto& playerData = getPlayersData(xuid);
             BlockInstance blockInstance = playerData.getBlockFromViewVector(face, requiereWater, false, 2048.0f);
 
-            std::cout << blockInstance.getBlock()->getTypeName() << std::endl;
+            // std::cout << blockInstance.getBlock()->getTypeName() << std::endl;
 
             return playerRightClick(ev.mPlayer, true, ev.mItemStack, blockInstance, face);
         });
 
         Event::PlayerDestroyBlockEvent::subscribe([](const Event::PlayerDestroyBlockEvent& ev) {
-            std::cout << "PlayerDestroyBlockEvent" << std::endl;
+            // std::cout << "PlayerDestroyBlockEvent" << std::endl;
             bool requiereWater = true;
             if (Level::getBlock(ev.mPlayer->getPosition().toBlockPos(), ev.mPlayer->getDimensionId()) !=
                 BedrockBlocks::mAir) {
@@ -205,7 +204,7 @@ namespace worldedit {
         });
 
         Event::PlayerOpenContainerEvent::subscribe([](const Event::PlayerOpenContainerEvent& ev) {
-            std::cout << "PlayerOpenContainerEvent" << std::endl;
+            // std::cout << "PlayerOpenContainerEvent" << std::endl;
             bool requiereWater = true;
             if (Level::getBlock(ev.mPlayer->getPosition().toBlockPos(), ev.mPlayer->getDimensionId()) !=
                 BedrockBlocks::mAir) {
@@ -219,7 +218,7 @@ namespace worldedit {
         });
 
         Event::PlayerPlaceBlockEvent::subscribe([](const Event::PlayerPlaceBlockEvent& ev) {
-            std::cout << "PlayerPlaceBlockEvent" << std::endl;
+            // std::cout << "PlayerPlaceBlockEvent" << std::endl;
             bool requiereWater = true;
             if (Level::getBlock(ev.mPlayer->getPosition().toBlockPos(), ev.mPlayer->getDimensionId()) !=
                 BedrockBlocks::mAir) {
@@ -241,7 +240,7 @@ THook(void,
       NetworkIdentifier const& networkIdentifier,
       AnimatePacket const& animatePacket) {
     if (animatePacket.mAction == AnimatePacket::Action::Swing) {
-        std::cout << "Swing" << std::endl;
+        // std::cout << "Swing" << std::endl;
         Player* player = serverNetworkHandler->getServerPlayer(networkIdentifier);
         bool requiereWater = true;
         if (Level::getBlock(player->getPosition().toBlockPos(), player->getDimensionId()) != BedrockBlocks::mAir) {

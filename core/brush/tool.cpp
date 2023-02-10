@@ -175,7 +175,7 @@ namespace worldedit {
         while (!q.empty()) {
             auto pos1 = q.front();
             q.pop();
-            boundingBox = boundingBox.merge(pos1);
+            boundingBox.merge(pos1);
             if (needEdge) {
                 BoundingBox(pos1 - 1, pos1 + 1).forEachBlockInBox([&](const BlockPos& tmpPos) {
                     if (tmpPos != pos1 && pos0.distanceTo(tmpPos) <= 0.5 + size &&

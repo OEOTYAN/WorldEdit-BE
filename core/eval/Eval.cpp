@@ -8,6 +8,7 @@
 #include <MC/Player.hpp>
 #include "FastNoiseLite.h"
 #include "Utils/RNG.h"
+#include "I18nAPI.h"
 // #include <MC/ChunkBlockPos.hpp>
 
 #define tryGetParameter(size, params, n, f, t) \
@@ -60,8 +61,8 @@ namespace worldedit {
         try {
             posMap.resize(size.x * size.y * size.z + 1);
             solidMap = std::vector<long long>(size.x * size.y * size.z + 1, 0);
-        } catch (std::bad_alloc) {
-            Level::broadcastText("Out of memory", TextType::RAW);
+        } catch (...) {
+            Level::broadcastText(tr("worldedit.memory.out"), TextType::RAW);
             return;
         }
         posMap[size.x * size.y * size.z] = {0, 0, 0};

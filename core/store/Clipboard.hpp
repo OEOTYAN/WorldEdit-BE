@@ -7,6 +7,7 @@
 #include <MC/Level.hpp>
 #include <MC/BlockInstance.hpp>
 #include <MC/StructureSettings.hpp>
+#include "I18nAPI.h"
 #include "BlockNBTSet.hpp"
 
 namespace worldedit {
@@ -38,8 +39,8 @@ namespace worldedit {
             blockslist.clear();
             try {
                 blockslist.resize(vsize);
-            } catch (std::bad_alloc) {
-                Level::broadcastText("Out of memory", TextType::RAW);
+            } catch (...) {
+                Level::broadcastText(tr("worldedit.memory.out"), TextType::RAW);
                 return;
             }
         }

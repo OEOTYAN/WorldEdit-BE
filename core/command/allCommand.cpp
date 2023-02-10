@@ -17,6 +17,10 @@
 
 #include "Nlohmann/json.hpp"
 
+#include "LoggerAPI.h"
+
+Logger logger("WorldEdit");
+
 namespace worldedit {
     void commandsSetup() {
         brushCommandSetup();
@@ -60,12 +64,15 @@ namespace worldedit {
 
                 for (auto& b : blockList.items()) {
                     std::string key = b.key();
-                    std::cout << key << std::endl;
                     if (!isBEBlock(key)) {
                         Block* block = nullptr;
+                        std::string bname = b.value()["bedrock_identifier"];
+                        stringReplace(bname, "stone_block_", "stone_");
+                        stringReplace(bname, "sealan_tern", "sealantern");
+                        stringReplace(bname, "concrete_powder", "concretepowder");
                         if (b.value().contains("bedrock_states")) {
                             std::string snbt = "{\"name\":\"";
-                            snbt += b.value()["bedrock_identifier"];
+                            snbt += bname;
                             snbt += "\",\"states\":";
                             std::string states = b.value()["bedrock_states"].dump();
                             stringReplace(states, ":false", ":0b");
@@ -75,15 +82,17 @@ namespace worldedit {
                             try {
                                 block = Block::create(CompoundTag::fromSNBT(snbt).get());
                             } catch (...) {
-                                    std::cout << snbt << std::endl;
+                                logger.error(snbt);
+                                break;
                             }
                             // if (block == nullptr)
-                            //     std::cout << snbt << std::endl;
+                            //     logger.error(bname);
                         } else {
                             try {
-                                    block = Block::create(b.value()["bedrock_identifier"], 0);
+                                block = Block::create(bname, 0);
                             } catch (...) {
-                                    std::cout << b.value()["bedrock_identifier"] << std::endl;
+                                logger.error(bname);
+                                break;
                             }
                         }
                         if (block != nullptr) {
@@ -95,9 +104,10 @@ namespace worldedit {
 
                 try {
                 Global<CommandRegistry>->setSoftEnumValues("blockPattern", blocksName);
-                    std::cout << "blockPattern" << std::endl;
+                    // std::cout << "blockPattern" << std::endl;
                 } catch (...) {
-                    std::cout << "blockPattern error" << std::endl;
+                logger.error("blockPattern error");
+                // std::cout << "blockPattern error" << std::endl;
                 }
             },
             20);

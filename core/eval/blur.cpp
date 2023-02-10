@@ -3,6 +3,7 @@
 //
 #include "blur.hpp"
 #include "MC/Level.hpp"
+#include "I18nAPI.h"
 
 namespace worldedit {
 
@@ -40,8 +41,8 @@ namespace worldedit {
         std::vector<double> res;
         try {
             res.resize(heightMap.size());
-        } catch (std::bad_alloc) {
-            Level::broadcastText("Out of memory", TextType::RAW);
+        } catch (...) {
+            Level::broadcastText(tr("worldedit.memory.out"), TextType::RAW);
             return std::vector<double>(0);
         }
         auto kernel = gaussianKernel(ksize);

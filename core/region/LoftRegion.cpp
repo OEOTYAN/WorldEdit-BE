@@ -135,7 +135,7 @@ namespace worldedit {
             for (double t2 = 0; t2 <= 1.0; t2 += step2) {
                 auto tmpPos = tmpCurve.getPosition(t2).toBlockPos();
                 posCache.insert(PosWithUV(tmpPos, 1 - t2, 1 - t));
-                box = box.merge(tmpPos);
+                box.merge(tmpPos);
             }
         }
         boundingBox = box;

@@ -28,12 +28,50 @@ namespace worldedit {
     }
 
     PlayerData::PlayerData() {
-        historyList.resize(0);
+        init = false;
+        xuid = "";
+        maxHistoryLength = 20;
+        updateArg = 2;
+        updateExArg = 1;
+
+         mainPos;
+         mainPosTime = 0;
+         mainPosDim = -1;
+
+         vicePos;
+        vicePosTime = 0;
+        vicePosDim = -1;
+
+        gMask = "";
+         region = nullptr;
+        historyList.clear();
+        historyFlag1 = 0;
+        historyFlag2 = 0;
+        historyList.resize(maxHistoryLength);
     }
 
     PlayerData::PlayerData(::Player* player) {
+        historyList.clear();
+        historyFlag1 = 0;
+        historyFlag2 = 0;
         historyList.resize(maxHistoryLength);
         xuid = player->getXuid();
+        init = true;
+        maxHistoryLength = 20;
+        updateArg = 2;
+        updateExArg = 1;
+
+        mainPos;
+        mainPosTime = 0;
+        mainPosDim = -1;
+
+        vicePos;
+        vicePosTime = 0;
+        vicePosDim = -1;
+
+        gMask = "";
+        region = nullptr;
+        // std::cout << "maxHistoryLength  " << maxHistoryLength << std::endl;
     }
 
     bool PlayerData::changeVicePos(BlockInstance blockInstance, bool output) {
@@ -52,8 +90,8 @@ namespace worldedit {
         }
         if (region->setVicePos(pos, player->getDimensionId())) {
             if (output)
-                player->sendText("worldedit.selection." + region->getName() + ".explain.secondary",
-                                          pos.toString(), region->size());
+                player->sendText("worldedit.selection." + region->getName() + ".explain.secondary", pos.toString(),
+                                 region->size());
             vicePos = pos;
             vicePosTime = 0;
             vicePosDim = player->getDimensionId();
@@ -81,8 +119,8 @@ namespace worldedit {
         }
         if (region->setMainPos(pos, player->getDimensionId())) {
             if (output)
-                player->sendText("worldedit.selection." + region->getName() + ".explain.primary",
-                                          pos.toString(), region->size());
+                player->sendText("worldedit.selection." + region->getName() + ".explain.primary", pos.toString(),
+                                 region->size());
             mainPos = pos;
             mainPosTime = 0;
             mainPosDim = player->getDimensionId();
@@ -97,8 +135,7 @@ namespace worldedit {
         return false;
     }
 
-    void PlayerData::setVarByPlayer(
-        std::unordered_map<::std::string, double>& variables) {
+    void PlayerData::setVarByPlayer(std::unordered_map<::std::string, double>& variables) {
         Player* player = Global<Level>->getPlayer(xuid);
         auto playerPos = player->getPosition();
         auto playerRot = player->getRotation();
@@ -109,14 +146,11 @@ namespace worldedit {
         variables["pt"] = playerRot.y;
     }
 
-    bool PlayerData::setBlockForHistory(BlockSource* blockSource,
-                                        const BlockPos& pos,
-                                        Block* block,
-                                        Block* exblock) {
+    bool PlayerData::setBlockForHistory(BlockSource* blockSource, const BlockPos& pos, Block* block, Block* exblock) {
         CommandUtils::clearBlockEntityContents(*blockSource, pos);
         blockSource->setExtraBlock(pos, *BedrockBlocks::mAir, 16 + updateArg);
         // if (updateExArg % 2 == 1) {
-            blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
+        blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
         // }
         //  else {
         //     blockSource->setBlockNoUpdate(pos.x, pos.y, pos.z, *block);
@@ -126,11 +160,10 @@ namespace worldedit {
                 blockSource->setExtraBlock(pos, *exblock, 16 + updateArg);
             }
         } else {
-            blockSource->setExtraBlock(pos, *VanillaBlocks::mFlowingWater,
-                                       16 + updateArg);
+            blockSource->setExtraBlock(pos, *VanillaBlocks::mFlowingWater, 16 + updateArg);
             // if (updateExArg % 2 == 1) {
-                blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
-            // } 
+            blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
+            // }
             // else {
             //     blockSource->setBlockNoUpdate(pos.x, pos.y, pos.z, *block);
             // }
@@ -138,13 +171,12 @@ namespace worldedit {
         return true;
     }
 
-    bool PlayerData::setBlockSimple(
-        BlockSource* blockSource,
-        class EvalFunctions& funcs,
-        std::unordered_map<std::string, double> const& var,
-        const BlockPos& pos,
-        Block* block,
-        Block* exblock) {
+    bool PlayerData::setBlockSimple(BlockSource* blockSource,
+                                    class EvalFunctions& funcs,
+                                    std::unordered_map<std::string, double> const& var,
+                                    const BlockPos& pos,
+                                    Block* block,
+                                    Block* exblock) {
         if (gMask != "") {
             if (cpp_eval::eval<double>(gMask, var, funcs) <= 0.5) {
                 return false;
@@ -154,7 +186,7 @@ namespace worldedit {
         CommandUtils::clearBlockEntityContents(*blockSource, pos);
         blockSource->setExtraBlock(pos, *BedrockBlocks::mAir, 16 + updateArg);
         // if (updateExArg % 2 == 1) {
-            blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
+        blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
         // } else {
         //     blockSource->setBlockNoUpdate(pos.x, pos.y, pos.z, *block);
         // }
@@ -163,10 +195,9 @@ namespace worldedit {
                 blockSource->setExtraBlock(pos, *exblock, 16 + updateArg);
             }
         } else {
-            blockSource->setExtraBlock(pos, *VanillaBlocks::mFlowingWater,
-                                       16 + updateArg);
+            blockSource->setExtraBlock(pos, *VanillaBlocks::mFlowingWater, 16 + updateArg);
             // if (updateExArg % 2 == 1) {
-                blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
+            blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
             // } else {
             //     blockSource->setBlockNoUpdate(pos.x, pos.y, pos.z, *block);
             // }
@@ -175,6 +206,7 @@ namespace worldedit {
     }
 
     Clipboard* PlayerData::getNextHistory() {
+        std::cout << "getNextHistory" << std::endl;
         historyFlag2 += 1;
         historyFlag2 %= maxHistoryLength;
         historyFlag1 = historyFlag2;
@@ -182,6 +214,7 @@ namespace worldedit {
     }
 
     std::pair<Clipboard*, int> PlayerData::getUndoHistory() {
+        std::cout << "getUndoHistory" << std::endl;
         std::pair<Clipboard*, int> result = {nullptr, -1};
         int maximum = (historyFlag1 + 1) % maxHistoryLength;
         int current = historyFlag2;
@@ -204,6 +237,7 @@ namespace worldedit {
     }
 
     std::pair<Clipboard*, int> PlayerData::getRedoHistory() {
+        std::cout << "getRedoHistory" << std::endl;
         std::pair<Clipboard*, int> result = {nullptr, -1};
         int maximum = (historyFlag1 + 1) % maxHistoryLength;
         int current = historyFlag2 + 1;
@@ -228,28 +262,32 @@ namespace worldedit {
                                                      float maxDistance,
                                                      bool ignoreBorderBlocks,
                                                      bool fullOnly) {
-        Player* player = Global<Level>->getPlayer(xuid);
+        try {
+            Player* player = Global<Level>->getPlayer(xuid);
 
-        auto* bs = &player->getRegion();
-        auto pos = player->getCameraPos();
-        auto viewVec = player->getViewVector(1.0f);
-        auto viewPos = pos + (viewVec * maxDistance);
-        int maxDisManhattan = (int)((maxDistance + 1) * 2);
-        HitResult result = const_cast<BlockSource*>(bs)->clip(pos, viewPos, includeLiquid, solidOnly, maxDisManhattan,
-                                                              ignoreBorderBlocks, fullOnly);
-        if (result.isHit() || (includeLiquid && result.isHitLiquid())) {
-            BlockPos bpos{};
-            if (includeLiquid && result.isHitLiquid()) {
-                bpos = result.getLiquidPos();
-                face = result.getLiquidFacing();
-            } else {
-                bpos = result.getBlockPos();
-                face = result.getFacing();
+            auto* bs = &player->getRegion();
+            auto pos = player->getCameraPos();
+            auto viewVec = player->getViewVector(1.0f);
+            auto viewPos = pos + (viewVec * maxDistance);
+            int maxDisManhattan = (int)((maxDistance + 1) * 2);
+            HitResult result = const_cast<BlockSource*>(bs)->clip(pos, viewPos, includeLiquid, solidOnly,
+                                                                  maxDisManhattan, ignoreBorderBlocks, fullOnly);
+            if (result.isHit() || (includeLiquid && result.isHitLiquid())) {
+                BlockPos bpos{};
+                if (includeLiquid && result.isHitLiquid()) {
+                    bpos = result.getLiquidPos();
+                    face = result.getLiquidFacing();
+                } else {
+                    bpos = result.getBlockPos();
+                    face = result.getFacing();
+                }
+                if (pos.toBlockPos().distanceTo(bpos) < maxDistance)
+                    return Level::getBlockInstance(bpos, player->getDimensionId());
             }
-            // auto block = const_cast<Block*>(&bs.getBlock(bpos));
-            return Level::getBlockInstance(bpos, player->getDimensionId());
+            return BlockInstance::Null;
+        } catch (...) {
+            return BlockInstance::Null;
         }
-        return BlockInstance::Null;
     }
 
     BlockInstance PlayerData::getBlockFromViewVector(bool includeLiquid,

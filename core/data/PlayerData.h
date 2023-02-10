@@ -8,7 +8,8 @@
 namespace worldedit {
     class PlayerData {
        public:
-        std::string xuid="";
+        bool init = false;
+        std::string xuid = "";
         int maxHistoryLength = 20;
         int updateArg = 2;
         int updateExArg = 1;
@@ -39,27 +40,29 @@ namespace worldedit {
         std::pair<class Clipboard*, int> getRedoHistory();
         bool changeMainPos(BlockInstance blockInstance, bool output = true);
         bool changeVicePos(BlockInstance blockInstance, bool output = true);
-        void setVarByPlayer(
-            std::unordered_map<::std::string, double>& variables);
-        bool setBlockSimple(
-            class BlockSource* blockSource,
-            class EvalFunctions& funcs,
-            std::unordered_map<std::string, double> const& var,
-            const BlockPos& pos,
-            class Block* block = const_cast<Block*>(BedrockBlocks::mAir),
-            class Block* exblock = const_cast<Block*>(BedrockBlocks::mAir));
-        bool setBlockForHistory(
-            class BlockSource* blockSource,
-            const BlockPos& pos,
-            class Block* block ,
-            class Block* exblock);
-     class BlockInstance  getBlockFromViewVector(FaceID& face,bool includeLiquid = false, bool solidOnly = false, float maxDistance = 5.25f, bool ignoreBorderBlocks = true, bool fullOnly = false);
-     class BlockInstance getBlockFromViewVector(bool includeLiquid = false,
-                                                bool solidOnly = false,
-                                                float maxDistance = 5.25f,
-                                                bool ignoreBorderBlocks = true,
-                                                bool fullOnly = false);
-     ~PlayerData();
+        void setVarByPlayer(std::unordered_map<::std::string, double>& variables);
+        bool setBlockSimple(class BlockSource* blockSource,
+                            class EvalFunctions& funcs,
+                            std::unordered_map<std::string, double> const& var,
+                            const BlockPos& pos,
+                            class Block* block = const_cast<Block*>(BedrockBlocks::mAir),
+                            class Block* exblock = const_cast<Block*>(BedrockBlocks::mAir));
+        bool setBlockForHistory(class BlockSource* blockSource,
+                                const BlockPos& pos,
+                                class Block* block,
+                                class Block* exblock);
+        class BlockInstance getBlockFromViewVector(FaceID& face,
+                                                   bool includeLiquid = false,
+                                                   bool solidOnly = false,
+                                                   float maxDistance = 5.25f,
+                                                   bool ignoreBorderBlocks = true,
+                                                   bool fullOnly = false);
+        class BlockInstance getBlockFromViewVector(bool includeLiquid = false,
+                                                   bool solidOnly = false,
+                                                   float maxDistance = 5.25f,
+                                                   bool ignoreBorderBlocks = true,
+                                                   bool fullOnly = false);
+        ~PlayerData();
     };
 
 }  // namespace worldedit
