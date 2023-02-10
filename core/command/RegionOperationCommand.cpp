@@ -16,7 +16,7 @@
 #include "MC/VanillaBlocks.hpp"
 #include "MC/ListTag.hpp"
 #include "WorldEdit.h"
-#include "RNG.h"
+#include "Utils/RNG.h"
 #include "region/Regions.h"
 
 namespace worldedit {

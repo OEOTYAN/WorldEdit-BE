@@ -5,9 +5,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_BUILD_TYPE Release)
 
 file(GLOB_RECURSE SRC_FILES_DIR
-    ${PROJECT_SOURCE_DIR}/SDK/Header/*.cpp
-    ${PROJECT_SOURCE_DIR}/SDK/Header/*.hpp
-    ${PROJECT_SOURCE_DIR}/SDK/Header/*.h
     ${PROJECT_SOURCE_DIR}/core/*/*.cpp
     ${PROJECT_SOURCE_DIR}/core/*/*.hpp
     ${PROJECT_SOURCE_DIR}/core/*/*.h

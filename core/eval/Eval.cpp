@@ -7,7 +7,7 @@
 #include <MC/Dimension.hpp>
 #include <MC/Player.hpp>
 #include "FastNoiseLite.h"
-#include "RNG.h"
+#include "Utils/RNG.h"
 // #include <MC/ChunkBlockPos.hpp>
 
 #define tryGetParameter(size, params, n, f, t) \
