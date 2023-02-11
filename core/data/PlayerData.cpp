@@ -118,10 +118,12 @@ namespace worldedit {
                                                Block* block,
                                                Block* exblock) {
         bool res = false;
-        BlockActor* be = blockSource->getBlockEntity(pos);
-        if (be != nullptr) {
-            clearBlockEntity(be);
-        }
+        CommandUtils::clearBlockEntityContents(*blockSource, pos);
+        CommandUtils::clearBlockEntityLootTable(*blockSource, pos);
+        // BlockActor* be = blockSource->getBlockEntity(pos);
+        // if (be != nullptr) {
+        //     clearBlockEntity(be);
+        // }
         if (updateExArg % 2 == 1) {
             res |= blockSource->setExtraBlock(pos, *BedrockBlocks::mAir, updateArg);
             res |= blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
@@ -177,10 +179,12 @@ namespace worldedit {
                                                         Block* exblock,
                                                         int biomeId) {
         bool res = false;
-        BlockActor* be = blockSource->getBlockEntity(pos);
-        if (be != nullptr) {
-            clearBlockEntity(be);
-        }
+        CommandUtils::clearBlockEntityContents(*blockSource, pos);
+        CommandUtils::clearBlockEntityLootTable(*blockSource, pos);
+        // BlockActor* be = blockSource->getBlockEntity(pos);
+        // if (be != nullptr) {
+        //     clearBlockEntity(be);
+        // }
         auto& dim = blockSource->getDimension();
         ChunkBlockPos cpos(pos, dim.getMinHeight());
         SubChunkPos scpos(pos);
