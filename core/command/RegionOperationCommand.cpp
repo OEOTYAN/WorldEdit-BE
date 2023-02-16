@@ -2215,7 +2215,6 @@ namespace worldedit {
                                             shulkItem->remove(removeNum2);
                                             afterVal.push_back(shulkItem->getNbt().get());
                                             delete shulkItem;
-                                            item = nullptr;
                                         }
                                         if (afterVal.size() < 1) {
                                             imap->erase("Items");

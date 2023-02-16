@@ -42,12 +42,12 @@ add_link_options(
     /MANIFESTUAC:NO /OPT:ICF /ERRORREPORT:PROMPT /NOLOGO /DELAYLOAD:"bedrock_server.dll" /TLBID:1
 )
 
-add_library(WorldEdit SHARED ${SRC_FILES_DIR})
+add_library(${CMAKE_PROJECT_NAME} SHARED ${SRC_FILES_DIR})
 
-add_custom_command(TARGET WorldEdit PRE_BUILD
+add_custom_command(TARGET ${CMAKE_PROJECT_NAME} PRE_BUILD
     COMMAND cmd /c ${PROJECT_SOURCE_DIR}/prepareLib.cmd ${PROJECT_SOURCE_DIR}
     COMMENT "Preparing Library"
 )
-add_custom_command(TARGET WorldEdit POST_BUILD
+add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
     COMMAND cmd /c ${PROJECT_SOURCE_DIR}/runbds.bat ${PROJECT_SOURCE_DIR}
 )
