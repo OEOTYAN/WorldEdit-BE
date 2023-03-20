@@ -129,7 +129,7 @@ namespace worldedit {
                     EvalFunctions f;
                     f.setbs(blockSource);
                     f.setbox(boundingBox);
-                    std::unordered_map<std::string, double> variables;
+                    phmap::flat_hash_map<std::string, double> variables;
                     playerData.setVarByPlayer(variables);
                     auto playerPos = player->getPosition();
                     Vec3 center = boundingBox.getCenter().toVec3();
@@ -195,7 +195,7 @@ namespace worldedit {
                     EvalFunctions f;
                     f.setbs(&player->getRegion());
                     f.setbox(box);
-                    std::unordered_map<std::string, double> variables;
+                    phmap::flat_hash_map<std::string, double> variables;
                     playerData.setVarByPlayer(variables);
 
                     BlockInstance blockInstance;

@@ -102,7 +102,7 @@ namespace worldedit {
         return false;
     }
 
-    void PlayerData::setVarByPlayer(std::unordered_map<::std::string, double>& variables) {
+    void PlayerData::setVarByPlayer(phmap::flat_hash_map<::std::string, double>& variables) {
         Player* player = Global<Level>->getPlayer(xuid);
         auto playerPos = player->getPosition();
         auto playerRot = player->getRotation();
@@ -237,7 +237,7 @@ namespace worldedit {
 
     bool PlayerData::setBlockSimple(BlockSource* blockSource,
                                     class EvalFunctions& funcs,
-                                    std::unordered_map<std::string, double> const& var,
+                                    phmap::flat_hash_map<std::string, double> const& var,
                                     const BlockPos& pos,
                                     Block* block,
                                     Block* exblock) {
@@ -251,7 +251,7 @@ namespace worldedit {
 
     bool PlayerData::setBlockWithBiomeSimple(BlockSource* blockSource,
                                              class EvalFunctions& funcs,
-                                             std::unordered_map<std::string, double> const& var,
+                                             phmap::flat_hash_map<std::string, double> const& var,
                                              const BlockPos& pos,
                                              Block* block,
                                              Block* exblock,

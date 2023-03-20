@@ -43,7 +43,7 @@ namespace worldedit {
                        BlockSource* blockSource,
                        class PlayerData& data,
                        class EvalFunctions& funcs,
-                       std::unordered_map<std::string, double> const& var, bool setBiome = false);
+                       phmap::flat_hash_map<std::string, double> const& var, bool setBiome = false);
         void forEachBlockInClipboard(const std::function<void(const BlockPos&)>& todo);
     };
 }  // namespace worldedit

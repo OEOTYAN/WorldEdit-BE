@@ -14,7 +14,7 @@ namespace worldedit {
         std::string function = "1";
         Percents() = default;
 
-        double getPercents(const std::unordered_map<::std::string, double>& variables, class EvalFunctions& funcs);
+        double getPercents(const phmap::flat_hash_map<::std::string, double>& variables, class EvalFunctions& funcs);
     };
     class RawBlock {
        public:
@@ -29,7 +29,7 @@ namespace worldedit {
         std::string blockDatafunc = "0";
         RawBlock();
 
-        class Block* getBlock(const std::unordered_map<::std::string, double>& variables, class EvalFunctions& funcs);
+        class Block* getBlock(const phmap::flat_hash_map<::std::string, double>& variables, class EvalFunctions& funcs);
     };
 
     class BlockListPattern final : public Pattern {
@@ -40,18 +40,18 @@ namespace worldedit {
 
         BlockListPattern(std::string str, std::string xuid);
 
-        class Block* getBlock(const std::unordered_map<::std::string, double>& variables,
+        class Block* getBlock(const phmap::flat_hash_map<::std::string, double>& variables,
                               class EvalFunctions& funcs) override;
 
         bool hasBlock(class Block* block) override;
 
-        bool setBlock(const std::unordered_map<::std::string, double>& variables,
+        bool setBlock(const phmap::flat_hash_map<::std::string, double>& variables,
                       class EvalFunctions& funcs,
                       BlockSource* blockSource,
                       const BlockPos& pos) override;
 
        private:
-        RawBlock* getRawBlock(const std::unordered_map<::std::string, double>& variables, class EvalFunctions& funcs);
+        RawBlock* getRawBlock(const phmap::flat_hash_map<::std::string, double>& variables, class EvalFunctions& funcs);
     };
 
 }  // namespace worldedit

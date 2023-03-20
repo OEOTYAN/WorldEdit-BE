@@ -59,7 +59,7 @@ namespace worldedit {
                                BlockSource* blockSource,
                                class PlayerData& data,
                                class EvalFunctions& funcs,
-                               std::unordered_map<std::string, double> const& var,
+                               phmap::flat_hash_map<std::string, double> const& var,
                                bool setBiome) const {
         bool res;
         if (setBiome && hasBiome) {
@@ -86,7 +86,7 @@ namespace worldedit {
                                BlockSource* blockSource,
                                class PlayerData& data,
                                class EvalFunctions& funcs,
-                               std::unordered_map<std::string, double> const& var,
+                               phmap::flat_hash_map<std::string, double> const& var,
                                Rotation rotation,
                                Mirror mirror,
                                bool setBiome) const {

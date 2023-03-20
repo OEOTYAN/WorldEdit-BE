@@ -48,13 +48,13 @@ namespace worldedit {
 
         void updateEdges();
 
-        std::unordered_set<BlockPos> vertices;
+        phmap::flat_hash_set<BlockPos> vertices;
 
         std::vector<Triangle> triangles;
 
-        std::unordered_set<Edge, _hash> edges;
+        phmap::flat_hash_set<Edge, _hash> edges;
 
-        std::unordered_set<BlockPos> vertexBacklog;
+        phmap::flat_hash_set<BlockPos> vertexBacklog;
 
         BlockPos centerAccum;
 

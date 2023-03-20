@@ -14,6 +14,19 @@ void preparePath(std::string_view path) {
 }
 
 void PluginInit() {
+    if (!ll::getPlugin("ParticleAPI")) {
+        std::string path = "plugins/LiteLoader/ParticleAPI.dll";
+        if (std::filesystem::exists(path)) {
+            auto* handle = LoadLibrary(str2wstr(path).c_str());
+            if (!handle) {
+                throw std::runtime_error("Cannot get ParticleAPI.dll");
+            }
+            ParticleCUI::init(handle);
+        } else {
+            throw std::runtime_error("ParticleAPI.dll not exist!");
+        }
+    }
+
     preparePath("./plugins/WorldEdit");
     preparePath("./plugins/WorldEdit/lang");
     preparePath("./plugins/WorldEdit/image");

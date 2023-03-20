@@ -175,7 +175,7 @@ namespace worldedit {
                 }
                 return;
             } else {
-                std::unordered_set<BlockPos> posCache2;
+                phmap::flat_hash_set<BlockPos> posCache2;
                 for (int i = 0; i < num; ++i) {
                     std::vector<Node> nodes2;
                     nodes2.clear();
@@ -197,7 +197,7 @@ namespace worldedit {
                 return;
             }
         } else {
-            std::unordered_set<BlockPos> posCache2;
+            phmap::flat_hash_set<BlockPos> posCache2;
 
             for (int i = 0; i < num; ++i) {
                 std::vector<Node> nodes2;

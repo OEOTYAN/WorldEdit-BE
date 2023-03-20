@@ -144,7 +144,7 @@ namespace worldedit {
                     Region* region = playerData.region;
                     auto dimID = region->getDimensionID();
                     auto blockSource = &player->getRegion();
-                    std::unordered_map<std::string, long long> blocksMap;
+                    phmap::flat_hash_map<std::string, long long> blocksMap;
                     std::vector<std::pair<std::string, long long>> blocksMap2;
                     blocksMap2.resize(0);
                     long long all = 0;

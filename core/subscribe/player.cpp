@@ -13,7 +13,7 @@ namespace worldedit {
                          class ItemStack* item,
                          BlockInstance& blockInstance,
                          FaceID mFace) {
-        static std::unordered_map<std::string, long long> tickMap;
+        static phmap::flat_hash_map<std::string, long long> tickMap;
 
         if (!(player->isOP() && player->isCreative())) {
             return true;
@@ -87,7 +87,7 @@ namespace worldedit {
                           class ItemStack* item,
                           BlockInstance& blockInstance,
                           FaceID mFace) {
-        static std::unordered_map<std::string, long long> tickMap;
+        static phmap::flat_hash_map<std::string, long long> tickMap;
 
         if (!(player->isOP() && player->isCreative())) {
             return true;

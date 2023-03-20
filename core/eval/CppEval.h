@@ -21,11 +21,11 @@ namespace cpp_eval {
     number eval(std::string const& expression);
 
     template <typename number>
-    number eval(std::string const& expression, const ::std::unordered_map<::std::string, number>& variables);
+    number eval(std::string const& expression, const ::phmap::flat_hash_map<::std::string, number>& variables);
 
     template <typename number, typename functions>
     number eval(std::string const& expression,
-                const ::std::unordered_map<::std::string, number>& variables,
+                const ::phmap::flat_hash_map<::std::string, number>& variables,
                 functions& funcs);
 
     template <typename number>
@@ -36,20 +36,20 @@ namespace cpp_eval {
 
     template <typename number>
     number eval(std::string const& expression) {
-        ::std::unordered_map<::std::string, number> variables;
+        ::phmap::flat_hash_map<::std::string, number> variables;
         dummy_functions<number> funcs;
         return eval(expression, variables, funcs);
     }
 
     template <typename number>
-    number eval(std::string const& expression, const ::std::unordered_map<::std::string, number>& variables) {
+    number eval(std::string const& expression, const ::phmap::flat_hash_map<::std::string, number>& variables) {
         dummy_functions<number> funcs;
         return eval(expression, variables, funcs);
     }
 
     template <typename number, typename functions>
     class evaler {
-        const ::std::unordered_map<::std::string, number>& mVariables;
+        const ::phmap::flat_hash_map<::std::string, number>& mVariables;
         functions& mFuncs;
         const char* mCurrent;
         enum Type {
@@ -420,7 +420,7 @@ namespace cpp_eval {
         }
 
        public:
-        evaler(const ::std::unordered_map<::std::string, number>& variables, functions& funcs)
+        evaler(const ::phmap::flat_hash_map<::std::string, number>& variables, functions& funcs)
             : mVariables(variables), mFuncs(funcs) {}
 
         number operator()(const char* expr) {
@@ -435,7 +435,7 @@ namespace cpp_eval {
 
     template <typename number, typename functions>
     number eval(std::string const& expression,
-                const ::std::unordered_map<::std::string, number>& variables,
+                const ::phmap::flat_hash_map<::std::string, number>& variables,
                 functions& funcs) {
         return evaler<number, functions>(variables, funcs)(expression.c_str());
     }

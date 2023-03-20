@@ -25,14 +25,14 @@ namespace worldedit {
         Pattern() = default;
         Pattern(std::string xuid);
 
-        virtual class Block* getBlock(const std::unordered_map<::std::string, double>& variables,
+        virtual class Block* getBlock(const phmap::flat_hash_map<::std::string, double>& variables,
                                       class EvalFunctions& funcs) {
             return nullptr;
         }
 
         virtual bool hasBlock(class Block* block) { return false; }
 
-        virtual bool setBlock(const std::unordered_map<::std::string, double>& variables,
+        virtual bool setBlock(const phmap::flat_hash_map<::std::string, double>& variables,
                               class EvalFunctions& funcs,
                               BlockSource* blockSource,
                               const BlockPos& pos) {

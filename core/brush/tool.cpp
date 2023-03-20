@@ -108,7 +108,7 @@ namespace worldedit {
 
         EvalFunctions f;
         f.setbs(blockSource);
-        std::unordered_map<std::string, double> variables;
+        phmap::flat_hash_map<std::string, double> variables;
 
         if (playerData.maxHistoryLength > 0) {
             auto history = playerData.getNextHistory();
@@ -152,7 +152,7 @@ namespace worldedit {
 
         EvalFunctions f;
         f.setbs(blockSource);
-        std::unordered_map<std::string, double> variables;
+        phmap::flat_hash_map<std::string, double> variables;
         auto playerPos = player->getPosition();
         auto playerRot = player->getRotation();
         variables["px"] = playerPos.x;
@@ -160,7 +160,7 @@ namespace worldedit {
         variables["pz"] = playerPos.z;
         variables["pp"] = playerRot.x;
         variables["pt"] = playerRot.y;
-        std::unordered_set<BlockPos> s;
+        phmap::flat_hash_set<BlockPos> s;
         s.insert(pos0);
 
         BoundingBox boundingBox = BoundingBox(pos0, pos0);

@@ -24,7 +24,7 @@ namespace worldedit {
         EvalFunctions f;
         f.setbs(blockSource);
         // auto* chunk = blockSource->getChunkAt(BlockPos(x, maxY, z));
-        std::unordered_map<std::string, double> variables;
+        phmap::flat_hash_map<std::string, double> variables;
         for (int y = maxY; y >= minY; y--) {
             BlockPos pos(x, y, z);
             auto* block = &blockSource->getBlock(pos);

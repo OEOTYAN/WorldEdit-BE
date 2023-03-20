@@ -98,7 +98,7 @@ namespace worldedit {
         EvalFunctions f;
         f.setbs(blockSource);
         f.setbox(box);
-        std::unordered_map<std::string, double> variables;
+        phmap::flat_hash_map<std::string, double> variables;
         playerData.setVarByPlayer(variables);
 
         auto playerPos = player->getPosition();

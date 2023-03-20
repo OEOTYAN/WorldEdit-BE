@@ -17,8 +17,6 @@ include_directories(SDK/include/llapi)
 include_directories(SDK/include)
 include_directories(WorldEdit)
 
-link_directories(.)
-
 add_definitions(
     -D"NDEBUG"
     -D"NOMINMAX"
@@ -43,6 +41,13 @@ add_link_options(
 )
 
 add_library(${CMAKE_PROJECT_NAME} SHARED ${SRC_FILES_DIR})
+
+target_link_libraries(${CMAKE_PROJECT_NAME}
+    "${CMAKE_SOURCE_DIR}/SDK/lib/LiteLoader.lib"
+    "${CMAKE_SOURCE_DIR}/SDK/lib/bedrock_server_api.lib"
+    "${CMAKE_SOURCE_DIR}/SDK/lib/bedrock_server_var.lib"
+    "${CMAKE_SOURCE_DIR}/SDK/lib/SymDBHelper.lib"
+)
 
 add_custom_command(TARGET ${CMAKE_PROJECT_NAME} PRE_BUILD
     COMMAND cmd /c ${PROJECT_SOURCE_DIR}/prepareLib.cmd ${PROJECT_SOURCE_DIR}

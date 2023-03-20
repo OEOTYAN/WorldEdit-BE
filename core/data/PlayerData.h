@@ -28,7 +28,7 @@ namespace worldedit {
         std::vector<class Clipboard> historyList;
         int historyFlag1 = 0;
         int historyFlag2 = 0;
-        std::unordered_map<std::string, class Brush*> brushMap;
+        phmap::flat_hash_map<std::string, class Brush*> brushMap;
 
         PlayerData();
         PlayerData(class Player*);
@@ -39,10 +39,10 @@ namespace worldedit {
         std::pair<class Clipboard*, int> getRedoHistory();
         bool changeMainPos(BlockInstance blockInstance, bool output = true);
         bool changeVicePos(BlockInstance blockInstance, bool output = true);
-        void setVarByPlayer(std::unordered_map<::std::string, double>& variables);
+        void setVarByPlayer(phmap::flat_hash_map<::std::string, double>& variables);
         bool setBlockWithBiomeSimple(class BlockSource* blockSource,
                                      class EvalFunctions& funcs,
-                                     std::unordered_map<std::string, double> const& var,
+                                     phmap::flat_hash_map<std::string, double> const& var,
                                      const BlockPos& pos,
                                      class Block* block,
                                      class Block* exblock,
@@ -53,7 +53,7 @@ namespace worldedit {
                                        class Block* exblock,int biomeId);
         bool setBlockSimple(class BlockSource* blockSource,
                             class EvalFunctions& funcs,
-                            std::unordered_map<std::string, double> const& var,
+                            phmap::flat_hash_map<std::string, double> const& var,
                             const BlockPos& pos,
                             class Block* block = const_cast<Block*>(BedrockBlocks::mAir),
                             class Block* exblock = const_cast<Block*>(BedrockBlocks::mAir));

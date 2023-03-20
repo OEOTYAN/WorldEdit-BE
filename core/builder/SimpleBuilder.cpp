@@ -39,18 +39,18 @@ namespace worldedit {
         auto& playerData = getPlayersData(xuid);
         auto blockSource = Level::getBlockSource(dim);
 
-        std::function<void(EvalFunctions&, std::unordered_map<std::string, double> const&,
+        std::function<void(EvalFunctions&, phmap::flat_hash_map<std::string, double> const&,
                            std::function<void()> const&)>
             maskLambda;
         if (mask != "") {
-            maskLambda = [&](EvalFunctions& func, const std::unordered_map<std::string, double>& var,
+            maskLambda = [&](EvalFunctions& func, const phmap::flat_hash_map<std::string, double>& var,
                              std::function<void()> const& todo) mutable {
                 if (cpp_eval::eval<double>(mask, var, func) > 0.5) {
                     todo();
                 }
             };
         } else {
-            maskLambda = [&](EvalFunctions& func, const std::unordered_map<std::string, double>& var,
+            maskLambda = [&](EvalFunctions& func, const phmap::flat_hash_map<std::string, double>& var,
                              std::function<void()> const& todo) mutable { todo(); };
         }
 
@@ -61,7 +61,7 @@ namespace worldedit {
         EvalFunctions f;
         f.setbs(blockSource);
         f.setbox(box);
-        std::unordered_map<std::string, double> variables;
+        phmap::flat_hash_map<std::string, double> variables;
         playerData.setVarByPlayer(variables);
 
         if (playerData.maxHistoryLength > 0) {
@@ -84,7 +84,7 @@ namespace worldedit {
         Y = (int)R;
         p = (int)(3 - 2 * R);
 
-        std::unordered_set<BlockPos> bset;
+        phmap::flat_hash_set<BlockPos> bset;
 
         for (; X <= Y; X++) {
             int k = hollow ? Y : X;
@@ -138,18 +138,18 @@ namespace worldedit {
         auto& playerData = getPlayersData(xuid);
         auto blockSource = Level::getBlockSource(dim);
 
-        std::function<void(EvalFunctions&, std::unordered_map<std::string, double> const&,
+        std::function<void(EvalFunctions&, phmap::flat_hash_map<std::string, double> const&,
                            std::function<void()> const&)>
             maskLambda;
         if (mask != "") {
-            maskLambda = [&](EvalFunctions& func, const std::unordered_map<std::string, double>& var,
+            maskLambda = [&](EvalFunctions& func, const phmap::flat_hash_map<std::string, double>& var,
                              std::function<void()> const& todo) mutable {
                 if (cpp_eval::eval<double>(mask, var, func) > 0.5) {
                     todo();
                 }
             };
         } else {
-            maskLambda = [&](EvalFunctions& func, const std::unordered_map<std::string, double>& var,
+            maskLambda = [&](EvalFunctions& func, const phmap::flat_hash_map<std::string, double>& var,
                              std::function<void()> const& todo) mutable { todo(); };
         }
 
@@ -160,7 +160,7 @@ namespace worldedit {
         EvalFunctions f;
         f.setbs(blockSource);
         f.setbox(box);
-        std::unordered_map<std::string, double> variables;
+        phmap::flat_hash_map<std::string, double> variables;
         playerData.setVarByPlayer(variables);
 
         if (playerData.maxHistoryLength > 0) {
@@ -176,7 +176,7 @@ namespace worldedit {
             });
         }
 
-        std::unordered_set<BlockPos> bset;
+        phmap::flat_hash_set<BlockPos> bset;
         double R = radius + 0.5;
         double nextXn = 0;
         for (int x = 0; x <= radius; ++x) {
@@ -241,18 +241,18 @@ namespace worldedit {
         auto& playerData = getPlayersData(xuid);
         auto blockSource = Level::getBlockSource(dim);
 
-        std::function<void(EvalFunctions&, std::unordered_map<std::string, double> const&,
+        std::function<void(EvalFunctions&, phmap::flat_hash_map<std::string, double> const&,
                            std::function<void()> const&)>
             maskLambda;
         if (mask != "") {
-            maskLambda = [&](EvalFunctions& func, const std::unordered_map<std::string, double>& var,
+            maskLambda = [&](EvalFunctions& func, const phmap::flat_hash_map<std::string, double>& var,
                              std::function<void()> const& todo) mutable {
                 if (cpp_eval::eval<double>(mask, var, func) > 0.5) {
                     todo();
                 }
             };
         } else {
-            maskLambda = [&](EvalFunctions& func, const std::unordered_map<std::string, double>& var,
+            maskLambda = [&](EvalFunctions& func, const phmap::flat_hash_map<std::string, double>& var,
                              std::function<void()> const& todo) mutable { todo(); };
         }
 
@@ -263,7 +263,7 @@ namespace worldedit {
         EvalFunctions f;
         f.setbs(blockSource);
         f.setbox(box);
-        std::unordered_map<std::string, double> variables;
+        phmap::flat_hash_map<std::string, double> variables;
         playerData.setVarByPlayer(variables);
 
         if (playerData.maxHistoryLength > 0) {

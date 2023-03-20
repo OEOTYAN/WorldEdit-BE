@@ -112,7 +112,7 @@ namespace worldedit {
             default:
                 break;
         }
-        std::unordered_set<Edge, _hash> borderEdges;
+        phmap::flat_hash_set<Edge, _hash> borderEdges;
         for (auto iter = triangles.begin(); iter != triangles.end();) {
             if ((*iter).above(vertexD)) {
                 for (int i = 0; i < 3; ++i) {
@@ -133,7 +133,7 @@ namespace worldedit {
 
         if (!vertexBacklog.empty()) {
             vertices.erase(vertex);
-            std::unordered_set<BlockPos> vertexBacklog2(vertexBacklog);
+            phmap::flat_hash_set<BlockPos> vertexBacklog2(vertexBacklog);
             vertexBacklog.clear();
             for (BlockPos vertex2 : vertexBacklog2) {
                 addVertex(vertex2);
@@ -175,7 +175,7 @@ namespace worldedit {
     std::pair<std::string, bool> ConvexRegion::shift(const BlockPos& change) {
         boundingBox.min = boundingBox.min + change;
         boundingBox.max = boundingBox.max + change;
-        std::unordered_set<BlockPos> tmpVertices = vertices;
+        phmap::flat_hash_set<BlockPos> tmpVertices = vertices;
         vertices.clear();
         for (auto vertice : tmpVertices) {
             vertices.insert(vertice + change);
@@ -183,7 +183,7 @@ namespace worldedit {
         for (auto& pos : poss) {
             pos += change;
         }
-        std::unordered_set<BlockPos> tmpVertexBacklog = vertexBacklog;
+        phmap::flat_hash_set<BlockPos> tmpVertexBacklog = vertexBacklog;
         vertexBacklog.clear();
         for (auto vertex : tmpVertexBacklog) {
             vertexBacklog.insert(vertex + change);
@@ -195,7 +195,7 @@ namespace worldedit {
                                             triangle.vertices[1] + change.toVec3(),
                                             triangle.vertices[2] + change.toVec3()));
         }
-        std::unordered_set<Edge, _hash> tmpEdges = edges;
+        phmap::flat_hash_set<Edge, _hash> tmpEdges = edges;
         edges.clear();
         for (auto edge : tmpEdges) {
             edges.insert(Edge(edge.start + change.toVec3(), edge.end + change.toVec3()));
@@ -267,7 +267,7 @@ namespace worldedit {
         vertices[1] = v1;
         vertices[2] = v2;
         normal = ((v1 - v0).cross(v2 - v0)).normalize();
-        maxDotProduct = std::max(std::max(normal.dot(v0), normal.dot(v1)), normal.dot(v2));
+        maxDotProduct = (float)std::max(std::max(normal.dot(v0), normal.dot(v1)), normal.dot(v2));
     }
     bool Triangle::operator==(const Triangle& v) const {
         return (v.maxDotProduct == maxDotProduct) && (v.normal == normal) && (v.vertices[0] == vertices[0]) &&

@@ -37,11 +37,11 @@ namespace worldedit {
                       BlockSource* blockSource,
                       class PlayerData& data,
                       class EvalFunctions& funcs,
-                      std::unordered_map<std::string, double> const& var, bool needBiome = false) const;
+                      phmap::flat_hash_map<std::string, double> const& var, bool needBiome = false) const;
         bool setBlock(const BlockPos& pos,
                       BlockSource* blockSource, class PlayerData& data,
                       class EvalFunctions& funcs,
-                      std::unordered_map<std::string, double> const& var,
+                      phmap::flat_hash_map<std::string, double> const& var,
                       Rotation rotation,
                       Mirror mirror, bool needBiome = false) const;
     };

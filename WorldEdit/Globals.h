@@ -7,3 +7,4 @@
 #include "mc/BoundingBox.hpp"
 #include "mc/ChunkPos.hpp"
 #include "mc/ChunkBlockPos.hpp"
+#include "parallel_hashmap/phmap.h"

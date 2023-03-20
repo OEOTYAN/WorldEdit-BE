@@ -37,7 +37,7 @@ namespace worldedit {
         std::vector<KochanekBartelsInterpolation> interpolations;
         std::vector<KochanekBartelsInterpolation> cache1;
         std::vector<KochanekBartelsInterpolation> cache2;
-        std::unordered_set<PosWithUV, _hash2> posCache;
+        phmap::flat_hash_set<PosWithUV, _hash2> posCache;
         bool circle = false;
         static const int quality = 16;
         bool posCached = false;

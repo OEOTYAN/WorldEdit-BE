@@ -21,9 +21,7 @@ namespace worldedit {
         virtual long long set(class Player*, class ::BlockInstance);
         virtual long long lset(class Player*, class ::BlockInstance);
         bool maskFunc(class EvalFunctions& func,
-                      const std::unordered_map<std::string, double>& var,
+                      const phmap::flat_hash_map<std::string, double>& var,
                       std::function<void()> const& todo);
-
-        virtual ~Brush();
     };
 }  // namespace worldedit

@@ -19,13 +19,13 @@
 #include "BlockListPattern.h"
 
 namespace worldedit {
-    double Percents::getPercents(const std::unordered_map<::std::string, double>& variables, EvalFunctions& funcs) {
+    double Percents::getPercents(const phmap::flat_hash_map<::std::string, double>& variables, EvalFunctions& funcs) {
         if (isNum) {
             return value;
         }
         return cpp_eval::eval<double>(function, variables, funcs);
     }
-    Block* RawBlock::getBlock(const std::unordered_map<::std::string, double>& variables, EvalFunctions& funcs) {
+    Block* RawBlock::getBlock(const phmap::flat_hash_map<::std::string, double>& variables, EvalFunctions& funcs) {
         if (constBlock) {
             return block;
         }
@@ -55,7 +55,7 @@ namespace worldedit {
         return Block::create(blockName, mData);
     }
 
-    RawBlock* BlockListPattern::getRawBlock(const std::unordered_map<::std::string, double>& variables,
+    RawBlock* BlockListPattern::getRawBlock(const phmap::flat_hash_map<::std::string, double>& variables,
                                             EvalFunctions& funcs) {
         std::vector<double> weights;
         double total = 0;
@@ -83,7 +83,7 @@ namespace worldedit {
         exBlock = const_cast<class Block*>(BedrockBlocks::mAir);
     }
 
-    Block* BlockListPattern::getBlock(const std::unordered_map<::std::string, double>& variables,
+    Block* BlockListPattern::getBlock(const phmap::flat_hash_map<::std::string, double>& variables,
                                       EvalFunctions& funcs) {
         auto* rawBlock = getRawBlock(variables, funcs);
         if (rawBlock == nullptr) {
@@ -92,7 +92,7 @@ namespace worldedit {
         return rawBlock->getBlock(variables, funcs);
     }
 
-    bool BlockListPattern::setBlock(const std::unordered_map<::std::string, double>& variables,
+    bool BlockListPattern::setBlock(const phmap::flat_hash_map<::std::string, double>& variables,
                                     EvalFunctions& funcs,
                                     BlockSource* blockSource,
                                     const BlockPos& pos) {

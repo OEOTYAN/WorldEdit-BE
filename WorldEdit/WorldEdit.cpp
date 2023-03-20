@@ -52,8 +52,8 @@ namespace worldedit {
         }
     }
 
-    std::unordered_map<std::string, class PlayerData>& getPlayersDataMap() {
-        static std::unordered_map<std::string, class PlayerData> data;
+    phmap::flat_hash_map<std::string, class PlayerData>& getPlayersDataMap() {
+        static phmap::flat_hash_map<std::string, class PlayerData> data;
         return data;
     }
 
@@ -65,28 +65,28 @@ namespace worldedit {
         return playerDataMap[xuid];
     }
 
-    std::unordered_map<mce::Color, Block*>& getColorBlockMap() {
-        static std::unordered_map<mce::Color, Block*> colorBlockMap;
+    phmap::flat_hash_map<mce::Color, Block*>& getColorBlockMap() {
+        static phmap::flat_hash_map<mce::Color, Block*> colorBlockMap;
         return colorBlockMap;
     }
 
-    std::unordered_map<Block*, mce::Color>& getBlockColorMap() {
-        static std::unordered_map<Block*, mce::Color> blockColorMap;
+    phmap::flat_hash_map<Block*, mce::Color>& getBlockColorMap() {
+        static phmap::flat_hash_map<Block*, mce::Color> blockColorMap;
         return blockColorMap;
     }
 
-    std::unordered_map<int, std::string>& getBlockNameMap() {
-        static std::unordered_map<int, std::string> blockName;
+    phmap::flat_hash_map<int, std::string>& getBlockNameMap() {
+        static phmap::flat_hash_map<int, std::string> blockName;
         return blockName;
     }
 
-    std::unordered_map<std::string, int>& getBlockIdMap() {
-        static std::unordered_map<std::string, int> blockId;
+    phmap::flat_hash_map<std::string, int>& getBlockIdMap() {
+        static phmap::flat_hash_map<std::string, int> blockId;
         return blockId;
     }
 
-    std::unordered_map<std::string, Block*>& getJavaBlockMap() {
-        static std::unordered_map<std::string, Block*> javaBlockMap;
+    phmap::flat_hash_map<std::string, Block*>& getJavaBlockMap() {
+        static phmap::flat_hash_map<std::string, Block*> javaBlockMap;
         return javaBlockMap;
     }
 
@@ -168,7 +168,7 @@ namespace worldedit {
         }
     }
 
-    void setFunction(std::unordered_map<::std::string, double>& variables,
+    void setFunction(phmap::flat_hash_map<::std::string, double>& variables,
                      EvalFunctions& funcs,
                      const BoundingBox& boundingBox,
                      const Vec3& playerPos,

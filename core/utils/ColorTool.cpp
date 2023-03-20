@@ -15,7 +15,7 @@ namespace worldedit {
         res.a = k.a * (1.0f - m) + l.a * m;
         return res;
     }
-    mce::Color linearAverage(std::unordered_map<mce::Color, int> colorWithWeight) {
+    mce::Color linearAverage(phmap::flat_hash_map<mce::Color, int> colorWithWeight) {
         mce::Color finalColor;
         int colorCount = 0;
         for (auto& c : colorWithWeight) {
@@ -30,7 +30,7 @@ namespace worldedit {
         }
         return finalColor;
     }
-    mce::Color mixboxAverage(std::unordered_map<mce::Color, int> colorWithWeight) {
+    mce::Color mixboxAverage(phmap::flat_hash_map<mce::Color, int> colorWithWeight) {
         mixbox_latent finallatent;
         int colorCount = 0;
         for (auto& c : colorWithWeight) {

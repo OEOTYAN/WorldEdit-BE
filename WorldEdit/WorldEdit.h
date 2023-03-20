@@ -13,13 +13,13 @@ namespace worldedit {
 
     Logger& logger();
     void clearBlockEntity(class BlockActor* be);
-    std::unordered_map<std::string,class PlayerData>& getPlayersDataMap();
+    phmap::flat_hash_map<std::string, class PlayerData>& getPlayersDataMap();
     class PlayerData& getPlayersData(std::string xuid);
-    std::unordered_map<int, std::string>& getBlockNameMap();
-    std::unordered_map<std::string, int>& getBlockIdMap();
-    std::unordered_map<mce::Color, Block*>& getColorBlockMap();
-    std::unordered_map<Block *,mce::Color>& getBlockColorMap();
-    std::unordered_map<std::string, Block*>& getJavaBlockMap();
+    phmap::flat_hash_map<int, std::string>& getBlockNameMap();
+    phmap::flat_hash_map<std::string, int>& getBlockIdMap();
+    phmap::flat_hash_map<mce::Color, Block*>& getColorBlockMap();
+    phmap::flat_hash_map<Block*, mce::Color>& getBlockColorMap();
+    phmap::flat_hash_map<std::string, Block*>& getJavaBlockMap();
     void javaBlockMapInit();
     void blockColorMapInit();
     std::string getBlockName(int id);
@@ -27,7 +27,7 @@ namespace worldedit {
     bool isJEBlock(const std::string& s);
     int getBlockId(const std::string& name);
     Block* tryGetBlockFromAllVersion(const std::string& name);
-    void setFunction(std::unordered_map<::std::string, double>& variables,
+    void setFunction(phmap::flat_hash_map<::std::string, double>& variables,
                      class EvalFunctions& funcs,
                      const BoundingBox& boundingBox,
                      const Vec3& playerPos,

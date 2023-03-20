@@ -19,7 +19,7 @@ namespace worldedit {
         std::ifstream i(WE_DIR + "mappings/block_gradient.json");
         i >> list;
 
-        std::unordered_map<std::string, std::unordered_map<std::string, std::vector<class Block*>>> tmpMap;
+        phmap::flat_hash_map<std::string, phmap::flat_hash_map<std::string, std::vector<class Block*>>> tmpMap;
         for (auto& g : list.items()) {
             std::string keyGroup = g.key();
             if (!g.value().is_object()) {
@@ -61,7 +61,7 @@ namespace worldedit {
                 str = str.substr(0, str.length() - 1);
             }
             auto tmpVec = SplitStrWithPattern(str, ",");
-            std::unordered_set<std::string> op(tmpVec.begin(), tmpVec.end());
+            phmap::flat_hash_set<std::string> op(tmpVec.begin(), tmpVec.end());
             if (op.find("!nc") == op.end()) {
                 op.insert("nc");
             }
@@ -84,7 +84,7 @@ namespace worldedit {
         }
     }
 
-    class Block* GradientPattern::getBlock(const std::unordered_map<::std::string, double>& variables,
+    class Block* GradientPattern::getBlock(const phmap::flat_hash_map<::std::string, double>& variables,
                                            class EvalFunctions& funcs) {
         return nullptr;
     }
@@ -93,7 +93,7 @@ namespace worldedit {
         return gradientNameMap.find(block) != gradientNameMap.end();
     }
 
-    bool GradientPattern::setBlock(const std::unordered_map<::std::string, double>& variables,
+    bool GradientPattern::setBlock(const phmap::flat_hash_map<::std::string, double>& variables,
                                    class EvalFunctions& funcs,
                                    BlockSource* blockSource,
                                    const BlockPos& pos) {

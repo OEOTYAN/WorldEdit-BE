@@ -69,7 +69,7 @@ namespace worldedit {
                     EvalFunctions f;
                     f.setbs(blockSource);
                     f.setbox(boundingBox);
-                    std::unordered_map<std::string, double> variables;
+                    phmap::flat_hash_map<std::string, double> variables;
                     playerData.setVarByPlayer(variables);
 
                     std::string bps = "minecraft:air";
@@ -147,7 +147,7 @@ namespace worldedit {
                     }
 
                     try {
-                        std::unordered_set<BlockPos> tmp;
+                        phmap::flat_hash_set<BlockPos> tmp;
                         region->forEachLine([&](const BlockPos& pos1, const BlockPos& pos2) {
                             if (extraLength > 1 && (pos1.x != pos2.x || pos1.z != pos2.z)) {
                                 double d = pos1.distanceTo(pos2);
@@ -212,7 +212,7 @@ namespace worldedit {
                         }
 
                         if (arg_h) {
-                            std::unordered_set<BlockPos> tmp2;
+                            phmap::flat_hash_set<BlockPos> tmp2;
                             boundingBox.forEachBlockInBox([&](const BlockPos& pos) {
                                 if (tmp.find(pos) != tmp.end()) {
                                     int counts = 0;
@@ -237,7 +237,7 @@ namespace worldedit {
                         EvalFunctions f;
                         f.setbs(blockSource);
                         f.setbox(boundingBox);
-                        std::unordered_map<std::string, double> variables;
+                        phmap::flat_hash_map<std::string, double> variables;
                         playerData.setVarByPlayer(variables);
 
                         std::string bps = "minecraft:air";
@@ -373,7 +373,7 @@ namespace worldedit {
                         EvalFunctions f;
                         f.setbs(blockSource);
                         f.setbox(boundingBox);
-                        std::unordered_map<std::string, double> variables;
+                        phmap::flat_hash_map<std::string, double> variables;
                         playerData.setVarByPlayer(variables);
 
                         std::string bps = "minecraft:air";
@@ -471,7 +471,7 @@ namespace worldedit {
 
                     EvalFunctions f;
                     f.setbs(blockSource);
-                    std::unordered_map<std::string, double> variables;
+                    phmap::flat_hash_map<std::string, double> variables;
                     playerData.setVarByPlayer(variables);
 
                     if (region->regionType == RegionType::LOFT) {
@@ -763,7 +763,7 @@ namespace worldedit {
                         EvalFunctions f;
                         f.setbs(blockSource);
                         f.setbox(boundingBox);
-                        std::unordered_map<std::string, double> variables;
+                        phmap::flat_hash_map<std::string, double> variables;
                         playerData.setVarByPlayer(variables);
 
                         std::string bps = "minecraft:air";
@@ -839,7 +839,7 @@ namespace worldedit {
                     EvalFunctions f;
                     f.setbs(blockSource);
                     f.setbox(boundingBox);
-                    std::unordered_map<std::string, double> variables;
+                    phmap::flat_hash_map<std::string, double> variables;
                     playerData.setVarByPlayer(variables);
 
                     std::string bps = "minecraft:air";
@@ -914,7 +914,7 @@ namespace worldedit {
                     EvalFunctions f;
                     f.setbs(blockSource);
                     f.setbox(boundingBox);
-                    std::unordered_map<std::string, double> variables;
+                    phmap::flat_hash_map<std::string, double> variables;
                     playerData.setVarByPlayer(variables);
 
                     std::string bps = "minecraft:air";
@@ -1033,7 +1033,7 @@ namespace worldedit {
                     EvalFunctions f;
                     f.setbs(blockSource);
                     f.setbox(boundingBox);
-                    std::unordered_map<std::string, double> variables;
+                    phmap::flat_hash_map<std::string, double> variables;
                     playerData.setVarByPlayer(variables);
                     region->forEachBlockInRegion([&](const BlockPos& posk) {
                         auto localPos = posk - boundingBoxHistory.min;
@@ -1170,7 +1170,7 @@ namespace worldedit {
                     EvalFunctions f;
                     f.setbs(blockSource);
                     f.setbox(boundingBox);
-                    std::unordered_map<std::string, double> variables;
+                    phmap::flat_hash_map<std::string, double> variables;
                     playerData.setVarByPlayer(variables);
 
                     std::string bps = "minecraft:air";
@@ -1266,7 +1266,7 @@ namespace worldedit {
                     EvalFunctions f;
                     f.setbs(blockSource);
                     f.setbox(boundingBox);
-                    std::unordered_map<std::string, double> variables;
+                    phmap::flat_hash_map<std::string, double> variables;
                     playerData.setVarByPlayer(variables);
 
                     auto sizeDim = boundingBox.max - boundingBox.min + 3;
@@ -1379,7 +1379,7 @@ namespace worldedit {
                     EvalFunctions f;
                     f.setbs(blockSource);
                     f.setbox(boundingBox);
-                    std::unordered_map<std::string, double> variables;
+                    phmap::flat_hash_map<std::string, double> variables;
                     playerData.setVarByPlayer(variables);
 
                     std::string bps = "minecraft:air";
@@ -1466,7 +1466,7 @@ namespace worldedit {
                     EvalFunctions f;
                     f.setbs(blockSource);
                     f.setbox(boundingBox);
-                    std::unordered_map<std::string, double> variables;
+                    phmap::flat_hash_map<std::string, double> variables;
                     playerData.setVarByPlayer(variables);
                     std::string bps = "minecraft:air";
                     if (results["blockPattern"].isSet) {
@@ -1533,7 +1533,7 @@ namespace worldedit {
                     EvalFunctions f;
                     f.setbs(blockSource);
                     f.setbox(boundingBox);
-                    std::unordered_map<std::string, double> variables;
+                    phmap::flat_hash_map<std::string, double> variables;
                     playerData.setVarByPlayer(variables);
                     std::string bps = "minecraft:air";
                     if (results["blockPattern"].isSet) {
@@ -1588,7 +1588,7 @@ namespace worldedit {
                     EvalFunctions f;
                     f.setbs(blockSource);
                     f.setbox(boundingBox);
-                    std::unordered_map<std::string, double> variables;
+                    phmap::flat_hash_map<std::string, double> variables;
                     playerData.setVarByPlayer(variables);
 
                     region->forTopBlockInRegion([&](const BlockPos& posk) {
@@ -1694,7 +1694,7 @@ namespace worldedit {
                         EvalFunctions f;
                         f.setbs(blockSource);
                         f.setbox(boundingBox);
-                        std::unordered_map<std::string, double> variables;
+                        phmap::flat_hash_map<std::string, double> variables;
                         playerData.setVarByPlayer(variables);
 
                         long long i = 0;
@@ -1831,7 +1831,7 @@ namespace worldedit {
                     }
 
                     if (arg_l) {
-                        std::unordered_map<std::string, long long> blocksMap;
+                        phmap::flat_hash_map<std::string, long long> blocksMap;
                         std::vector<std::pair<std::string, long long>> blocksMap2;
                         blocksMap2.resize(0);
                         region->forEachBlockInRegion([&](const BlockPos& pos) {
@@ -2027,7 +2027,7 @@ namespace worldedit {
                     EvalFunctions f;
                     f.setbs(blockSource);
                     f.setbox(boundingBox);
-                    std::unordered_map<std::string, double> variables;
+                    phmap::flat_hash_map<std::string, double> variables;
                     playerData.setVarByPlayer(variables);
 
                     long long i = 0;
@@ -2165,7 +2165,7 @@ namespace worldedit {
                     EvalFunctions f;
                     f.setbs(blockSource);
                     f.setbox(boundingBox);
-                    std::unordered_map<std::string, double> variables;
+                    phmap::flat_hash_map<std::string, double> variables;
                     playerData.setVarByPlayer(variables);
 
                     auto cmdItem = results["item"]

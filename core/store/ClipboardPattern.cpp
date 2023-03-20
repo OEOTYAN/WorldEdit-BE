@@ -61,7 +61,7 @@ namespace worldedit {
         return false;
     }
 
-    bool ClipboardPattern::setBlock(const std::unordered_map<::std::string, double>& variables,
+    bool ClipboardPattern::setBlock(const phmap::flat_hash_map<::std::string, double>& variables,
                                     class EvalFunctions& funcs,
                                     BlockSource* blockSource,
                                     const BlockPos& pos) {

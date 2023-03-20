@@ -209,7 +209,7 @@ namespace worldedit {
                               BlockSource* blockSource,
                               class PlayerData& data,
                               class EvalFunctions& funcs,
-                              std::unordered_map<std::string, double> const& var, bool setBiome) {
+                              phmap::flat_hash_map<std::string, double> const& var, bool setBiome) {
        return blockslist[getIter(pos)].setBlock(worldPos, blockSource, data, funcs, var, rotation, mirror, setBiome);
     }
     void Clipboard::forEachBlockInClipboard(const std::function<void(const BlockPos&)>& todo) {
