@@ -136,7 +136,7 @@ namespace worldedit {
         long long getIndex(const BlockPos& pos);
         long long getSolidMap(const BlockPos& pos1, const BlockPos& pos2);
         LongLong3 getPosMap(const BlockPos& pos1, const BlockPos& pos2);
-        double operator()(std::string const& name,
+        double operator()(std::string_view name,
                           const std::vector<double>& params);
     };
 }  // namespace worldedit

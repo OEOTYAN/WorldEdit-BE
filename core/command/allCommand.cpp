@@ -21,7 +21,7 @@ namespace worldedit {
         Global<CommandRegistry>->setSoftEnumValues("imagefilename", getWEFiles("image"));
         Global<CommandRegistry>->setSoftEnumValues(
             "modelfilename",
-            getWEFiles("models", [](std::string const& s) -> bool { return s.substr(s.size() - 4) == ".obj"; }));
+            getWEFiles("models", [](std::string_view s) -> bool { return s.substr(s.size() - 4) == ".obj"; }));
     }
     void commandsSetup() {
 

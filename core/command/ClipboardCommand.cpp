@@ -61,13 +61,16 @@ namespace worldedit {
                         playerData.clipboard.storeBlock(blockInstance, localPos);
                     });
                     if (true) {
-                        auto st = StructureTemplate("worldedit_copy_cmd_tmp");
+                        auto st =
+                            StructureTemplate("worldedit_copy_cmd_tmp",
+                                              dAccess<Bedrock::NonOwnerPointer<class IUnknownBlockTypeRegistry>, 192>(
+                                                  Global<StructureManager>));
                         auto setting = StructureSettings();
                         setting.setIgnoreBlocks(true);
                         setting.setIgnoreEntities(false);
-                        setting.setMirror(Mirror::None_15);
+                        setting.setMirror(Mirror::None);
                         setting.setStructureSize(boundingBox.max - boundingBox.min + 1);
-                        setting.setRotation(Rotation::None_14);
+                        setting.setRotation(Rotation::None);
                         st.fillFromWorld(*blockSource, boundingBox.min + BlockPos(0, 1, 0), setting);
                         // auto structure = st.toTag()->toBinaryNBT();
                         // std::cout << structure << std::endl;
@@ -247,7 +250,10 @@ namespace worldedit {
                             });
                         }
                         if (arg_e && !playerData.clipboard.entityStr.empty()) {
-                            auto st = StructureTemplate("worldedit_copy_cmd_tmp");
+                            auto st = StructureTemplate(
+                                "worldedit_copy_cmd_tmp",
+                                dAccess<Bedrock::NonOwnerPointer<class IUnknownBlockTypeRegistry>, 192>(
+                                    Global<StructureManager>));
                             st.getData()->load(*(CompoundTag::fromBinaryNBT(playerData.clipboard.entityStr).get()));
                             auto& palette = Global<Level>->getBlockPalette();
                             auto setting = StructureSettings();

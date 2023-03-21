@@ -17,7 +17,7 @@ namespace worldedit {
         bool lneedFace = false;
         Brush() {}
         Brush(unsigned short, std::unique_ptr<Pattern> p);
-        void setMask(std::string const& str = "") { mask = str; };
+        void setMask(std::string_view str = "") { mask = str; };
         virtual long long set(class Player*, class ::BlockInstance);
         virtual long long lset(class Player*, class ::BlockInstance);
         bool maskFunc(class EvalFunctions& func,

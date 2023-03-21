@@ -8,6 +8,6 @@
 namespace worldedit {
     std::vector<std::string> getFiles(std::string path);
     std::vector<std::string> getWEFiles(std::string path);
-    std::vector<std::string> getFiles(std::string path, std::function<bool(std::string const&)> filter);
-    std::vector<std::string> getWEFiles(std::string path, std::function<bool(std::string const&)> filter);
+    std::vector<std::string> getFiles(std::string path, std::function<bool(std::string_view)> filter);
+    std::vector<std::string> getWEFiles(std::string path, std::function<bool(std::string_view)> filter);
 }  // namespace worldedit

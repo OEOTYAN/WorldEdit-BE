@@ -15,34 +15,35 @@
 #include <sstream>
 #include <stdexcept>
 #include <cstdlib>
+#include "llapi/utils/StringHelper.h"
 
 namespace cpp_eval {
     template <typename number>
-    number eval(std::string const& expression);
+    number eval(std::string_view expression);
 
     template <typename number>
-    number eval(std::string const& expression, const ::phmap::flat_hash_map<::std::string, number>& variables);
+    number eval(std::string_view expression, const ::phmap::flat_hash_map<::std::string, number>& variables);
 
     template <typename number, typename functions>
-    number eval(std::string const& expression,
+    number eval(std::string_view expression,
                 const ::phmap::flat_hash_map<::std::string, number>& variables,
                 functions& funcs);
 
     template <typename number>
     class dummy_functions {
        public:
-        number operator()(std::string const&, const ::std::vector<number>& params) { return 0; }
+        number operator()(std::string_view, const ::std::vector<number>& params) { return 0; }
     };
 
     template <typename number>
-    number eval(std::string const& expression) {
+    number eval(std::string_view expression) {
         ::phmap::flat_hash_map<::std::string, number> variables;
         dummy_functions<number> funcs;
         return eval(expression, variables, funcs);
     }
 
     template <typename number>
-    number eval(std::string const& expression, const ::phmap::flat_hash_map<::std::string, number>& variables) {
+    number eval(std::string_view expression, const ::phmap::flat_hash_map<::std::string, number>& variables) {
         dummy_functions<number> funcs;
         return eval(expression, variables, funcs);
     }
@@ -51,7 +52,9 @@ namespace cpp_eval {
     class evaler {
         const ::phmap::flat_hash_map<::std::string, number>& mVariables;
         functions& mFuncs;
-        const char* mCurrent;
+        std::string_view mStr;
+        std::size_t iter;
+
         enum Type {
             LEFT_BRACKET = '(',
             RIGHT_BRACKET = ')',
@@ -91,40 +94,40 @@ namespace cpp_eval {
 
         void look_ahead() {
             for (;;) {
-                if (*mCurrent == 0) {
+                if (iter == mStr.size()) {
                     mType = FINISHED;
                     return;
                 }
-                if (isspace(*mCurrent)) {
-                    ++mCurrent;
+                if (isspace(mStr[iter])) {
+                    ++iter;
                     continue;
                 }
 
-                switch (do_hash(mCurrent, 2)) {
-                    case do_hash("||"):
-                        mType = LOGIC_OR, mCurrent += 2;
+                switch (do_hash2(mStr.substr(iter, 2))) {
+                    case do_hash2("||"):
+                        mType = LOGIC_OR, iter += 2;
                         break;
-                    case do_hash("=="):
-                        mType = EQUAL, mCurrent += 2;
+                    case do_hash2("=="):
+                        mType = EQUAL, iter += 2;
                         break;
-                    case do_hash("^^"):
-                        mType = XOR, mCurrent += 2;
+                    case do_hash2("^^"):
+                        mType = XOR, iter += 2;
                         break;
-                    case do_hash("<="):
-                        mType = LESS_THAN_OR_EQUAL, mCurrent += 2;
+                    case do_hash2("<="):
+                        mType = LESS_THAN_OR_EQUAL, iter += 2;
                         break;
-                    case do_hash(">="):
-                        mType = GREATER_THAN_OR_EQUAL, mCurrent += 2;
+                    case do_hash2(">="):
+                        mType = GREATER_THAN_OR_EQUAL, iter += 2;
                         break;
-                    case do_hash("!="):
-                        mType = NOT_EQUAL, mCurrent += 2;
+                    case do_hash2("!="):
+                        mType = NOT_EQUAL, iter += 2;
                         break;
-                    case do_hash("&&"):
-                        mType = LOGIC_AND, mCurrent += 2;
+                    case do_hash2("&&"):
+                        mType = LOGIC_AND, iter += 2;
                         break;
                     default:
 
-                        switch (*mCurrent) {
+                        switch (mStr[iter]) {
                             case ADD_OR_POSITIVE:
                             case SUBTRACT_OR_NEGATIVE:
                             case MULTIPLY:
@@ -139,26 +142,26 @@ namespace cpp_eval {
                             case POWER:
                             case OR:
                             case NOT:
-                                mType = (Type)*mCurrent, ++mCurrent;
+                                mType = (Type)mStr[iter], ++iter;
                                 break;
                             default:
-                                if (isalpha(*mCurrent)) {
+                                if (isalpha(mStr[iter])) {
                                     mType = IDENTIFIER;
                                     mIdentifier.clear();
-                                    mIdentifier += *mCurrent;
-                                    ++mCurrent;
-                                    while (isalpha(*mCurrent) || isdigit(*mCurrent) || *mCurrent == '_' ||
-                                           *mCurrent == ':')
-                                        mIdentifier += *mCurrent, ++mCurrent;
+                                    mIdentifier += mStr[iter];
+                                    ++iter;
+                                    while (isalpha(mStr[iter]) || isdigit(mStr[iter]) || mStr[iter] == '_' ||
+                                           mStr[iter] == ':')
+                                        mIdentifier += mStr[iter], ++iter;
                                 } else {
                                     mType = NUMBER;
-                                    std::istringstream iss(mCurrent);
+                                    std::istringstream iss(asString(mStr.substr(iter)));
                                     // iss.setf(std::ios::fixed);
                                     // iss.precision(18);
                                     iss >> mValue;
                                     if (!iss)
                                         return;
-                                    mCurrent += iss.rdbuf()->pubseekoff(0, std::ios::cur, std::ios::in);
+                                    iter += iss.rdbuf()->pubseekoff(0, std::ios::cur, std::ios::in);
                                 }
                                 break;
                         }
@@ -328,7 +331,7 @@ namespace cpp_eval {
             return lang_tail(id);
         }
 
-        number lang_tail(const std::string& id) {  // lang_tail        ->    (
+        number lang_tail(std::string_view id) {  // lang_tail        ->    (
             // parameter_list | /e/
             number result;
             if (mType == LEFT_BRACKET) {
@@ -336,53 +339,53 @@ namespace cpp_eval {
                 std::vector<number> param = parameter_list();
                 result = mFuncs(id, param);
             } else {
-                switch (do_hash(id.c_str())) {
-                    case do_hash("pi"):
-                    case do_hash("π"):
+                switch (do_hash2(id)) {
+                    case do_hash2("pi"):
+                    case do_hash2("π"):
                         return 3.141592653589793238462643383279;
-                    case do_hash("phi"):
-                    case do_hash("φ"):
+                    case do_hash2("phi"):
+                    case do_hash2("φ"):
                         return 0.618033988749894848204586834365;
-                    case do_hash("γ"):
+                    case do_hash2("γ"):
                         return 0.577215664901532860606512090082;
-                    case do_hash("e"):
+                    case do_hash2("e"):
                         return 2.718281828459045235360287471352;
 
                         // cellular disFunc
-                    case do_hash("sqrted"):
+                    case do_hash2("sqrted"):
                         return 0;
-                    case do_hash("square"):
+                    case do_hash2("square"):
                         return 1;
-                    case do_hash("manhattan"):
+                    case do_hash2("manhattan"):
                         return 2;
-                    case do_hash("hybird"):
+                    case do_hash2("hybird"):
                         return 3;
 
                         // cellular returnType
-                    case do_hash("value"):
+                    case do_hash2("value"):
                         return 0;
-                    case do_hash("dis"):
-                    case do_hash("dis1"):
+                    case do_hash2("dis"):
+                    case do_hash2("dis1"):
                         return 1;
-                    case do_hash("dis2"):
+                    case do_hash2("dis2"):
                         return 2;
-                    case do_hash("disadd"):
+                    case do_hash2("disadd"):
                         return 3;
-                    case do_hash("dissub"):
+                    case do_hash2("dissub"):
                         return 4;
-                    case do_hash("dismul"):
+                    case do_hash2("dismul"):
                         return 5;
-                    case do_hash("disdiv"):
+                    case do_hash2("disdiv"):
                         return 6;
 
                         // fractalType
-                    case do_hash("none"):
+                    case do_hash2("none"):
                         return 0;
-                    case do_hash("fbm"):
+                    case do_hash2("fbm"):
                         return 1;
-                    case do_hash("ridged"):
+                    case do_hash2("ridged"):
                         return 2;
-                    case do_hash("pingpong"):
+                    case do_hash2("pingpong"):
                         return 3;
                         // simplex(x,y,z,seed,fractalType,octaves,lacunarity,gain,weighted,ppStrength)
                         // perlin(x,y,z,seed,fractalType,octaves,lacunarity,gain,weighted,ppStrength)
@@ -423,8 +426,9 @@ namespace cpp_eval {
         evaler(const ::phmap::flat_hash_map<::std::string, number>& variables, functions& funcs)
             : mVariables(variables), mFuncs(funcs) {}
 
-        number operator()(const char* expr) {
-            mCurrent = expr;
+        number operator()(std::string_view expr) {
+            mStr = expr;
+            iter = 0;
             look_ahead();
             number result = expression();
             if (mType != FINISHED)
@@ -434,10 +438,10 @@ namespace cpp_eval {
     };
 
     template <typename number, typename functions>
-    number eval(std::string const& expression,
+    number eval(std::string_view expression,
                 const ::phmap::flat_hash_map<::std::string, number>& variables,
                 functions& funcs) {
-        return evaler<number, functions>(variables, funcs)(expression.c_str());
+        return evaler<number, functions>(variables, funcs)(expression);
     }
 };  // namespace cpp_eval
 

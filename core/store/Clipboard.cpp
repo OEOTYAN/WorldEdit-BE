@@ -12,21 +12,17 @@ namespace worldedit {
         return (pos.y + size.y * pos.z) * size.x + pos.x;
     }
     Clipboard::Clipboard(const BlockPos& sizes)
-            : size(sizes + 1),
-              board(sizes),
-              rotation(Rotation::None_14),
-              mirror(Mirror::None_15),
-              rotationAngle({0, 0, 0}) {
-            used = true;
-            vsize = size.x * size.y * size.z;
-            blockslist.clear();
-            try {
-                blockslist.resize(vsize);
-            } catch (std::bad_alloc) {
-                Level::broadcastText(tr("worldedit.memory.out"), TextType::RAW);
-                return;
-            }
+        : size(sizes + 1), board(sizes), rotation(Rotation::None), mirror(Mirror::None), rotationAngle({0, 0, 0}) {
+        used = true;
+        vsize = size.x * size.y * size.z;
+        blockslist.clear();
+        try {
+            blockslist.resize(vsize);
+        } catch (std::bad_alloc) {
+            Level::broadcastText(tr("worldedit.memory.out"), TextType::RAW);
+            return;
         }
+    }
     long long Clipboard::getIterLoop(const BlockPos& pos) {
         return (static_cast<int>(posfmod(pos.y, size.y)) + size.y * static_cast<int>(posfmod(pos.z, size.z))) * size.x +
                static_cast<int>(posfmod(pos.x, size.x));
@@ -65,7 +61,7 @@ namespace worldedit {
         rotationAngle = rotationAngle + angle;
         rotationAngle.y = static_cast<float>(posfmod(rotationAngle.y, 360.0f));
         if (rotationAngle.y > 315 || rotationAngle.y <= 45) {
-            rotation = Rotation::None_14;
+            rotation = Rotation::None;
         } else if (rotationAngle.y > 45 && rotationAngle.y <= 135) {
             rotation = Rotation::Rotate90;
         } else if (rotationAngle.y > 135 && rotationAngle.y <= 225) {
@@ -76,22 +72,22 @@ namespace worldedit {
     }
     void Clipboard::flip(enum class FACING facing) {
         if (facing == FACING::NEG_Z || facing == FACING::POS_Z) {
-            if (mirror == Mirror::None_15) {
+            if (mirror == Mirror::None) {
                 mirror = Mirror::X;
             } else if (mirror == Mirror::X) {
-                mirror = Mirror::None_15;
+                mirror = Mirror::None;
             } else if (mirror == Mirror::Z) {
                 mirror = Mirror::XZ;
             } else if (mirror == Mirror::XZ) {
                 mirror = Mirror::Z;
             }
         } else if (facing == FACING::NEG_X || facing == FACING::POS_X) {
-            if (mirror == Mirror::None_15) {
+            if (mirror == Mirror::None) {
                 mirror = Mirror::Z;
             } else if (mirror == Mirror::X) {
                 mirror = Mirror::XZ;
             } else if (mirror == Mirror::Z) {
-                mirror = Mirror::None_15;
+                mirror = Mirror::None;
             } else if (mirror == Mirror::XZ) {
                 mirror = Mirror::X;
             }
@@ -209,8 +205,9 @@ namespace worldedit {
                               BlockSource* blockSource,
                               class PlayerData& data,
                               class EvalFunctions& funcs,
-                              phmap::flat_hash_map<std::string, double> const& var, bool setBiome) {
-       return blockslist[getIter(pos)].setBlock(worldPos, blockSource, data, funcs, var, rotation, mirror, setBiome);
+                              phmap::flat_hash_map<std::string, double> const& var,
+                              bool setBiome) {
+        return blockslist[getIter(pos)].setBlock(worldPos, blockSource, data, funcs, var, rotation, mirror, setBiome);
     }
     void Clipboard::forEachBlockInClipboard(const std::function<void(const BlockPos&)>& todo) {
         for (int y = 0; y < size.y; y++)

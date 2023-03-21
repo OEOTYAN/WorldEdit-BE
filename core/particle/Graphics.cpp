@@ -51,7 +51,7 @@ namespace worldedit {
                 return "unknown";
         }
     }
-    FACING dirStringToFacing(const std::string& dir) {
+    FACING dirStringToFacing(std::string_view dir) {
         if (dir == "west") {
             return FACING::POS_X;
         } else if (dir == "east") {

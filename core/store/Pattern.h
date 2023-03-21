@@ -23,7 +23,7 @@ namespace worldedit {
         PatternType type = PatternType::NONE;
 
         Pattern() = default;
-        Pattern(std::string xuid);
+        Pattern(std::string_view xuid);
 
         virtual class Block* getBlock(const phmap::flat_hash_map<::std::string, double>& variables,
                                       class EvalFunctions& funcs) {
@@ -39,6 +39,6 @@ namespace worldedit {
             return false;
         }
 
-        static std::unique_ptr<Pattern> createPattern(const std::string& p, std::string xuid);
+        static std::unique_ptr<Pattern> createPattern(std::string_view p, std::string_view xuid);
     };
 }  // namespace worldedit

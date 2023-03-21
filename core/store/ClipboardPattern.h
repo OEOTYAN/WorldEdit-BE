@@ -12,7 +12,7 @@ namespace worldedit {
         BlockPos bias;
         class Clipboard* clipboard;
 
-        ClipboardPattern(std::string str, std::string xuid);
+        ClipboardPattern(std::string_view str, std::string_view xuid);
 
         bool hasBlock(class Block* block) override;
 

@@ -8,11 +8,11 @@
 
 namespace worldedit {
 
-    Pattern::Pattern(std::string xuid) {
+    Pattern::Pattern(std::string_view xuid) {
         playerData = &getPlayersData(xuid);
     }
 
-    std::unique_ptr<Pattern> Pattern::createPattern(const std::string& p, std::string xuid) {
+    std::unique_ptr<Pattern> Pattern::createPattern(std::string_view p, std::string_view xuid) {
         if (frontIs(p, "#hand")) {
             return std::make_unique<BlockListPattern>(BlockListPattern(p, xuid));
         } else if (frontIs(p, "#lighten") || frontIs(p, "#darken")) {

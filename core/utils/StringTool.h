@@ -31,7 +31,7 @@ namespace worldedit {
         return str;
     }
 
-    inline void stringReplace(std::string& str, const std::string& fstr, const std::string& rep) {
+    inline void stringReplace(std::string& str, std::string_view fstr, std::string_view rep) {
         std::string::size_type pos = 0;
         std::string::size_type a = fstr.length();
         std::string::size_type b = rep.length();
@@ -46,7 +46,7 @@ namespace worldedit {
             }
     }
 
-    inline bool frontIs(std::string const& s, std::string const& front) {
+    inline bool frontIs(std::string_view s, std::string_view front) {
         if (s.substr(0, front.size()) == front) {
             return true;
         }
@@ -66,7 +66,7 @@ namespace worldedit {
         return false;
     }
 
-    inline bool isColorHex(const std::string& x) {
+    inline bool isColorHex(std::string_view x) {
         if (x[0] == '#' && (isHex(x[1]) && isHex(x[2]) && isHex(x[3])) &&
             (x.length() == 4 || (x.length() == 7 && (isHex(x[4]) && isHex(x[5]) && isHex(x[6]))))) {
             return true;

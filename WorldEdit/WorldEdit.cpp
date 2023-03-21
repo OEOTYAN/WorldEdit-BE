@@ -57,10 +57,10 @@ namespace worldedit {
         return data;
     }
 
-    class PlayerData& getPlayersData(std::string xuid) {
+    class PlayerData& getPlayersData(std::string_view xuid) {
         auto& playerDataMap = getPlayersDataMap();
         if (playerDataMap.find(xuid) == playerDataMap.end()) {
-            playerDataMap[xuid] = PlayerData(Global<Level>->getPlayer(xuid));
+            playerDataMap[xuid] = PlayerData(Global<Level>->getPlayer(asString(xuid)));
         }
         return playerDataMap[xuid];
     }
@@ -96,28 +96,28 @@ namespace worldedit {
             return blockName[id];
         return "minecraft:air";
     }
-    int getBlockId(const std::string& name) {
+    int getBlockId(std::string_view name) {
         auto& blockId = worldedit::getBlockIdMap();
         if (blockId.find(name) != blockId.end())
             return blockId[name];
         return 0;
     }
 
-    bool isBEBlock(const std::string& s) {
+    bool isBEBlock(std::string_view s) {
         auto& blockId = worldedit::getBlockIdMap();
         return blockId.find(s) != blockId.end();
     }
 
-    bool isJEBlock(const std::string& s) {
+    bool isJEBlock(std::string_view s) {
         auto& blockId = worldedit::getJavaBlockMap();
         return blockId.find(s) != blockId.end();
     }
 
-    Block* tryGetBlockFromAllVersion(const std::string& name) {
+    Block* tryGetBlockFromAllVersion(std::string_view name) {
         if (isJEBlock(name)) {
             return getJavaBlockMap()[name];
         } else if (isBEBlock(name)) {
-            return Block::create(name, 0);
+            return Block::create(asString(name), 0);
         }
         return nullptr;
     }

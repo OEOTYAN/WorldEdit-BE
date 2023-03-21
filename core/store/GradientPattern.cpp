@@ -9,7 +9,7 @@
 #include "Nlohmann/json.hpp"
 
 namespace worldedit {
-    GradientPattern::GradientPattern(std::string str, std::string xuid) : Pattern(xuid) {
+    GradientPattern::GradientPattern(std::string_view str, std::string_view xuid) : Pattern(xuid) {
         type = Pattern::PatternType::GRADIENT;
         if (frontIs(str, "#lighten")) {
             lighten = true;
@@ -60,7 +60,7 @@ namespace worldedit {
             if (str.back() == ']') {
                 str = str.substr(0, str.length() - 1);
             }
-            auto tmpVec = SplitStrWithPattern(str, ",");
+            auto tmpVec = SplitStrWithPattern(asString(str), ",");
             phmap::flat_hash_set<std::string> op(tmpVec.begin(), tmpVec.end());
             if (op.find("!nc") == op.end()) {
                 op.insert("nc");

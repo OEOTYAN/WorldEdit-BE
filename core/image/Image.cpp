@@ -71,9 +71,9 @@ namespace worldedit {
                 return load(sampler, u, v);
         }
     }
-    Texture2D loadImage(const std::string& filename) {
+    Texture2D loadImage(std::string_view filename) {
         int width, height, channel;
-        unsigned char* data = stbi_load(filename.c_str(), &width, &height, &channel, 4);
+        unsigned char* data = stbi_load(filename.data(), &width, &height, &channel, 4);
         if (data == nullptr) {
             // logger().error("Image load error: {}", stbi_failure_reason());
             Level::broadcastText("§c" + tr("stb.image." + std::string(stbi_failure_reason())), TextType::RAW);

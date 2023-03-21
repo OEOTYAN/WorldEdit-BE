@@ -33,15 +33,13 @@ namespace worldedit {
 
     BlockPos facingToPos(FACING facing, int length);
 
-    FACING dirStringToFacing(const std::string& dir);
+    FACING dirStringToFacing(std::string_view dir);
 
     FACING dirToFacing(const Vec3& dir);
 
     std::string facingToDirString(FACING facing);
 
-    void drawCurve(class KochanekBartelsInterpolation const& curve,
-                   enum mce::ColorPalette color,
-                   int dimType);
+    void drawCurve(class KochanekBartelsInterpolation const& curve, enum mce::ColorPalette color, int dimType);
 
     class ::ParticleCUI& globalPT();
 }  // namespace worldedit

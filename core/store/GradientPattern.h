@@ -14,7 +14,7 @@ namespace worldedit {
 
         bool lighten = false;
 
-        GradientPattern(std::string str, std::string xuid);
+        GradientPattern(std::string_view str, std::string_view xuid);
 
         class Block* getBlock(const phmap::flat_hash_map<::std::string, double>& variables,
                               class EvalFunctions& funcs) override;

@@ -148,127 +148,127 @@ namespace worldedit {
         res -= posMap[getIndex(pos1 - 1)];
         return res;
     }
-    double EvalFunctions::operator()(std::string const& name, const std::vector<double>& params) {
+    double EvalFunctions::operator()(std::string_view name, const std::vector<double>& params) {
         auto size = params.size();
         BlockPos tmp = here;
         if (size == 3) {
             tmp += BlockPos(static_cast<int>(floor(params[0])), static_cast<int>(floor(params[1])),
                             static_cast<int>(floor(params[2])));
         }
-        switch (do_hash(name.c_str())) {
-            case do_hash("rand"):
+        switch (do_hash2(name)) {
+            case do_hash2("rand"):
                 if (size == 0) {
                     return RNG::rand<double>();
                 } else if (size == 2) {
                     return RNG::rand<double>(params[0], params[1]);
                 }
                 break;
-            case do_hash("saturate"):
+            case do_hash2("saturate"):
                 if (size == 3)
                     return std::min(1.0, std::max(0.0, params[0]));
                 break;
-            case do_hash("clamp"):
+            case do_hash2("clamp"):
                 if (size == 3)
                     return std::min(params[2], std::max(params[1], params[0]));
                 break;
-            case do_hash("lerp"):
+            case do_hash2("lerp"):
                 if (size == 3)
                     return params[0] * (1 - params[2]) + params[1] * params[2];
                 break;
-            case do_hash("mod"):
+            case do_hash2("mod"):
                 if (size == 2)
                     return posfmod(params[0], params[1]);
                 break;
-            case do_hash("abs"):
+            case do_hash2("abs"):
                 if (size == 1)
                     return abs(params[0]);
                 break;
-            case do_hash("sin"):
+            case do_hash2("sin"):
                 if (size == 1)
                     return sin(params[0]);
                 break;
-            case do_hash("cos"):
+            case do_hash2("cos"):
                 if (size == 1)
                     return cos(params[0]);
                 break;
-            case do_hash("sign"):
+            case do_hash2("sign"):
                 if (size == 1)
                     return params[0] == 0.0 ? 0.0 : (params[0] > 0.0 ? 1.0 : -1.0);
                 break;
-            case do_hash("log10"):
-            case do_hash("lg"):
+            case do_hash2("log10"):
+            case do_hash2("lg"):
                 if (size == 1)
                     return log10(params[0]);
                 break;
-            case do_hash("ln"):
+            case do_hash2("ln"):
                 if (size == 1)
                     return log(params[0]);
                 break;
-            case do_hash("log2"):
+            case do_hash2("log2"):
                 if (size == 1)
                     return log2(params[0]);
                 break;
-            case do_hash("round"):
+            case do_hash2("round"):
                 if (size == 1)
                     return round(params[0]);
                 break;
-            case do_hash("floor"):
+            case do_hash2("floor"):
                 if (size == 1)
                     return floor(params[0]);
                 break;
-            case do_hash("ceil"):
+            case do_hash2("ceil"):
                 if (size == 1)
                     return ceil(params[0]);
                 break;
-            case do_hash("exp"):
+            case do_hash2("exp"):
                 if (size == 1)
                     return exp(params[0]);
                 break;
-            case do_hash("exp2"):
+            case do_hash2("exp2"):
                 if (size == 1)
                     return exp2(params[0]);
                 break;
-            case do_hash("sqrt"):
+            case do_hash2("sqrt"):
                 if (size == 1)
                     return sqrt(params[0]);
                 break;
-            case do_hash("tan"):
+            case do_hash2("tan"):
                 if (size == 1)
                     return tan(params[0]);
                 break;
-            case do_hash("atan"):
+            case do_hash2("atan"):
                 if (size == 1)
                     return atan(params[0]);
                 break;
-            case do_hash("atan2"):
+            case do_hash2("atan2"):
                 if (size == 2)
                     return atan2(params[0], params[1]);
                 break;
-            case do_hash("asin"):
+            case do_hash2("asin"):
                 if (size == 1)
                     return asin(params[0]);
                 break;
-            case do_hash("acos"):
+            case do_hash2("acos"):
                 if (size == 1)
                     return acos(params[0]);
                 break;
-            case do_hash("sinh"):
+            case do_hash2("sinh"):
                 if (size == 1)
                     return sinh(params[0]);
                 break;
-            case do_hash("cosh"):
+            case do_hash2("cosh"):
                 if (size == 1)
                     return cosh(params[0]);
                 break;
-            case do_hash("tanh"):
+            case do_hash2("tanh"):
                 if (size == 1)
                     return tanh(params[0]);
                 break;
-            case do_hash("gamma"):
+            case do_hash2("gamma"):
                 if (size == 1)
                     return tgamma(params[0]);
                 break;
-            case do_hash("isslimechunk"):
+            case do_hash2("isslimechunk"):
                 if (size == 2) {
                     int x = static_cast<int>(round(params[0]));
                     int z = static_cast<int>(round(params[1]));
@@ -277,28 +277,28 @@ namespace worldedit {
                     return mt() % 10 == 0;
                 }
                 break;
-            case do_hash("sum"):
+            case do_hash2("sum"):
                 return std::accumulate(params.begin(), params.end(), 0.0);
                 break;
-            case do_hash("min"):
+            case do_hash2("min"):
                 return *min_element(params.begin(), params.end());
                 break;
-            case do_hash("max"):
+            case do_hash2("max"):
                 return *max_element(params.begin(), params.end());
                 break;
-            case do_hash("id"):
+            case do_hash2("id"):
                 if (blockdataInitialized) {
                     return blockSource->getBlock(tmp).getId();
                 }
                 return 0;
                 break;
-            case do_hash("runtimeid"):
+            case do_hash2("runtimeid"):
                 if (blockdataInitialized) {
                     return blockSource->getBlock(tmp).getRuntimeId();
                 }
                 return 0;
                 break;
-            case do_hash("hsa"):
+            case do_hash2("hsa"):
                 if (blockdataInitialized) {
                     for (auto& hsa : blockSource->getChunkAt(tmp)->getSpawningAreas()) {
                         if (((hsa.aabb.max.x - hsa.aabb.min.x + 1) / 2 + hsa.aabb.min.x == tmp.x) &&
@@ -320,13 +320,13 @@ namespace worldedit {
                 }
                 return 0;
                 break;
-            case do_hash("biome"):
+            case do_hash2("biome"):
                 if (blockdataInitialized) {
                     return blockSource->getConstBiome(tmp).getId();
                 }
                 return 0;
                 break;
-            case do_hash("hasplayer"):
+            case do_hash2("hasplayer"):
                 if (blockdataInitialized) {
                     auto& dimension = blockSource->getDimensionConst();
                     if (size == 1) {
@@ -340,7 +340,7 @@ namespace worldedit {
                 }
                 return 0;
                 break;
-            case do_hash("noplayer"):
+            case do_hash2("noplayer"):
                 if (blockdataInitialized) {
                     auto& dimension = blockSource->getDimensionConst();
                     Vec3 tmpVec;
@@ -351,7 +351,7 @@ namespace worldedit {
                     }
                     float playerDistance = FLT_MAX;
                     dimension.forEachPlayer([&](Player& player) {
-                        float dis = player.getPosition().distanceToSqr(tmpVec);
+                        float dis = (float)player.getPosition().distanceToSqr(tmpVec);
                         playerDistance = std::min(dis, playerDistance);
                         return true;
                     });
@@ -359,7 +359,7 @@ namespace worldedit {
                 }
                 return 0;
                 break;
-            case do_hash("hasuntickedchunk"):
+            case do_hash2("hasuntickedchunk"):
                 if (blockdataInitialized) {
                     if (size == 1) {
                         return blockSource->hasUntickedNeighborChunk(ChunkPos(here), static_cast<int>(params[0]));
@@ -372,7 +372,7 @@ namespace worldedit {
                     }
                 }
                 return 0;
-            case do_hash("chunksfullyloaded"):
+            case do_hash2("chunksfullyloaded"):
                 if (blockdataInitialized) {
                     if (size == 1) {
                         return blockSource->areChunksFullyLoaded(here, static_cast<int>(params[0]));
@@ -385,67 +385,67 @@ namespace worldedit {
                 }
                 return 0;
                 break;
-            case do_hash("data"):
+            case do_hash2("data"):
                 if (blockdataInitialized) {
                     return (const_cast<Block&>(blockSource->getBlock(tmp))).getTileData();
                 }
                 return 0;
                 break;
-            case do_hash("issolid"):
+            case do_hash2("issolid"):
                 if (blockdataInitialized) {
                     return blockSource->getBlock(tmp).isSolid();
                 }
                 return 0;
                 break;
-            case do_hash("iswaterblocking"):
+            case do_hash2("iswaterblocking"):
                 if (blockdataInitialized) {
                     return blockSource->getBlock(tmp).isWaterBlocking();
                 }
                 return 0;
                 break;
-            case do_hash("issbblock"):
+            case do_hash2("issbblock"):
                 if (blockdataInitialized) {
                     return blockSource->getBlock(tmp).isSolidBlockingBlock();
                 }
                 return 0;
                 break;
-            case do_hash("istop"):
+            case do_hash2("istop"):
                 if (blockdataInitialized) {
                     return blockSource->getHeightmapPos(tmp) == tmp;
                 }
                 return 0;
                 break;
-            case do_hash("destroyspeed"):
+            case do_hash2("destroyspeed"):
                 if (blockdataInitialized) {
                     return blockSource->getBlock(tmp).getDestroySpeed();
                 }
                 return 0;
                 break;
-            case do_hash("thickness"):
+            case do_hash2("thickness"):
                 if (blockdataInitialized) {
                     return blockSource->getBlock(tmp).getThickness();
                 }
                 return 0;
                 break;
-            case do_hash("translucency"):
+            case do_hash2("translucency"):
                 if (blockdataInitialized) {
                     return blockSource->getBlock(tmp).getTranslucency();
                 }
                 return 0;
                 break;
-            case do_hash("light"):
+            case do_hash2("light"):
                 if (blockdataInitialized) {
                     return blockSource->getBlock(tmp).getLight().value;
                 }
                 return 0;
                 break;
-            case do_hash("emissive"):
+            case do_hash2("emissive"):
                 if (blockdataInitialized) {
                     return blockSource->getBlock(tmp).getLightEmission().value;
                 }
                 return 0;
                 break;
-            case do_hash("normalx"):
+            case do_hash2("normalx"):
                 if (searchBoxInitialized) {
                     if (size == 0) {
                         buildSearchCache();
@@ -463,7 +463,7 @@ namespace worldedit {
                 }
                 return 0;
                 break;
-            case do_hash("normaly"):
+            case do_hash2("normaly"):
                 if (searchBoxInitialized) {
                     if (size == 0) {
                         buildSearchCache();
@@ -481,7 +481,7 @@ namespace worldedit {
                 }
                 return 0;
                 break;
-            case do_hash("normalz"):
+            case do_hash2("normalz"):
                 if (searchBoxInitialized) {
                     if (size == 0) {
                         buildSearchCache();
@@ -499,7 +499,7 @@ namespace worldedit {
                 }
                 return 0;
                 break;
-            case do_hash("angle"):
+            case do_hash2("angle"):
                 if (searchBoxInitialized) {
                     if (size == 0) {
                         buildSearchCache();
@@ -517,7 +517,7 @@ namespace worldedit {
                 }
                 return 0;
                 break;
-            case do_hash("issurface"):
+            case do_hash2("issurface"):
                 if (blockdataInitialized) {
                     if (&blockSource->getBlock(tmp) != BedrockBlocks::mAir) {
                         int counts = 0;
@@ -529,7 +529,7 @@ namespace worldedit {
                 }
                 return 0;
                 break;
-            case do_hash("issurfacesmooth"):
+            case do_hash2("issurfacesmooth"):
                 if (searchBoxInitialized) {
                     buildSearchCache();
                     return 1.0 - static_cast<double>(getSolidMap(tmp - normalSearchDis, tmp + normalSearchDis)) /
@@ -538,7 +538,7 @@ namespace worldedit {
                 return 0;
                 break;
 
-            case do_hash("simplex"):
+            case do_hash2("simplex"):
                 if (size >= 3) {
                     FastNoiseLite noise = FastNoiseLite();
                     noise.SetNoiseType(FastNoiseLite::NoiseType::NoiseType_Simplex);
@@ -554,7 +554,7 @@ namespace worldedit {
                 return 0;
                 break;
 
-            case do_hash("perlin"):
+            case do_hash2("perlin"):
                 if (size >= 3) {
                     FastNoiseLite noise = FastNoiseLite();
                     noise.SetNoiseType(FastNoiseLite::NoiseType::NoiseType_Perlin);
@@ -570,7 +570,7 @@ namespace worldedit {
                 return 0;
                 break;
 
-            case do_hash("cubic"):
+            case do_hash2("cubic"):
                 if (size >= 3) {
                     FastNoiseLite noise = FastNoiseLite();
                     noise.SetNoiseType(FastNoiseLite::NoiseType::NoiseType_ValueCubic);
@@ -586,7 +586,7 @@ namespace worldedit {
                 return 0;
                 break;
 
-            case do_hash("value"):
+            case do_hash2("value"):
                 if (size >= 3) {
                     FastNoiseLite noise = FastNoiseLite();
                     noise.SetNoiseType(FastNoiseLite::NoiseType::NoiseType_Value);
@@ -602,7 +602,7 @@ namespace worldedit {
                 return 0;
                 break;
 
-            case do_hash("voronoi"):
+            case do_hash2("voronoi"):
                 if (size >= 3) {
                     FastNoiseLite noise = FastNoiseLite();
                     noise.SetNoiseType(FastNoiseLite::NoiseType::NoiseType_Cellular);

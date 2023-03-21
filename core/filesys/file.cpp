@@ -27,7 +27,7 @@ namespace worldedit {
     std::vector<std::string> getWEFiles(std::string path) {
         return getFiles(WE_DIR + path);
     }
-    std::vector<std::string> getFiles(std::string path, std::function<bool(std::string const&)> filter) {
+    std::vector<std::string> getFiles(std::string path, std::function<bool(std::string_view)> filter) {
         std::vector<std::string> res;
         res.clear();
         auto length = path.length();
@@ -42,7 +42,7 @@ namespace worldedit {
         }
         return res;
     }
-    std::vector<std::string> getWEFiles(std::string path, std::function<bool(std::string const&)> filter) {
+    std::vector<std::string> getWEFiles(std::string path, std::function<bool(std::string_view)> filter) {
         return getFiles(WE_DIR + path, filter);
     }
 }  // namespace worldedit

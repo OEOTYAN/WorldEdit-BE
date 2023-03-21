@@ -1053,7 +1053,7 @@ namespace worldedit {
                         delete history;
                     }
                     if (arg_e) {
-                        auto st = StructureTemplate("worldedit_stack_cmd_tmp");
+                        auto st = StructureTemplate("worldedit_stack_cmd_tmp",dAccess<Bedrock::NonOwnerPointer<class IUnknownBlockTypeRegistry>, 192>(Global<StructureManager>));
                         auto setting = StructureSettings();
                         setting.setIgnoreBlocks(true);
                         setting.setIgnoreEntities(false);
@@ -1804,7 +1804,7 @@ namespace worldedit {
                     std::string filename;
                     filename = results["strname"].get<std::string>();
 
-                    auto st = StructureTemplate(filename);
+                    auto st = StructureTemplate(filename,dAccess<Bedrock::NonOwnerPointer<class IUnknownBlockTypeRegistry>, 192>(Global<StructureManager>));
                     auto setting = StructureSettings();
                     setting.setIgnoreBlocks(false);
                     setting.setIgnoreEntities(false);

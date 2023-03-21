@@ -119,8 +119,10 @@ namespace worldedit {
         return res;
     }
 
-    BlockListPattern::BlockListPattern(std::string str, std::string xuid) : Pattern(xuid) {
+    BlockListPattern::BlockListPattern(std::string_view str_v, std::string_view xuid) : Pattern(xuid) {
         type = Pattern::PatternType::BLOCKLIST;
+
+        std::string str = asString(str_v);
 
         auto strSize = str.size();
         playerData = &getPlayersData(xuid);
@@ -129,7 +131,7 @@ namespace worldedit {
             blockNum = 1;
             percents.resize(blockNum);
             rawBlocks.resize(blockNum);
-            Player* player = Global<Level>->getPlayer(xuid);
+            Player* player = Global<Level>->getPlayer(asString(xuid));
             if (player != nullptr) {
                 auto mBlock = player->getHandSlot()->getBlock();
                 if (mBlock != nullptr) {

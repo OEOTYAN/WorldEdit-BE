@@ -14,7 +14,7 @@ namespace worldedit {
     Logger& logger();
     void clearBlockEntity(class BlockActor* be);
     phmap::flat_hash_map<std::string, class PlayerData>& getPlayersDataMap();
-    class PlayerData& getPlayersData(std::string xuid);
+    class PlayerData& getPlayersData(std::string_view xuid);
     phmap::flat_hash_map<int, std::string>& getBlockNameMap();
     phmap::flat_hash_map<std::string, int>& getBlockIdMap();
     phmap::flat_hash_map<mce::Color, Block*>& getColorBlockMap();
@@ -23,10 +23,10 @@ namespace worldedit {
     void javaBlockMapInit();
     void blockColorMapInit();
     std::string getBlockName(int id);
-    bool isBEBlock(const std::string& s);
-    bool isJEBlock(const std::string& s);
-    int getBlockId(const std::string& name);
-    Block* tryGetBlockFromAllVersion(const std::string& name);
+    bool isBEBlock(std::string_view s);
+    bool isJEBlock(std::string_view s);
+    int getBlockId(std::string_view name);
+    Block* tryGetBlockFromAllVersion(std::string_view name);
     void setFunction(phmap::flat_hash_map<::std::string, double>& variables,
                      class EvalFunctions& funcs,
                      const BoundingBox& boundingBox,

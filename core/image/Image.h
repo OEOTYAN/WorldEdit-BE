@@ -37,18 +37,11 @@ namespace worldedit {
         unsigned long long size = 0;
 
         Texture2D(unsigned w, unsigned h);
-        mce::Color sample(const Sampler& sampler,
-                          double u,
-                          double v,
-                          double lod = 0.0) const;
-        mce::Color load(const Sampler& sampler,
-                        double u,
-                        double v,
-                        double offsetu = 0.0,
-                        double offsetv = 0.0) const;
+        mce::Color sample(const Sampler& sampler, double u, double v, double lod = 0.0) const;
+        mce::Color load(const Sampler& sampler, double u, double v, double offsetu = 0.0, double offsetv = 0.0) const;
     };
 
-    Texture2D loadImage(const std::string& filename);
+    Texture2D loadImage(std::string_view filename);
 
     double colorToHeight(const mce::Color& color);
 }  // namespace worldedit

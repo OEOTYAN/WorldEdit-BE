@@ -38,7 +38,7 @@ namespace worldedit {
         std::vector<Percents> percents;
         std::vector<RawBlock> rawBlocks;
 
-        BlockListPattern(std::string str, std::string xuid);
+        BlockListPattern(std::string_view str, std::string_view xuid);
 
         class Block* getBlock(const phmap::flat_hash_map<::std::string, double>& variables,
                               class EvalFunctions& funcs) override;

@@ -9,7 +9,7 @@
 
 namespace worldedit {
 
-    ClipboardPattern::ClipboardPattern(std::string str, std::string xuid) : Pattern(xuid) {
+    ClipboardPattern::ClipboardPattern(std::string_view str, std::string_view xuid) : Pattern(xuid) {
         type = Pattern::PatternType::CLIPBOARD;
         if (!playerData->clipboard.used) {
             return;
@@ -36,7 +36,7 @@ namespace worldedit {
                 while (mi < strSize && (isdigit(str[mi]))) {
                     mi++;
                 }
-                poslist.push_back(std::stoi(str.substr(head, mi - head)));
+                poslist.push_back(std::stoi(asString(str.substr(head, mi - head))));
             }
             mi++;
         }
