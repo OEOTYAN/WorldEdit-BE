@@ -1,6 +1,8 @@
 # WorldEdit-BE
 WorldEdit-BE
 
+# QQ 群：760193614
+
 ## Stargazers over time
 
 [![Stargazers over time](https://starchart.cc/OEOTYAN/WorldEdit-BE.svg)](https://starchart.cc/OEOTYAN/WorldEdit-BE)
