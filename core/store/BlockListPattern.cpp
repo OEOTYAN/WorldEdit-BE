@@ -288,6 +288,9 @@ namespace worldedit {
                         }
                         i2++;
                     }
+                    for(auto& ssss : tmpSNBTs){
+                        logger().info("{}",ssss);
+                    }
                     rawBlockIter.block = Block::create(CompoundTag::fromSNBT(tmpSNBTs[0]).get());
                     if (tmpSNBTs.size() > 1) {
                         rawBlockIter.exBlock = Block::create(CompoundTag::fromSNBT(tmpSNBTs[1]).get());

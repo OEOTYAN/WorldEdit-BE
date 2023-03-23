@@ -12,7 +12,7 @@ namespace worldedit {
        public:
         std::string xuid = "";
         int maxHistoryLength = 20;
-        int updateArg = 2;
+        int updateArg = 0;
         int updateExArg = 1;
 
         BlockPos mainPos;

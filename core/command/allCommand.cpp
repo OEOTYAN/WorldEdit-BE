@@ -108,10 +108,10 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (results["bool"].get<bool>()) {
-                    playerData.updateArg = 3;
+                    playerData.updateArg = 1;
                     output.trSuccess("worldedit.neighberupdate.on");
                 } else {
-                    playerData.updateArg = 2;
+                    playerData.updateArg = 0;
                     output.trSuccess("worldedit.neighberupdate.off");
                 }
             },

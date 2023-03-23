@@ -119,6 +119,7 @@ namespace worldedit {
         // if (be != nullptr) {
         //     clearBlockEntity(be);
         // }
+        auto& dim = blockSource->getDimension();
         if (updateExArg % 2 == 1) {
             res |= blockSource->setExtraBlock(pos, *BedrockBlocks::mAir, updateArg);
             res |= blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
@@ -127,18 +128,19 @@ namespace worldedit {
                     res |= blockSource->setExtraBlock(pos, *exblock, updateArg);
                 }
                 if (res) {
-                    blockSource->getDimension().forEachPlayer([&](Player& player) -> bool {
+                    dim.forEachPlayer([&](Player& player) -> bool {
+                        player.sendUpdateBlockPacket(pos, *block, UpdateBlockFlags::BlockUpdateAll,
+                                                     UpdateBlockLayer::UpdateBlockDefault);
                         player.sendUpdateBlockPacket(pos, *exblock, UpdateBlockFlags::BlockUpdateAll,
                                                      UpdateBlockLayer::UpdateBlockLiquid);
                         return true;
                     });
                 }
             } else {
-                res |= blockSource->setExtraBlock(pos, *StaticVanillaBlocks::mFlowingWater, updateArg);
-                res |= blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
+                res |= blockSource->setExtraBlock(pos, *StaticVanillaBlocks::mFlowingWater, updateArg + 2);
+                res |= blockSource->setBlock(pos, *block, updateArg + 2, nullptr, nullptr);
             }
         } else {
-            auto& dim = blockSource->getDimension();
             ChunkBlockPos cpos(pos, dim.getMinHeight());
             SubChunkPos scpos(pos);
             LevelChunk* chunk = blockSource->getChunkAt(pos);
