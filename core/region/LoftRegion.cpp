@@ -9,7 +9,7 @@ namespace worldedit {
         interpolations.clear();
         cache1.clear();
         cache2.clear();
-        this->regionType = LOFT;
+        regionType = LOFT;
     }
 
     void LoftRegion::updateBoundingBox() {
@@ -86,7 +86,7 @@ namespace worldedit {
         } else {
             double minDis = DBL_MAX;
             size_t pi = 0, pj = 0;
-            for (size_t endi = loftPoints.size(),i=0 ; i < endi; ++i) {
+            for (size_t endi = loftPoints.size(), i = 0; i < endi; ++i) {
                 for (size_t endj = loftPoints[i].size(), j = 0; j < endj; ++j) {
                     auto length = (loftPoints[i][j] - pos).length();
                     if (length <= minDis) {
@@ -107,12 +107,12 @@ namespace worldedit {
     }
 
     void LoftRegion::buildCache() {
-        if (posCached){
+        if (posCached) {
             return;
         }
-            if (!selecting) {
-                return;
-            }
+        if (!selecting) {
+            return;
+        }
         if (interpolations.size() == 0) {
             return;
         }
@@ -142,8 +142,8 @@ namespace worldedit {
     }
 
     BoundingBox LoftRegion::getBoundBox() {
-            buildCache();
-        return this->boundingBox;
+        buildCache();
+        return boundingBox;
     }
 
     void LoftRegion::forEachBlockInRegion(const std::function<void(const BlockPos&)>& todo) {
@@ -203,7 +203,7 @@ namespace worldedit {
                 std::vector<Node> nodes2;
                 nodes2.clear();
                 double t = i / (double)(num - 1 + circle);
-                for (size_t endj = cache1.size(),j=0; j < endj; j += 2) {
+                for (size_t endj = cache1.size(), j = 0; j < endj; j += 2) {
                     auto& curve = cache1[j];
                     nodes2.push_back(Node(curve.getPosition(t)));
                 }

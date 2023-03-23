@@ -43,11 +43,11 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (playerData.region != nullptr && playerData.region->hasSelected()) {
-                    Region* region = playerData.region;
+                    auto& region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
-                    auto blockSource = &player->getRegion();
+                    auto blockSource = &player->getDimensionBlockSource();
 
                     if (playerData.maxHistoryLength > 0) {
                         auto history = playerData.getNextHistory();
@@ -111,7 +111,7 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (playerData.region != nullptr && playerData.region->hasSelected()) {
-                    Region* region = playerData.region;
+                    auto& region = playerData.region;
 
                     if (region->regionType != RegionType::CUBOID && region->regionType != CONVEX) {
                         output.trError("worldedit.rope.invalid-type");
@@ -121,7 +121,7 @@ namespace worldedit {
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
-                    auto blockSource = &player->getRegion();
+                    auto blockSource = &player->getDimensionBlockSource();
 
                     double extraLength = 20;
                     if (results["extraLength"].isSet) {
@@ -283,7 +283,7 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (playerData.region != nullptr && playerData.region->hasSelected()) {
-                    Region* region = playerData.region;
+                    auto& region = playerData.region;
 
                     if (region->regionType != RegionType::CUBOID && region->regionType != CONVEX) {
                         output.trError("worldedit.line.invalid-type");
@@ -293,7 +293,7 @@ namespace worldedit {
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
-                    auto blockSource = &player->getRegion();
+                    auto blockSource = &player->getDimensionBlockSource();
 
                     float radius = 0;
                     if (results["radius"].isSet) {
@@ -422,7 +422,7 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (playerData.region != nullptr && playerData.region->hasSelected()) {
-                    Region* region = playerData.region;
+                    auto& region = playerData.region;
 
                     if (region->regionType != RegionType::CONVEX && region->regionType != RegionType::LOFT) {
                         output.trError("worldedit.curve.invalid-type");
@@ -432,7 +432,7 @@ namespace worldedit {
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
-                    auto blockSource = &player->getRegion();
+                    auto blockSource = &player->getDimensionBlockSource();
 
                     float radius = 0;
                     if (results["radius"].isSet) {
@@ -489,7 +489,7 @@ namespace worldedit {
                                 });
                             }
                             f.setbox(boundingBox);
-                            auto* loft = static_cast<LoftRegion*>(region);
+                            auto* loft = static_cast<LoftRegion*>(region.get());
                             loft->forEachBlockInLines(static_cast<int>(radius), !arg_h, [&](const BlockPos& pos) {
                                 setFunction(variables, f, boundingBox, playerPos, pos, center);
                                 i += pattern->setBlock(variables, f, blockSource, pos);
@@ -503,12 +503,12 @@ namespace worldedit {
                         std::vector<Node> nodes;
                         nodes.clear();
                         if (arg_r) {
-                            for (auto& pos : static_cast<ConvexRegion*>(region)->poss) {
+                            for (auto& pos : static_cast<ConvexRegion*>(region.get())->poss) {
                                 nodes.push_back(Node(pos, RNG::rand<double>() * 2 - 1, RNG::rand<double>() * 2 - 1,
                                                      RNG::rand<double>() * 2 - 1));
                             }
                         } else {
-                            for (auto& pos : static_cast<ConvexRegion*>(region)->poss) {
+                            for (auto& pos : static_cast<ConvexRegion*>(region.get())->poss) {
                                 nodes.push_back(Node(pos));
                             }
                         }
@@ -619,7 +619,7 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (playerData.region != nullptr && playerData.region->hasSelected()) {
-                    Region* region = playerData.region;
+                    auto& region = playerData.region;
 
                     if (region->regionType != CONVEX) {
                         output.trError("worldedit.spike.invalid-type");
@@ -629,7 +629,7 @@ namespace worldedit {
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
-                    auto blockSource = &player->getRegion();
+                    auto blockSource = &player->getDimensionBlockSource();
 
                     float radius1 = 0;
                     if (results["radius1"].isSet) {
@@ -678,12 +678,12 @@ namespace worldedit {
                     std::vector<Node> nodes;
                     nodes.clear();
                     if (arg_r) {
-                        for (auto& pos : static_cast<ConvexRegion*>(region)->poss) {
+                        for (auto& pos : static_cast<ConvexRegion*>(region.get())->poss) {
                             nodes.push_back(Node(pos, RNG::rand<double>() * 2 - 1, RNG::rand<double>() * 2 - 1,
                                                  RNG::rand<double>() * 2 - 1));
                         }
                     } else {
-                        for (auto& pos : static_cast<ConvexRegion*>(region)->poss) {
+                        for (auto& pos : static_cast<ConvexRegion*>(region.get())->poss) {
                             nodes.push_back(Node(pos));
                         }
                     }
@@ -813,11 +813,11 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (playerData.region != nullptr && playerData.region->hasSelected()) {
-                    Region* region = playerData.region;
+                    auto& region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
-                    auto blockSource = &player->getRegion();
+                    auto blockSource = &player->getDimensionBlockSource();
 
                     if (playerData.maxHistoryLength > 0) {
                         auto history = playerData.getNextHistory();
@@ -884,7 +884,7 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (playerData.region != nullptr && playerData.region->hasSelected()) {
-                    Region* region = playerData.region;
+                    auto& region = playerData.region;
                     auto dimID = region->getDimensionID();
                     auto center = region->getCenter();
                     BoundingBox boundingBox;
@@ -894,7 +894,7 @@ namespace worldedit {
                     boundingBox.max.x = static_cast<int>(floor(center.x + 0.49));
                     boundingBox.max.y = static_cast<int>(floor(center.y + 0.49));
                     boundingBox.max.z = static_cast<int>(floor(center.z + 0.49));
-                    auto blockSource = &player->getRegion();
+                    auto blockSource = &player->getDimensionBlockSource();
 
                     if (playerData.maxHistoryLength > 0) {
                         auto history = playerData.getNextHistory();
@@ -992,12 +992,12 @@ namespace worldedit {
                     }
                     BlockPos faceVec = worldedit::facingToPos(facing, 1);
 
-                    Region* region = playerData.region;
+                    auto& region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
                     auto boundingBoxLast = boundingBox;
-                    auto blockSource = &player->getRegion();
+                    auto blockSource = &player->getDimensionBlockSource();
 
                     BlockPos movingVec;
                     if (arg_l) {
@@ -1053,7 +1053,10 @@ namespace worldedit {
                         delete history;
                     }
                     if (arg_e) {
-                        auto st = StructureTemplate("worldedit_stack_cmd_tmp",dAccess<Bedrock::NonOwnerPointer<class IUnknownBlockTypeRegistry>, 192>(Global<StructureManager>));
+                        auto st =
+                            StructureTemplate("worldedit_stack_cmd_tmp",
+                                              dAccess<Bedrock::NonOwnerPointer<class IUnknownBlockTypeRegistry>, 192>(
+                                                  Global<StructureManager>));
                         auto setting = StructureSettings();
                         setting.setIgnoreBlocks(true);
                         setting.setIgnoreEntities(false);
@@ -1127,12 +1130,12 @@ namespace worldedit {
                     }
                     BlockPos faceVec = worldedit::facingToPos(facing, dis);
 
-                    Region* region = playerData.region;
+                    auto& region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
                     auto boundingBoxLast = boundingBox;
-                    auto blockSource = &player->getRegion();
+                    auto blockSource = &player->getDimensionBlockSource();
 
                     boundingBoxLast.min = boundingBoxLast.min + faceVec;
                     boundingBoxLast.max = boundingBoxLast.max + faceVec;
@@ -1238,11 +1241,11 @@ namespace worldedit {
                         }
                     }
 
-                    Region* region = playerData.region;
+                    auto& region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
-                    auto blockSource = &player->getRegion();
+                    auto blockSource = &player->getDimensionBlockSource();
 
                     if (playerData.maxHistoryLength > 0) {
                         auto history = playerData.getNextHistory();
@@ -1353,11 +1356,11 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (playerData.region != nullptr && playerData.region->hasSelected()) {
-                    Region* region = playerData.region;
+                    auto& region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
-                    auto blockSource = &player->getRegion();
+                    auto blockSource = &player->getDimensionBlockSource();
 
                     if (playerData.maxHistoryLength > 0) {
                         auto history = playerData.getNextHistory();
@@ -1390,7 +1393,7 @@ namespace worldedit {
                     }
                     auto pattern = Pattern::createPattern(bps, xuid);
                     if (region->regionType == RegionType::LOFT) {
-                        auto* loft = static_cast<LoftRegion*>(region);
+                        auto* loft = static_cast<LoftRegion*>(region.get());
                         loft->forEachBlockInLines(2, true, [&](const BlockPos& pos) {
                             setFunction(variables, f, boundingBox, playerPos, pos, center);
                             i += pattern->setBlock(variables, f, blockSource, pos);
@@ -1440,11 +1443,11 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (playerData.region != nullptr && playerData.region->hasSelected()) {
-                    Region* region = playerData.region;
+                    auto& region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
-                    auto blockSource = &player->getRegion();
+                    auto blockSource = &player->getDimensionBlockSource();
 
                     if (playerData.maxHistoryLength > 0) {
                         auto history = playerData.getNextHistory();
@@ -1507,11 +1510,11 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (playerData.region != nullptr && playerData.region->hasSelected()) {
-                    Region* region = playerData.region;
+                    auto& region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
-                    auto blockSource = &player->getRegion();
+                    auto blockSource = &player->getDimensionBlockSource();
 
                     if (playerData.maxHistoryLength > 0) {
                         auto history = playerData.getNextHistory();
@@ -1564,11 +1567,11 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (playerData.region != nullptr && playerData.region->hasSelected()) {
-                    Region* region = playerData.region;
+                    auto& region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
-                    auto blockSource = &player->getRegion();
+                    auto blockSource = &player->getDimensionBlockSource();
 
                     if (playerData.maxHistoryLength > 0) {
                         auto history = playerData.getNextHistory();
@@ -1634,11 +1637,11 @@ namespace worldedit {
                         layer = results["num"].get<int>();
                     }
 
-                    Region* region = playerData.region;
+                    auto& region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
-                    auto blockSource = &player->getRegion();
+                    auto blockSource = &player->getDimensionBlockSource();
 
                     if (playerData.maxHistoryLength > 0) {
                         auto history = playerData.getNextHistory();
@@ -1741,11 +1744,11 @@ namespace worldedit {
                         ksize = results["num"].get<int>();
                     }
 
-                    Region* region = playerData.region;
+                    auto& region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
-                    auto blockSource = &player->getRegion();
+                    auto blockSource = &player->getDimensionBlockSource();
 
                     if (playerData.maxHistoryLength > 0) {
                         auto history = playerData.getNextHistory();
@@ -1795,16 +1798,18 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (playerData.region != nullptr && playerData.region->hasSelected()) {
-                    Region* region = playerData.region;
+                    auto& region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
-                    auto blockSource = &player->getRegion();
+                    auto blockSource = &player->getDimensionBlockSource();
 
                     std::string filename;
                     filename = results["strname"].get<std::string>();
 
-                    auto st = StructureTemplate(filename,dAccess<Bedrock::NonOwnerPointer<class IUnknownBlockTypeRegistry>, 192>(Global<StructureManager>));
+                    auto st = StructureTemplate(filename,
+                                                dAccess<Bedrock::NonOwnerPointer<class IUnknownBlockTypeRegistry>, 192>(
+                                                    Global<StructureManager>));
                     auto setting = StructureSettings();
                     setting.setIgnoreBlocks(false);
                     setting.setIgnoreEntities(false);
@@ -1909,15 +1914,12 @@ namespace worldedit {
                                         }
 
                                         auto iNbt = item->getNbt();
-                                        auto* vmap = &iNbt->value();
-                                        if (vmap->find("tag") != vmap->end()) {
-                                            auto* imap = &vmap->at("tag").asCompoundTag()->value();
-                                            if (imap->find("Items") != imap->end()) {
-                                                auto* cmap = &imap->at("Items").asListTag()->value();
-                                                for (auto& mItem : *cmap) {
-                                                    itemQueue.emplace(mItem->asCompoundTag()->clone());
-                                                }
-                                            }
+                                        if (iNbt->contains("tag", Tag::Type::Compound) &&
+                                            iNbt->getCompound("tag")->contains("Items", Tag::Type::List)) {
+                                            iNbt->getCompound("tag")->getList("Items")->forEachCompoundTag(
+                                                [&](class CompoundTag const& mItem) {
+                                                    itemQueue.emplace(mItem.clone());
+                                                });
                                         }
                                     }
                                     delete item;
@@ -1974,12 +1976,12 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (playerData.region != nullptr && playerData.region->hasSelected()) {
-                    Region* region = playerData.region;
+                    auto& region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
                     auto size = boundingBox.max - boundingBox.min;
-                    auto blockSource = &player->getRegion();
+                    auto blockSource = &player->getDimensionBlockSource();
 
                     int flipInt = 0;
 
@@ -2035,10 +2037,6 @@ namespace worldedit {
                     std::string filename;
                     if (results["imagefilename"].isSet) {
                         filename = results["imagefilename"].get<std::string>();
-
-                        if (filename.find(".png") == std::string::npos) {
-                            filename += ".png";
-                        }
 
                         filename = WE_DIR + "image/" + filename;
                     } else /* if (results["link"].isSet)*/ {
@@ -2096,7 +2094,7 @@ namespace worldedit {
                         auto color = texture2D.sample(sampler, u, v);
 
                         double minDist = DBL_MAX;
-                        Block* minBlock = Block::create("minecraft:air", 0);
+                        Block* minBlock = (Block*)BedrockBlocks::mAir;
                         for (auto& i : blockColorMap) {
                             if (i.first.a == 1) {
                                 auto dst = i.first.distanceTo(color);
@@ -2132,11 +2130,11 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (playerData.region != nullptr && playerData.region->hasSelected()) {
-                    Region* region = playerData.region;
+                    auto& region = playerData.region;
                     auto center = region->getCenter();
                     auto dimID = region->getDimensionID();
                     auto boundingBox = region->getBoundBox();
-                    auto blockSource = &player->getRegion();
+                    auto blockSource = &player->getDimensionBlockSource();
 
                     if (playerData.maxHistoryLength > 0) {
                         auto history = playerData.getNextHistory();
@@ -2184,49 +2182,42 @@ namespace worldedit {
                                     continue;
                                 }
                                 auto iNbt = item->getNbt();
-                                auto* vmap = &iNbt->value();
-                                if (vmap->find("tag") != vmap->end()) {
+                                if (iNbt->contains("tag", Tag::Type::Compound) &&
+                                    iNbt->getCompound("tag")->contains("Items", Tag::Type::List)) {
                                     if (count != 1) {
                                         continue;
                                     }
-                                    auto* imap = &vmap->at("tag").asCompoundTag()->value();
-                                    if (imap->find("Items") != imap->end()) {
-                                        auto* cmap = &imap->at("Items").asListTag()->value();
-                                        std::vector<Tag*> afterVal;
-                                        afterVal.clear();
-                                        for (auto& mItem : *cmap) {
-                                            auto* shulkItem = ItemStack::create(mItem->asCompoundTag()->clone());
-                                            int count2 = shulkItem->getCount();
+                                    auto& cmap = iNbt->getCompound("tag")->getList("Items")->value();
+                                    std::vector<Tag*> afterVal;
+                                    afterVal.clear();
+                                    for (auto& mItem : cmap) {
+                                        auto* shulkItem = ItemStack::create(mItem->asCompoundTag()->clone());
+                                        int count2 = shulkItem->getCount();
 
-                                            if (count2 <= 0 ||
-                                                !(cmdItem == ItemInstance::EMPTY_ITEM ||
-                                                  shulkItem->sameItem(cmdItem)) ||
-                                                (data >= -2140000000 && data != shulkItem->getAuxValue())) {
-                                                continue;
-                                            }
-                                            int removeNum2 = num > 0 ? std::min(num, count2) : count2;
-                                            i += removeNum2;
-                                            if (num > 0) {
-                                                num -= removeNum2;
-                                            }
-                                            if (removeNum2 == count2) {
-                                                continue;
-                                            }
-                                            shulkItem->remove(removeNum2);
-                                            afterVal.push_back(shulkItem->getNbt().get());
+                                        if (count2 <= 0 ||
+                                            !(cmdItem == ItemInstance::EMPTY_ITEM || shulkItem->sameItem(cmdItem)) ||
+                                            (data >= -2140000000 && data != shulkItem->getAuxValue())) {
                                             delete shulkItem;
+                                            continue;
                                         }
-                                        if (afterVal.size() < 1) {
-                                            imap->erase("Items");
-                                            if (imap->size() < 1) {
-                                                vmap->erase("tag");
-                                            }
-                                        } else {
-                                            *cmap = afterVal;
+                                        int removeNum2 = num > 0 ? std::min(num, count2) : count2;
+                                        i += removeNum2;
+                                        if (num > 0) {
+                                            num -= removeNum2;
                                         }
-                                        item->setNbt(iNbt.get());
-                                        continue;
+                                        if (removeNum2 == count2) {
+                                            delete shulkItem;
+                                            continue;
+                                        }
+                                        shulkItem->remove(removeNum2);
+                                        afterVal.push_back(shulkItem->getNbt().get());
+                                        delete shulkItem;
                                     }
+                                    if (afterVal.size() >= 1) {
+                                        cmap = afterVal;
+                                    }
+                                    item->setNbt(iNbt.get());
+                                    continue;
                                 }
 
                                 if (!(cmdItem == ItemInstance::EMPTY_ITEM || item->sameItem(cmdItem)) ||

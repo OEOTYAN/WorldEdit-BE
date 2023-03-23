@@ -15,7 +15,7 @@ namespace worldedit {
             return;
         }
         clipboard = &playerData->clipboard;
-        Region* region = playerData->region;
+        auto& region = playerData->region;
         if (region != nullptr) {
             if (str.find("@c") != std::string::npos) {
                 bias = region->getCenter().toBlockPos();

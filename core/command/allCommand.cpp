@@ -17,14 +17,13 @@
 #include "mc/SpawnGroupRegistry.hpp"
 
 namespace worldedit {
-    void updateFile(){
+    void updateFile() {
         Global<CommandRegistry>->setSoftEnumValues("imagefilename", getWEFiles("image"));
         Global<CommandRegistry>->setSoftEnumValues(
             "modelfilename",
             getWEFiles("models", [](std::string_view s) -> bool { return s.substr(s.size() - 4) == ".obj"; }));
     }
     void commandsSetup() {
-
         brushCommandSetup();
         regionCommandSetup();
         historyCommandSetup();
@@ -99,8 +98,8 @@ namespace worldedit {
             CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
-            "neighberupdate",                                // command name
-            "worldedit.command.description.neighberupdate",  // command description
+            "neighberupdate",                                    // command name
+            tr("worldedit.command.description.neighberupdate"),  // command description
             {}, {ParamData("bool", ParamType::Bool, "bool")}, {{"bool"}},
             // dynamic command callback
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
@@ -162,7 +161,7 @@ namespace worldedit {
 
         //         auto player = origin.getPlayer();
         //         auto dimID = player->getDimensionId();
-        //         auto blockSource = &player->getRegion();
+        //         auto blockSource = &player->getDimensionBlockSource();
 
         //         output.trSuccess(results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName());
         //     },

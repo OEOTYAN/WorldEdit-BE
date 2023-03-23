@@ -12,7 +12,7 @@
 #include "eval/blur.hpp"
 
 namespace worldedit {
-    SmoothBrush::SmoothBrush(unsigned short s, int a,float d) : Brush(s, nullptr), ksize(a),density(d) {}
+    SmoothBrush::SmoothBrush(unsigned short s, int a, float d) : Brush(s, nullptr), ksize(a), density(d) {}
     long long SmoothBrush::set(Player* player, BlockInstance blockInstance) {
         if (blockInstance == BlockInstance::Null) {
             return -2;
@@ -22,7 +22,7 @@ namespace worldedit {
         auto xuid = player->getXuid();
         auto& playerData = getPlayersData(xuid);
         auto dimID = player->getDimensionId();
-        auto blockSource = &player->getRegion();
+        auto blockSource = &player->getDimensionBlockSource();
 
         BoundingBox box(pos - size, pos + size);
         box.min.y = pos.y;
@@ -70,7 +70,7 @@ namespace worldedit {
                                   static_cast<float>(sqrt(pow2(x - pos.x) + pow2(z - pos.z))), density, 1, size)));
             }
 
-        CuboidRegion(box, dimID).applyHeightMap(smoothedHeightMap,xuid, mask);
+        CuboidRegion(box, dimID).applyHeightMap(smoothedHeightMap, xuid, mask);
 
         return -2;
     }

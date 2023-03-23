@@ -11,9 +11,10 @@
 
 namespace worldedit {
 
+
     Logger& logger();
     void clearBlockEntity(class BlockActor* be);
-    phmap::flat_hash_map<std::string, class PlayerData>& getPlayersDataMap();
+    phmap::flat_hash_map<std::string, std::unique_ptr<class PlayerData>>& getPlayersDataMap();
     class PlayerData& getPlayersData(std::string_view xuid);
     phmap::flat_hash_map<int, std::string>& getBlockNameMap();
     phmap::flat_hash_map<std::string, int>& getBlockIdMap();

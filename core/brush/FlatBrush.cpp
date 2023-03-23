@@ -22,7 +22,7 @@ namespace worldedit {
         auto xuid = player->getXuid();
         auto& playerData = getPlayersData(xuid);
         auto dimID = player->getDimensionId();
-        auto blockSource = &player->getRegion();
+        auto blockSource = &player->getDimensionBlockSource();
 
         BoundingBox box(pos - size, pos + size);
         box.min.y = pos.y;
@@ -48,7 +48,7 @@ namespace worldedit {
             }
         box.min.y = std::max(static_cast<int>(range.min), box.min.y - 1);
         box.max.y = std::min(static_cast<int>(range.max), box.max.y + 1);
-        
+
         if (playerData.maxHistoryLength > 0) {
             auto history = playerData.getNextHistory();
             *history = Clipboard(box.max - box.min);

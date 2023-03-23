@@ -32,10 +32,5 @@ namespace worldedit {
         void forEachLine(
             const std::function<void(const BlockPos&, const BlockPos&)>& todo)
             override;
-
-        // void forEachBlockInRegion(const std::function<void(const BlockPos &)>
-        // &todo) override;
-
-        Region* createRegion(RegionType type, BoundingBox boundingBox, int dim);
     };
 }  // namespace worldedit

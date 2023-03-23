@@ -27,9 +27,9 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (playerData.region != nullptr && playerData.region->hasSelected()) {
-                    Region* region = playerData.region;
+                    auto& region = playerData.region;
                     auto dimID = region->getDimensionID();
-                    auto blockSource = &player->getRegion();
+                    auto blockSource = &player->getDimensionBlockSource();
                     long long size = 0;
                     bool arg_a = false, arg_c = false;
                     if (results["args"].isSet) {
@@ -92,9 +92,9 @@ namespace worldedit {
                                      .getBlock()
                                      ->getTypeName();
                 if (playerData.region != nullptr && playerData.region->hasSelected()) {
-                    Region* region = playerData.region;
+                    auto& region = playerData.region;
                     auto dimID = region->getDimensionID();
-                    auto blockSource = &player->getRegion();
+                    auto blockSource = &player->getDimensionBlockSource();
                     long long count = 0;
                     if (results["args"].isSet) {
                         // clipboard
@@ -141,9 +141,9 @@ namespace worldedit {
                 }
 
                 if (playerData.region != nullptr && playerData.region->hasSelected()) {
-                    Region* region = playerData.region;
+                    auto& region = playerData.region;
                     auto dimID = region->getDimensionID();
-                    auto blockSource = &player->getRegion();
+                    auto blockSource = &player->getDimensionBlockSource();
                     phmap::flat_hash_map<std::string, long long> blocksMap;
                     std::vector<std::pair<std::string, long long>> blocksMap2;
                     blocksMap2.resize(0);
@@ -193,15 +193,12 @@ namespace worldedit {
                                         blocksMap[name] += count;
 
                                         auto iNbt = item->getNbt();
-                                        auto* vmap = &iNbt->value();
-                                        if (vmap->find("tag") != vmap->end()) {
-                                            auto* imap = &vmap->at("tag").asCompoundTag()->value();
-                                            if (imap->find("Items") != imap->end()) {
-                                                auto* cmap = &imap->at("Items").asListTag()->value();
-                                                for (auto& mItem : *cmap) {
-                                                    itemQueue.emplace(mItem->asCompoundTag()->clone());
-                                                }
-                                            }
+                                        if (iNbt->contains("tag", Tag::Type::Compound) &&
+                                            iNbt->getCompound("tag")->contains("Items", Tag::Type::List)) {
+                                            iNbt->getCompound("tag")->getList("Items")->forEachCompoundTag(
+                                                [&](class CompoundTag const& mItem) {
+                                                    itemQueue.emplace(mItem.clone());
+                                                });
                                         }
                                     }
                                     delete item;

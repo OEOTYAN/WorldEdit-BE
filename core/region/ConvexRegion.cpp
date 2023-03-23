@@ -52,7 +52,7 @@ namespace worldedit {
         edges.clear();
         hasLast = false;
         centerAccum = BlockPos(0, 0, 0);
-        this->regionType = CONVEX;
+        regionType = CONVEX;
     }
 
     bool ConvexRegion::containsRaw(const Vec3& pt) {

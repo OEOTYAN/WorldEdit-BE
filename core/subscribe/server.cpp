@@ -31,14 +31,14 @@ namespace worldedit {
                     Global<Level>->forEachPlayer([&](Player& player) -> bool {
                         auto xuid = player.getXuid();
                         if (playerDataMap.find(xuid) != playerDataMap.end()) {
-                            auto& data = playerDataMap[xuid];
+                            auto& data = *playerDataMap[xuid];
                             if (data.region != nullptr && data.region->hasSelected()) {
                                 data.region->renderRegion();
                             }
                         }
 
                         if (playerDataMap.find(xuid) != playerDataMap.end()) {
-                            auto& data = playerDataMap[xuid];
+                            auto& data = *playerDataMap[xuid];
                             if (data.mainPosDim >= 0) {
                                 if (data.mainPosTime <= 0) {
                                     data.mainPosTime = 40;

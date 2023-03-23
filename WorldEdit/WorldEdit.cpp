@@ -52,17 +52,17 @@ namespace worldedit {
         }
     }
 
-    phmap::flat_hash_map<std::string, class PlayerData>& getPlayersDataMap() {
-        static phmap::flat_hash_map<std::string, class PlayerData> data;
+    phmap::flat_hash_map<std::string, std::unique_ptr<class PlayerData>>& getPlayersDataMap() {
+        static phmap::flat_hash_map<std::string, std::unique_ptr<class PlayerData>> data;
         return data;
     }
 
     class PlayerData& getPlayersData(std::string_view xuid) {
         auto& playerDataMap = getPlayersDataMap();
         if (playerDataMap.find(xuid) == playerDataMap.end()) {
-            playerDataMap[xuid] = PlayerData(Global<Level>->getPlayer(asString(xuid)));
+            playerDataMap[xuid] = std::make_unique<PlayerData>(PlayerData(Global<Level>->getPlayer(asString(xuid))));
         }
-        return playerDataMap[xuid];
+        return *playerDataMap[xuid];
     }
 
     phmap::flat_hash_map<mce::Color, Block*>& getColorBlockMap() {

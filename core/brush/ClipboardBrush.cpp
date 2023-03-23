@@ -28,7 +28,7 @@ namespace worldedit {
 
         auto playerPos = player->getPosition();
         auto playerRot = player->getRotation();
-        auto blockSource = &player->getRegion();
+        auto blockSource = &player->getDimensionBlockSource();
         BoundingBox box = clipboard.getBoundingBox() + pbPos;
 
         if (playerData.maxHistoryLength > 0) {

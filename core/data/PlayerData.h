@@ -4,6 +4,8 @@
 #pragma once
 #include <mc/Block.hpp>
 #include "store/Clipboard.hpp"
+#include "region/Region.h"
+#include "brush/Brush.h"
 #include <mc/BedrockBlocks.hpp>
 namespace worldedit {
     class PlayerData {
@@ -23,12 +25,12 @@ namespace worldedit {
 
         std::string gMask = "";
 
-        class Region* region = nullptr;
+        std::unique_ptr<class Region> region = nullptr;
         class Clipboard clipboard;
         std::vector<class Clipboard> historyList;
         int historyFlag1 = 0;
         int historyFlag2 = 0;
-        phmap::flat_hash_map<std::string, class Brush*> brushMap;
+        phmap::flat_hash_map<std::string, std::unique_ptr<class Brush>> brushMap;
 
         PlayerData();
         PlayerData(class Player*);
@@ -48,9 +50,10 @@ namespace worldedit {
                                      class Block* exblock,
                                      int biomeId);
         bool setBlockWithBiomeWithoutcheckGMask(class BlockSource* blockSource,
-                                       const BlockPos& pos,
-                                       class Block* block,
-                                       class Block* exblock,int biomeId);
+                                                const BlockPos& pos,
+                                                class Block* block,
+                                                class Block* exblock,
+                                                int biomeId);
         bool setBlockSimple(class BlockSource* blockSource,
                             class EvalFunctions& funcs,
                             phmap::flat_hash_map<std::string, double> const& var,
@@ -61,7 +64,6 @@ namespace worldedit {
                                        const BlockPos& pos,
                                        class Block* block,
                                        class Block* exblock);
-        ~PlayerData();
     };
 
 }  // namespace worldedit

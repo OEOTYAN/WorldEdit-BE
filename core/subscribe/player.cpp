@@ -116,7 +116,6 @@ namespace worldedit {
             }
         } else {
             tickMap[xuid] = tick;
-            auto& playerDataMap = getPlayersDataMap();
             itemName += std::to_string(item->getAuxValue());
 
             if (playerData.brushMap.find(itemName) != playerData.brushMap.end()) {

@@ -26,7 +26,7 @@ namespace worldedit {
 
         Sampler() = default;
         Sampler(SamplerType s, EdgeType e) : samplerType(s), edgeType(e){};
-        double setUV(double) const;
+        void setUV(double&) const;
     };
 
     class Texture2D {
@@ -41,7 +41,7 @@ namespace worldedit {
         mce::Color load(const Sampler& sampler, double u, double v, double offsetu = 0.0, double offsetv = 0.0) const;
     };
 
-    Texture2D loadImage(std::string_view filename);
+    Texture2D loadImage(std::string const& filename);
 
     double colorToHeight(const mce::Color& color);
 }  // namespace worldedit

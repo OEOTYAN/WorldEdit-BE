@@ -8,7 +8,8 @@
 #include "mc/Dimension.hpp"
 namespace worldedit {
     void SphereRegion::updateBoundingBox() {
-        auto range = reinterpret_cast<Dimension*>(Global<Level>->getDimension(dimensionID).mHandle.lock().get())->getHeightRange();
+        auto range = reinterpret_cast<Dimension*>(Global<Level>->getDimension(dimensionID).mHandle.lock().get())
+                         ->getHeightRange();
         rendertick = 0;
         auto newRadius = (int)(ceil(radius));
         boundingBox.min.x = center.x - newRadius;
@@ -20,10 +21,10 @@ namespace worldedit {
     }
 
     void SphereRegion::forEachBlockUVInRegion(const std::function<void(const BlockPos&, double, double)>& todo) {
-        this->forEachBlockInRegion([&](const BlockPos& pos) {
+        forEachBlockInRegion([&](const BlockPos& pos) {
             int counts = 0;
             for (auto& calPos : pos.getNeighbors()) {
-                counts += this->contains(calPos);
+                counts += contains(calPos);
             }
             if (counts < 6) {
                 double y = (pos.y - center.y) / radius;
@@ -112,8 +113,8 @@ namespace worldedit {
     }
 
     SphereRegion::SphereRegion(const BoundingBox& region, const int& dim) : Region(region, dim) {
-        this->selecting = false;
-        this->regionType = SPHERE;
+        selecting = false;
+        regionType = SPHERE;
     }
     void SphereRegion::renderRegion() {
         if (selecting && dimensionID >= 0 && rendertick <= 0) {

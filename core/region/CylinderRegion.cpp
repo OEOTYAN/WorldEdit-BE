@@ -7,16 +7,16 @@
 #include "ParticleAPI.h"
 namespace worldedit {
     CylinderRegion::CylinderRegion(const BoundingBox& region, const int& dim) : Region(region, dim) {
-        this->selecting = false;
+        selecting = false;
         hasY = false;
-        this->regionType = CYLINDER;
+        regionType = CYLINDER;
     }
 
     void CylinderRegion::forEachBlockUVInRegion(const std::function<void(const BlockPos&, double, double)>& todo) {
-        this->forEachBlockInRegion([&](const BlockPos& pos) {
+        forEachBlockInRegion([&](const BlockPos& pos) {
             int counts = 0;
             for (auto& calPos : pos.getNeighbors()) {
-                counts += this->contains(calPos);
+                counts += contains(calPos);
             }
             if (counts < 6) {
                 todo(pos, (atan2(pos.z - center.z, pos.x - center.x) + M_PI) / (M_PI * 2),
@@ -27,7 +27,8 @@ namespace worldedit {
 
     void CylinderRegion::updateBoundingBox() {
         if (hasY) {
-            auto range = reinterpret_cast<Dimension*>(Global<Level>->getDimension(dimensionID).mHandle.lock().get())->getHeightRange();
+            auto range = reinterpret_cast<Dimension*>(Global<Level>->getDimension(dimensionID).mHandle.lock().get())
+                             ->getHeightRange();
             rendertick = 0;
             auto newRadius = (int)(radius);
             boundingBox.min.x = center.x - newRadius;

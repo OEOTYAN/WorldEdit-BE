@@ -23,7 +23,7 @@ namespace worldedit {
     int getHighestTerrainBlock(BlockSource* blockSource, int x, int z, int minY, int maxY, std::string filter) {
         EvalFunctions f;
         f.setbs(blockSource);
-        // auto* chunk = blockSource->getChunkAt(BlockPos(x, maxY, z));
+        // auto& chunk = blockSource->getChunkAt(BlockPos(x, maxY, z));
         phmap::flat_hash_map<std::string, double> variables;
         for (int y = maxY; y >= minY; y--) {
             BlockPos pos(x, y, z);

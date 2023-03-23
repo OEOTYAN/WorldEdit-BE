@@ -103,11 +103,6 @@ namespace worldedit {
                 brushName += std::to_string(item->getAuxValue());
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
-                if (playerData.brushMap.find(brushName) != playerData.brushMap.end()) {
-                    delete playerData.brushMap[brushName];
-                    playerData.brushMap[brushName] = nullptr;
-                }
-
                 unsigned short radius = 2;
                 int ksize = 5;
                 int height = 1;
@@ -167,44 +162,48 @@ namespace worldedit {
 
                 if (results["sphere"].isSet) {
                     playerData.brushMap[brushName] =
-                        new SphereBrush(radius, Pattern::createPattern(bps, xuid), arg_h);
+                        std::make_unique<SphereBrush>(SphereBrush(radius, Pattern::createPattern(bps, xuid), arg_h));
                     output.trSuccess("worldedit.brush.set.sphere", brushrName);
                     return;
                 } else if (results["color"].isSet) {
                     if (results["Rf"].isSet) {
-                        playerData.brushMap[brushName] = new ColorBrush(
-                            radius, density, opacity,
-                            mce::Color(results["Rf"].get<float>(), results["Gf"].get<float>(), results["Bf"].get<float>()),
-                            nullptr, mixBoxLerp);
+                        playerData.brushMap[brushName] = std::make_unique<ColorBrush>(
+                            ColorBrush(radius, density, opacity,
+                                       mce::Color(results["Rf"].get<float>(), results["Gf"].get<float>(),
+                                                  results["Bf"].get<float>()),
+                                       nullptr, mixBoxLerp));
                     } else if (isColorHex(bps)) {
-                        playerData.brushMap[brushName] =
-                            new ColorBrush(radius, density, opacity, mce::Color(bps), nullptr, mixBoxLerp);
+                        playerData.brushMap[brushName] = std::make_unique<ColorBrush>(
+                            ColorBrush(radius, density, opacity, mce::Color(bps), nullptr, mixBoxLerp));
                     } else {
-                        playerData.brushMap[brushName] = new ColorBrush(
-                            radius, density, opacity, mce::Color(), Pattern::createPattern(bps, xuid), mixBoxLerp);
+                        playerData.brushMap[brushName] = std::make_unique<ColorBrush>(ColorBrush(
+                            radius, density, opacity, mce::Color(), Pattern::createPattern(bps, xuid), mixBoxLerp));
                     }
                     output.trSuccess("worldedit.brush.set.color", brushrName);
                     return;
                 } else if (results["mix"].isSet) {
-                    playerData.brushMap[brushName] = new MixBrush(radius, density, opacity, mixBoxLerp);
+                    playerData.brushMap[brushName] =
+                        std::make_unique<MixBrush>(MixBrush(radius, density, opacity, mixBoxLerp));
                     output.trSuccess("worldedit.brush.set.mix", brushrName);
                     return;
                 } else if (results["flat"].isSet) {
-                    playerData.brushMap[brushName] = new FlatBrush(radius, density);
+                    playerData.brushMap[brushName] = std::make_unique<FlatBrush>(FlatBrush(radius, density));
                     output.trSuccess("worldedit.brush.set.flat", brushrName);
                     return;
                 } else if (results["cube"].isSet) {
-                    playerData.brushMap[brushName] = new CubeBrush(radius, Pattern::createPattern(bps, xuid), arg_h);
+                    playerData.brushMap[brushName] =
+                        std::make_unique<CubeBrush>(CubeBrush(radius, Pattern::createPattern(bps, xuid), arg_h));
                     output.trSuccess("worldedit.brush.set.cube", brushrName);
                     return;
                 } else if (results["cyl"].isSet) {
-                    playerData.brushMap[brushName] =
-                        new CylinderBrush(radius, Pattern::createPattern(bps, xuid), height, arg_h);
+                    playerData.brushMap[brushName] = std::make_unique<CylinderBrush>(
+                        CylinderBrush(radius, Pattern::createPattern(bps, xuid), height, arg_h));
                     output.trSuccess("worldedit.brush.set.cylinder", brushrName);
                     return;
                 } else if (results["clipboard"].isSet) {
                     if (playerData.clipboard.used) {
-                        playerData.brushMap[brushName] = new ClipboardBrush(0, playerData.clipboard, arg_o, arg_a);
+                        playerData.brushMap[brushName] =
+                            std::make_unique<ClipboardBrush>(ClipboardBrush(0, playerData.clipboard, arg_o, arg_a));
                     } else {
                         output.trError("worldedit.error.empty-clipboard");
                         return;
@@ -212,17 +211,13 @@ namespace worldedit {
                     output.trSuccess("worldedit.brush.set.clipboard", brushrName);
                     return;
                 } else if (results["smooth"].isSet) {
-                    playerData.brushMap[brushName] = new SmoothBrush(radius, ksize,density);
+                    playerData.brushMap[brushName] = std::make_unique<SmoothBrush>(SmoothBrush(radius, ksize, density));
                     output.trSuccess("worldedit.brush.set.smooth", brushrName);
                     return;
                 } else if (results["heightmap"].isSet) {
                     std::string filename;
                     if (results["imagefilename"].isSet) {
                         filename = results["imagefilename"].get<std::string>();
-
-                        if (filename.find(".png") == std::string::npos) {
-                            filename += ".png";
-                        }
 
                         filename = WE_DIR + "image/" + filename;
                     } else /* if (results["link"].isSet)*/ {
@@ -234,7 +229,8 @@ namespace worldedit {
                         }
                     }
 
-                    playerData.brushMap[brushName] = new ImageHeightmapBrush(radius, height, loadImage(filename), arg_r);
+                    playerData.brushMap[brushName] =
+                        std::make_unique<ImageHeightmapBrush>(ImageHeightmapBrush(radius, height, loadImage(filename), arg_r));
 
                     output.trSuccess("worldedit.brush.set.heightmap", brushrName);
                     return;
@@ -259,7 +255,7 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (playerData.brushMap.find(brushName) != playerData.brushMap.end()) {
-                    auto* brush = playerData.brushMap[brushName];
+                    auto& brush = playerData.brushMap[brushName];
                     if (results["mask"].isSet) {
                         auto tmp = results["mask"].get<std::string>();
                         brush->mask = tmp;
@@ -287,7 +283,7 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (playerData.brushMap.find(brushName) != playerData.brushMap.end()) {
-                    auto* brush = playerData.brushMap[brushName];
+                    auto& brush = playerData.brushMap[brushName];
                     auto size = results["size"].get<int>();
                     brush->size = size;
                     output.trSuccess("worldedit.brush.size.set", size);
@@ -310,7 +306,7 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (playerData.brushMap.find(brushName) != playerData.brushMap.end()) {
-                    auto* brush = playerData.brushMap[brushName];
+                    auto& brush = playerData.brushMap[brushName];
                     auto useface = results["bool"].get<bool>();
                     brush->needFace = useface;
                     output.trSuccess("worldedit.brush.ruseface.set", useface ? "true" : "false");

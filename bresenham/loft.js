@@ -918,16 +918,16 @@ if (!loftRange) loftRange = /^(d?)([0-9]*)\:([0-9]*)$/.exec(argv[5]);
 if (loftRange) player.print(loftRange);
 // player.print(symetry)
 if (argv[1] == "sel" || argv[1] == "s") {
-    var region = session.getRegionSelector(player.getWorld()).getRegion();
+    var region = session.getRegionSelector(player.getWorld()).getDimensionBlockSource();
     road_type = loadConfigFromRegion(region, null, symetry);
 } else if (argv[1] == "linesel" || argv[1] == "ls") {
-    var region = session.getRegionSelector(player.getWorld()).getRegion();
+    var region = session.getRegionSelector(player.getWorld()).getDimensionBlockSource();
     road_type = loadConfigFromRegion(region, "l", symetry);
 } else if (argv[1] == "segsel" || argv[1] == "ss") {
-    var region = session.getRegionSelector(player.getWorld()).getRegion();
+    var region = session.getRegionSelector(player.getWorld()).getDimensionBlockSource();
     road_type = loadConfigFromRegion(region, "s", symetry);
 } else if (argv[1] == "pointsel" || argv[1] == "ps") {
-    var region = session.getRegionSelector(player.getWorld()).getRegion();
+    var region = session.getRegionSelector(player.getWorld()).getDimensionBlockSource();
     road_type = loadConfigFromRegion(region, "p", symetry);
 } else {
     road_type = road_type[argv[1]];

@@ -21,24 +21,24 @@ namespace worldedit {
                 }
     }
     void Region::forEachBlockUVInRegion(const std::function<void(const BlockPos&, double, double)>& todo) {
-        auto size = boundingBox.max - boundingBox.min;
+        auto size = boundingBox.max - boundingBox.min + 1;
 
-        if (size.x == 0) {
+        if (size.x == 1) {
             for (int y = boundingBox.min.y; y <= boundingBox.max.y; ++y)
                 for (int z = boundingBox.min.z; z <= boundingBox.max.z; ++z) {
                     BlockPos pos(boundingBox.max.x, y, z);
                     if (contains(pos)) {
                         auto localPos = pos - boundingBox.min;
-                        todo(pos, static_cast<double>(localPos.z) / size.z, static_cast<double>(localPos.y) / size.y);
+                        todo(pos, (localPos.z + 0.5) / size.z, (localPos.y + 0.5) / size.y);
                     }
                 }
-        } else if (size.z == 0) {
+        } else if (size.z == 1) {
             for (int y = boundingBox.min.y; y <= boundingBox.max.y; ++y)
                 for (int x = boundingBox.min.x; x <= boundingBox.max.x; ++x) {
                     BlockPos pos(x, y, boundingBox.max.z);
                     if (contains(pos)) {
                         auto localPos = pos - boundingBox.min;
-                        todo(pos, static_cast<double>(localPos.x) / size.x, static_cast<double>(localPos.y) / size.y);
+                        todo(pos, (localPos.x + 0.5) / size.x, (localPos.y + 0.5) / size.y);
                     }
                 }
         } else {
@@ -47,7 +47,7 @@ namespace worldedit {
                     BlockPos pos(x, boundingBox.max.y, z);
                     if (contains(pos)) {
                         auto localPos = pos - boundingBox.min;
-                        todo(pos, static_cast<double>(localPos.x) / size.x, static_cast<double>(localPos.z) / size.z);
+                        todo(pos, (localPos.x + 0.5) / size.x, (localPos.z + 0.5) / size.z);
                     }
                 }
         }
@@ -182,7 +182,7 @@ namespace worldedit {
 
     void Region::renderRegion() {
         if (selecting && dimensionID >= 0 && rendertick <= 0) {
-            globalPT().drawCuboid(this->getBoundBox(), dimensionID, mce::ColorPalette::YELLOW);
+            globalPT().drawCuboid(getBoundBox(), dimensionID, mce::ColorPalette::YELLOW);
             rendertick = 40;
         }
         rendertick--;
@@ -190,24 +190,24 @@ namespace worldedit {
 
     Region::Region(const BoundingBox& b, int dim) : boundingBox(b), dimensionID(dim) {}
 
-    Region* Region::createRegion(RegionType type, const BoundingBox& box, int dim) {
+    std::unique_ptr<Region> Region::createRegion(RegionType type, const BoundingBox& box, int dim) {
         switch (type) {
             case CUBOID:
-                return new CuboidRegion(box, dim);
+                return std::make_unique<CuboidRegion>(CuboidRegion(box, dim));
             case EXPAND:
-                return new ExpandRegion(box, dim);
+                return std::make_unique<ExpandRegion>(ExpandRegion(box, dim));
             case SPHERE:
-                return new SphereRegion(box, dim);
+                return std::make_unique<SphereRegion>(SphereRegion(box, dim));
             case POLY:
-                return new PolyRegion(box, dim);
+                return std::make_unique<PolyRegion>(PolyRegion(box, dim));
             case CONVEX:
-                return new ConvexRegion(box, dim);
+                return std::make_unique<ConvexRegion>(ConvexRegion(box, dim));
             case CYLINDER:
-                return new CylinderRegion(box, dim);
+                return std::make_unique<CylinderRegion>(CylinderRegion(box, dim));
             case LOFT:
-                return new LoftRegion(box, dim);
+                return std::make_unique<LoftRegion>(LoftRegion(box, dim));
             default:
-                return new CuboidRegion(box, dim);
+                return std::make_unique<CuboidRegion>(CuboidRegion(box, dim));
         }
     }
 }  // namespace worldedit

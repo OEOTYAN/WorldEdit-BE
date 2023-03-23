@@ -6,5 +6,5 @@
 #include "Globals.h"
 namespace worldedit {
     int download(std::string_view url, std::string_view outfilename);
-    bool downloadImage(std::string_view url);
+    bool downloadImage(std::string const& url);
 }  // namespace worldedit

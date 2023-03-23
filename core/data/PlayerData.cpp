@@ -27,11 +27,6 @@ namespace worldedit {
         historyFlag2 = 0;
     }
 
-    PlayerData::~PlayerData() {
-        delete region;
-        region = nullptr;
-    }
-
     PlayerData::PlayerData() {
         historyList.resize(0);
     }
@@ -45,11 +40,11 @@ namespace worldedit {
         Player* player = Global<Level>->getPlayer(xuid);
         if (blockInstance == BlockInstance::Null) {
             if (output)
-                player->sendText("worldedit.selection.empty.explain.secondary", "");
+                player->trSendText("worldedit.selection.empty.explain.secondary");
             return false;
         }
         if (region == nullptr) {
-            region = new worldedit::CuboidRegion();
+            region = Region::createRegion(RegionType::CUBOID);
         }
         auto pos = blockInstance.getPosition();
         if (player->getDimensionId() != region->getDimensionID()) {
@@ -57,15 +52,15 @@ namespace worldedit {
         }
         if (region->setVicePos(pos, player->getDimensionId())) {
             if (output)
-                player->sendText("worldedit.selection." + region->getName() + ".explain.secondary", pos.toString(),
-                                 region->size());
+                player->trSendText("worldedit.selection." + region->getName() + ".explain.secondary", pos.toString(),
+                                   region->size());
             vicePos = pos;
             vicePosTime = 0;
             vicePosDim = player->getDimensionId();
             return true;
         } else {
             if (output)
-                player->sendText("worldedit.selection.failed.explain.secondary", "");
+                player->trSendText("worldedit.selection.failed.explain.secondary");
         }
         return false;
     }
@@ -74,11 +69,11 @@ namespace worldedit {
         Player* player = Global<Level>->getPlayer(xuid);
         if (blockInstance == BlockInstance::Null) {
             if (output)
-                player->sendText("worldedit.selection.empty.explain.primary", "");
+                player->trSendText("worldedit.selection.empty.explain.primary");
             return false;
         }
         if (region == nullptr) {
-            region = new worldedit::CuboidRegion();
+            region = Region::createRegion(RegionType::CUBOID);
         }
         auto pos = blockInstance.getPosition();
         if (player->getDimensionId() != region->getDimensionID()) {
@@ -86,8 +81,8 @@ namespace worldedit {
         }
         if (region->setMainPos(pos, player->getDimensionId())) {
             if (output)
-                player->sendText("worldedit.selection." + region->getName() + ".explain.primary", pos.toString(),
-                                 region->size());
+                player->trSendText("worldedit.selection." + region->getName() + ".explain.primary", pos.toString(),
+                                   region->size());
             mainPos = pos;
             mainPosTime = 0;
             mainPosDim = player->getDimensionId();
@@ -97,7 +92,7 @@ namespace worldedit {
             return true;
         } else {
             if (output)
-                player->sendText("worldedit.selection.failed.explain.primary", "");
+                player->trSendText("worldedit.selection.failed.explain.primary");
         }
         return false;
     }

@@ -8,10 +8,7 @@
 #include "WorldEdit.h"
 
 namespace worldedit {
-    ImageHeightmapBrush::ImageHeightmapBrush(unsigned short s,
-                                             int a,
-                                             Texture2D const& tex,
-                                             bool r)
+    ImageHeightmapBrush::ImageHeightmapBrush(unsigned short s, int a, Texture2D const& tex, bool r)
         : Brush(s, nullptr), height(a), texture(tex), rotation(r) {}
 
     long long ImageHeightmapBrush::set(Player* player, BlockInstance blockInstance) {
@@ -19,12 +16,13 @@ namespace worldedit {
             return -2;
         }
         auto pos = blockInstance.getPosition();
-        
+
         auto xuid = player->getXuid();
         auto& playerData = getPlayersData(xuid);
         auto dimID = player->getDimensionId();
-        auto blockSource = &player->getRegion();
-        auto range = reinterpret_cast<Dimension*>(Global<Level>->getDimension(dimID).mHandle.lock().get())->getHeightRange();
+        auto blockSource = &player->getDimensionBlockSource();
+        auto range =
+            reinterpret_cast<Dimension*>(Global<Level>->getDimension(dimID).mHandle.lock().get())->getHeightRange();
         int minY = 2147483647;
         int maxY = -2147483648;
         int volume = (size * 2 + 1) * (size * 2 + 1);
@@ -33,8 +31,7 @@ namespace worldedit {
         for (int dx = -size; dx <= size; dx++)
             for (int dz = -size; dz <= size; dz++) {
                 auto posk = pos + BlockPos(dx, 0, dz);
-                posk.y = getHighestTerrainBlock(blockSource, posk.x, posk.z,
-                                                range.min, range.max - 1, mask);
+                posk.y = getHighestTerrainBlock(blockSource, posk.x, posk.z, range.min, range.max - 1, mask);
                 if (range.min > posk.y) {
                     continue;
                 }
@@ -50,8 +47,7 @@ namespace worldedit {
         maxY = std::min(maxY, range.max - 1);
         minY = std::max(minY, (int)range.min);
 
-        BoundingBox box({pos.x - size, minY, pos.z - size},
-                        {pos.x + size, maxY, pos.z + size});
+        BoundingBox box({pos.x - size, minY, pos.z - size}, {pos.x + size, maxY, pos.z + size});
 
         if (playerData.maxHistoryLength > 0) {
             auto history = playerData.getNextHistory();
@@ -118,25 +114,21 @@ namespace worldedit {
                 posk.y = std::max(posk.y, (int)range.min);
                 posk.y = std::min(posk.y, (int)range.max - 1);
                 if (posk.y > originY) {
-                    auto* block =
-                        &blockSource->getBlock({posk.x, originY, posk.z});
+                    auto* block = &blockSource->getBlock({posk.x, originY, posk.z});
                     for (int i = originY + 1; i <= posk.y; ++i) {
                         BlockPos iPos(posk.x, i, posk.z);
                         setFunction(variables, f, box, playerPos, iPos, center);
                         maskFunc(f, variables, [&]() mutable {
-                            iter += playerData.setBlockSimple(
-                                blockSource, f, variables, iPos,
-                                const_cast<Block*>(block));
+                            iter +=
+                                playerData.setBlockSimple(blockSource, f, variables, iPos, const_cast<Block*>(block));
                         });
                     }
                 } else if (posk.y < originY) {
                     for (int i = posk.y; i <= originY; ++i) {
                         BlockPos iPos(posk.x, i, posk.z);
                         setFunction(variables, f, box, playerPos, iPos, center);
-                        maskFunc(f, variables, [&]() mutable {
-                            iter += playerData.setBlockSimple(blockSource, f,
-                                                              variables, iPos);
-                        });
+                        maskFunc(f, variables,
+                                 [&]() mutable { iter += playerData.setBlockSimple(blockSource, f, variables, iPos); });
                     }
                 }
             }

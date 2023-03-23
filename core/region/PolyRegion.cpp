@@ -7,7 +7,8 @@
 #include "mc/Dimension.hpp"
 namespace worldedit {
     void PolyRegion::updateBoundingBox() {
-        auto range = reinterpret_cast<Dimension*>(Global<Level>->getDimension(dimensionID).mHandle.lock().get())->getHeightRange();
+        auto range = reinterpret_cast<Dimension*>(Global<Level>->getDimension(dimensionID).mHandle.lock().get())
+                         ->getHeightRange();
         rendertick = 0;
         minY = std::max(minY, static_cast<int>(range.min));
         maxY = std::min(maxY, static_cast<int>(range.max) - 1);
@@ -64,7 +65,7 @@ namespace worldedit {
 
     PolyRegion::PolyRegion(const BoundingBox& region, const int& dim) : Region(region, dim) {
         points.clear();
-        this->regionType = POLY;
+        regionType = POLY;
     }
     bool PolyRegion::setMainPos(const BlockPos& pos, const int& dim) {
         mainPos = pos;

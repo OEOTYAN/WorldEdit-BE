@@ -7,7 +7,8 @@
 #include "mc/Dimension.hpp"
 namespace worldedit {
     void ExpandRegion::updateBoundingBox() {
-        auto range = reinterpret_cast<Dimension*>(Global<Level>->getDimension(dimensionID).mHandle.lock().get())->getHeightRange();
+        auto range = reinterpret_cast<Dimension*>(Global<Level>->getDimension(dimensionID).mHandle.lock().get())
+                         ->getHeightRange();
         rendertick = 0;
         boundingBox.min.x = std::min(mainPos.x, vicePos.x);
         boundingBox.min.y = std::max(std::min(mainPos.y, vicePos.y), static_cast<int>(range.min));
@@ -156,7 +157,9 @@ namespace worldedit {
 
     ExpandRegion::ExpandRegion(const BoundingBox& region, const int& dim)
         : Region(region, dim), mainPos(region.min), vicePos(region.max) {
-        this->regionType = EXPAND;
-        this->selecting = true;
+        regionType = EXPAND;
+        if (dim != -1 && region != BoundingBox()) {
+            selecting = true;
+        }
     }
 }  // namespace worldedit

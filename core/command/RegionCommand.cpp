@@ -82,8 +82,6 @@ namespace worldedit {
                     BoundingBox tmpbox;
                     if (playerData.region != nullptr) {
                         tmpbox = playerData.region->getBoundBox();
-                        delete playerData.region;
-                        playerData.region = nullptr;
                     }
                     switch (do_hash2(action)) {
                         case do_hash2("cuboid"):
@@ -218,7 +216,6 @@ namespace worldedit {
                 auto& playerData = getPlayersData(xuid);
                 auto heightRange = player->getDimensionConst().getHeightRange();
                 if (playerData.region != nullptr && playerData.region->hasSelected()) {
-                    delete playerData.region;
                     playerData.region = nullptr;
                 }
                 BlockPos pos = (player->getPosition() - Vec3(0.0, 1.62, 0.0)).toBlockPos();
@@ -315,7 +312,7 @@ namespace worldedit {
                     list.resize(0);
                     if (results["vert"].isSet) {
                         auto heightRange = player->getDimensionConst().getHeightRange();
-                        Region* region = playerData.region;
+                        auto& region = playerData.region;
                         auto boundingBox = region->getBoundBox();
                         list.push_back(BlockPos(0, std::min(heightRange.min - boundingBox.min.y, 0), 0));
                         list.push_back(BlockPos(0, std::max(heightRange.max - boundingBox.max.y - 1, 0), 0));
@@ -512,13 +509,13 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (playerData.region != nullptr && playerData.region->hasSelected()) {
-                    Region* region = playerData.region;
+                    auto& region = playerData.region;
                     if (region->regionType != LOFT) {
                         output.trError("worldedit.loftcircle.invalid-type");
                         return;
                     }
                     bool arg = results["bool"].get<bool>();
-                    static_cast<LoftRegion*>(region)->setCircle(arg);
+                    static_cast<LoftRegion*>(region.get())->setCircle(arg);
                     output.trSuccess("worldedit.loftcircle.success", (arg ? "true" : "false"));
                 } else {
                     output.trError("worldedit.error.incomplete-region");

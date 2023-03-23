@@ -72,30 +72,26 @@ namespace worldedit {
                     output.trError("worldedit.error.noitem");
                     return;
                 }
-                if (playerData.brushMap.find(toolName) != playerData.brushMap.end()) {
-                    delete playerData.brushMap[toolName];
-                    playerData.brushMap[toolName] = nullptr;
-                }
                 // if (results["tree"].isSet) {
-                //     playerData.brushMap[toolName] = new TreeTool();
+                //     playerData.brushMap[toolName] = std::make_unique<TreeTool> (TreeTool());
                 //     output.trSuccess("worldedit.tool.set.tree", toolrName);
                 // } else if (results["deltree"].isSet) {
-                //     playerData.brushMap[toolName] = new DelTreeTool();
+                //     playerData.brushMap[toolName] = std::make_unique<DelTreeTool> (DelTreeTool());
                 //     output.trSuccess("worldedit.tool.set.deltree", toolrName);
                 // } else
                 if (results["farwand"].isSet) {
-                    playerData.brushMap[toolName] = new FarWand();
+                    playerData.brushMap[toolName] = std::make_unique<FarWand>(FarWand());
                     output.trSuccess("worldedit.tool.set.farwand", toolrName);
                 } else if (results["airwand"].isSet) {
-                    playerData.brushMap[toolName] = new AirWand();
+                    playerData.brushMap[toolName] = std::make_unique<AirWand>(AirWand());
                     output.trSuccess("worldedit.tool.set.airwand", toolrName);
                 }
                 // else if (results["cycler"].isSet) {
-                //     playerData.brushMap[toolName] = new CyclerTool();
+                //     playerData.brushMap[toolName] = std::make_unique<Brush> CyclerTool();
                 //     output.trSuccess("worldedit.tool.set.cycler", toolrName);
                 // }
                 else if (results["info"].isSet) {
-                    playerData.brushMap[toolName] = new InfoTool();
+                    playerData.brushMap[toolName] = std::make_unique<InfoTool>(InfoTool());
                     output.trSuccess("worldedit.tool.set.info", toolrName);
                 } else if (results["flood"].isSet) {
                     std::string bps = "minecraft:air";
@@ -113,11 +109,11 @@ namespace worldedit {
                     if (results["needEdge"].isSet) {
                         needEdge = results["needEdge"].get<bool>();
                     }
-                    playerData.brushMap[toolName] =
-                        new FloodFillTool(Pattern::createPattern(bps, xuid), radius, needEdge);
+                    playerData.brushMap[toolName] = std::make_unique<FloodFillTool>(
+                        FloodFillTool(Pattern::createPattern(bps, xuid), radius, needEdge));
                     output.trSuccess("worldedit.tool.set.flood", toolrName);
                 } else if (results["rep"].isSet) {
-                    playerData.brushMap[toolName] = new RepTool();
+                    playerData.brushMap[toolName] = std::make_unique<RepTool>(RepTool());
                     output.trSuccess("worldedit.tool.set.rep", toolrName);
                 } else if (results["none"].isSet) {
                     playerData.brushMap.erase(toolName);
@@ -139,7 +135,7 @@ namespace worldedit {
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (playerData.brushMap.find(toolName) != playerData.brushMap.end()) {
-                    auto* tool = playerData.brushMap[toolName];
+                    auto& tool = playerData.brushMap[toolName];
                     auto useface = results["bool"].get<bool>();
                     tool->lneedFace = useface;
                     output.trSuccess("worldedit.tool.luseface.set", useface ? "true" : "false");

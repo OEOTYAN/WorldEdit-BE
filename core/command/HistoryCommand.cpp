@@ -69,7 +69,7 @@ namespace worldedit {
                     long long i = 0;
 
                     Clipboard tmp(res.first->board);
-                    auto blockSource = &player->getRegion();
+                    auto blockSource = &player->getDimensionBlockSource();
                     res.first->forEachBlockInClipboard([&](const BlockPos& pos) {
                         auto worldPos = pos + res.first->playerPos;
                         auto blockInstance = blockSource->getBlockInstance(worldPos);
@@ -120,7 +120,7 @@ namespace worldedit {
                     long long i = 0;
 
                     Clipboard tmp(res.first->board);
-                    auto blockSource = &player->getRegion();
+                    auto blockSource = &player->getDimensionBlockSource();
                     res.first->forEachBlockInClipboard([&](const BlockPos& pos) {
                         auto worldPos = pos + res.first->playerPos;
                         auto blockInstance = blockSource->getBlockInstance(worldPos);

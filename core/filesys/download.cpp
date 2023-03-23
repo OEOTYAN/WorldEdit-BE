@@ -16,12 +16,12 @@
 namespace worldedit {
     int download(std::string_view url, std::string_view outfilename) {}
 
-    bool downloadImage(std::string_view url) {
+    bool downloadImage(std::string const& url) {
         size_t len = url.length();
-        int nmlen = MultiByteToWideChar(CP_ACP, 0, url.data(), len + 1, NULL, (size_t)0);
+        int nmlen = MultiByteToWideChar(CP_ACP, 0, url.c_str(), len + 1, NULL, (size_t)0);
 
         wchar_t* buffer = new wchar_t[nmlen];
-        MultiByteToWideChar(CP_ACP, 0, url.data(), len + 1, buffer, (size_t)nmlen);
+        MultiByteToWideChar(CP_ACP, 0, url.c_str(), len + 1, buffer, (size_t)nmlen);
 
         DeleteUrlCacheEntryW(buffer);
 

@@ -34,9 +34,9 @@ namespace worldedit {
         explicit Region(const BoundingBox& b, int dim);
 
         virtual std::string getName() { return "null"; }
-        virtual BoundingBox getBoundBox() { return this->boundingBox; }
-        RegionType getRegionType() const { return this->regionType; }
-        int getDimensionID() const { return this->dimensionID; }
+        virtual BoundingBox getBoundBox() { return boundingBox; }
+        RegionType getRegionType() const { return regionType; }
+        int getDimensionID() const { return dimensionID; }
 
         virtual ~Region() = default;
 
@@ -84,8 +84,10 @@ namespace worldedit {
 
         int getHeighest(int x, int z);
 
-        inline bool hasSelected() { return this->selecting; }
+        inline bool hasSelected() { return selecting; }
 
-        static Region* createRegion(RegionType type, const BoundingBox& box, int dim);
+        static std::unique_ptr<Region> createRegion(RegionType type,
+                                                    const BoundingBox& box = BoundingBox(),
+                                                    int dim = -1);
     };
 }  // namespace worldedit
