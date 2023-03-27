@@ -393,7 +393,7 @@ namespace cpp_eval {
                         // value(x,y,z,seed,fractalType,octaves,lacunarity,gain,weighted,ppStrength)
                         // voronoi(x,y,z,seed,returnType,disFunc,jitter,fractalType,octaves,lacunarity,gain,weighted,ppStrength)
                     default:
-                        if (mVariables.find(id) == mVariables.end())
+                        if (!mVariables.contains(id))
                             return 0;
                         result = mVariables.find(id)->second;
                         break;

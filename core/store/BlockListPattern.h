@@ -7,26 +7,24 @@
 #include "Pattern.h"
 
 namespace worldedit {
+    class BlockNameType {
+       public:
+        std::string val;
+        BlockNameType(std::string const& v) : val(v) {}
+    };
     class Percents {
        public:
-        bool isNum = true;
-        double value = 1;
-        std::string function = "1";
+        std::variant<double, std::string> val = 1.0;
         Percents() = default;
 
         double getPercents(const phmap::flat_hash_map<::std::string, double>& variables, class EvalFunctions& funcs);
     };
     class RawBlock {
        public:
-        bool constBlock = true;
-        class Block* block;
+        using blockid_t = std::pair<std::variant<std::string, BlockNameType>, std::optional<std::variant<int, std::string>>>;
+        std::variant<class Block*, std::string, blockid_t> block;
         class Block* exBlock;
-        bool hasBE = false;
-        std::string blockEntity = "";
-        int blockId = -2140000000;
-        int blockData = -2140000000;
-        std::string blockIdfunc = "0";
-        std::string blockDatafunc = "0";
+        std::unique_ptr<CompoundTag> blockEntity = nullptr;
         RawBlock();
 
         class Block* getBlock(const phmap::flat_hash_map<::std::string, double>& variables, class EvalFunctions& funcs);
@@ -51,7 +49,8 @@ namespace worldedit {
                       const BlockPos& pos) override;
 
        private:
-        RawBlock* getRawBlock(const phmap::flat_hash_map<::std::string, double>& variables, class EvalFunctions& funcs);
+        class RawBlock* getRawBlock(const phmap::flat_hash_map<::std::string, double>& variables,
+                                    class EvalFunctions& funcs);
     };
 
 }  // namespace worldedit

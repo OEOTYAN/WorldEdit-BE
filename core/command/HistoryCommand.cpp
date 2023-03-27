@@ -56,36 +56,33 @@ namespace worldedit {
                     ut = results["num"].get<int>();
                 }
                 for (int undoTimes = 0; undoTimes < ut; undoTimes++) {
-                    auto res = playerData.getUndoHistory();
-                    auto flag = res.second;
-                    if (res.second == -1) {
-                        output.trError("worldedit.undo.none");
-                        return;
-                    } else if (res.second == 0) {
+                    auto uHistory = playerData.getUndoHistory();
+                    if (!uHistory.has_value()) {
                         output.trError("worldedit.undo.none");
                         return;
                     }
-                    int dimID = res.first->playerRelPos.x;
+                    auto& res = uHistory.value().get();
+                    int dimID = res.playerRelPos.x;
                     long long i = 0;
 
-                    Clipboard tmp(res.first->board);
+                    Clipboard tmp(res.board);
                     auto blockSource = &player->getDimensionBlockSource();
-                    res.first->forEachBlockInClipboard([&](const BlockPos& pos) {
-                        auto worldPos = pos + res.first->playerPos;
+                    res.forEachBlockInClipboard([&](const BlockPos& pos) {
+                        auto worldPos = pos + res.playerPos;
                         auto blockInstance = blockSource->getBlockInstance(worldPos);
                         tmp.storeBlock(blockInstance, pos);
                     });
                     tmp.playerRelPos.x = dimID;
-                    tmp.playerPos = res.first->playerPos;
+                    tmp.playerPos = res.playerPos;
 
-                    res.first->forEachBlockInClipboard([&](const BlockPos& pos) {
-                        auto worldPos = pos + res.first->playerPos;
+                    res.forEachBlockInClipboard([&](const BlockPos& pos) {
+                        auto worldPos = pos + res.playerPos;
 
-                        i += res.first->blockslist[res.first->getIter(pos)].setBlockWithoutcheckGMask(
-                            worldPos, blockSource, playerData);
+                        i += res.blockslist[res.getIter(pos)].setBlockWithoutcheckGMask(worldPos, blockSource,
+                                                                                        playerData);
                     });
-                    *res.first = tmp;
-                    res.first->used = true;
+                    res = std::move(tmp);
+                    res.used = true;
                     output.trSuccess("worldedit.undo.count", i);
                 }
                 output.trSuccess("worldedit.undo.undone", ut);
@@ -107,35 +104,32 @@ namespace worldedit {
                     rt = results["num"].get<int>();
                 }
                 for (int redoTimes = 0; redoTimes < rt; redoTimes++) {
-                    auto res = playerData.getRedoHistory();
-                    auto flag = res.second;
-                    if (res.second == -1) {
-                        output.trError("worldedit.redo.none");
-                        return;
-                    } else if (res.second == 0) {
+                    auto rHistory = playerData.getUndoHistory();
+                    if (!rHistory.has_value()) {
                         output.trError("worldedit.redo.none");
                         return;
                     }
-                    int dimID = res.first->playerRelPos.x;
+                    auto& res = rHistory.value().get();
+                    int dimID = res.playerRelPos.x;
                     long long i = 0;
 
-                    Clipboard tmp(res.first->board);
+                    Clipboard tmp(res.board);
                     auto blockSource = &player->getDimensionBlockSource();
-                    res.first->forEachBlockInClipboard([&](const BlockPos& pos) {
-                        auto worldPos = pos + res.first->playerPos;
+                    res.forEachBlockInClipboard([&](const BlockPos& pos) {
+                        auto worldPos = pos + res.playerPos;
                         auto blockInstance = blockSource->getBlockInstance(worldPos);
                         tmp.storeBlock(blockInstance, pos);
                     });
                     tmp.playerRelPos.x = dimID;
-                    tmp.playerPos = res.first->playerPos;
+                    tmp.playerPos = res.playerPos;
 
-                    res.first->forEachBlockInClipboard([&](const BlockPos& pos) {
-                        auto worldPos = pos + res.first->playerPos;
-                        i += res.first->blockslist[res.first->getIter(pos)].setBlockWithoutcheckGMask(
-                            worldPos, blockSource, playerData);
+                    res.forEachBlockInClipboard([&](const BlockPos& pos) {
+                        auto worldPos = pos + res.playerPos;
+                        i += res.blockslist[res.getIter(pos)].setBlockWithoutcheckGMask(worldPos, blockSource,
+                                                                                        playerData);
                     });
-                    *res.first = tmp;
-                    res.first->used = true;
+                    res = std::move(tmp);
+                    res.used = true;
                     output.trSuccess("worldedit.redo.count", i);
                 }
                 output.trSuccess("worldedit.redo.redone", rt);

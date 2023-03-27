@@ -50,14 +50,14 @@ namespace worldedit {
         BoundingBox box({pos.x - size, minY, pos.z - size}, {pos.x + size, maxY, pos.z + size});
 
         if (playerData.maxHistoryLength > 0) {
-            auto history = playerData.getNextHistory();
-            *history = Clipboard(box.max - box.min);
-            history->playerRelPos.x = dimID;
-            history->playerPos = box.min;
+            auto& history = playerData.getNextHistory();
+            history = std::move(Clipboard(box.max - box.min));
+            history.playerRelPos.x = dimID;
+            history.playerPos = box.min;
             box.forEachBlockInBox([&](const BlockPos& pos) {
                 auto localPos = pos - box.min;
                 auto blockInstance = blockSource->getBlockInstance(pos);
-                history->storeBlock(blockInstance, localPos);
+                history.storeBlock(blockInstance, localPos);
             });
         }
 

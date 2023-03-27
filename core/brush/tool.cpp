@@ -93,7 +93,7 @@ namespace worldedit {
         if (blockInstance == BlockInstance::Null) {
             return -2;
         }
-        blockSet = BlockNBTSet(blockInstance);
+        blockSet = std::move(BlockNBTSet(blockInstance));
         return -2;
     }
     long long RepTool::set(Player* player, class BlockInstance blockInstance) {
@@ -111,11 +111,11 @@ namespace worldedit {
         phmap::flat_hash_map<std::string, double> variables;
 
         if (playerData.maxHistoryLength > 0) {
-            auto history = playerData.getNextHistory();
-            *history = Clipboard(BlockPos(0, 0, 0));
-            history->playerRelPos.x = blockInstance.getDimensionId();
-            history->playerPos = bpos;
-            history->storeBlock(blockInstance, BlockPos(0, 0, 0));
+            auto& history = playerData.getNextHistory();
+            history = std::move(Clipboard(BlockPos(0, 0, 0)));
+            history.playerRelPos.x = blockInstance.getDimensionId();
+            history.playerPos = bpos;
+            history.storeBlock(blockInstance, BlockPos(0, 0, 0));
         }
         f.setPos(bpos);
         auto playerPos = player->getPosition();
@@ -175,9 +175,9 @@ namespace worldedit {
                         (&blockSource->getBlock(tmpPos) == block && &blockSource->getExtraBlock(tmpPos) == exBlock) &&
                         s.find(tmpPos) == s.end()) {
                         f.setPos(tmpPos);
-            variables["x"] = static_cast<double>(tmpPos.x - pos0.x)/size;
-            variables["y"] = static_cast<double>(tmpPos.y - pos0.y)/size;
-            variables["z"] = static_cast<double>(tmpPos.z - pos0.z)/size;
+                        variables["x"] = static_cast<double>(tmpPos.x - pos0.x) / size;
+                        variables["y"] = static_cast<double>(tmpPos.y - pos0.y) / size;
+                        variables["z"] = static_cast<double>(tmpPos.z - pos0.z) / size;
                         variables["rx"] = tmpPos.x;
                         variables["ry"] = tmpPos.y;
                         variables["rz"] = tmpPos.z;
@@ -199,9 +199,9 @@ namespace worldedit {
                         (&blockSource->getBlock(tmpPos) == block && &blockSource->getExtraBlock(tmpPos) == exBlock) &&
                         s.find(tmpPos) == s.end()) {
                         f.setPos(tmpPos);
-            variables["x"] = static_cast<double>(tmpPos.x - pos0.x)/size;
-            variables["y"] = static_cast<double>(tmpPos.y - pos0.y)/size;
-            variables["z"] = static_cast<double>(tmpPos.z - pos0.z)/size;
+                        variables["x"] = static_cast<double>(tmpPos.x - pos0.x) / size;
+                        variables["y"] = static_cast<double>(tmpPos.y - pos0.y) / size;
+                        variables["z"] = static_cast<double>(tmpPos.z - pos0.z) / size;
                         variables["rx"] = tmpPos.x;
                         variables["ry"] = tmpPos.y;
                         variables["rz"] = tmpPos.z;
@@ -220,25 +220,23 @@ namespace worldedit {
             }
         }
 
-        worldedit::Clipboard* history = nullptr;
-
         if (playerData.maxHistoryLength > 0) {
-            history = playerData.getNextHistory();
-            *history = Clipboard(boundingBox.max - boundingBox.min);
-            history->playerRelPos.x = blockInstance.getDimensionId();
-            history->playerPos = boundingBox.min;
+            auto& history = playerData.getNextHistory();
+            history = std::move(Clipboard(boundingBox.max - boundingBox.min));
+            history.playerRelPos.x = blockInstance.getDimensionId();
+            history.playerPos = boundingBox.min;
             for (auto& pos1 : s) {
                 auto localPos = pos1 - boundingBox.min;
                 auto bi = blockSource->getBlockInstance(pos1);
-                history->storeBlock(bi, localPos);
+                history.storeBlock(bi, localPos);
             }
         }
 
         for (auto& pos1 : s) {
             f.setPos(pos1);
-            variables["x"] = static_cast<double>(pos1.x - pos0.x)/size;
-            variables["y"] = static_cast<double>(pos1.y - pos0.y)/size;
-            variables["z"] = static_cast<double>(pos1.z - pos0.z)/size;
+            variables["x"] = static_cast<double>(pos1.x - pos0.x) / size;
+            variables["y"] = static_cast<double>(pos1.y - pos0.y) / size;
+            variables["z"] = static_cast<double>(pos1.z - pos0.z) / size;
             variables["rx"] = pos1.x;
             variables["ry"] = pos1.y;
             variables["rz"] = pos1.z;

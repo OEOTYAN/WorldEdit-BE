@@ -30,7 +30,7 @@ namespace worldedit {
                 auto player = origin.getPlayer();
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
-                playerData.clipboard = Clipboard();
+                playerData.clipboard = std::move(Clipboard());
                 output.trSuccess("worldedit.clipboard.clear");
             },
             CommandPermissionLevel::GameMasters);
@@ -49,7 +49,7 @@ namespace worldedit {
                     auto& region = playerData.region;
                     auto boundingBox = region->getBoundBox();
 
-                    playerData.clipboard = Clipboard(boundingBox.max - boundingBox.min);
+                    playerData.clipboard = std::move(std::move(Clipboard(boundingBox.max - boundingBox.min)));
                     auto pPos = player->getPosition() - Vec3(0.0, 1.62, 0.0);
                     playerData.clipboard.playerPos = pPos.toBlockPos();
                     playerData.clipboard.playerRelPos = pPos.toBlockPos() - boundingBox.min;
@@ -75,12 +75,12 @@ namespace worldedit {
                         // auto structure = st.toTag()->toBinaryNBT();
                         // std::cout << structure << std::endl;
                         boundingBox += BlockPos(0, 1, 0);
-                        playerData.clipboard.entityStr =
+                        playerData.clipboard.entities =
                             //  StructureTemplate::fromWorld("worldedit_copy_cmd_tmp",
                             //  dimID,
                             //  boundingBox.min, boundingBox.max,
                             //  false, true)
-                            st.toTag()->toBinaryNBT();
+                            st.toTag();
                     }
                     output.trSuccess("worldedit.clipboard.copy");
                 } else {
@@ -106,21 +106,21 @@ namespace worldedit {
                     auto blockSource = &player->getDimensionBlockSource();
 
                     if (playerData.maxHistoryLength > 0) {
-                        auto history = playerData.getNextHistory();
-                        *history = Clipboard(boundingBox.max - boundingBox.min);
-                        history->playerRelPos.x = dimID;
-                        history->playerPos = boundingBox.min;
+                        auto& history = playerData.getNextHistory();
+                        history = std::move(Clipboard(boundingBox.max - boundingBox.min));
+                        history.playerRelPos.x = dimID;
+                        history.playerPos = boundingBox.min;
 
                         region->forEachBlockInRegion([&](const BlockPos& pos) {
                             auto localPos = pos - boundingBox.min;
                             auto blockInstance = blockSource->getBlockInstance(pos);
-                            history->storeBlock(blockInstance, localPos);
+                            history.storeBlock(blockInstance, localPos);
                         });
                     }
 
                     auto pPos = player->getPosition() - Vec3(0.0, 1.62, 0.0);
 
-                    playerData.clipboard = Clipboard(boundingBox.max - boundingBox.min);
+                    playerData.clipboard = std::move(std::move(Clipboard(boundingBox.max - boundingBox.min)));
                     playerData.clipboard.playerPos = pPos.toBlockPos();
                     playerData.clipboard.playerRelPos = pPos.toBlockPos() - boundingBox.min;
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
@@ -217,15 +217,15 @@ namespace worldedit {
                     auto blockSource = &player->getDimensionBlockSource();
                     if (!arg_n) {
                         if (playerData.maxHistoryLength > 0) {
-                            auto history = playerData.getNextHistory();
-                            *history = Clipboard(box.max - box.min);
-                            history->playerRelPos.x = dimID;
-                            history->playerPos = box.min;
+                            auto& history = playerData.getNextHistory();
+                            history = std::move(Clipboard(box.max - box.min));
+                            history.playerRelPos.x = dimID;
+                            history.playerPos = box.min;
 
                             box.forEachBlockInBox([&](const BlockPos& pos) {
                                 auto localPos = pos - box.min;
                                 auto blockInstance = blockSource->getBlockInstance(pos);
-                                history->storeBlock(blockInstance, localPos);
+                                history.storeBlock(blockInstance, localPos);
                             });
                         }
 
@@ -253,12 +253,12 @@ namespace worldedit {
                             });
                         }
                     }
-                    if (arg_e && !playerData.clipboard.entityStr.empty()) {
+                    if (arg_e && playerData.clipboard.entities != nullptr) {
                         auto st =
                             StructureTemplate("worldedit_copy_cmd_tmp",
                                               dAccess<Bedrock::NonOwnerPointer<class IUnknownBlockTypeRegistry>, 192>(
                                                   Global<StructureManager>));
-                        st.getData()->load(*(CompoundTag::fromBinaryNBT(playerData.clipboard.entityStr).get()));
+                        st.getData()->load(*playerData.clipboard.entities);
                         auto& palette = Global<Level>->getBlockPalette();
                         auto setting = StructureSettings();
                         setting.setMirror(playerData.clipboard.mirror);

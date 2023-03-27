@@ -37,7 +37,7 @@ namespace worldedit {
         for (auto triangle : triangles) {
             for (int i = 0; i < 3; ++i) {
                 Edge edge = triangle.getEdge(i);
-                if (edges.find(edge) == edges.end()) {
+                if (!edges.contains(edge)) {
                     edges.insert(edge);
                 }
             }
@@ -77,12 +77,12 @@ namespace worldedit {
 
     bool ConvexRegion::addVertex(const BlockPos& vertex) {
         hasLast = false;
-        if (vertices.find(vertex) != vertices.end()) {
+        if (vertices.contains(vertex)) {
             return false;
         }
         Vec3 vertexD = vertex.toVec3();
         if (vertices.size() == 3) {
-            if (vertexBacklog.find(vertex) != vertexBacklog.end()) {
+            if (vertexBacklog.contains(vertex)) {
                 return false;
             }
             if (containsRaw(vertexD)) {
@@ -117,7 +117,7 @@ namespace worldedit {
             if ((*iter).above(vertexD)) {
                 for (int i = 0; i < 3; ++i) {
                     Edge edge = (*iter).getEdge(i);
-                    if (borderEdges.find(edge) == borderEdges.end()) {
+                    if (!borderEdges.contains(edge)) {
                         borderEdges.insert(edge);
                     } else {
                         borderEdges.erase(edge);
@@ -242,7 +242,7 @@ namespace worldedit {
                 globalPT().drawCuboid(vertice, dimensionID, mce::ColorPalette::GREEN);
             }
             for (auto& pos : poss) {
-                if (vertices.find(pos) == vertices.end()) {
+                if (!vertices.contains(pos)) {
                     globalPT().drawCuboid(pos, dimensionID, mce::ColorPalette::WHITE);
                 }
             }

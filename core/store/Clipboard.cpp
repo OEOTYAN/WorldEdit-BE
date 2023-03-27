@@ -4,6 +4,7 @@
 
 #include "Clipboard.hpp"
 #include "I18nAPI.h"
+#include "WorldEdit.h"
 #include "eval/Eval.h"
 
 namespace worldedit {
@@ -23,13 +24,28 @@ namespace worldedit {
             return;
         }
     }
+    Clipboard::Clipboard(const Clipboard& other) {
+        if (other.entities)
+            entities = other.entities->clone();
+        size = other.size;
+        playerRelPos = other.playerRelPos;
+        playerPos = other.playerPos;
+        board = other.board;
+        rotation = other.rotation;
+        mirror = other.mirror;
+        rotationAngle = other.rotationAngle;
+        flipY = other.flipY;
+        used = other.used;
+        vsize = other.vsize;
+        blockslist = other.blockslist;
+    }
     long long Clipboard::getIterLoop(const BlockPos& pos) {
         return (static_cast<int>(posfmod(pos.y, size.y)) + size.y * static_cast<int>(posfmod(pos.z, size.z))) * size.x +
                static_cast<int>(posfmod(pos.x, size.x));
     }
     void Clipboard::storeBlock(BlockInstance& blockInstance, const BlockPos& pos) {
         if (pos.containedWithin(BlockPos(0, 0, 0), board)) {
-            blockslist[getIter(pos)] = BlockNBTSet(blockInstance);
+            blockslist[getIter(pos)] = std::move(BlockNBTSet(blockInstance));
         }
     }
     BoundingBox Clipboard::getBoundingBox() {
@@ -198,7 +214,7 @@ namespace worldedit {
         return blockslist[getIterLoop(pos)];
     }
     bool Clipboard::contains(const BlockPos& pos) {
-        return blockslist[getIter(pos)].hasBlock;
+        return blockslist[getIter(pos)].blocks.has_value();
     }
     bool Clipboard::setBlocks(const BlockPos& pos,
                               BlockPos& worldPos,

@@ -20,39 +20,40 @@
 
 namespace worldedit {
     double Percents::getPercents(const phmap::flat_hash_map<::std::string, double>& variables, EvalFunctions& funcs) {
-        if (isNum) {
-            return value;
+        if (std::holds_alternative<double>(val)) {
+            return std::get<double>(val);
         }
-        return cpp_eval::eval<double>(function, variables, funcs);
+        return cpp_eval::eval<double>(std::get<std::string>(val), variables, funcs);
     }
     Block* RawBlock::getBlock(const phmap::flat_hash_map<::std::string, double>& variables, EvalFunctions& funcs) {
-        if (constBlock) {
-            return block;
-        }
-        if (blockId == -2140000001) {
-            return const_cast<Block*>(&Global<Level>->getBlockPalette().getBlock(
-                static_cast<unsigned int>(round(cpp_eval::eval<double>(blockIdfunc, variables, funcs)))));
-        }
-        int mId = blockId;
-        std::string blockName = "minecraft:air";
-        if (mId == -2140000002) {
-            blockName = blockIdfunc;
-        } else {
-            if (mId == INT_MIN) {
-                mId = static_cast<int>(round(cpp_eval::eval<double>(blockIdfunc, variables, funcs)));
-            } else if (mId == -2140000000) {
-                mId = 0;
-            }
-            blockName = getBlockName(mId);
-        }
+        switch (block.index()) {
+            default:
+                return const_cast<Block*>(BedrockBlocks::mAir);
+            case 0:
+                return std::get<Block*>(block);
+            case 1:
+                return const_cast<Block*>(&Global<Level>->getBlockPalette().getBlock(static_cast<unsigned int>(
+                    round(cpp_eval::eval<double>(std::get<std::string>(block), variables, funcs)))));
+            case 2:
+                std::string blockName;
+                auto& blockIds = std::get<blockid_t>(block);
+                if (std::holds_alternative<std::string>(blockIds.first)) {
+                    blockName = getBlockName(static_cast<int>(
+                        round(cpp_eval::eval<double>(std::get<std::string>(blockIds.first), variables, funcs))));
+                } else {
+                    blockName = std::get<BlockNameType>(blockIds.first).val;
+                }
 
-        int mData = blockData;
-        if (mData == INT_MIN) {
-            mData = static_cast<int>(round(cpp_eval::eval<double>(blockDatafunc, variables, funcs)));
-        } else if (mData == -2140000000) {
-            mData = 0;
+                int mData = 0;
+                if (blockIds.second.has_value()) {
+                    auto& dataVal = blockIds.second.value();
+                    mData = std::holds_alternative<int>(dataVal)
+                                ? std::get<int>(dataVal)
+                                : (static_cast<int>(
+                                      round(cpp_eval::eval<double>(std::get<std::string>(dataVal), variables, funcs))));
+                }
+                return Block::create(blockName, mData);
         }
-        return Block::create(blockName, mData);
     }
 
     RawBlock* BlockListPattern::getRawBlock(const phmap::flat_hash_map<::std::string, double>& variables,
@@ -79,8 +80,8 @@ namespace worldedit {
     }
 
     RawBlock::RawBlock() {
-        block = const_cast<class Block*>(BedrockBlocks::mAir);
         exBlock = const_cast<class Block*>(BedrockBlocks::mAir);
+        block = std::pair{BlockNameType(""), std::nullopt};
     }
 
     Block* BlockListPattern::getBlock(const phmap::flat_hash_map<::std::string, double>& variables,
@@ -103,13 +104,13 @@ namespace worldedit {
         auto* block = rawBlock->getBlock(variables, funcs);
         bool res = playerData->setBlockSimple(blockSource, funcs, variables, pos, block, rawBlock->exBlock);
 
-        if (rawBlock->hasBE && block->hasBlockEntity() && rawBlock->blockEntity != "") {
+        if (block->hasBlockEntity() && rawBlock->blockEntity != nullptr) {
             auto be = blockSource->getBlockEntity(pos);
             if (be != nullptr) {
-                return be->setNbt(CompoundTag::fromBinaryNBT(rawBlock->blockEntity).get());
+                return be->setNbt(rawBlock->blockEntity.get());
             } else {
                 LevelChunk* chunk = blockSource->getChunkAt(pos);
-                auto b = BlockActor::create(CompoundTag::fromBinaryNBT(rawBlock->blockEntity).get());
+                auto b = BlockActor::create(rawBlock->blockEntity.get());
                 if (b != nullptr) {
                     b->moveTo(pos);
                     chunk->_placeBlockEntity(b);
@@ -225,18 +226,17 @@ namespace worldedit {
             auto& rawBlockIter = rawBlocks[iter];
             if (blockIter.find("%") != std::string::npos) {
                 if (blockIter.find("num%") != std::string::npos) {
-                    percents[iter].value = std::stod(raw[rawPtr]);
+                    percents[iter].val = std::stod(raw[rawPtr]);
                 } else {
-                    percents[iter].isNum = false;
-                    percents[iter].function = raw[rawPtr];
+                    percents[iter].val = raw[rawPtr];
                 }
                 ++rawPtr;
             } else {
                 blockIter = "%" + blockIter;
             }
             if (blockIter.find("%num") != std::string::npos) {
-                rawBlockIter.blockId = -2140000002;
-                rawBlockIter.blockIdfunc = getBlockName(std::stoi(raw[rawPtr]));
+                std::get<RawBlock::blockid_t>(rawBlockIter.block).first =
+                    BlockNameType(getBlockName(std::stoi(raw[rawPtr])));
                 ++rawPtr;
             } else if (blockIter.find("%block") != std::string::npos) {
                 std::string tmpName = raw[rawPtr];
@@ -249,23 +249,16 @@ namespace worldedit {
                 if (tmpName.find("minecraft:") == std::string::npos) {
                     tmpName = "minecraft:" + tmpName;
                 }
-                rawBlockIter.blockId = -2140000002;
-                rawBlockIter.blockIdfunc = tmpName;
+                std::get<RawBlock::blockid_t>(rawBlockIter.block).first = BlockNameType(tmpName);
                 ++rawPtr;
             } else if (blockIter.find("%rtfunciton") != std::string::npos) {
-                rawBlockIter.blockId = -2140000001;
-                rawBlockIter.constBlock = false;
-                rawBlockIter.blockIdfunc = raw[rawPtr];
+                rawBlockIter.block = raw[rawPtr];
                 ++rawPtr;
                 continue;
             } else if (blockIter.find("%funciton") != std::string::npos) {
-                rawBlockIter.blockId = INT_MIN;
-                rawBlockIter.constBlock = false;
-                rawBlockIter.blockIdfunc = raw[rawPtr];
+                std::get<RawBlock::blockid_t>(rawBlockIter.block).first = raw[rawPtr];
                 ++rawPtr;
             } else if (blockIter.find("%SNBT") != std::string::npos) {
-                rawBlockIter.blockId = INT_MIN;
-                rawBlockIter.blockData = INT_MIN;
                 std::string tmpSNBT = raw[rawPtr];
                 if (tmpSNBT[0] == '{' && tmpSNBT[1] == '{') {
                     size_t i2 = 1;
@@ -288,15 +281,15 @@ namespace worldedit {
                         }
                         i2++;
                     }
-                    for(auto& ssss : tmpSNBTs){
-                        logger().info("{}",ssss);
+                    for (auto& ssss : tmpSNBTs) {
+                        logger().info("{}", ssss);
                     }
                     rawBlockIter.block = Block::create(CompoundTag::fromSNBT(tmpSNBTs[0]).get());
                     if (tmpSNBTs.size() > 1) {
                         rawBlockIter.exBlock = Block::create(CompoundTag::fromSNBT(tmpSNBTs[1]).get());
                     }
                     if (tmpSNBTs.size() > 2) {
-                        rawBlockIter.blockEntity = CompoundTag::fromSNBT(tmpSNBTs[2])->toBinaryNBT();
+                        rawBlockIter.blockEntity = CompoundTag::fromSNBT(tmpSNBTs[2]);
                     }
                 } else {
                     rawBlockIter.block = Block::create(CompoundTag::fromSNBT(tmpSNBT).get());
@@ -305,24 +298,26 @@ namespace worldedit {
                 continue;
             }
             if (blockIter.find(":num") != std::string::npos) {
-                rawBlockIter.blockData = std::stoi(raw[rawPtr]);
+                std::get<RawBlock::blockid_t>(rawBlockIter.block).second = std::stoi(raw[rawPtr]);
                 ++rawPtr;
             } else if (blockIter.find(":funciton") != std::string::npos) {
-                rawBlockIter.blockData = INT_MIN;
-                rawBlockIter.constBlock = false;
-                rawBlockIter.blockDatafunc = raw[rawPtr];
+                std::get<RawBlock::blockid_t>(rawBlockIter.block).second = raw[rawPtr];
                 ++rawPtr;
             }
-            if (rawBlockIter.constBlock) {
-                if (isBEBlock(rawBlockIter.blockIdfunc)) {
-                    rawBlockIter.block = Block::create(rawBlockIter.blockIdfunc, rawBlockIter.blockData);
-                } else if (isJEBlock(rawBlockIter.blockIdfunc)) {
-                    rawBlockIter.block = getJavaBlockMap()[rawBlockIter.blockIdfunc];
-                    if (rawBlockIter.blockIdfunc.find("waterlogged=true") != std::string::npos) {
+            if (std::holds_alternative<RawBlock::blockid_t>(rawBlockIter.block) &&
+                std::holds_alternative<BlockNameType>(std::get<RawBlock::blockid_t>(rawBlockIter.block).first) &&
+                !(std::get<RawBlock::blockid_t>(rawBlockIter.block).second.has_value() &&
+                  std::holds_alternative<std::string>(
+                      std::get<RawBlock::blockid_t>(rawBlockIter.block).second.value()))) {
+                auto& blockName = std::get<BlockNameType>(std::get<RawBlock::blockid_t>(rawBlockIter.block).first).val;
+                if (isBEBlock(blockName)) {
+                    rawBlockIter.block = Block::create(
+                        blockName, std::get<int>(std::get<RawBlock::blockid_t>(rawBlockIter.block).second.value_or(0)));
+                } else if (isJEBlock(blockName)) {
+                    rawBlockIter.block = getJavaBlockMap()[blockName];
+                    if (blockName.find("waterlogged=true") != std::string::npos) {
                         rawBlockIter.exBlock = const_cast<Block*>(StaticVanillaBlocks::mWater);
                     }
-                    rawBlockIter.blockIdfunc = rawBlockIter.block->getTypeName();
-                    rawBlockIter.blockData = rawBlockIter.block->getVariant();
                 }
             }
         }
@@ -330,9 +325,10 @@ namespace worldedit {
 
     bool BlockListPattern::hasBlock(Block* block) {
         for (auto& rawBlock : rawBlocks) {
-            if (rawBlock.constBlock && (block->getTypeName() == rawBlock.blockIdfunc) &&
-                (rawBlock.blockData < 0 || rawBlock.blockData == block->getTileData())) {
-                return true;
+            if (std::holds_alternative<Block*>(rawBlock.block)) {
+                if (std::get<Block*>(rawBlock.block) == block) {
+                    return true;
+                }
             }
         }
         return false;

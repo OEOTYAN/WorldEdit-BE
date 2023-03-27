@@ -13,7 +13,7 @@ namespace worldedit {
 
     class Clipboard {
        public:
-        std::string entityStr;
+        std::unique_ptr<CompoundTag> entities = nullptr;
         BlockPos size;
         BlockPos playerRelPos;
         BlockPos playerPos;
@@ -26,7 +26,9 @@ namespace worldedit {
         long long vsize;
         std::vector<class BlockNBTSet> blockslist;
         explicit Clipboard() = default;
-        explicit Clipboard(const Clipboard&) = default;
+        explicit Clipboard(const Clipboard& other);
+        explicit Clipboard(Clipboard&&) = default;
+        Clipboard& operator=(Clipboard&&) = default;
         explicit Clipboard(const BlockPos& sizes);
         long long getIter(const BlockPos& pos);
         long long getIterLoop(const BlockPos& pos);
@@ -43,7 +45,8 @@ namespace worldedit {
                        BlockSource* blockSource,
                        class PlayerData& data,
                        class EvalFunctions& funcs,
-                       phmap::flat_hash_map<std::string, double> const& var, bool setBiome = false);
+                       phmap::flat_hash_map<std::string, double> const& var,
+                       bool setBiome = false);
         void forEachBlockInClipboard(const std::function<void(const BlockPos&)>& todo);
     };
 }  // namespace worldedit

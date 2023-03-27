@@ -11,6 +11,7 @@
 #include <mc/StaticVanillaBlocks.hpp>
 #include <mc/BlockSource.hpp>
 #include <mc/ChunkSource.hpp>
+#include <mc/BlockActor.hpp>
 #include <mc/LevelChunk.hpp>
 #include <mc/SubChunk.hpp>
 #include <mc/Dimension.hpp>
@@ -111,77 +112,10 @@ namespace worldedit {
     bool PlayerData::setBlockWithoutcheckGMask(BlockSource* blockSource,
                                                const BlockPos& pos,
                                                Block* block,
-                                               Block* exblock) {
+                                               Block* exblock,
+                                               std::optional<int> const& biomeId) {
         bool res = false;
-        CommandUtils::clearBlockEntityContents(*blockSource, pos);
-        CommandUtils::clearBlockEntityLootTable(*blockSource, pos);
-        // BlockActor* be = blockSource->getBlockEntity(pos);
-        // if (be != nullptr) {
-        //     clearBlockEntity(be);
-        // }
-        auto& dim = blockSource->getDimension();
-        if (updateExArg % 2 == 1) {
-            res |= blockSource->setExtraBlock(pos, *BedrockBlocks::mAir, updateArg);
-            res |= blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
-            if (block != StaticVanillaBlocks::mBubbleColumn) {
-                if (exblock != BedrockBlocks::mAir) {
-                    res |= blockSource->setExtraBlock(pos, *exblock, updateArg);
-                }
-                if (res) {
-                    dim.forEachPlayer([&](Player& player) -> bool {
-                        player.sendUpdateBlockPacket(pos, *block, UpdateBlockFlags::BlockUpdateAll,
-                                                     UpdateBlockLayer::UpdateBlockDefault);
-                        player.sendUpdateBlockPacket(pos, *exblock, UpdateBlockFlags::BlockUpdateAll,
-                                                     UpdateBlockLayer::UpdateBlockLiquid);
-                        return true;
-                    });
-                }
-            } else {
-                res |= blockSource->setExtraBlock(pos, *StaticVanillaBlocks::mFlowingWater, updateArg + 2);
-                res |= blockSource->setBlock(pos, *block, updateArg + 2, nullptr, nullptr);
-            }
-        } else {
-            ChunkBlockPos cpos(pos, dim.getMinHeight());
-            SubChunkPos scpos(pos);
-            LevelChunk* chunk = blockSource->getChunkAt(pos);
-            if (chunk == nullptr || chunk->isReadOnly()) {
-                return false;
-            }
-            auto* sc = chunk->getSubChunk(scpos.y);
-            auto index = cpos.toLegacyIndex();
-            if (&chunk->getBlock(cpos) != block) {
-                res = true;
-                sc->_setBlock(0, index, *block);
-            }
-            if (&chunk->getExtraBlock(cpos) != exblock) {
-                res = true;
-                sc->_setBlock(1, index, *exblock);
-            }
-            if (res) {
-                dim.forEachPlayer([&](Player& player) -> bool {
-                    player.sendUpdateBlockPacket(pos, *block, UpdateBlockFlags::BlockUpdateAll,
-                                                 UpdateBlockLayer::UpdateBlockDefault);
-                    player.sendUpdateBlockPacket(pos, *exblock, UpdateBlockFlags::BlockUpdateAll,
-                                                 UpdateBlockLayer::UpdateBlockLiquid);
-                    return true;
-                });
-            }
-        }
-        return res;
-    }
 
-    bool PlayerData::setBlockWithBiomeWithoutcheckGMask(BlockSource* blockSource,
-                                                        const BlockPos& pos,
-                                                        Block* block,
-                                                        Block* exblock,
-                                                        int biomeId) {
-        bool res = false;
-        CommandUtils::clearBlockEntityContents(*blockSource, pos);
-        CommandUtils::clearBlockEntityLootTable(*blockSource, pos);
-        // BlockActor* be = blockSource->getBlockEntity(pos);
-        // if (be != nullptr) {
-        //     clearBlockEntity(be);
-        // }
         auto& dim = blockSource->getDimension();
         ChunkBlockPos cpos(pos, dim.getMinHeight());
         SubChunkPos scpos(pos);
@@ -189,7 +123,14 @@ namespace worldedit {
         if (chunk == nullptr || chunk->isReadOnly()) {
             return false;
         }
-        chunk->_setBiome(*Biome::fromId(biomeId), cpos, false);
+
+        BlockActor* be = chunk->getBlockEntity(cpos);
+        if (be != nullptr) {
+            if (be->getType() != block->getBlockEntityType()) {
+                chunk->removeBlockEntity(pos);
+            }
+        }
+
         if (updateExArg % 2 == 1) {
             res |= blockSource->setExtraBlock(pos, *BedrockBlocks::mAir, updateArg);
             res |= blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
@@ -197,16 +138,10 @@ namespace worldedit {
                 if (exblock != BedrockBlocks::mAir) {
                     res |= blockSource->setExtraBlock(pos, *exblock, updateArg);
                 }
-                if (res) {
-                    blockSource->getDimension().forEachPlayer([&](Player& player) -> bool {
-                        player.sendUpdateBlockPacket(pos, *exblock, UpdateBlockFlags::BlockUpdateAll,
-                                                     UpdateBlockLayer::UpdateBlockLiquid);
-                        return true;
-                    });
-                }
             } else {
-                res |= blockSource->setExtraBlock(pos, *StaticVanillaBlocks::mFlowingWater, updateArg);
-                res |= blockSource->setBlock(pos, *block, updateArg, nullptr, nullptr);
+                exblock = const_cast<Block*>(StaticVanillaBlocks::mFlowingWater);
+                res |= blockSource->setExtraBlock(pos, *exblock, updateArg + 2);
+                res |= blockSource->setBlock(pos, *block, updateArg + 2, nullptr, nullptr);
             }
         } else {
             auto* sc = chunk->getSubChunk(scpos.y);
@@ -219,15 +154,20 @@ namespace worldedit {
                 res = true;
                 sc->_setBlock(1, index, *exblock);
             }
-            if (res) {
-                dim.forEachPlayer([&](Player& player) -> bool {
-                    player.sendUpdateBlockPacket(pos, *block, UpdateBlockFlags::BlockUpdateAll,
-                                                 UpdateBlockLayer::UpdateBlockDefault);
-                    player.sendUpdateBlockPacket(pos, *exblock, UpdateBlockFlags::BlockUpdateAll,
-                                                 UpdateBlockLayer::UpdateBlockLiquid);
-                    return true;
-                });
-            }
+        }
+        if (res) {
+            dim.forEachPlayer([&](Player& player) -> bool {
+                player.sendUpdateBlockPacket(pos, *exblock, UpdateBlockFlags::BlockUpdateAll,
+                                             UpdateBlockLayer::UpdateBlockLiquid);
+                player.sendUpdateBlockPacket(pos, *block, UpdateBlockFlags::BlockUpdateAll,
+                                             UpdateBlockLayer::UpdateBlockDefault);
+                player.sendUpdateBlockPacket(pos, *exblock, UpdateBlockFlags::BlockUpdateAll,
+                                             UpdateBlockLayer::UpdateBlockLiquid);
+                return true;
+            });
+        }
+        if (biomeId.has_value()) {
+            chunk->_setBiome(*Biome::fromId(biomeId.value()), cpos, false);
         }
         return res;
     }
@@ -237,75 +177,57 @@ namespace worldedit {
                                     phmap::flat_hash_map<std::string, double> const& var,
                                     const BlockPos& pos,
                                     Block* block,
-                                    Block* exblock) {
+                                    Block* exblock,
+                                    std::optional<int> const& biomeId) {
         if (gMask != "") {
             if (cpp_eval::eval<double>(gMask, var, funcs) <= 0.5) {
                 return false;
             }
         }
-        return setBlockWithoutcheckGMask(blockSource, pos, block, exblock);
+        return setBlockWithoutcheckGMask(blockSource, pos, block, exblock, biomeId);
     }
 
-    bool PlayerData::setBlockWithBiomeSimple(BlockSource* blockSource,
-                                             class EvalFunctions& funcs,
-                                             phmap::flat_hash_map<std::string, double> const& var,
-                                             const BlockPos& pos,
-                                             Block* block,
-                                             Block* exblock,
-                                             int biomeId) {
-        if (gMask != "") {
-            if (cpp_eval::eval<double>(gMask, var, funcs) <= 0.5) {
-                return false;
-            }
-        }
-        return setBlockWithBiomeWithoutcheckGMask(blockSource, pos, block, exblock, biomeId);
-    }
-
-    Clipboard* PlayerData::getNextHistory() {
+    class Clipboard& PlayerData::getNextHistory() {
         historyFlag2 += 1;
         historyFlag2 %= maxHistoryLength;
         historyFlag1 = historyFlag2;
-        return &historyList[historyFlag2];
+        return historyList[historyFlag2];
     }
 
-    std::pair<Clipboard*, int> PlayerData::getUndoHistory() {
-        std::pair<Clipboard*, int> result = {nullptr, -1};
+    class Clipboard& PlayerData::getCurrentHistory() {
+        return historyList[historyFlag2];
+    }
+
+    std::optional<std::reference_wrapper<class Clipboard>> PlayerData::getUndoHistory() {
         int maximum = (historyFlag1 + 1) % maxHistoryLength;
         int current = historyFlag2;
         if (maximum == current) {
-            result.second = 0;
-            return result;
+            return std::nullopt;
         }
-        result.first = &historyList[current];
-        if (result.first->used == false) {
-            result.second = 0;
-            return result;
+        auto& res = historyList[current];
+        if (res.used == false) {
+            return std::nullopt;
         }
-        result.second = 1;
         current -= 1;
         if (current < 0) {
             current += maxHistoryLength;
         }
         historyFlag2 = current;
-        return result;
+        return res;
     }
 
-    std::pair<Clipboard*, int> PlayerData::getRedoHistory() {
-        std::pair<Clipboard*, int> result = {nullptr, -1};
+    std::optional<std::reference_wrapper<class Clipboard>> PlayerData::getRedoHistory() {
         int maximum = (historyFlag1 + 1) % maxHistoryLength;
         int current = historyFlag2 + 1;
         current %= maxHistoryLength;
         if (maximum == current) {
-            result.second = 0;
-            return result;
+            return std::nullopt;
         }
-        result.first = &historyList[current];
-        if (result.first->used == false) {
-            result.second = 0;
-            return result;
+        auto& res = historyList[current];
+        if (res.used == false) {
+            return std::nullopt;
         }
-        result.second = 1;
         historyFlag2 = current;
-        return result;
+        return res;
     }
 }  // namespace worldedit

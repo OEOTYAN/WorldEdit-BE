@@ -23,6 +23,7 @@ namespace worldedit {
             "modelfilename",
             getWEFiles("models", [](std::string_view s) -> bool { return s.substr(s.size() - 4) == ".obj"; }));
     }
+
     void commandsSetup() {
         brushCommandSetup();
         regionCommandSetup();
@@ -61,20 +62,70 @@ namespace worldedit {
                 }
 
                 Global<CommandRegistry>->setSoftEnumValues("blockPattern", blocksName);
+
+                addFileWatch(WE_DIR + "image",
+                             [&](const std::filesystem::path& path, const filewatch::Event change_type) {
+                                 if (change_type == filewatch::Event::modified) {
+                                     return;
+                                 }
+                                 auto fileName = UTF82String(path.u8string());
+
+                                 if (fileName.find(".") == std::string::npos) {
+                                     return;
+                                 }
+
+                                 ReplaceStr(fileName, "\\", "/");
+                                 std::vector<std::string> fileEnum{fileName};
+                                 switch (change_type) {
+                                     case filewatch::Event::renamed_new:
+                                     case filewatch::Event::added:
+                                         Global<CommandRegistry>->addSoftEnumValues("imagefilename", fileEnum);
+                                         break;
+                                     case filewatch::Event::renamed_old:
+                                     case filewatch::Event::removed:
+                                         Global<CommandRegistry>->removeSoftEnumValues("imagefilename", fileEnum);
+                                         break;
+                                 }
+                             });
+
+                addFileWatch(
+                    WE_DIR + "models", [&](const std::filesystem::path& path, const filewatch::Event change_type) {
+                        if (change_type == filewatch::Event::modified) {
+                            return;
+                        }
+                        auto fileName = UTF82String(path.u8string());
+
+                        if (fileName.find(".") == std::string::npos || fileName.substr(fileName.size() - 4) != ".obj") {
+                            return;
+                        }
+
+                        ReplaceStr(fileName, "\\", "/");
+                        std::vector<std::string> fileEnum{fileName};
+                        switch (change_type) {
+                            case filewatch::Event::renamed_new:
+                            case filewatch::Event::added:
+                                Global<CommandRegistry>->addSoftEnumValues("modelfilename", fileEnum);
+                                break;
+                            case filewatch::Event::renamed_old:
+                            case filewatch::Event::removed:
+                                Global<CommandRegistry>->removeSoftEnumValues("modelfilename", fileEnum);
+                                break;
+                        }
+                    });
             },
             20);
 
-        DynamicCommand::setup(
-            "updatefile",                                    // command name
-            tr("worldedit.command.description.updatefile"),  // command description
-            {}, {}, {{}},
-            // dynamic command callback
-            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
-               std::unordered_map<std::string, DynamicCommand::Result>& results) {
-                updateFile();
-                output.trSuccess("worldedit.updatefile.success");
-            },
-            CommandPermissionLevel::GameMasters);
+        // DynamicCommand::setup(
+        //     "updatefile",                                    // command name
+        //     tr("worldedit.command.description.updatefile"),  // command description
+        //     {}, {}, {{}},
+        //     // dynamic command callback
+        //     [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+        //        std::unordered_map<std::string, DynamicCommand::Result>& results) {
+        //         updateFile();
+        //         output.trSuccess("worldedit.updatefile.success");
+        //     },
+        //     CommandPermissionLevel::GameMasters);
 
         DynamicCommand::setup(
             "gmask",                                    // command name
@@ -147,6 +198,19 @@ namespace worldedit {
                 auto player = origin.getPlayer();
                 Level::runcmdAs(player, "give @s wooden_axe");
                 output.trSuccess("");
+            },
+            CommandPermissionLevel::GameMasters);
+
+        DynamicCommand::setup(
+            "clearplayerdatas",                                    // command name
+            tr("worldedit.command.description.clearplayerdatas"),  // command description
+            {}, {}, {{}},
+            // dynamic command callback
+            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+               std::unordered_map<std::string, DynamicCommand::Result>& results) {
+                auto player = origin.getPlayer();
+                getPlayersDataMap().erase(player->getXuid());
+                output.trSuccess("worldedit.clearplayerdatas.success");
             },
             CommandPermissionLevel::GameMasters);
 

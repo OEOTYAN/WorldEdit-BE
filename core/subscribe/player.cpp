@@ -23,7 +23,7 @@ namespace worldedit {
 
         auto xuid = player->getXuid();
         long long tick = player->getLevel().getCurrentServerTick().t;
-        if (tickMap.find(xuid) != tickMap.end()) {
+        if (tickMap.contains(xuid)) {
             if (abs(tick - tickMap[xuid]) < MINIMUM__RESPONSE_TICK) {
                 needDiscard = true;
             }
@@ -43,7 +43,7 @@ namespace worldedit {
         } else {
             tickMap[xuid] = tick;
             itemName += std::to_string(item->getAuxValue());
-            if (playerData.brushMap.find(itemName) != playerData.brushMap.end()) {
+            if (playerData.brushMap.contains(itemName)) {
                 if (!needDiscard) {
                     auto& brush = playerData.brushMap[itemName];
                     if (brush->lneedFace && blockInstance != BlockInstance::Null) {
@@ -97,7 +97,7 @@ namespace worldedit {
 
         auto xuid = player->getXuid();
         long long tick = player->getLevel().getCurrentServerTick().t;
-        if (tickMap.find(xuid) != tickMap.end()) {
+        if (tickMap.contains(xuid)) {
             if (abs(tick - tickMap[xuid]) < MINIMUM__RESPONSE_TICK) {
                 needDiscard = true;
             }
@@ -118,7 +118,7 @@ namespace worldedit {
             tickMap[xuid] = tick;
             itemName += std::to_string(item->getAuxValue());
 
-            if (playerData.brushMap.find(itemName) != playerData.brushMap.end()) {
+            if (playerData.brushMap.contains(itemName)) {
                 if (!needDiscard) {
                     auto& brush = playerData.brushMap[itemName];
                     if (brush->needFace && blockInstance != BlockInstance::Null) {

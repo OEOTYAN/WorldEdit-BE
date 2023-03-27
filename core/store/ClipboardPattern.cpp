@@ -54,7 +54,7 @@ namespace worldedit {
     }
     bool ClipboardPattern::hasBlock(class Block* block) {
         for (auto& x : clipboard->blockslist) {
-            if (x.hasBlock && block == x.block) {
+            if (x.blocks.has_value() && block == x.blocks.value().first) {
                 return true;
             }
         }

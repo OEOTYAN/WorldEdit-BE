@@ -62,16 +62,16 @@ namespace worldedit {
             }
             auto tmpVec = SplitStrWithPattern(asString(str), ",");
             phmap::flat_hash_set<std::string> op(tmpVec.begin(), tmpVec.end());
-            if (op.find("!nc") == op.end()) {
+            if (!op.contains("!nc")) {
                 op.insert("nc");
             }
             for (auto& g : tmpMap) {
-                if (op.find(g.first) != op.end()) {
+                if (op.contains(g.first)) {
                     blockGradientMap.insert(g.second.begin(), g.second.end());
                 }
             }
             for (auto& p : op) {
-                if (p[0] == '!' && blockGradientMap.find(p.substr(1)) != blockGradientMap.end()) {
+                if (p[0] == '!' && blockGradientMap.contains(p.substr(1))) {
                     blockGradientMap.erase(p.substr(1));
                 }
             }

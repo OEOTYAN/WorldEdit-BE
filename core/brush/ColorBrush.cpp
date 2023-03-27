@@ -68,7 +68,7 @@ namespace worldedit {
             variables["oy"] = pos0.y - playerPos.y;
             variables["oz"] = pos0.z - playerPos.z;
             Block* blockp = pattern->getBlock(variables, f);
-            if (cmap.find(blockp) == cmap.end()) {
+            if (!cmap.contains(blockp)) {
                 return -2;
             }
             finalColor = cmap[blockp];
@@ -80,7 +80,7 @@ namespace worldedit {
             boundingBox.merge(pos1);
             BoundingBox(pos1 - 1, pos1 + 1).forEachBlockInBox([&](const BlockPos& tmpPos) {
                 if (&blockSource->getBlock(tmpPos) != BedrockBlocks::mAir && tmpPos != pos1 &&
-                    pos0.distanceTo(tmpPos) <= 0.5 + size && s.find(tmpPos) == s.end()) {
+                    pos0.distanceTo(tmpPos) <= 0.5 + size && !s.contains(tmpPos)) {
                     int counts = 0;
                     for (auto& calPos : tmpPos.getNeighbors()) {
                         counts += !blockSource->getBlock(calPos).isSolid();
@@ -93,17 +93,15 @@ namespace worldedit {
             });
         }
 
-        worldedit::Clipboard* history = nullptr;
-
         if (playerData.maxHistoryLength > 0) {
-            history = playerData.getNextHistory();
-            *history = Clipboard(boundingBox.max - boundingBox.min);
-            history->playerRelPos.x = blockInstance.getDimensionId();
-            history->playerPos = boundingBox.min;
+            auto& history = playerData.getNextHistory();
+            history = std::move(Clipboard(boundingBox.max - boundingBox.min));
+            history.playerRelPos.x = blockInstance.getDimensionId();
+            history.playerPos = boundingBox.min;
             for (auto& pos1 : s) {
                 auto localPos = pos1 - boundingBox.min;
                 auto bi = blockSource->getBlockInstance(pos1);
-                history->storeBlock(bi, localPos);
+                history.storeBlock(bi, localPos);
             }
         }
 
@@ -125,7 +123,7 @@ namespace worldedit {
             maskFunc(f, variables, [&]() mutable {
                 auto* block = const_cast<Block*>(&blockSource->getBlock(pos1));
                 mce::Color hereColor(0, 0, 0, 1);
-                if (cmap.find(block) != cmap.end()) {
+                if (cmap.contains(block)) {
                     hereColor = cmap[block];
                 }
 

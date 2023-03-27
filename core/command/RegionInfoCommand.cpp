@@ -187,7 +187,7 @@ namespace worldedit {
                                                 name += "]";
                                             }
                                         }
-                                        if (blocksMap.find(name) == blocksMap.end()) {
+                                        if (!blocksMap.contains(name)) {
                                             blocksMap[name] = 0;
                                         }
                                         blocksMap[name] += count;
@@ -227,7 +227,7 @@ namespace worldedit {
                                     blockName += +" [" + exStates.substr(1, exStates.length() - 2) + "]";
                                 }
                             }
-                            if (blocksMap.find(blockName) != blocksMap.end()) {
+                            if (blocksMap.contains(blockName)) {
                                 blocksMap[blockName] += 1;
                             } else {
                                 blocksMap[blockName] = 1;

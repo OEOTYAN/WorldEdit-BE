@@ -21,6 +21,8 @@ void PluginInit() {
             if (!handle) {
                 throw std::runtime_error("Cannot get ParticleAPI.dll");
             }
+            auto fn = GetProcAddress(handle, "onPostInit");
+            ((void (*)())fn)();
             ParticleCUI::init(handle);
         } else {
             throw std::runtime_error("ParticleAPI.dll not exist!");

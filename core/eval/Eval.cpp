@@ -269,7 +269,13 @@ namespace worldedit {
                     return tgamma(params[0]);
                 break;
             case do_hash2("isslimechunk"):
-                if (size == 2) {
+                if (size == 0) {
+                    int x = here.x >> 4;
+                    int z = here.z >> 4;
+                    auto seed = (x * 0x1f1f1f1fu) ^ (uint32_t)z;
+                    std::mt19937 mt(seed);
+                    return mt() % 10 == 0;
+                } else if (size == 2) {
                     int x = static_cast<int>(round(params[0]));
                     int z = static_cast<int>(round(params[1]));
                     auto seed = (x * 0x1f1f1f1fu) ^ (uint32_t)z;

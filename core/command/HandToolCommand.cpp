@@ -134,7 +134,7 @@ namespace worldedit {
                 std::string toolName = item->getTypeName() + std::to_string(item->getAuxValue());
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
-                if (playerData.brushMap.find(toolName) != playerData.brushMap.end()) {
+                if (playerData.brushMap.contains(toolName)) {
                     auto& tool = playerData.brushMap[toolName];
                     auto useface = results["bool"].get<bool>();
                     tool->lneedFace = useface;

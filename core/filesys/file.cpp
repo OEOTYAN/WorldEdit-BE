@@ -1,9 +1,7 @@
 //
 // Created by OEOTYAN on 2022/06/20.
 //
-// #include "file.h"
-// #include <io.h>
-// #include <stdio.h>
+#include "file.h"
 #include <iostream>
 #include <filesystem>
 #include <utils/StringHelper.h>
@@ -44,5 +42,16 @@ namespace worldedit {
     }
     std::vector<std::string> getWEFiles(std::string path, std::function<bool(std::string_view)> filter) {
         return getFiles(WE_DIR + path, filter);
+    }
+    phmap::flat_hash_set<std::unique_ptr<class filewatch::FileWatch<std::wstring>>>& getFileWatchSet() {
+        static phmap::flat_hash_set<std::unique_ptr<class filewatch::FileWatch<std::wstring>>> sets;
+        return sets;
+    }
+
+    void
+    addFileWatch(std::string const& path,
+                 std::function<void(const std::filesystem::path&, const filewatch::Event)> func) {
+        getFileWatchSet().insert(std::unique_ptr<filewatch::FileWatch<std::wstring>>(
+            new filewatch::FileWatch<std::wstring>(str2wstr(path), func)));
     }
 }  // namespace worldedit

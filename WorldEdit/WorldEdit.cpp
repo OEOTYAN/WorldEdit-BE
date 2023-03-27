@@ -24,7 +24,7 @@ THook(void, "?setRuntimeId@Block@@IEBAXAEBI@Z", Block* block, unsigned int const
     blockName[blockid] = block->getTypeName();
     blockId[block->getTypeName()] = blockid;
     // auto color = block->getLegacyBlock().getMapColor().toHexString();
-    // if (getBlockColorssMap().find(color) != getBlockColorssMap().end()) {
+    // if (getBlockColorssMap().contains(color)) {
     //     getBlockColorssMap()[color] += ",\n" + block->getNbt()->toSNBT(0,
     //     SnbtFormat::Minimize);
     // } else {
@@ -59,7 +59,7 @@ namespace worldedit {
 
     class PlayerData& getPlayersData(std::string_view xuid) {
         auto& playerDataMap = getPlayersDataMap();
-        if (playerDataMap.find(xuid) == playerDataMap.end()) {
+        if (!playerDataMap.contains(xuid)) {
             playerDataMap[xuid] = std::make_unique<PlayerData>(PlayerData(Global<Level>->getPlayer(asString(xuid))));
         }
         return *playerDataMap[xuid];
@@ -92,13 +92,13 @@ namespace worldedit {
 
     std::string getBlockName(int id) {
         auto& blockName = worldedit::getBlockNameMap();
-        if (blockName.find(id) != blockName.end())
+        if (blockName.contains(id))
             return blockName[id];
         return "minecraft:air";
     }
     int getBlockId(std::string_view name) {
         auto& blockId = worldedit::getBlockIdMap();
-        if (blockId.find(name) != blockId.end())
+        if (blockId.contains(name))
             return blockId[name];
         return 0;
     }

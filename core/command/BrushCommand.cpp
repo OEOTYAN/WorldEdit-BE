@@ -229,14 +229,18 @@ namespace worldedit {
                         }
                     }
 
-                    playerData.brushMap[brushName] =
-                        std::make_unique<ImageHeightmapBrush>(ImageHeightmapBrush(radius, height, loadImage(filename), arg_r));
+                    playerData.brushMap[brushName] = std::make_unique<ImageHeightmapBrush>(
+                        ImageHeightmapBrush(radius, height, loadImage(filename), arg_r));
 
                     output.trSuccess("worldedit.brush.set.heightmap", brushrName);
                     return;
                 } else if (results["none"].isSet) {
-                    playerData.brushMap.erase(brushName);
-                    output.trSuccess("worldedit.brush.clear", brushrName);
+                    if (playerData.brushMap.contains(brushName)) {
+                        playerData.brushMap.erase(brushName);
+                        output.trSuccess("worldedit.brush.clear", brushrName);
+                    } else {
+                        output.trError("worldedit.error.nobrush");
+                    }
                     return;
                 }
             },
@@ -254,7 +258,7 @@ namespace worldedit {
                 std::string brushName = item->getTypeName() + std::to_string(item->getAuxValue());
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
-                if (playerData.brushMap.find(brushName) != playerData.brushMap.end()) {
+                if (playerData.brushMap.contains(brushName)) {
                     auto& brush = playerData.brushMap[brushName];
                     if (results["mask"].isSet) {
                         auto tmp = results["mask"].get<std::string>();
@@ -282,7 +286,7 @@ namespace worldedit {
                 std::string brushName = item->getTypeName() + std::to_string(item->getAuxValue());
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
-                if (playerData.brushMap.find(brushName) != playerData.brushMap.end()) {
+                if (playerData.brushMap.contains(brushName)) {
                     auto& brush = playerData.brushMap[brushName];
                     auto size = results["size"].get<int>();
                     brush->size = size;
@@ -305,7 +309,7 @@ namespace worldedit {
                 std::string brushName = item->getTypeName() + std::to_string(item->getAuxValue());
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
-                if (playerData.brushMap.find(brushName) != playerData.brushMap.end()) {
+                if (playerData.brushMap.contains(brushName)) {
                     auto& brush = playerData.brushMap[brushName];
                     auto useface = results["bool"].get<bool>();
                     brush->needFace = useface;

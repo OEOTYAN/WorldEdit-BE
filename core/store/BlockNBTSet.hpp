@@ -9,6 +9,7 @@
 #include <mc/Block.hpp>
 #include <mc/BlockActor.hpp>
 #include <mc/CommandUtils.hpp>
+#include <mc/CompoundTag.hpp>
 #include <mc/BlockSource.hpp>
 #include <mc/BedrockBlocks.hpp>
 #include <mc/StructureSettings.hpp>
@@ -19,30 +20,34 @@ namespace worldedit {
 
     class BlockNBTSet {
        public:
-        Block* block = const_cast<Block*>(BedrockBlocks::mAir);
-        Block* exblock = const_cast<Block*>(BedrockBlocks::mAir);
-        std::string blockEntity;
-        bool hasBlock = false;
-        bool hasBlockEntity = false;
-        bool hasBiome = false;
-        int biomeId = 0;
+        std::unique_ptr<CompoundTag> blockEntity = nullptr;
+        std::optional<std::pair<class Block*, class Block*>> blocks;
+        std::optional<int> biomeId;
         BlockNBTSet() = default;
+        BlockNBTSet(BlockNBTSet const&);
+        BlockNBTSet(BlockNBTSet &&) = default;
+        BlockNBTSet& operator=(BlockNBTSet const&);
+        BlockNBTSet& operator=(BlockNBTSet &&) = default;
         BlockNBTSet(BlockInstance& blockInstance);
-        Block* getBlock() const { return block; }
-        Block* getExBlock() const { return exblock; }
+        Block* getBlock() const { return blocks.value().first; }
+        Block* getExBlock() const { return blocks.value().second; }
         bool setBlockWithoutcheckGMask(const BlockPos& pos,
-                      BlockSource* blockSource,
-                      class PlayerData& data, bool needBiome = false) const;
+                                       BlockSource* blockSource,
+                                       class PlayerData& data,
+                                       bool needBiome = false) const;
         bool setBlock(const BlockPos& pos,
                       BlockSource* blockSource,
                       class PlayerData& data,
                       class EvalFunctions& funcs,
-                      phmap::flat_hash_map<std::string, double> const& var, bool needBiome = false) const;
+                      phmap::flat_hash_map<std::string, double> const& var,
+                      bool needBiome = false) const;
         bool setBlock(const BlockPos& pos,
-                      BlockSource* blockSource, class PlayerData& data,
+                      BlockSource* blockSource,
+                      class PlayerData& data,
                       class EvalFunctions& funcs,
                       phmap::flat_hash_map<std::string, double> const& var,
                       Rotation rotation,
-                      Mirror mirror, bool needBiome = false) const;
+                      Mirror mirror,
+                      bool needBiome = false) const;
     };
 }  // namespace worldedit

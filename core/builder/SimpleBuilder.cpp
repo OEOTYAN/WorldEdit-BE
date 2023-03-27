@@ -65,15 +65,15 @@ namespace worldedit {
         playerData.setVarByPlayer(variables);
 
         if (playerData.maxHistoryLength > 0) {
-            auto history = playerData.getNextHistory();
-            *history = Clipboard(box.max - box.min);
-            history->playerRelPos.x = dim;
-            history->playerPos = box.min;
+            auto& history = playerData.getNextHistory();
+            history = std::move(Clipboard(box.max - box.min));
+            history.playerRelPos.x = dim;
+            history.playerPos = box.min;
 
             box.forEachBlockInBox([&](const BlockPos& blockPos) {
                 auto localPos = blockPos - box.min;
                 auto blockInstance = blockSource->getBlockInstance(blockPos);
-                history->storeBlock(blockInstance, localPos);
+                history.storeBlock(blockInstance, localPos);
             });
         }
 
@@ -164,15 +164,15 @@ namespace worldedit {
         playerData.setVarByPlayer(variables);
 
         if (playerData.maxHistoryLength > 0) {
-            auto history = playerData.getNextHistory();
-            *history = Clipboard(box.max - box.min);
-            history->playerRelPos.x = dim;
-            history->playerPos = box.min;
+            auto& history = playerData.getNextHistory();
+            history = std::move(Clipboard(box.max - box.min));
+            history.playerRelPos.x = dim;
+            history.playerPos = box.min;
 
             box.forEachBlockInBox([&](const BlockPos& blockPos) {
                 auto localPos = blockPos - box.min;
                 auto blockInstance = blockSource->getBlockInstance(blockPos);
-                history->storeBlock(blockInstance, localPos);
+                history.storeBlock(blockInstance, localPos);
             });
         }
 
@@ -267,15 +267,15 @@ namespace worldedit {
         playerData.setVarByPlayer(variables);
 
         if (playerData.maxHistoryLength > 0) {
-            auto history = playerData.getNextHistory();
-            *history = Clipboard(box.max - box.min);
-            history->playerRelPos.x = dim;
-            history->playerPos = box.min;
+            auto& history = playerData.getNextHistory();
+            history = std::move(Clipboard(box.max - box.min));
+            history.playerRelPos.x = dim;
+            history.playerPos = box.min;
 
             box.forEachBlockInBox([&](const BlockPos& blockPos) {
                 auto localPos = blockPos - box.min;
                 auto blockInstance = blockSource->getBlockInstance(blockPos);
-                history->storeBlock(blockInstance, localPos);
+                history.storeBlock(blockInstance, localPos);
             });
         }
 

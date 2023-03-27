@@ -10,21 +10,32 @@
 
 namespace worldedit {
 
-    BlockNBTSet::BlockNBTSet(BlockInstance& blockInstance) : hasBlock(true) {
-        block = blockInstance.getBlock();
+    BlockNBTSet::BlockNBTSet(BlockNBTSet const& other) {
+        if (other.blockEntity)
+            blockEntity = other.blockEntity->clone();
+        blocks = other.blocks;
+        biomeId = other.biomeId;
+    }
+
+    BlockNBTSet& BlockNBTSet::operator=(BlockNBTSet const& other) {
+        if (other.blockEntity)
+            blockEntity = other.blockEntity->clone();
+        blocks = other.blocks;
+        biomeId = other.biomeId;
+        return *this;
+    }
+    BlockNBTSet::BlockNBTSet(BlockInstance& blockInstance) {
         auto* bs = blockInstance.getBlockSource();
         auto pos = blockInstance.getPosition();
-        exblock = &const_cast<Block&>((bs->getExtraBlock(pos)));
-        auto* biome = bs->tryGetBiome(pos);
-        if (biome != nullptr) {
-            hasBiome = true;
-            biomeId = biome->getId();
-        }
+        blocks = {blockInstance.getBlock(), const_cast<Block*>(&bs->getExtraBlock(pos))};
+        // auto* biome = bs->tryGetBiome(pos);
+        // if (biome != nullptr) {
+        //     biomeId = biome->getId();
+        // }
         if (blockInstance.hasBlockEntity()) {
-            hasBlockEntity = true;
             auto be = blockInstance.getBlockEntity();
             if (be != nullptr) {
-                blockEntity = be->getNbt()->toBinaryNBT();
+                blockEntity = be->getNbt();
             }
         }
     }
@@ -33,22 +44,21 @@ namespace worldedit {
                                                 BlockSource* blockSource,
                                                 class PlayerData& data,
                                                 bool setBiome) const {
+        auto& [block, exblock] = blocks.value();
         bool res;
-        if (setBiome && hasBiome) {
-            res = data.setBlockWithBiomeWithoutcheckGMask(blockSource, pos, block, exblock, biomeId);
-        } else {
-            res = data.setBlockWithoutcheckGMask(blockSource, pos, block, exblock);
-        }
-        if (hasBlockEntity && blockEntity != "" && block->hasBlockEntity()) {
+        res = data.setBlockWithoutcheckGMask(blockSource, pos, block, exblock, setBiome ? biomeId : std::nullopt);
+        if (blockEntity != nullptr && block->hasBlockEntity()) {
             auto be = blockSource->getBlockEntity(pos);
             if (be != nullptr) {
-                return be->setNbt(CompoundTag::fromBinaryNBT(blockEntity).get());
+                return be->setNbt(blockEntity.get());
             } else {
                 LevelChunk* chunk = blockSource->getChunkAt(pos);
-                auto b = BlockActor::create(CompoundTag::fromBinaryNBT(blockEntity).get());
-                if (b != nullptr) {
-                    b->moveTo(pos);
-                    chunk->_placeBlockEntity(b);
+                if (chunk != nullptr) {
+                    auto b = BlockActor::create(blockEntity.get());
+                    if (b != nullptr) {
+                        b->moveTo(pos);
+                        chunk->_placeBlockEntity(b);
+                    }
                 }
             }
         }
@@ -61,22 +71,21 @@ namespace worldedit {
                                class EvalFunctions& funcs,
                                phmap::flat_hash_map<std::string, double> const& var,
                                bool setBiome) const {
+        auto& [block, exblock] = blocks.value();
         bool res;
-        if (setBiome && hasBiome) {
-            res = data.setBlockWithBiomeSimple(blockSource, funcs, var, pos, block, exblock, biomeId);
-        } else {
-            res = data.setBlockSimple(blockSource, funcs, var, pos, block, exblock);
-        }
-        if (hasBlockEntity && blockEntity != "" && block->hasBlockEntity()) {
+        res = data.setBlockSimple(blockSource, funcs, var, pos, block, exblock, setBiome ? biomeId : std::nullopt);
+        if (blockEntity != nullptr && block->hasBlockEntity()) {
             auto be = blockSource->getBlockEntity(pos);
             if (be != nullptr) {
-                return be->setNbt(CompoundTag::fromBinaryNBT(blockEntity).get());
+                return be->setNbt(blockEntity.get());
             } else {
                 LevelChunk* chunk = blockSource->getChunkAt(pos);
-                auto b = BlockActor::create(CompoundTag::fromBinaryNBT(blockEntity).get());
-                if (b != nullptr) {
-                    b->moveTo(pos);
-                    chunk->_placeBlockEntity(b);
+                if (chunk != nullptr) {
+                    auto b = BlockActor::create(blockEntity.get());
+                    if (b != nullptr) {
+                        b->moveTo(pos);
+                        chunk->_placeBlockEntity(b);
+                    }
                 }
             }
         }
@@ -90,29 +99,25 @@ namespace worldedit {
                                Rotation rotation,
                                Mirror mirror,
                                bool setBiome) const {
+        auto& [block, exblock] = blocks.value();
         bool res;
-        if (setBiome && hasBiome) {
-            res = data.setBlockWithBiomeSimple(
-                blockSource, funcs, var, pos,
-                const_cast<Block*>(VanillaBlockStateTransformUtils::transformBlock(*block, rotation, mirror)),
-                const_cast<Block*>(VanillaBlockStateTransformUtils::transformBlock(*exblock, rotation, mirror)),
-                biomeId);
-        } else {
-            res = data.setBlockSimple(
-                blockSource, funcs, var, pos,
-                const_cast<Block*>(VanillaBlockStateTransformUtils::transformBlock(*block, rotation, mirror)),
-                const_cast<Block*>(VanillaBlockStateTransformUtils::transformBlock(*exblock, rotation, mirror)));
-        }
-        if (hasBlockEntity && blockEntity != "" && block->hasBlockEntity()) {
+        res = data.setBlockSimple(
+            blockSource, funcs, var, pos,
+            const_cast<Block*>(VanillaBlockStateTransformUtils::transformBlock(*block, rotation, mirror)),
+            const_cast<Block*>(VanillaBlockStateTransformUtils::transformBlock(*exblock, rotation, mirror)),
+            setBiome ? biomeId : std::nullopt);
+        if (blockEntity != nullptr && block->hasBlockEntity()) {
             auto be = blockSource->getBlockEntity(pos);
             if (be != nullptr) {
-                return be->setNbt(CompoundTag::fromBinaryNBT(blockEntity).get());
+                return be->setNbt(blockEntity.get());
             } else {
                 LevelChunk* chunk = blockSource->getChunkAt(pos);
-                auto b = BlockActor::create(CompoundTag::fromBinaryNBT(blockEntity).get());
-                if (b != nullptr) {
-                    b->moveTo(pos);
-                    chunk->_placeBlockEntity(b);
+                if (chunk != nullptr) {
+                    auto b = BlockActor::create(blockEntity.get());
+                    if (b != nullptr) {
+                        b->moveTo(pos);
+                        chunk->_placeBlockEntity(b);
+                    }
                 }
             }
         }

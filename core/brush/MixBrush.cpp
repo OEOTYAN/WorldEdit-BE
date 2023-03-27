@@ -49,7 +49,7 @@ namespace worldedit {
             boundingBox.merge(pos1);
             BoundingBox(pos1 - 1, pos1 + 1).forEachBlockInBox([&](const BlockPos& tmpPos) {
                 if (&blockSource->getBlock(tmpPos) != BedrockBlocks::mAir && tmpPos != pos1 &&
-                    pos0.distanceTo(tmpPos) <= 0.5 + size && s.find(tmpPos) == s.end()) {
+                    pos0.distanceTo(tmpPos) <= 0.5 + size && !s.contains(tmpPos)) {
                     int counts = 0;
                     for (auto& calPos : tmpPos.getNeighbors()) {
                         counts += !blockSource->getBlock(calPos).isSolid();
@@ -67,10 +67,10 @@ namespace worldedit {
         auto& cmap = getBlockColorMap();
         for (auto& pos1 : s) {
             auto* block = const_cast<Block*>(&blockSource->getBlock(pos1));
-            if (cmap.find(block) != cmap.end()) {
+            if (cmap.contains(block)) {
                 auto& color = cmap[block];
                 ++totalColor;
-                if (bColor.find(color) != bColor.end()) {
+                if (bColor.contains(color)) {
                     bColor[color] += 1;
                 } else {
                     bColor[color] = 1;
@@ -84,17 +84,15 @@ namespace worldedit {
 
         mce::Color finalColor = useMixboxLerp ? mixboxAverage(bColor) : linearAverage(bColor);
 
-        worldedit::Clipboard* history = nullptr;
-
         if (playerData.maxHistoryLength > 0) {
-            history = playerData.getNextHistory();
-            *history = Clipboard(boundingBox.max - boundingBox.min);
-            history->playerRelPos.x = blockInstance.getDimensionId();
-            history->playerPos = boundingBox.min;
+            auto& history = playerData.getNextHistory();
+            history = std::move(Clipboard(boundingBox.max - boundingBox.min));
+            history.playerRelPos.x = blockInstance.getDimensionId();
+            history.playerPos = boundingBox.min;
             for (auto& pos1 : s) {
                 auto localPos = pos1 - boundingBox.min;
                 auto bi = blockSource->getBlockInstance(pos1);
-                history->storeBlock(bi, localPos);
+                history.storeBlock(bi, localPos);
             }
         }
 
@@ -114,7 +112,7 @@ namespace worldedit {
             variables["oz"] = pos1.z - playerPos.z;
             maskFunc(f, variables, [&]() mutable {
                 auto* block = const_cast<Block*>(&blockSource->getBlock(pos1));
-                if (cmap.find(block) != cmap.end()) {
+                if (cmap.contains(block)) {
                     mce::Color hereColor =
                         useMixboxLerp
                             ? mixboxLerp(

@@ -4,6 +4,7 @@
 #pragma once
 #include <mc/Block.hpp>
 #include "store/Clipboard.hpp"
+#include "store/History.h"
 #include "region/Region.h"
 #include "brush/Brush.h"
 #include <mc/BedrockBlocks.hpp>
@@ -36,34 +37,25 @@ namespace worldedit {
         PlayerData(class Player*);
 
         void clearHistory();
-        class Clipboard* getNextHistory();
-        std::pair<class Clipboard*, int> getUndoHistory();
-        std::pair<class Clipboard*, int> getRedoHistory();
+        class Clipboard& getNextHistory();
+        class Clipboard& getCurrentHistory();
+        std::optional<std::reference_wrapper<class Clipboard>> getUndoHistory();
+        std::optional<std::reference_wrapper<class Clipboard>> getRedoHistory();
         bool changeMainPos(BlockInstance blockInstance, bool output = true);
         bool changeVicePos(BlockInstance blockInstance, bool output = true);
         void setVarByPlayer(phmap::flat_hash_map<::std::string, double>& variables);
-        bool setBlockWithBiomeSimple(class BlockSource* blockSource,
-                                     class EvalFunctions& funcs,
-                                     phmap::flat_hash_map<std::string, double> const& var,
-                                     const BlockPos& pos,
-                                     class Block* block,
-                                     class Block* exblock,
-                                     int biomeId);
-        bool setBlockWithBiomeWithoutcheckGMask(class BlockSource* blockSource,
-                                                const BlockPos& pos,
-                                                class Block* block,
-                                                class Block* exblock,
-                                                int biomeId);
         bool setBlockSimple(class BlockSource* blockSource,
                             class EvalFunctions& funcs,
                             phmap::flat_hash_map<std::string, double> const& var,
                             const BlockPos& pos,
                             class Block* block = const_cast<Block*>(BedrockBlocks::mAir),
-                            class Block* exblock = const_cast<Block*>(BedrockBlocks::mAir));
+                            class Block* exblock = const_cast<Block*>(BedrockBlocks::mAir),
+                            std::optional<int> const& biomeId = std::nullopt);
         bool setBlockWithoutcheckGMask(class BlockSource* blockSource,
                                        const BlockPos& pos,
                                        class Block* block,
-                                       class Block* exblock);
+                                       class Block* exblock,
+                                       std::optional<int> const& biomeId = std::nullopt);
     };
 
 }  // namespace worldedit
