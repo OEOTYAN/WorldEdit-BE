@@ -319,5 +319,20 @@ namespace worldedit {
                 }
             },
             CommandPermissionLevel::GameMasters);
+
+        DynamicCommand::setup(
+            "clearallbrushs",                                    // command name
+            tr("worldedit.command.description.clearallbrushs"),  // command description
+            {}, {}, {{}},
+            // dynamic command callback
+            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+               std::unordered_map<std::string, DynamicCommand::Result>& results) {
+                auto player = origin.getPlayer()->getXuid();
+                if (getPlayersDataMap().contains(player)){
+                    getPlayersDataMap()[player]->brushMap.clear();
+                }
+                output.trSuccess("worldedit.clearallbrushs.success");
+            },
+            CommandPermissionLevel::GameMasters);
     }
 }  // namespace worldedit

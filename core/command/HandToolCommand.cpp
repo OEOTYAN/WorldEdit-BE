@@ -116,8 +116,12 @@ namespace worldedit {
                     playerData.brushMap[toolName] = std::make_unique<RepTool>(RepTool());
                     output.trSuccess("worldedit.tool.set.rep", toolrName);
                 } else if (results["none"].isSet) {
-                    playerData.brushMap.erase(toolName);
-                    output.trSuccess("worldedit.tool.clear", toolrName);
+                    if (playerData.brushMap.contains(toolName)) {
+                        playerData.brushMap.erase(toolName);
+                        output.trSuccess("worldedit.tool.clear", toolName);
+                    } else {
+                        output.trError("worldedit.error.notool");
+                    }
                 }
             },
             CommandPermissionLevel::GameMasters);
