@@ -60,7 +60,7 @@ namespace worldedit {
 
     bool LoftRegion::contains(const BlockPos& pos) {
         if (posCached) {
-            return posCache.find(PosWithUV(pos, 0, 0)) != posCache.end();
+            return posCache.contains(pos);
         }
         return false;
     };
@@ -134,7 +134,7 @@ namespace worldedit {
             auto step2 = (1.0 / tmpCurve.arcLength()) / quality;
             for (double t2 = 0; t2 <= 1.0; t2 += step2) {
                 auto tmpPos = tmpCurve.getPosition(t2).toBlockPos();
-                posCache.insert(PosWithUV(tmpPos, 1 - t2, 1 - t));
+                posCache[tmpPos] = std::make_pair(1 - t2, 1 - t);
                 box = box.merge(tmpPos);
             }
         }
@@ -149,14 +149,14 @@ namespace worldedit {
     void LoftRegion::forEachBlockInRegion(const std::function<void(const BlockPos&)>& todo) {
         buildCache();
         for (auto& pos : posCache) {
-            todo(pos.getBlockPos());
+            todo(pos.first);
         }
     }
 
     void LoftRegion::forEachBlockUVInRegion(const std::function<void(const BlockPos&, double, double)>& todo) {
         buildCache();
         for (auto& pos : posCache) {
-            todo(pos.getBlockPos(), pos.u, pos.v);
+            todo(pos.first, pos.second.first, pos.second.second);
         }
     }
 
@@ -171,7 +171,7 @@ namespace worldedit {
         if (isX) {
             if (loftPoints.size() == 1) {
                 for (auto& pos : posCache) {
-                    todo(pos.getBlockPos());
+                    todo(pos.first);
                 }
                 return;
             } else {

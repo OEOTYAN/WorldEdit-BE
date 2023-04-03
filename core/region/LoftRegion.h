@@ -9,27 +9,6 @@
 
 namespace worldedit {
 
-    class PosWithUV {
-       public:
-        int x, y, z;
-        double u, v;
-        PosWithUV(int x, int y, int z, double u, double v)
-            : x(x), y(y), z(z), u(u), v(v) {}
-        PosWithUV(BlockPos const& pos, double u, double v)
-            : x(pos.x), y(pos.y), z(pos.z), u(u), v(v) {}
-        BlockPos getBlockPos() const { return BlockPos(x, y, z); }
-        bool inline operator==(PosWithUV const& other) const {
-            return x == other.x && y == other.y && z == other.z;
-        }
-    };
-
-    class _hash2 {
-       public:
-        size_t operator()(const PosWithUV& rc) const {
-            return std::hash<BlockPos>()(rc.getBlockPos());
-        }
-    };
-
     class LoftRegion final : public Region {
        public:
         std::vector<std::vector<BlockPos>> loftPoints;
@@ -37,7 +16,7 @@ namespace worldedit {
         std::vector<KochanekBartelsInterpolation> interpolations;
         std::vector<KochanekBartelsInterpolation> cache1;
         std::vector<KochanekBartelsInterpolation> cache2;
-        phmap::flat_hash_set<PosWithUV, _hash2> posCache;
+        phmap::flat_hash_map<BlockPos, std::pair<double, double>> posCache;
         bool circle = false;
         static const int quality = 16;
         bool posCached = false;
