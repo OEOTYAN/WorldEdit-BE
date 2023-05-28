@@ -38,7 +38,6 @@ namespace worldedit {
                     }
                     Block* block = tryGetBlockFromAllVersion(b);
                     if (block == nullptr) {
-                        // logger().debug(static_cast<std::string>(b));
                         continue;
                     }
                     blockVector.push_back(block);
@@ -78,7 +77,6 @@ namespace worldedit {
         }
         for (auto& [vName, vec] : blockGradientMap) {
             for (int i = 0; i < vec.size(); i++) {
-                // logger().debug("{}, {}:{}, {}", vName, vec[i]->getTypeName(), vec[i]->getTileData(), i);
                 gradientNameMap[vec[i]] = std::make_pair(vName, i);
             }
         }
@@ -101,15 +99,12 @@ namespace worldedit {
         if (hasBlock(block)) {
             auto [name, iter] = gradientNameMap[block];
             auto& blocklist = blockGradientMap[name];
-            // logger().debug("{}, {}:{}, {}", name, block->getTypeName(), block->getTileData(), iter);
             if (lighten && iter >= 1) {
                 --iter;
-                // logger().debug("{}:{}",  blocklist[iter]->getTypeName(), blocklist[iter]->getTileData());
                 return playerData->setBlockSimple(blockSource, funcs, variables, pos, blocklist[iter]);
             } else if (!lighten) {
                 ++iter;
                 if (iter < blocklist.size()) {
-                    // logger().debug("{}:{}", blocklist[iter]->getTypeName(), blocklist[iter]->getTileData());
                     return playerData->setBlockSimple(blockSource, funcs, variables, pos, blocklist[iter]);
                 }
             }
