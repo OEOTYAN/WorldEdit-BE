@@ -92,6 +92,10 @@ namespace worldedit {
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto player = origin.getPlayer();
+                if (player == nullptr) {
+                    output.trError("worldedit.error.noplayer");
+                    return;
+                }
                 auto* item = player->getHandSlot();
                 std::string brushName = item->getTypeName();
                 std::string brushrName = brushName;
@@ -254,6 +258,10 @@ namespace worldedit {
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto player = origin.getPlayer();
+                if (player == nullptr) {
+                    output.trError("worldedit.error.noplayer");
+                    return;
+                }
                 auto* item = player->getHandSlot();
                 std::string brushName = item->getTypeName() + std::to_string(item->getAuxValue());
                 auto xuid = player->getXuid();
@@ -282,6 +290,10 @@ namespace worldedit {
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto player = origin.getPlayer();
+                if (player == nullptr) {
+                    output.trError("worldedit.error.noplayer");
+                    return;
+                }
                 auto* item = player->getHandSlot();
                 std::string brushName = item->getTypeName() + std::to_string(item->getAuxValue());
                 auto xuid = player->getXuid();
@@ -305,6 +317,10 @@ namespace worldedit {
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto player = origin.getPlayer();
+                if (player == nullptr) {
+                    output.trError("worldedit.error.noplayer");
+                    return;
+                }
                 auto* item = player->getHandSlot();
                 std::string brushName = item->getTypeName() + std::to_string(item->getAuxValue());
                 auto xuid = player->getXuid();
@@ -328,7 +344,7 @@ namespace worldedit {
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto player = origin.getPlayer()->getXuid();
-                if (getPlayersDataMap().contains(player)){
+                if (getPlayersDataMap().contains(player)) {
                     getPlayersDataMap()[player]->brushMap.clear();
                 }
                 output.trSuccess("worldedit.clearallbrushs.success");

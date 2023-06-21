@@ -39,7 +39,8 @@ namespace worldedit {
     class FloodFillTool final : public Brush {
        public:
         bool needEdge;
-        FloodFillTool(std::unique_ptr<Pattern> bp, unsigned short r, bool needEdge) : Brush(r, std::move(bp)), needEdge(needEdge) {}
+        FloodFillTool(std::unique_ptr<Pattern> bp, unsigned short r, bool needEdge)
+            : Brush(r, std::move(bp)), needEdge(needEdge) {}
         long long set(Player* player, class BlockInstance blockInstance) override;
     };
     class RepTool final : public Brush {

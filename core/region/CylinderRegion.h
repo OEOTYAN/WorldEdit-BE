@@ -24,21 +24,16 @@ namespace worldedit {
         bool setY(int y);
 
         uint64_t size() const override {
-            return (uint64_t)std::round(M_PI * (double)radius * (double)radius *
-                                        (maxY - minY + 1));
+            return (uint64_t)std::round(M_PI * (double)radius * (double)radius * (maxY - minY + 1));
         };
 
-        std::pair<std::string, bool> expand(
-            const std::vector<BlockPos>& changes) override;
+        std::pair<std::string, bool> expand(const std::vector<BlockPos>& changes) override;
 
-        std::pair<std::string, bool> contract(
-            const std::vector<BlockPos>& changes) override;
+        std::pair<std::string, bool> contract(const std::vector<BlockPos>& changes) override;
 
         std::pair<std::string, bool> shift(const BlockPos& change) override;
 
-        void forEachBlockUVInRegion(
-            const std::function<void(const BlockPos&, double, double)>& todo)
-            override;
+        void forEachBlockUVInRegion(const std::function<void(const BlockPos&, double, double)>& todo) override;
 
         void renderRegion() override;
 

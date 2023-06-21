@@ -135,6 +135,10 @@ namespace worldedit {
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto player = origin.getPlayer();
+                if (player == nullptr) {
+                    output.trError("worldedit.error.noplayer");
+                    return;
+                }
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (results["mask"].isSet) {
@@ -156,6 +160,10 @@ namespace worldedit {
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto player = origin.getPlayer();
+                if (player == nullptr) {
+                    output.trError("worldedit.error.noplayer");
+                    return;
+                }
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (results["bool"].get<bool>()) {
@@ -176,6 +184,10 @@ namespace worldedit {
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto player = origin.getPlayer();
+                if (player == nullptr) {
+                    output.trError("worldedit.error.noplayer");
+                    return;
+                }
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (results["bool"].get<bool>()) {
@@ -196,6 +208,10 @@ namespace worldedit {
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto player = origin.getPlayer();
+                if (player == nullptr) {
+                    output.trError("worldedit.error.noplayer");
+                    return;
+                }
                 Level::runcmdAs(player, "give @s wooden_axe");
                 output.trSuccess("");
             },
@@ -209,6 +225,10 @@ namespace worldedit {
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto player = origin.getPlayer();
+                if (player == nullptr) {
+                    output.trError("worldedit.error.noplayer");
+                    return;
+                }
                 getPlayersDataMap().erase(player->getXuid());
                 output.trSuccess("worldedit.clearplayerdatas.success");
             },
@@ -223,8 +243,8 @@ namespace worldedit {
         //     [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
         //        std::unordered_map<std::string, DynamicCommand::Result>& results) {
 
-        //         auto player = origin.getPlayer();
-        //         auto dimID = player->getDimensionId();
+        //         auto player = origin.getPlayer(); if(player ==
+        //         nullptr){output.trError("worldedit.error.noplayer");return;} auto dimID = player->getDimensionId();
         //         auto blockSource = &player->getDimensionBlockSource();
 
         //         output.trSuccess(results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName());

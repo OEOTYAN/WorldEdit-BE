@@ -20,7 +20,7 @@
 namespace worldedit {
     void playerSubscribe();
     bool playerLeftClick(Player* player,
-                        const bool isLong,
+                         const bool isLong,
                          class ItemStack* item,
                          BlockInstance& blockInstance,
                          FaceID mFace);

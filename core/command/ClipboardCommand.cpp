@@ -28,6 +28,10 @@ namespace worldedit {
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto player = origin.getPlayer();
+                if (player == nullptr) {
+                    output.trError("worldedit.error.noplayer");
+                    return;
+                }
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 playerData.clipboard = std::move(Clipboard());
@@ -43,6 +47,10 @@ namespace worldedit {
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto player = origin.getPlayer();
+                if (player == nullptr) {
+                    output.trError("worldedit.error.noplayer");
+                    return;
+                }
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (playerData.region != nullptr && playerData.region->hasSelected()) {
@@ -50,7 +58,7 @@ namespace worldedit {
                     auto boundingBox = region->getBoundBox();
 
                     playerData.clipboard = std::move(std::move(Clipboard(boundingBox.max - boundingBox.min)));
-                    auto pPos = player->getPosition() - Vec3(0.0, 1.62, 0.0);
+                    auto pPos = origin.getWorldPosition();
                     playerData.clipboard.playerPos = pPos.toBlockPos();
                     playerData.clipboard.playerRelPos = pPos.toBlockPos() - boundingBox.min;
                     auto dimID = region->getDimensionID();
@@ -61,10 +69,9 @@ namespace worldedit {
                         playerData.clipboard.storeBlock(blockInstance, localPos);
                     });
                     if (true) {
-                        auto st =
-                            StructureTemplate("worldedit_copy_cmd_tmp",
-                                              dAccess<Bedrock::NonOwnerPointer<class IUnknownBlockTypeRegistry>, 192>(
-                                                  Global<StructureManager>));
+                        auto st = StructureTemplate("worldedit_copy_cmd_tmp");  //,
+                        //                   dAccess<Bedrock::NonOwnerPointer<class IUnknownBlockTypeRegistry>, 192>(
+                        //                       Global<StructureManager>));
                         auto setting = StructureSettings();
                         setting.setIgnoreBlocks(true);
                         setting.setIgnoreEntities(false);
@@ -97,6 +104,10 @@ namespace worldedit {
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto player = origin.getPlayer();
+                if (player == nullptr) {
+                    output.trError("worldedit.error.noplayer");
+                    return;
+                }
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (playerData.region != nullptr && playerData.region->hasSelected()) {
@@ -118,7 +129,7 @@ namespace worldedit {
                         });
                     }
 
-                    auto pPos = player->getPosition() - Vec3(0.0, 1.62, 0.0);
+                    auto pPos = origin.getWorldPosition();
 
                     playerData.clipboard = std::move(std::move(Clipboard(boundingBox.max - boundingBox.min)));
                     playerData.clipboard.playerPos = pPos.toBlockPos();
@@ -134,7 +145,7 @@ namespace worldedit {
                     f.setbox(boundingBox);
                     phmap::flat_hash_map<std::string, double> variables;
                     playerData.setVarByPlayer(variables);
-                    auto playerPos = player->getPosition();
+                    auto playerPos = origin.getWorldPosition();
                     Vec3 center = boundingBox.getCenter().toVec3();
 
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
@@ -156,6 +167,10 @@ namespace worldedit {
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto player = origin.getPlayer();
+                if (player == nullptr) {
+                    output.trError("worldedit.error.noplayer");
+                    return;
+                }
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (playerData.clipboard.used) {
@@ -188,13 +203,14 @@ namespace worldedit {
                     if (arg_o) {
                         pbPos = playerData.clipboard.playerPos;
                     } else {
-                        auto pPos = player->getPosition() - Vec3(0.0, 1.62, 0.0);
+                        auto pPos = origin.getWorldPosition();
                         pbPos = pPos.toBlockPos();
                     }
 
                     BoundingBox box = playerData.clipboard.getBoundingBox() + pbPos;
 
-                    auto playerRot = player->getRotation();
+                    auto playerRot = origin.getRotation().value_or(Vec2::UNIT_X);
+                    ;
                     EvalFunctions f;
                     f.setbs(&player->getDimensionBlockSource());
                     f.setbox(box);
@@ -231,7 +247,7 @@ namespace worldedit {
 
                         Vec3 center = (pbPos + box.getCenter()).toVec3();
 
-                        auto playerPos = player->getPosition();
+                        auto playerPos = origin.getWorldPosition();
                         if (arg_a) {
                             playerData.clipboard.forEachBlockInClipboard([&](const BlockPos& pos) {
                                 if (playerData.clipboard.getSet(pos).getBlock() == BedrockBlocks::mAir &&
@@ -254,10 +270,9 @@ namespace worldedit {
                         }
                     }
                     if (arg_e && playerData.clipboard.entities != nullptr) {
-                        auto st =
-                            StructureTemplate("worldedit_copy_cmd_tmp",
-                                              dAccess<Bedrock::NonOwnerPointer<class IUnknownBlockTypeRegistry>, 192>(
-                                                  Global<StructureManager>));
+                        auto st = StructureTemplate("worldedit_copy_cmd_tmp");  //,
+                        //                   dAccess<Bedrock::NonOwnerPointer<class IUnknownBlockTypeRegistry>, 192>(
+                        //                       Global<StructureManager>));
                         st.getData()->load(*playerData.clipboard.entities);
                         auto& palette = Global<Level>->getBlockPalette();
                         auto setting = StructureSettings();
@@ -287,6 +302,10 @@ namespace worldedit {
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto player = origin.getPlayer();
+                if (player == nullptr) {
+                    output.trError("worldedit.error.noplayer");
+                    return;
+                }
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (playerData.clipboard.used) {
@@ -321,6 +340,10 @@ namespace worldedit {
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto player = origin.getPlayer();
+                if (player == nullptr) {
+                    output.trError("worldedit.error.noplayer");
+                    return;
+                }
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (playerData.clipboard.used) {

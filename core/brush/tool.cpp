@@ -29,14 +29,14 @@ namespace worldedit {
         auto xuid = player->getXuid();
         auto& playerData = getPlayersData(xuid);
         auto bs = Level::getBlockSource(player);
-        playerData.changeMainPos(bs->getBlockInstance((player->getPosition() - Vec3(0.0, 1.62, 0.0)).toBlockPos()));
+        playerData.changeMainPos(bs->getBlockInstance(player->getBlockPos()));
         return -2;
     }
     long long AirWand::set(Player* player, class BlockInstance blockInstance) {
         auto xuid = player->getXuid();
         auto& playerData = getPlayersData(xuid);
         auto bs = Level::getBlockSource(player);
-        playerData.changeVicePos(bs->getBlockInstance((player->getPosition() - Vec3(0.0, 1.62, 0.0)).toBlockPos()));
+        playerData.changeVicePos(bs->getBlockInstance(player->getBlockPos()));
         return -2;
     }
 

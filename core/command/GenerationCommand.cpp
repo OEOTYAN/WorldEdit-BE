@@ -28,9 +28,13 @@ namespace worldedit {
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto player = origin.getPlayer();
+                if (player == nullptr) {
+                    output.trError("worldedit.error.noplayer");
+                    return;
+                }
                 auto xuid = player->getXuid();
                 auto dimID = player->getDimensionId();
-                auto pos = (player->getPosition() - Vec3(0.0, 1.62, 0.0)).toBlockPos();
+                auto pos = (origin.getWorldPosition()).toBlockPos();
 
                 bool arg_h = false;
                 if (results["args"].isSet) {
@@ -76,9 +80,13 @@ namespace worldedit {
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto player = origin.getPlayer();
+                if (player == nullptr) {
+                    output.trError("worldedit.error.noplayer");
+                    return;
+                }
                 auto xuid = player->getXuid();
                 auto dimID = player->getDimensionId();
-                auto pos = (player->getPosition() - Vec3(0.0, 1.62, 0.0)).toBlockPos();
+                auto pos = (origin.getWorldPosition()).toBlockPos();
 
                 bool arg_h = true;
                 unsigned short radius = 0;
@@ -115,9 +123,13 @@ namespace worldedit {
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto player = origin.getPlayer();
+                if (player == nullptr) {
+                    output.trError("worldedit.error.noplayer");
+                    return;
+                }
                 auto xuid = player->getXuid();
                 auto dimID = player->getDimensionId();
-                auto pos = (player->getPosition() - Vec3(0.0, 1.62, 0.0)).toBlockPos();
+                auto pos = (origin.getWorldPosition()).toBlockPos();
 
                 bool arg_h = false;
                 if (results["args"].isSet) {
@@ -159,9 +171,13 @@ namespace worldedit {
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto player = origin.getPlayer();
+                if (player == nullptr) {
+                    output.trError("worldedit.error.noplayer");
+                    return;
+                }
                 auto xuid = player->getXuid();
                 auto dimID = player->getDimensionId();
-                auto pos = (player->getPosition() - Vec3(0.0, 1.62, 0.0)).toBlockPos();
+                auto pos = (origin.getWorldPosition()).toBlockPos();
 
                 bool arg_h = true;
                 unsigned short radius = 0;

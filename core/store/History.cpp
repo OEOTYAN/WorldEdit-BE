@@ -4,5 +4,4 @@
 
 #include "History.h"
 
-namespace worldedit {
-}  // namespace worldedit
+namespace worldedit {}  // namespace worldedit

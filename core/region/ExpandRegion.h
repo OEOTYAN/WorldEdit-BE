@@ -16,11 +16,9 @@ namespace worldedit {
 
         explicit ExpandRegion(const BoundingBox& region, const int& dim);
 
-        std::pair<std::string, bool> expand(
-            const std::vector<BlockPos>& changes) override;
+        std::pair<std::string, bool> expand(const std::vector<BlockPos>& changes) override;
 
-        std::pair<std::string, bool> contract(
-            const std::vector<BlockPos>& changes) override;
+        std::pair<std::string, bool> contract(const std::vector<BlockPos>& changes) override;
 
         std::pair<std::string, bool> shift(const BlockPos& change) override;
 

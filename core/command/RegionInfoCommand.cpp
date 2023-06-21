@@ -3,6 +3,8 @@
 //
 #include "allCommand.hpp"
 #include <mc/Container.hpp>
+#include <mc/Dimension.hpp>
+#include <mc/BlockActorDataPacket.hpp>
 #include <mc/ListTag.hpp>
 #include "utils/StringTool.h"
 #include "mc/ItemStack.hpp"
@@ -13,9 +15,58 @@ namespace worldedit {
     using ParamType = DynamicCommand::ParameterType;
     using ParamData = DynamicCommand::ParameterData;
 
-    // size count distr
+    // resendpack size count distr
 
     void regionInfoCommandSetup() {
+        DynamicCommand::setup(
+            "resendpack",                                    // command name
+            tr("worldedit.command.description.resendpack"),  // command description
+            {}, {}, {{}},
+            // dynamic command callback
+            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+               std::unordered_map<std::string, DynamicCommand::Result>& results) {
+                auto player = origin.getPlayer();
+                if (player == nullptr) {
+                    output.trError("worldedit.error.noplayer");
+                    return;
+                }
+                auto xuid = player->getXuid();
+                auto& playerData = getPlayersData(xuid);
+                if (playerData.region != nullptr && playerData.region->hasSelected()) {
+                    auto& region = playerData.region;
+                    auto dimID = region->getDimensionID();
+                    auto blockSource = &player->getDimensionBlockSource();
+
+                    region->forEachBlockInRegion([&](BlockPos const& pos) {
+                        auto exblock = &blockSource->getExtraBlock(pos);
+                        auto block = &blockSource->getBlock(pos);
+                        auto be = blockSource->getBlockEntity(pos);
+                        std::unique_ptr<BlockActorDataPacket> bepacket = nullptr;
+                        if (be) {
+                            bepacket = be->getServerUpdatePacket(*blockSource);
+                        }
+
+                        blockSource->getDimension().forEachPlayer([&](Player& player) -> bool {
+                            player.sendUpdateBlockPacket(pos, *exblock, UpdateBlockFlags::BlockUpdateAll,
+                                                         UpdateBlockLayer::UpdateBlockLiquid);
+                            player.sendUpdateBlockPacket(pos, *block, UpdateBlockFlags::BlockUpdateAll,
+                                                         UpdateBlockLayer::UpdateBlockDefault);
+                            if (bepacket != nullptr) {
+                                player.sendNetworkPacket(*(bepacket.get()));
+                            }
+                            player.sendUpdateBlockPacket(pos, *exblock, UpdateBlockFlags::BlockUpdateAll,
+                                                         UpdateBlockLayer::UpdateBlockLiquid);
+                            return true;
+                        });
+                    });
+
+                    output.trSuccess("worldedit.resendpack.success");
+                } else {
+                    output.trError("worldedit.error.incomplete-region");
+                }
+            },
+            CommandPermissionLevel::GameMasters);
+
         DynamicCommand::setup(
             "size",                                    // command name
             tr("worldedit.command.description.size"),  // command description
@@ -24,6 +75,10 @@ namespace worldedit {
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto player = origin.getPlayer();
+                if (player == nullptr) {
+                    output.trError("worldedit.error.noplayer");
+                    return;
+                }
                 auto xuid = player->getXuid();
                 auto& playerData = getPlayersData(xuid);
                 if (playerData.region != nullptr && playerData.region->hasSelected()) {
@@ -79,6 +134,10 @@ namespace worldedit {
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto player = origin.getPlayer();
+                if (player == nullptr) {
+                    output.trError("worldedit.error.noplayer");
+                    return;
+                }
                 auto xuid = player->getXuid();
 
                 auto& playerData = getPlayersData(xuid);
@@ -122,6 +181,10 @@ namespace worldedit {
             [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
                std::unordered_map<std::string, DynamicCommand::Result>& results) {
                 auto player = origin.getPlayer();
+                if (player == nullptr) {
+                    output.trError("worldedit.error.noplayer");
+                    return;
+                }
                 auto xuid = player->getXuid();
 
                 auto& playerData = getPlayersData(xuid);

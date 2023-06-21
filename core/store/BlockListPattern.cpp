@@ -318,6 +318,8 @@ namespace worldedit {
                     if (blockName.find("waterlogged=true") != std::string::npos) {
                         rawBlockIter.exBlock = const_cast<Block*>(StaticVanillaBlocks::mWater);
                     }
+                } else {
+                    rawBlockIter.block = const_cast<Block*>(BedrockBlocks::mAir);
                 }
             }
         }

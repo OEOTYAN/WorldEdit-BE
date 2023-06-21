@@ -25,9 +25,9 @@ namespace worldedit {
         std::optional<int> biomeId;
         BlockNBTSet() = default;
         BlockNBTSet(BlockNBTSet const&);
-        BlockNBTSet(BlockNBTSet &&) = default;
+        BlockNBTSet(BlockNBTSet&&) = default;
         BlockNBTSet& operator=(BlockNBTSet const&);
-        BlockNBTSet& operator=(BlockNBTSet &&) = default;
+        BlockNBTSet& operator=(BlockNBTSet&&) = default;
         BlockNBTSet(BlockInstance& blockInstance);
         Block* getBlock() const { return blocks.value().first; }
         Block* getExBlock() const { return blocks.value().second; }

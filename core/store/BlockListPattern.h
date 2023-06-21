@@ -21,7 +21,8 @@ namespace worldedit {
     };
     class RawBlock {
        public:
-        using blockid_t = std::pair<std::variant<std::string, BlockNameType>, std::optional<std::variant<int, std::string>>>;
+        using blockid_t =
+            std::pair<std::variant<std::string, BlockNameType>, std::optional<std::variant<int, std::string>>>;
         std::variant<class Block*, std::string, blockid_t> block;
         class Block* exBlock;
         std::unique_ptr<CompoundTag> blockEntity = nullptr;

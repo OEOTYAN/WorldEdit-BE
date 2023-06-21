@@ -17,11 +17,9 @@ namespace worldedit {
         explicit CuboidRegion(const BoundingBox& region, const int& dim);
         explicit CuboidRegion();
 
-        std::pair<std::string, bool> expand(
-            const std::vector<BlockPos>& changes) override;
+        std::pair<std::string, bool> expand(const std::vector<BlockPos>& changes) override;
 
-        std::pair<std::string, bool> contract(
-            const std::vector<BlockPos>& changes) override;
+        std::pair<std::string, bool> contract(const std::vector<BlockPos>& changes) override;
 
         std::pair<std::string, bool> shift(const BlockPos& change) override;
 
@@ -29,8 +27,6 @@ namespace worldedit {
 
         bool setVicePos(const BlockPos& pos, const int& dim) override;
 
-        void forEachLine(
-            const std::function<void(const BlockPos&, const BlockPos&)>& todo)
-            override;
+        void forEachLine(const std::function<void(const BlockPos&, const BlockPos&)>& todo) override;
     };
 }  // namespace worldedit
