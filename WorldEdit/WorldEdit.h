@@ -7,6 +7,7 @@
 #include <LoggerAPI.h>
 #include "data/PlayerData.h"
 
+#define BDS_120
 #define WE_DIR (std::string("plugins/WorldEdit/"))
 
 namespace worldedit {

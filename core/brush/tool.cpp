@@ -5,7 +5,6 @@
 
 #include "utils/StringTool.h"
 #include "WorldEdit.h"
-#include "mc/Sapling.hpp"
 #include "mc/BlockInstance.hpp"
 #include "store/Patterns.h"
 namespace worldedit {

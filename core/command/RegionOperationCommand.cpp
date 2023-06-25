@@ -1094,10 +1094,14 @@ namespace worldedit {
                     }
                     if (arg_e) {
                         auto st =
-                            StructureTemplate("worldedit_stack_cmd_tmp");  //,
-                                                                           //   dAccess<Bedrock::NonOwnerPointer<class
-                                                                           //   IUnknownBlockTypeRegistry>, 192>(
-                                                                           //       Global<StructureManager>));
+#ifdef BDS_120
+
+                            StructureTemplate("worldedit_stack_cmd_tmp",
+                                              dAccess<Bedrock::NonOwnerPointer<class IUnknownBlockTypeRegistry>, 192>(
+                                                  Global<StructureManager>));
+#else
+                            StructureTemplate("worldedit_stack_cmd_tmp");
+#endif
                         auto setting = StructureSettings();
                         setting.setIgnoreBlocks(true);
                         setting.setIgnoreEntities(false);
@@ -1890,11 +1894,14 @@ namespace worldedit {
 
                     std::string filename;
                     filename = results["strname"].get<std::string>();
-
-                    auto st = StructureTemplate(
-                        filename);  //,
-                                    // dAccess<Bedrock::NonOwnerPointer<class IUnknownBlockTypeRegistry>, 192>(
-                                    //     Global<StructureManager>));
+                    auto st =
+#ifdef BDS_120
+                        StructureTemplate(filename,
+                                          dAccess<Bedrock::NonOwnerPointer<class IUnknownBlockTypeRegistry>, 192>(
+                                              Global<StructureManager>));
+#else
+                        StructureTemplate(filename);
+#endif
                     auto setting = StructureSettings();
                     setting.setIgnoreBlocks(false);
                     setting.setIgnoreEntities(false);
@@ -2290,7 +2297,8 @@ namespace worldedit {
                                         int count2 = shulkItem->getCount();
 
                                         if (count2 <= 0 ||
-                                            !(cmdItem == ItemInstance::EMPTY_ITEM || shulkItem->sameItem(cmdItem)) ||
+                                            !(cmdItem == ItemInstance::EMPTY_ITEM ||
+                                              shulkItem->sameItemAndAuxAndBlockData(cmdItem)) ||
                                             (data >= -2140000000 && data != shulkItem->getAuxValue())) {
                                             delete shulkItem;
                                             continue;
@@ -2313,7 +2321,8 @@ namespace worldedit {
                                     continue;
                                 }
 
-                                if (!(cmdItem == ItemInstance::EMPTY_ITEM || item->sameItem(cmdItem)) ||
+                                if (!(cmdItem == ItemInstance::EMPTY_ITEM ||
+                                      item->sameItemAndAuxAndBlockData(cmdItem)) ||
                                     (data >= -2140000000 && data != item->getAuxValue())) {
                                     continue;
                                 }
