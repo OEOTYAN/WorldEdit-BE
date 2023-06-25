@@ -3,6 +3,9 @@
 //
 #include "player.hpp"
 #include "brush/Brushs.h"
+#include <ScheduleAPI.h>
+#include <mc/BlockActorDataPacket.hpp>
+#include <mc/ChestBlockActor.hpp>
 
 #define MINIMUM__RESPONSE_TICK 3
 
@@ -159,10 +162,16 @@ namespace worldedit {
 
     void playerSubscribe() {
         Event::PlayerUseItemOnEvent::subscribe([](const Event::PlayerUseItemOnEvent& ev) {
+            if (!(ev.mPlayer->isOP() && ev.mPlayer->isCreative())) {
+                return true;
+            }
             return playerRightClick(ev.mPlayer, false, ev.mItemStack, *const_cast<BlockInstance*>(&ev.mBlockInstance),
                                     static_cast<FaceID>(ev.mFace));
         });
         Event::PlayerUseItemEvent::subscribe([](const Event::PlayerUseItemEvent& ev) {
+            if (!(ev.mPlayer->isOP() && ev.mPlayer->isCreative())) {
+                return true;
+            }
             bool requiereWater = true;
             if (Level::getBlock(ev.mPlayer->getPosition().toBlockPos(), ev.mPlayer->getDimensionId()) !=
                 BedrockBlocks::mAir) {
@@ -174,6 +183,9 @@ namespace worldedit {
         });
 
         Event::PlayerDestroyBlockEvent::subscribe([](const Event::PlayerDestroyBlockEvent& ev) {
+            if (!(ev.mPlayer->isOP() && ev.mPlayer->isCreative())) {
+                return true;
+            }
             bool requiereWater = true;
             if (Level::getBlock(ev.mPlayer->getPosition().toBlockPos(), ev.mPlayer->getDimensionId()) !=
                 BedrockBlocks::mAir) {
@@ -181,11 +193,36 @@ namespace worldedit {
             }
             FaceID face;
             ev.mPlayer->getBlockFromViewVector(face, requiereWater);
-            return playerLeftClick(ev.mPlayer, false, ev.mPlayer->getHandSlot(),
-                                   *const_cast<BlockInstance*>(&ev.mBlockInstance), face);
+            bool res = playerLeftClick(ev.mPlayer, false, ev.mPlayer->getHandSlot(),
+                                       *const_cast<BlockInstance*>(&ev.mBlockInstance), face);
+            if (!res) {
+                Schedule::nextTick([=]() {
+                    auto be = const_cast<BlockInstance*>(&ev.mBlockInstance)->getBlockEntity();
+                    if (be) {
+                        auto pkt = be->getServerUpdatePacket(*(ev.mPlayer->getBlockSource()));
+                        if (pkt != nullptr) {
+                            ev.mPlayer->sendNetworkPacket(*(pkt.get()));
+                        }
+                        if (be->getType() == BlockActorType::Chest && ((ChestBlockActor*)be)->isLargeChest()) {
+                            auto pairChest = ev.mPlayer->getBlockSource()->getBlockEntity(
+                                ((ChestBlockActor*)be)->getPairedChestPosition());
+                            if (pairChest) {
+                                auto ppkt = pairChest->getServerUpdatePacket(*(ev.mPlayer->getBlockSource()));
+                                if (ppkt != nullptr) {
+                                    ev.mPlayer->sendNetworkPacket(*(ppkt.get()));
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            return res;
         });
 
         Event::PlayerOpenContainerEvent::subscribe([](const Event::PlayerOpenContainerEvent& ev) {
+            if (!(ev.mPlayer->isOP() && ev.mPlayer->isCreative())) {
+                return true;
+            }
             bool requiereWater = true;
             if (Level::getBlock(ev.mPlayer->getPosition().toBlockPos(), ev.mPlayer->getDimensionId()) !=
                 BedrockBlocks::mAir) {
@@ -197,6 +234,9 @@ namespace worldedit {
         });
 
         Event::PlayerPlaceBlockEvent::subscribe([](const Event::PlayerPlaceBlockEvent& ev) {
+            if (!(ev.mPlayer->isOP() && ev.mPlayer->isCreative())) {
+                return true;
+            }
             bool requiereWater = true;
             if (Level::getBlock(ev.mPlayer->getPosition().toBlockPos(), ev.mPlayer->getDimensionId()) !=
                 BedrockBlocks::mAir) {
@@ -206,18 +246,22 @@ namespace worldedit {
             BlockInstance blockInstance = ev.mPlayer->getBlockFromViewVector(face, requiereWater);
             return playerRightClick(ev.mPlayer, false, ev.mPlayer->getHandSlot(), blockInstance, face);
         });
+        // Event::PlayerSwingEvent::subscribe([](const Event::PlayerSwingEvent& ev) -> bool {
+        //     Player* player = ev.mPlayer;
+
+        //     if (!(player->isOP() && player->isCreative())) {
+        //         return true;
+        //     }
+        // bool requiereWater = true;
+        // if (Level::getBlock(player->getPosition().toBlockPos(), player->getDimensionId()) != BedrockBlocks::mAir) {
+        //     requiereWater = false;
+        // }
+        // FaceID face;
+        // BlockInstance blockInstance = player->getBlockFromViewVector(face, requiereWater, false, 2048.0f);
+        // worldedit::playerLeftClick(player, true, player->getHandSlot(), blockInstance, face);
+        //     return true;
+        // });
     }
-    // Event::PlayerSwingEvent::subscribe([](const Event::PlayerSwingEvent& ev) -> bool {
-    //     Player* player = ev.mPlayer;
-    //     bool requiereWater = true;
-    //     if (Level::getBlock(player->getPosition().toBlockPos(), player->getDimensionId()) != BedrockBlocks::mAir) {
-    //         requiereWater = false;
-    //     }
-    //     FaceID face;
-    //     BlockInstance blockInstance = player->getBlockFromViewVector(face, requiereWater, false, 2048.0f);
-    //     worldedit::playerLeftClick(player, true, player->getHandSlot(), blockInstance, face);
-    //     return true;
-    // });
 }  // namespace worldedit
 
 THook(void,
@@ -228,6 +272,9 @@ THook(void,
       AnimatePacket const& animatePacket) {
     if (animatePacket.mAction == AnimatePacket::Action::Swing) {
         Player* player = serverNetworkHandler->getServerPlayer(networkIdentifier);
+        if (!(player->isOP() && player->isCreative())) {
+            return original(serverNetworkHandler, networkIdentifier, animatePacket);
+        }
         bool requiereWater = true;
         if (Level::getBlock(player->getPosition().toBlockPos(), player->getDimensionId()) != BedrockBlocks::mAir) {
             requiereWater = false;
