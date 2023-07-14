@@ -13,6 +13,7 @@
 #include "mc/Level.hpp"
 #include "mc/Block.hpp"
 #include "mc/MobSpawnRules.hpp"
+#include "mc/BlockTypeRegistry.hpp"
 #include "mc/SpawnGroupData.hpp"
 #include "mc/SpawnGroupRegistry.hpp"
 
@@ -234,21 +235,33 @@ namespace worldedit {
             },
             CommandPermissionLevel::GameMasters);
 
-        // DynamicCommand::setup(
-        //     "wetest",  // command name
-        //     "wetest",  // command description
-        //     {}, {
-        //         ParamData("block", ParamType::Block, "block"),}, {{"block"}},
-        //     // dynamic command callback
-        //     [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
-        //        std::unordered_map<std::string, DynamicCommand::Result>& results) {
+        DynamicCommand::setup(
+            "wetest",  // command name
+            "wetest",  // command description
+            {},
+            {
+                ParamData("block", ParamType::Block, "block"),
+                ParamData("blockstates", ParamType::BlockState, "blockstates"),
+            },
+            {{"block", "blockstates"}},
+            // dynamic command callback
+            [](DynamicCommand const& command, CommandOrigin const& origin, CommandOutput& output,
+               std::unordered_map<std::string, DynamicCommand::Result>& results) {
+                auto player = origin.getPlayer();
+                if (player == nullptr) {
+                    output.trError("worldedit.error.noplayer");
+                    return;
+                }
+                auto dimID = player->getDimensionId();
+                auto blockSource = &player->getDimensionBlockSource();
 
-        //         auto player = origin.getPlayer(); if(player ==
-        //         nullptr){output.trError("worldedit.error.noplayer");return;} auto dimID = player->getDimensionId();
-        //         auto blockSource = &player->getDimensionBlockSource();
+                auto states = results["blockstates"].get<std::vector<BlockStateCommandParam>>();
 
-        //         output.trSuccess(results["block"].get<CommandBlockName>().resolveBlock(0).getBlock()->getTypeName());
-        //     },
-        //     CommandPermissionLevel::GameMasters);
+                output.success(BlockTypeRegistry::getBlockNameFromNameHash(results["block"].get<CommandBlockName>()));
+                for (auto& state : states) {
+                    output.success(state.mBlockState + " : " + state.mValue);
+                }
+            },
+            CommandPermissionLevel::GameMasters);
     }
 }  // namespace worldedit

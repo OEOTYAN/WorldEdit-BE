@@ -70,13 +70,10 @@ namespace worldedit {
                     });
                     if (true) {
                         auto st =
-#ifdef BDS_120
                             StructureTemplate("worldedit_copy_cmd_tmp",
                                               dAccess<Bedrock::NonOwnerPointer<class IUnknownBlockTypeRegistry>, 192>(
                                                   Global<StructureManager>));
-#else
-                            StructureTemplate("worldedit_copy_cmd_tmp");
-#endif
+
                         auto setting = StructureSettings();
                         setting.setIgnoreBlocks(true);
                         setting.setIgnoreEntities(false);
@@ -276,13 +273,9 @@ namespace worldedit {
                     }
                     if (arg_e && playerData.clipboard.entities != nullptr) {
                         auto st =
-#ifdef BDS_120
                             StructureTemplate("worldedit_paste_cmd_tmp",
                                               dAccess<Bedrock::NonOwnerPointer<class IUnknownBlockTypeRegistry>, 192>(
                                                   Global<StructureManager>));
-#else
-                            StructureTemplate("worldedit_paste_cmd_tmp");
-#endif
                         st.getData()->load(*playerData.clipboard.entities);
                         auto& palette = Global<Level>->getBlockPalette();
                         auto setting = StructureSettings();

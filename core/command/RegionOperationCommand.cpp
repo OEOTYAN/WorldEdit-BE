@@ -1094,14 +1094,9 @@ namespace worldedit {
                     }
                     if (arg_e) {
                         auto st =
-#ifdef BDS_120
-
                             StructureTemplate("worldedit_stack_cmd_tmp",
                                               dAccess<Bedrock::NonOwnerPointer<class IUnknownBlockTypeRegistry>, 192>(
                                                   Global<StructureManager>));
-#else
-                            StructureTemplate("worldedit_stack_cmd_tmp");
-#endif
                         auto setting = StructureSettings();
                         setting.setIgnoreBlocks(true);
                         setting.setIgnoreEntities(false);
@@ -1673,16 +1668,14 @@ namespace worldedit {
                         BlockPos pos(posk.x, posk.y - 1, posk.z);
                         if (&blockSource->getBlock(pos) == StaticVanillaBlocks::mStone && region->contains(pos)) {
                             setFunction(variables, f, boundingBox, playerPos, pos, center);
-                            playerData.setBlockSimple(blockSource, f, variables, pos,
-                                                      StaticVanillaBlocks::mGrass);
+                            playerData.setBlockSimple(blockSource, f, variables, pos, StaticVanillaBlocks::mGrass);
                         }
                         for (int mY = -2; mY >= -4; mY--) {
                             BlockPos pos(posk.x, posk.y + mY, posk.z);
                             if (&blockSource->getBlock(pos) == StaticVanillaBlocks::mStone && region->contains(pos)) {
                                 setFunction(variables, f, boundingBox, playerPos, pos, center);
 
-                                playerData.setBlockSimple(blockSource, f, variables, pos,
-                                                         StaticVanillaBlocks::mDirt);
+                                playerData.setBlockSimple(blockSource, f, variables, pos, StaticVanillaBlocks::mDirt);
                             }
                         }
                     });
@@ -1894,14 +1887,10 @@ namespace worldedit {
 
                     std::string filename;
                     filename = results["strname"].get<std::string>();
-                    auto st =
-#ifdef BDS_120
-                        StructureTemplate(filename,
-                                          dAccess<Bedrock::NonOwnerPointer<class IUnknownBlockTypeRegistry>, 192>(
-                                              Global<StructureManager>));
-#else
-                        StructureTemplate(filename);
-#endif
+                    auto st = StructureTemplate(filename,
+                                                dAccess<Bedrock::NonOwnerPointer<class IUnknownBlockTypeRegistry>, 192>(
+                                                    Global<StructureManager>));
+
                     auto setting = StructureSettings();
                     setting.setIgnoreBlocks(false);
                     setting.setIgnoreEntities(false);
@@ -1982,7 +1971,7 @@ namespace worldedit {
                                     if (count > 0) {
                                         std::string name;
                                         if (item->isBlock()) {
-                                            auto block =item->getBlock();
+                                            auto block = item->getBlock();
                                             name = block->getTypeName();
 
                                             auto states = block->getNbt()->value().at("states").asCompoundTag()->toSNBT(
