@@ -27,7 +27,7 @@ namespace worldedit {
     BlockNBTSet::BlockNBTSet(BlockInstance& blockInstance) {
         auto* bs = blockInstance.getBlockSource();
         auto pos = blockInstance.getPosition();
-        blocks = {blockInstance.getBlock(), const_cast<Block*>(&bs->getExtraBlock(pos))};
+        blocks = {blockInstance.getBlock(), &bs->getExtraBlock(pos)};
         // auto* biome = bs->tryGetBiome(pos);
         // if (biome != nullptr) {
         //     biomeId = biome->getId();
@@ -103,8 +103,8 @@ namespace worldedit {
         bool res;
         res = data.setBlockSimple(
             blockSource, funcs, var, pos,
-            const_cast<Block*>(VanillaBlockStateTransformUtils::transformBlock(*block, rotation, mirror)),
-            const_cast<Block*>(VanillaBlockStateTransformUtils::transformBlock(*exblock, rotation, mirror)),
+            VanillaBlockStateTransformUtils::transformBlock(*block, rotation, mirror),
+            VanillaBlockStateTransformUtils::transformBlock(*exblock, rotation, mirror),
             setBiome ? biomeId : std::nullopt);
         if (blockEntity != nullptr && block->hasBlockEntity()) {
             auto be = blockSource->getBlockEntity(pos);

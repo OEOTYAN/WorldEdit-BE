@@ -48,13 +48,13 @@ namespace worldedit {
                             class EvalFunctions& funcs,
                             phmap::flat_hash_map<std::string, double> const& var,
                             const BlockPos& pos,
-                            class Block* block = const_cast<Block*>(BedrockBlocks::mAir),
-                            class Block* exblock = const_cast<Block*>(BedrockBlocks::mAir),
+                            class Block const* block =BedrockBlocks::mAir,
+                            class Block const* exblock = BedrockBlocks::mAir,
                             std::optional<int> const& biomeId = std::nullopt);
         bool setBlockWithoutcheckGMask(class BlockSource* blockSource,
                                        const BlockPos& pos,
-                                       class Block* block,
-                                       class Block* exblock,
+                                       class Block const* block,
+                                       class Block const* exblock,
                                        std::optional<int> const& biomeId = std::nullopt);
     };
 

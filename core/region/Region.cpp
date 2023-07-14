@@ -141,7 +141,7 @@ namespace worldedit {
                                static_cast<double>(newHeight - boundingBox.min.y);
 
                 if (newHeight > curHeight) {
-                    auto* top = const_cast<Block*>(&blockSource->getBlock({xr, curHeight, zr}));
+                    auto* top = &blockSource->getBlock({xr, curHeight, zr});
 
                     pos = {xr, newHeight, zr};
 
@@ -154,7 +154,7 @@ namespace worldedit {
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
                         playerData.setBlockSimple(
                             blockSource, f, variables, pos,
-                            const_cast<Block*>(&blockSource->getBlock({xr, boundingBox.min.y + copyFrom, zr})));
+                           &blockSource->getBlock({xr, boundingBox.min.y + copyFrom, zr}));
                     }
                 } else if (curHeight > newHeight) {
                     for (int y = 0; y < newHeight - boundingBox.min.y; ++y) {
@@ -163,13 +163,13 @@ namespace worldedit {
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
                         playerData.setBlockSimple(
                             blockSource, f, variables, pos,
-                            const_cast<Block*>(&blockSource->getBlock({xr, boundingBox.min.y + copyFrom, zr})));
+                            &blockSource->getBlock({xr, boundingBox.min.y + copyFrom, zr}));
                     }
 
                     pos = {xr, newHeight, zr};
                     setFunction(variables, f, boundingBox, playerPos, pos, center);
                     playerData.setBlockSimple(blockSource, f, variables, pos,
-                                              const_cast<Block*>(&blockSource->getBlock({xr, curHeight, zr})));
+                                             &blockSource->getBlock({xr, curHeight, zr}));
 
                     for (int y = newHeight + 1; y <= curHeight; ++y) {
                         pos = {xr, y, zr};

@@ -52,7 +52,7 @@ namespace worldedit {
         }
         return;
     }
-    bool ClipboardPattern::hasBlock(class Block* block) {
+    bool ClipboardPattern::hasBlock(class Block const* block) {
         for (auto& x : clipboard->blockslist) {
             if (x.blocks.has_value() && block == x.blocks.value().first) {
                 return true;

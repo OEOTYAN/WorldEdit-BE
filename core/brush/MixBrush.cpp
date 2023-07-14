@@ -66,7 +66,7 @@ namespace worldedit {
         int totalColor = 0;
         auto& cmap = getBlockColorMap();
         for (auto& pos1 : s) {
-            auto* block = const_cast<Block*>(&blockSource->getBlock(pos1));
+            auto* block = &blockSource->getBlock(pos1);
             if (cmap.contains(block)) {
                 auto& color = cmap[block];
                 ++totalColor;
@@ -111,7 +111,7 @@ namespace worldedit {
             variables["oy"] = pos1.y - playerPos.y;
             variables["oz"] = pos1.z - playerPos.z;
             maskFunc(f, variables, [&]() mutable {
-                auto* block = const_cast<Block*>(&blockSource->getBlock(pos1));
+                auto* block =&blockSource->getBlock(pos1);
                 if (cmap.contains(block)) {
                     mce::Color hereColor =
                         useMixboxLerp
@@ -122,7 +122,7 @@ namespace worldedit {
                                   cmap[block], finalColor,
                                   smoothBrushAlpha(static_cast<float>(pos1.distanceTo(pos0)), density, opacity, size));
                     double minDist = DBL_MAX;
-                    Block* minBlock = nullptr;
+                    Block const* minBlock = nullptr;
                     for (auto& i : getColorBlockMap()) {
                         if (i.first.a == 1) {
                             auto dst = i.first.distanceTo(hereColor);

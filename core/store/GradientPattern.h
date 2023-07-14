@@ -9,17 +9,17 @@
 namespace worldedit {
     class GradientPattern final : public Pattern {
        public:
-        phmap::flat_hash_map<class Block*, std::pair<std::string, int>> gradientNameMap;
-        phmap::flat_hash_map<std::string, std::vector<class Block*>> blockGradientMap;
+        phmap::flat_hash_map<class Block const*, std::pair<std::string, int>> gradientNameMap;
+        phmap::flat_hash_map<std::string, std::vector<class Block const*>> blockGradientMap;
 
         bool lighten = false;
 
         GradientPattern(std::string_view str, std::string_view xuid);
 
-        class Block* getBlock(const phmap::flat_hash_map<::std::string, double>& variables,
+        class Block const* getBlock(const phmap::flat_hash_map<::std::string, double>& variables,
                               class EvalFunctions& funcs) override;
 
-        bool hasBlock(class Block* block) override;
+        bool hasBlock(class Block const* block) override;
 
         bool setBlock(const phmap::flat_hash_map<::std::string, double>& variables,
                       class EvalFunctions& funcs,

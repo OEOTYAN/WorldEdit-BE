@@ -17,21 +17,13 @@
 #include "Version.h"
 #include "Nlohmann/json.hpp"
 
-THook(void, "?setRuntimeId@Block@@IEBAXAEBI@Z", Block* block, unsigned int const& id) {
+THook(void, "?setRuntimeId@Block@@IEBAXAEBI@Z", Block const* block, unsigned int const& id) {
+    original(block, id);
     auto& blockName = worldedit::getBlockNameMap();
     auto& blockId = worldedit::getBlockIdMap();
     auto blockid = block->getId();
     blockName[blockid] = block->getTypeName();
     blockId[block->getTypeName()] = blockid;
-    // auto color = block->getLegacyBlock().getMapColor().toHexString();
-    // if (getBlockColorssMap().contains(color)) {
-    //     getBlockColorssMap()[color] += ",\n" + block->getNbt()->toSNBT(0,
-    //     SnbtFormat::Minimize);
-    // } else {
-    //     getBlockColorssMap()[color] = block->getNbt()->toSNBT(0,
-    //     SnbtFormat::Minimize);
-    // }
-    return original(block, id);
 }
 
 namespace worldedit {
@@ -65,13 +57,13 @@ namespace worldedit {
         return *playerDataMap[xuid];
     }
 
-    phmap::flat_hash_map<mce::Color, Block*>& getColorBlockMap() {
-        static phmap::flat_hash_map<mce::Color, Block*> colorBlockMap;
+    phmap::flat_hash_map<mce::Color, Block const*>& getColorBlockMap() {
+        static phmap::flat_hash_map<mce::Color, Block const*> colorBlockMap;
         return colorBlockMap;
     }
 
-    phmap::flat_hash_map<Block*, mce::Color>& getBlockColorMap() {
-        static phmap::flat_hash_map<Block*, mce::Color> blockColorMap;
+    phmap::flat_hash_map<Block const*, mce::Color>& getBlockColorMap() {
+        static phmap::flat_hash_map<Block const*, mce::Color> blockColorMap;
         return blockColorMap;
     }
 
@@ -85,8 +77,8 @@ namespace worldedit {
         return blockId;
     }
 
-    phmap::flat_hash_map<std::string, Block*>& getJavaBlockMap() {
-        static phmap::flat_hash_map<std::string, Block*> javaBlockMap;
+    phmap::flat_hash_map<std::string, Block const*>& getJavaBlockMap() {
+        static phmap::flat_hash_map<std::string, Block const*> javaBlockMap;
         return javaBlockMap;
     }
 
@@ -113,7 +105,7 @@ namespace worldedit {
         return blockId.find(s) != blockId.end();
     }
 
-    Block* tryGetBlockFromAllVersion(std::string_view name) {
+    Block const* tryGetBlockFromAllVersion(std::string_view name) {
         if (isJEBlock(name)) {
             return getJavaBlockMap()[name];
         } else if (isBEBlock(name)) {
@@ -129,7 +121,7 @@ namespace worldedit {
 
         for (auto& b : blockList.items()) {
             std::string key = b.key();
-            Block* block = nullptr;
+            Block const* block = nullptr;
             if (b.value().contains("bedrock_states")) {
                 std::string snbt = "{\"name\":\"";
                 snbt += b.value()["bedrock_identifier"];
@@ -154,7 +146,7 @@ namespace worldedit {
         std::ifstream i(WE_DIR + "mappings/block_colors.json");
         i >> blockColorList;
         for (auto& blockColor : blockColorList["blocks"]) {
-            Block* block = tryGetBlockFromAllVersion(blockColor["name"]);
+            Block const* block = tryGetBlockFromAllVersion(blockColor["name"]);
             if (block != nullptr) {
                 auto color = mce::Color(
                     static_cast<double>(blockColor["colour"]["r"]), static_cast<double>(blockColor["colour"]["g"]),

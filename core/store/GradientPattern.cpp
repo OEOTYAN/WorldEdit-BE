@@ -19,7 +19,7 @@ namespace worldedit {
         std::ifstream i(WE_DIR + "mappings/block_gradient.json");
         i >> list;
 
-        phmap::flat_hash_map<std::string, phmap::flat_hash_map<std::string, std::vector<class Block*>>> tmpMap;
+        phmap::flat_hash_map<std::string, phmap::flat_hash_map<std::string, std::vector<class Block const*>>> tmpMap;
         for (auto& g : list.items()) {
             std::string keyGroup = g.key();
             if (!g.value().is_object()) {
@@ -36,7 +36,7 @@ namespace worldedit {
                     if (!b.is_string()) {
                         continue;
                     }
-                    Block* block = tryGetBlockFromAllVersion(b);
+                    Block const* block = tryGetBlockFromAllVersion(b);
                     if (block == nullptr) {
                         continue;
                     }
@@ -82,12 +82,12 @@ namespace worldedit {
         }
     }
 
-    class Block* GradientPattern::getBlock(const phmap::flat_hash_map<::std::string, double>& variables,
+    class Block const* GradientPattern::getBlock(const phmap::flat_hash_map<::std::string, double>& variables,
                                            class EvalFunctions& funcs) {
         return nullptr;
     }
 
-    bool GradientPattern::hasBlock(class Block* block) {
+    bool GradientPattern::hasBlock(class Block const* block) {
         return gradientNameMap.find(block) != gradientNameMap.end();
     }
 
@@ -95,7 +95,7 @@ namespace worldedit {
                                    class EvalFunctions& funcs,
                                    BlockSource* blockSource,
                                    const BlockPos& pos) {
-        Block* block = const_cast<Block*>(&blockSource->getBlock(pos));
+        Block const* block = &blockSource->getBlock(pos);
         if (hasBlock(block)) {
             auto [name, iter] = gradientNameMap[block];
             auto& blocklist = blockGradientMap[name];

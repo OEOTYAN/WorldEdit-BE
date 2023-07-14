@@ -1,4 +1,4 @@
-set TARGET_PATH=D:\Unzip\SAC\bedrock-server-1.20.1.02
+set TARGET_PATH=D:\Unzip\SAC\bedrock-server-1.20.11.01
 
 if exist %TARGET_PATH%\bedrock_server_mod.exe goto process
 

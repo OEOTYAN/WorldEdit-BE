@@ -146,8 +146,8 @@ namespace worldedit {
         auto xuid = player->getXuid();
         auto& playerData = getPlayersData(xuid);
         auto blockSource = blockInstance.getBlockSource();
-        const Block* block = blockInstance.getBlock();
-        const Block* exBlock = &blockSource->getExtraBlock(pos0);
+        Block const* block = blockInstance.getBlock();
+        Block const* exBlock = &blockSource->getExtraBlock(pos0);
 
         EvalFunctions f;
         f.setbs(blockSource);
@@ -260,9 +260,9 @@ namespace worldedit {
         // auto bs = Level::getBlockSource(player);
         // auto pos = blockInstance.getPosition();
         // setBlockSimple(bs, pos,
-        // const_cast<Block*>(StaticVanillaBlocks::mGrass)); pos.y += 1;
+        // StaticVanillaBlocks::mGrass); pos.y += 1;
         // setBlockSimple(bs, pos,
-        // const_cast<Block*>(StaticVanillaBlocks::mSapling)); auto& legacyBlock
+        // StaticVanillaBlocks::mSapling); auto& legacyBlock
         // = blockInstance.getBlock()->getLegacyBlock(); return
         // ((Sapling&)legacyBlock)._growTree(*bs, pos,
         // Global<Level>->getRandom(), false);

@@ -111,8 +111,8 @@ namespace worldedit {
 
     bool PlayerData::setBlockWithoutcheckGMask(BlockSource* blockSource,
                                                const BlockPos& pos,
-                                               Block* block,
-                                               Block* exblock,
+                                               Block const* block,
+                                               Block const* exblock,
                                                std::optional<int> const& biomeId) {
         bool res = false;
 
@@ -139,7 +139,7 @@ namespace worldedit {
                     res |= blockSource->setExtraBlock(pos, *exblock, updateArg);
                 }
             } else {
-                exblock = const_cast<Block*>(StaticVanillaBlocks::mFlowingWater);
+                exblock = StaticVanillaBlocks::mFlowingWater;
                 res |= blockSource->setExtraBlock(pos, *exblock, updateArg + 2);
                 res |= blockSource->setBlock(pos, *block, updateArg + 2, nullptr, nullptr);
             }
@@ -176,8 +176,8 @@ namespace worldedit {
                                     class EvalFunctions& funcs,
                                     phmap::flat_hash_map<std::string, double> const& var,
                                     const BlockPos& pos,
-                                    Block* block,
-                                    Block* exblock,
+                                    Block const* block,
+                                    Block const* exblock,
                                     std::optional<int> const& biomeId) {
         if (gMask != "") {
             if (cpp_eval::eval<double>(gMask, var, funcs) <= 0.5) {

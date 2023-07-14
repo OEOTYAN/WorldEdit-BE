@@ -888,7 +888,7 @@ namespace worldedit {
                     auto blockFilter = Pattern::createPattern(bps2, xuid);
                     region->forEachBlockInRegion([&](const BlockPos& pos) {
                         setFunction(variables, f, boundingBox, playerPos, pos, center);
-                        if (blockFilter->hasBlock(const_cast<Block*>(&blockSource->getBlock(pos)))) {
+                        if (blockFilter->hasBlock(&blockSource->getBlock(pos))) {
                             i += pattern->setBlock(variables, f, blockSource, pos);
                         }
                     });
@@ -1674,7 +1674,7 @@ namespace worldedit {
                         if (&blockSource->getBlock(pos) == StaticVanillaBlocks::mStone && region->contains(pos)) {
                             setFunction(variables, f, boundingBox, playerPos, pos, center);
                             playerData.setBlockSimple(blockSource, f, variables, pos,
-                                                      const_cast<Block*>(StaticVanillaBlocks::mGrass));
+                                                      StaticVanillaBlocks::mGrass);
                         }
                         for (int mY = -2; mY >= -4; mY--) {
                             BlockPos pos(posk.x, posk.y + mY, posk.z);
@@ -1682,7 +1682,7 @@ namespace worldedit {
                                 setFunction(variables, f, boundingBox, playerPos, pos, center);
 
                                 playerData.setBlockSimple(blockSource, f, variables, pos,
-                                                          const_cast<Block*>(StaticVanillaBlocks::mDirt));
+                                                         StaticVanillaBlocks::mDirt);
                             }
                         }
                     });
@@ -1932,7 +1932,7 @@ namespace worldedit {
                         std::vector<std::pair<std::string, long long>> blocksMap2;
                         blocksMap2.resize(0);
                         region->forEachBlockInRegion([&](const BlockPos& pos) {
-                            auto block = const_cast<Block*>(&blockSource->getBlock(pos));
+                            auto block = &blockSource->getBlock(pos);
                             std::string blockName;
                             if (!(block == BedrockBlocks::mAir)) {
                                 blockName = block->getTypeName();
@@ -1942,7 +1942,7 @@ namespace worldedit {
                                 blockName += " [" + states.substr(1, states.length() - 2) + "]";
                             }
 
-                            auto exBlock = const_cast<Block*>(&blockSource->getExtraBlock(pos));
+                            auto exBlock = &blockSource->getExtraBlock(pos);
                             std::string exBlockName;
                             if (!(exBlock == BedrockBlocks::mAir)) {
                                 exBlockName = exBlock->getTypeName();
@@ -1982,7 +1982,7 @@ namespace worldedit {
                                     if (count > 0) {
                                         std::string name;
                                         if (item->isBlock()) {
-                                            auto block = const_cast<Block*>(item->getBlock());
+                                            auto block =item->getBlock();
                                             name = block->getTypeName();
 
                                             auto states = block->getNbt()->value().at("states").asCompoundTag()->toSNBT(
@@ -2191,7 +2191,7 @@ namespace worldedit {
                         auto color = texture2D.sample(sampler, u, v);
 
                         double minDist = DBL_MAX;
-                        Block* minBlock = (Block*)BedrockBlocks::mAir;
+                        Block const* minBlock = (Block const*)BedrockBlocks::mAir;
                         for (auto& i : blockColorMap) {
                             if (i.first.a == 1) {
                                 auto dst = i.first.distanceTo(color);

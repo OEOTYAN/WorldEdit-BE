@@ -67,7 +67,7 @@ namespace worldedit {
             variables["ox"] = pos0.x - playerPos.x;
             variables["oy"] = pos0.y - playerPos.y;
             variables["oz"] = pos0.z - playerPos.z;
-            Block* blockp = pattern->getBlock(variables, f);
+            Block const* blockp = pattern->getBlock(variables, f);
             if (!cmap.contains(blockp)) {
                 return -2;
             }
@@ -121,7 +121,7 @@ namespace worldedit {
             variables["oz"] = pos1.z - playerPos.z;
             // logger().debug("maskFunc");
             maskFunc(f, variables, [&]() mutable {
-                auto* block = const_cast<Block*>(&blockSource->getBlock(pos1));
+                auto* block =&blockSource->getBlock(pos1);
                 mce::Color hereColor(0, 0, 0, 1);
                 if (cmap.contains(block)) {
                     hereColor = cmap[block];
@@ -135,7 +135,7 @@ namespace worldedit {
                                                                         density, opacity, size));
 
                 double minDist = DBL_MAX;
-                Block* minBlock = nullptr;
+                Block const* minBlock = nullptr;
                 for (auto& i : getColorBlockMap()) {
                     if (i.first.a == 1) {
                         auto dst = i.first.distanceTo(hereColor);

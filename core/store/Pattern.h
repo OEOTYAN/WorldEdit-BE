@@ -25,12 +25,12 @@ namespace worldedit {
         Pattern() = default;
         Pattern(std::string_view xuid);
 
-        virtual class Block* getBlock(const phmap::flat_hash_map<::std::string, double>& variables,
+        virtual class Block const* getBlock(const phmap::flat_hash_map<::std::string, double>& variables,
                                       class EvalFunctions& funcs) {
             return nullptr;
         }
 
-        virtual bool hasBlock(class Block* block) { return false; }
+        virtual bool hasBlock(class Block const* block) { return false; }
 
         virtual bool setBlock(const phmap::flat_hash_map<::std::string, double>& variables,
                               class EvalFunctions& funcs,

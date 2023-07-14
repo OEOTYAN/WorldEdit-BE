@@ -23,12 +23,12 @@ namespace worldedit {
        public:
         using blockid_t =
             std::pair<std::variant<std::string, BlockNameType>, std::optional<std::variant<int, std::string>>>;
-        std::variant<class Block*, std::string, blockid_t> block;
-        class Block* exBlock;
+        std::variant<class Block const*, std::string, blockid_t> block;
+        class Block const* exBlock;
         std::unique_ptr<CompoundTag> blockEntity = nullptr;
         RawBlock();
 
-        class Block* getBlock(const phmap::flat_hash_map<::std::string, double>& variables, class EvalFunctions& funcs);
+        class Block const* getBlock(const phmap::flat_hash_map<::std::string, double>& variables, class EvalFunctions& funcs);
     };
 
     class BlockListPattern final : public Pattern {
@@ -39,10 +39,10 @@ namespace worldedit {
 
         BlockListPattern(std::string_view str, std::string_view xuid);
 
-        class Block* getBlock(const phmap::flat_hash_map<::std::string, double>& variables,
+        class Block const* getBlock(const phmap::flat_hash_map<::std::string, double>& variables,
                               class EvalFunctions& funcs) override;
 
-        bool hasBlock(class Block* block) override;
+        bool hasBlock(class Block const* block) override;
 
         bool setBlock(const phmap::flat_hash_map<::std::string, double>& variables,
                       class EvalFunctions& funcs,

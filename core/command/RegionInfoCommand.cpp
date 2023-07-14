@@ -159,7 +159,7 @@ namespace worldedit {
                         // clipboard
                     } else {
                         region->forEachBlockInRegion([&](const BlockPos& pos) {
-                            auto block = const_cast<Block*>(&blockSource->getBlock(pos));
+                            auto block =&blockSource->getBlock(pos);
                             if (block->getTypeName() == blockname) {
                                 if (data == -1 || data == (int)(block->getTileData()))
                                     count++;
@@ -231,7 +231,7 @@ namespace worldedit {
                                         all += count;
                                         std::string name;
                                         if (item->isBlock()) {
-                                            auto block = const_cast<Block*>(item->getBlock());
+                                            auto block = item->getBlock();
                                             name = block->getTypeName();
                                             if (arg_d) {
                                                 auto states =
@@ -272,7 +272,7 @@ namespace worldedit {
                     } else {
                         region->forEachBlockInRegion([&](const BlockPos& pos) {
                             all++;
-                            auto block = const_cast<Block*>(&blockSource->getBlock(pos));
+                            auto block = &blockSource->getBlock(pos);
                             std::string blockName = block->getTypeName();
 
                             if (arg_d) {
@@ -280,7 +280,7 @@ namespace worldedit {
                                     0, SnbtFormat::Minimize);
                                 blockName += " [" + states.substr(1, states.length() - 2) + "]";
                             }
-                            auto exBlock = const_cast<Block*>(&blockSource->getExtraBlock(pos));
+                            auto exBlock = &blockSource->getExtraBlock(pos);
                             if (!(exBlock == BedrockBlocks::mAir)) {
                                 blockName += " & " + exBlock->getTypeName();
 

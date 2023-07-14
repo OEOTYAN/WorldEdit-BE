@@ -16,7 +16,7 @@ namespace worldedit {
         phmap::flat_hash_map<ActorUniqueID, std::unique_ptr<CompoundTag>> mRemovedEntities;
         phmap::flat_hash_map<ChunkBlockPos, std::shared_ptr<BlockActor>> mBlockEntities;
         phmap::flat_hash_map<SubChunkPos, std::unique_ptr<std::array<Biome*, 4096>>> mBiomes;
-        phmap::flat_hash_map<SubChunkPos, std::unique_ptr<std::array<std::array<Block*, 4096>, 2>>> mBlocks;
+        phmap::flat_hash_map<SubChunkPos, std::unique_ptr<std::array<std::array<Block const*, 4096>, 2>>> mBlocks;
     };
     class History {
        public:

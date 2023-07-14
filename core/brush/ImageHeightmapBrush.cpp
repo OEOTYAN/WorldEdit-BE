@@ -120,7 +120,7 @@ namespace worldedit {
                         setFunction(variables, f, box, playerPos, iPos, center);
                         maskFunc(f, variables, [&]() mutable {
                             iter +=
-                                playerData.setBlockSimple(blockSource, f, variables, iPos, const_cast<Block*>(block));
+                                playerData.setBlockSimple(blockSource, f, variables, iPos,block);
                         });
                     }
                 } else if (posk.y < originY) {

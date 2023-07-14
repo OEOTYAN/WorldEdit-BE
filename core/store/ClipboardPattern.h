@@ -14,7 +14,7 @@ namespace worldedit {
 
         ClipboardPattern(std::string_view str, std::string_view xuid);
 
-        bool hasBlock(class Block* block) override;
+        bool hasBlock(class Block const* block) override;
 
         bool setBlock(const phmap::flat_hash_map<::std::string, double>& variables,
                       class EvalFunctions& funcs,

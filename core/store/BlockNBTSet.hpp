@@ -21,7 +21,7 @@ namespace worldedit {
     class BlockNBTSet {
        public:
         std::unique_ptr<CompoundTag> blockEntity = nullptr;
-        std::optional<std::pair<class Block*, class Block*>> blocks;
+        std::optional<std::pair<class Block const*, class Block const*>> blocks;
         std::optional<int> biomeId;
         BlockNBTSet() = default;
         BlockNBTSet(BlockNBTSet const&);
@@ -29,8 +29,8 @@ namespace worldedit {
         BlockNBTSet& operator=(BlockNBTSet const&);
         BlockNBTSet& operator=(BlockNBTSet&&) = default;
         BlockNBTSet(BlockInstance& blockInstance);
-        Block* getBlock() const { return blocks.value().first; }
-        Block* getExBlock() const { return blocks.value().second; }
+        Block const* getBlock() const { return blocks.value().first; }
+        Block const* getExBlock() const { return blocks.value().second; }
         bool setBlockWithoutcheckGMask(const BlockPos& pos,
                                        BlockSource* blockSource,
                                        class PlayerData& data,

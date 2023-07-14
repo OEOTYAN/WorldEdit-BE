@@ -25,15 +25,15 @@ namespace worldedit {
         }
         return cpp_eval::eval<double>(std::get<std::string>(val), variables, funcs);
     }
-    Block* RawBlock::getBlock(const phmap::flat_hash_map<::std::string, double>& variables, EvalFunctions& funcs) {
+    Block const* RawBlock::getBlock(const phmap::flat_hash_map<::std::string, double>& variables, EvalFunctions& funcs) {
         switch (block.index()) {
             default:
-                return const_cast<Block*>(BedrockBlocks::mAir);
+                return BedrockBlocks::mAir;
             case 0:
-                return std::get<Block*>(block);
+                return std::get<Block const*>(block);
             case 1:
-                return const_cast<Block*>(&Global<Level>->getBlockPalette().getBlock(static_cast<unsigned int>(
-                    round(cpp_eval::eval<double>(std::get<std::string>(block), variables, funcs)))));
+                return Block::create(static_cast<unsigned int>(
+                    round(cpp_eval::eval<double>(std::get<std::string>(block), variables, funcs))));
             case 2:
                 std::string blockName;
                 auto& blockIds = std::get<blockid_t>(block);
@@ -80,11 +80,11 @@ namespace worldedit {
     }
 
     RawBlock::RawBlock() {
-        exBlock = const_cast<class Block*>(BedrockBlocks::mAir);
+        exBlock = const_cast<class Block const*>(BedrockBlocks::mAir);
         block = std::pair{BlockNameType(""), std::nullopt};
     }
 
-    Block* BlockListPattern::getBlock(const phmap::flat_hash_map<::std::string, double>& variables,
+    Block const* BlockListPattern::getBlock(const phmap::flat_hash_map<::std::string, double>& variables,
                                       EvalFunctions& funcs) {
         auto* rawBlock = getRawBlock(variables, funcs);
         if (rawBlock == nullptr) {
@@ -136,7 +136,7 @@ namespace worldedit {
             if (player != nullptr) {
                 auto mBlock = player->getHandSlot()->getBlock();
                 if (mBlock != nullptr) {
-                    rawBlocks[0].block = const_cast<Block*>(mBlock);
+                    rawBlocks[0].block = mBlock;
                 }
             }
             return;
@@ -241,8 +241,7 @@ namespace worldedit {
             } else if (blockIter.find("%block") != std::string::npos) {
                 std::string tmpName = raw[rawPtr];
                 if (tmpName[0] == 'r' && tmpName[1] == 't' && isdigit(tmpName[2])) {
-                    rawBlockIter.block = const_cast<Block*>(&Global<Level>->getBlockPalette().getBlock(
-                        static_cast<unsigned int>(std::stoi(tmpName.substr(2)))));
+                    rawBlockIter.block = Block::create(static_cast<unsigned int>(std::stoi(tmpName.substr(2))));
                     ++rawPtr;
                     continue;
                 }
@@ -316,19 +315,19 @@ namespace worldedit {
                 } else if (isJEBlock(blockName)) {
                     rawBlockIter.block = getJavaBlockMap()[blockName];
                     if (blockName.find("waterlogged=true") != std::string::npos) {
-                        rawBlockIter.exBlock = const_cast<Block*>(StaticVanillaBlocks::mWater);
+                        rawBlockIter.exBlock = StaticVanillaBlocks::mWater;
                     }
                 } else {
-                    rawBlockIter.block = const_cast<Block*>(BedrockBlocks::mAir);
+                    rawBlockIter.block = BedrockBlocks::mAir;
                 }
             }
         }
     }
 
-    bool BlockListPattern::hasBlock(Block* block) {
+    bool BlockListPattern::hasBlock(Block const* block) {
         for (auto& rawBlock : rawBlocks) {
-            if (std::holds_alternative<Block*>(rawBlock.block)) {
-                if (std::get<Block*>(rawBlock.block) == block) {
+            if (std::holds_alternative<Block const*>(rawBlock.block)) {
+                if (std::get<Block const*>(rawBlock.block) == block) {
                     return true;
                 }
             }
