@@ -1,0 +1,26 @@
+{
+    "format_version": 2,
+    "tooth": "github.com/OEOTYAN/WorldEdit",
+    "version": "0.1.6",
+    "info": {
+        "name": "WorldEdit",
+        "description": "just edit the world",
+        "author": "OEOTYAN",
+        "tags": [
+            "levilamina",
+            "plugin"
+        ]
+    },
+    "asset_url": "https://github.com/OEOTYAN/WorldEdit/releases/download/v0.1.6/WorldEdit-windows-x64.zip",
+    "prerequisites": {
+        "github.com/LiteLDev/LeviLamina": ">=0.10.0"
+    },
+    "files": {
+        "place": [
+            {
+                "src": "WorldEdit/*",
+                "dest": "plugins/WorldEdit/"
+            }
+        ]
+    }
+}

@@ -1,4 +1,0 @@
-[submodule "SDK"]
-	path = SDK
-	url = git@github.com:LiteLDev/SDK-CPP.git
-	branch = main
