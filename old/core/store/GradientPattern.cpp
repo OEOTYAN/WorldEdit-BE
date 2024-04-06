@@ -1,114 +1,121 @@
-//
-// Created by OEOTYAN on 2023/02/02.
-//
 
 #include "GradientPattern.h"
-#include "WorldEdit.h"
-#include "utils/StringTool.h"
-#include "utils/StringHelper.h"
 #include "Nlohmann/json.hpp"
+#include "WorldEdit.h"
+#include "utils/StringHelper.h"
+#include "utils/StringTool.h"
 
-namespace worldedit {
-    GradientPattern::GradientPattern(std::string_view str, std::string_view xuid) : Pattern(xuid) {
-        type = Pattern::PatternType::GRADIENT;
-        if (frontIs(str, "#lighten")) {
-            lighten = true;
+namespace we {
+GradientPattern::GradientPattern(std::string_view str, std::string_view xuid)
+: Pattern(xuid) {
+    type = Pattern::PatternType::GRADIENT;
+    if (frontIs(str, "#lighten")) {
+        lighten = true;
+    }
+
+    nlohmann::json list;
+    std::ifstream  i(WE_DIR + "mappings/block_gradient.json");
+    i >> list;
+
+    phmap::flat_hash_map<
+        std::string,
+        phmap::flat_hash_map<std::string, std::vector<class Block const*>>>
+        tmpMap;
+    for (auto& g : list.items()) {
+        std::string keyGroup = g.key();
+        if (!g.value().is_object()) {
+            continue;
         }
-
-        nlohmann::json list;
-        std::ifstream i(WE_DIR + "mappings/block_gradient.json");
-        i >> list;
-
-        phmap::flat_hash_map<std::string, phmap::flat_hash_map<std::string, std::vector<class Block const*>>> tmpMap;
-        for (auto& g : list.items()) {
-            std::string keyGroup = g.key();
-            if (!g.value().is_object()) {
+        for (auto& k : g.value().items()) {
+            std::string key = k.key();
+            if (!k.value().is_array()) {
                 continue;
             }
-            for (auto& k : g.value().items()) {
-                std::string key = k.key();
-                if (!k.value().is_array()) {
+            auto& blockVector = tmpMap[keyGroup][keyGroup + ":" + key];
+            blockVector.clear();
+            for (auto& b : k.value()) {
+                if (!b.is_string()) {
                     continue;
                 }
-                auto& blockVector = tmpMap[keyGroup][keyGroup + ":" + key];
-                blockVector.clear();
-                for (auto& b : k.value()) {
-                    if (!b.is_string()) {
-                        continue;
-                    }
-                    Block const* block = tryGetBlockFromAllVersion(b);
-                    if (block == nullptr) {
-                        continue;
-                    }
-                    blockVector.push_back(block);
+                Block const* block = tryGetBlockFromAllVersion(b);
+                if (block == nullptr) {
+                    continue;
                 }
-            }
-        }
-
-        if (lighten) {
-            str = str.substr(8);
-        } else {
-            str = str.substr(7);
-        }
-        if (str.length() == 0) {
-            blockGradientMap = tmpMap["nc"];
-        } else {
-            if (str.front() == '[') {
-                str = str.substr(1);
-            }
-            if (str.back() == ']') {
-                str = str.substr(0, str.length() - 1);
-            }
-            auto tmpVec = SplitStrWithPattern(asString(str), ",");
-            phmap::flat_hash_set<std::string> op(tmpVec.begin(), tmpVec.end());
-            if (!op.contains("!nc")) {
-                op.insert("nc");
-            }
-            for (auto& g : tmpMap) {
-                if (op.contains(g.first)) {
-                    blockGradientMap.insert(g.second.begin(), g.second.end());
-                }
-            }
-            for (auto& p : op) {
-                if (p[0] == '!' && blockGradientMap.contains(p.substr(1))) {
-                    blockGradientMap.erase(p.substr(1));
-                }
-            }
-        }
-        for (auto& [vName, vec] : blockGradientMap) {
-            for (int i = 0; i < vec.size(); i++) {
-                gradientNameMap[vec[i]] = std::make_pair(vName, i);
+                blockVector.push_back(block);
             }
         }
     }
 
-    class Block const* GradientPattern::getBlock(const phmap::flat_hash_map<::std::string, double>& variables,
-                                           class EvalFunctions& funcs) {
-        return nullptr;
+    if (lighten) {
+        str = str.substr(8);
+    } else {
+        str = str.substr(7);
     }
-
-    bool GradientPattern::hasBlock(class Block const* block) {
-        return gradientNameMap.find(block) != gradientNameMap.end();
-    }
-
-    bool GradientPattern::setBlock(const phmap::flat_hash_map<::std::string, double>& variables,
-                                   class EvalFunctions& funcs,
-                                   BlockSource* blockSource,
-                                   const BlockPos& pos) {
-        Block const* block = &blockSource->getBlock(pos);
-        if (hasBlock(block)) {
-            auto [name, iter] = gradientNameMap[block];
-            auto& blocklist = blockGradientMap[name];
-            if (lighten && iter >= 1) {
-                --iter;
-                return playerData->setBlockSimple(blockSource, funcs, variables, pos, blocklist[iter]);
-            } else if (!lighten) {
-                ++iter;
-                if (iter < blocklist.size()) {
-                    return playerData->setBlockSimple(blockSource, funcs, variables, pos, blocklist[iter]);
-                }
+    if (str.length() == 0) {
+        blockGradientMap = tmpMap["nc"];
+    } else {
+        if (str.front() == '[') {
+            str = str.substr(1);
+        }
+        if (str.back() == ']') {
+            str = str.substr(0, str.length() - 1);
+        }
+        auto tmpVec = SplitStrWithPattern(asString(str), ",");
+        phmap::flat_hash_set<std::string> op(tmpVec.begin(), tmpVec.end());
+        if (!op.contains("!nc")) {
+            op.insert("nc");
+        }
+        for (auto& g : tmpMap) {
+            if (op.contains(g.first)) {
+                blockGradientMap.insert(g.second.begin(), g.second.end());
             }
         }
-        return false;
+        for (auto& p : op) {
+            if (p[0] == '!' && blockGradientMap.contains(p.substr(1))) {
+                blockGradientMap.erase(p.substr(1));
+            }
+        }
     }
-}  // namespace worldedit
+    for (auto& [vName, vec] : blockGradientMap) {
+        for (int i = 0; i < vec.size(); i++) {
+            gradientNameMap[vec[i]] = std::make_pair(vName, i);
+        }
+    }
+}
+
+class Block const* GradientPattern::getBlock(
+    const phmap::flat_hash_map<::std::string, double>& variables,
+    class EvalFunctions&                               funcs
+) {
+    return nullptr;
+}
+
+bool GradientPattern::hasBlock(class Block const* block) {
+    return gradientNameMap.find(block) != gradientNameMap.end();
+}
+
+bool GradientPattern::setBlock(
+    const phmap::flat_hash_map<::std::string, double>& variables,
+    class EvalFunctions&                               funcs,
+    BlockSource*                                       blockSource,
+    BlockPos const&                                    pos
+) {
+    Block const* block = &blockSource->getBlock(pos);
+    if (hasBlock(block)) {
+        auto [name, iter] = gradientNameMap[block];
+        auto& blocklist   = blockGradientMap[name];
+        if (lighten && iter >= 1) {
+            --iter;
+            return playerData
+                ->setBlockSimple(blockSource, funcs, variables, pos, blocklist[iter]);
+        } else if (!lighten) {
+            ++iter;
+            if (iter < blocklist.size()) {
+                return playerData
+                    ->setBlockSimple(blockSource, funcs, variables, pos, blocklist[iter]);
+            }
+        }
+    }
+    return false;
+}
+} // namespace we

@@ -1,18 +1,15 @@
-//
-// Created by OEOTYAN on 2022/06/09.
-//
 #pragma once
 
-#include "tool.h"
 #include "Brush.h"
-#include "MixBrush.h"
-#include "FlatBrush.h"
-#include "CubeBrush.h"
+#include "ClipboardBrush.h"
 #include "ColorBrush.h"
+#include "CubeBrush.h"
+#include "CylinderBrush.h"
 #include "DeformBrush.h"
+#include "FlatBrush.h"
+#include "GravityBrush.h"
+#include "ImageHeightmapBrush.h"
+#include "MixBrush.h"
 #include "SmoothBrush.h"
 #include "SphereBrush.h"
-#include "GravityBrush.h"
-#include "CylinderBrush.h"
-#include "ClipboardBrush.h"
-#include "ImageHeightmapBrush.h"
+#include "tool.h"

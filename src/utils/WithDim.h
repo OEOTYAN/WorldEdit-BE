@@ -5,6 +5,7 @@
 namespace we {
 template <class T>
 class WithDim {
+public:
     T             pos{};
     DimensionType dim{-1};
 };

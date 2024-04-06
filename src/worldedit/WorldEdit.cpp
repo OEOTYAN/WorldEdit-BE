@@ -7,6 +7,19 @@
 #include <ll/api/plugin/RegisterHelper.h>
 #include <ll/api/utils/ErrorUtils.h>
 
+namespace mce {
+template <class J>
+inline J serialize(Color const& c) {
+    return std::format("#{:06x}", (uint)c.toARGB() % (1u << 24))
+         + (c.a == 1 ? "" : std::format("{:02x}", (uint)c.toARGB() / (1u << 24)));
+}
+template <class J>
+inline void deserialize(Color& ver, J const& j) {
+    if (j.is_string()) {
+        ver = mce::Color{(std::string_view)j};
+    }
+}
+} // namespace mce
 
 namespace we {
 
@@ -36,6 +49,7 @@ bool WorldEdit::loadConfig() {
 bool WorldEdit::saveConfig() { return ll::config::saveConfig(*mConfig, getConfigPath()); }
 
 bool WorldEdit::load() {
+    mGeometryGroup = bsci::GeometryGroup::createDefault();
     if (!loadConfig()) {
         return false;
     }
@@ -46,16 +60,14 @@ bool WorldEdit::enable() {
     if (!mConfig) {
         loadConfig();
     }
-    static auto geo = bsci::GeometryGroup::createDefault();
-
-    geo->line(
+    getGeo().line(
         0,
         BlockPos{0, 70, 0}.center(),
         BlockPos{10, 73, 6}.center(),
         mce::Color::BLUE
     );
 
-    geo->box(
+    getGeo().box(
         0,
         BoundingBox{
             {0,  70, 0},
@@ -64,14 +76,9 @@ bool WorldEdit::enable() {
         mce::Color::PINK
     );
 
-    geo->circle(0, BlockPos{0, 73, 0}.center(), Vec3{1, 1, 1}.normalize(), 8);
+    getGeo().circle(0, BlockPos{0, 73, 0}.center(), Vec3{1, 1, 1}.normalize(), 8);
 
-    geo->sphere(
-        0,
-        BlockPos{0, 180, 0}.center(),
-        100,
-        mce::Color::CYAN
-    );
+    getGeo().sphere(0, BlockPos{0, 180, 0}.center(), 100, mce::Color::CYAN);
     return true;
 }
 

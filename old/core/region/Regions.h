@@ -1,14 +1,11 @@
-//
-// Created by OEOTYAN on 2021/2/8.
-//
 
 #pragma once
 
-#include "Region.h"
-#include "CuboidRegion.h"
-#include "ExpandRegion.h"
-#include "SphereRegion.h"
-#include "CylinderRegion.h"
-#include "PolyRegion.h"
 #include "ConvexRegion.h"
+#include "CuboidRegion.h"
+#include "CylinderRegion.h"
+#include "ExpandRegion.h"
 #include "LoftRegion.h"
+#include "PolyRegion.h"
+#include "Region.h"
+#include "SphereRegion.h"

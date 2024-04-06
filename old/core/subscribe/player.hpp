@@ -1,6 +1,3 @@
-//
-// Created by OEOTYAN on 2022/05/16.
-//
 #pragma once
 #include "Globals.h"
 #include <EventAPI.h>
@@ -12,21 +9,25 @@
 #include <mc/BedrockBlocks.hpp>
 // #include <mc/Actor.hpp>
 // #include <mc/Player.hpp>
-#include <mc/ServerPlayer.hpp>
-#include <mc/ItemStack.hpp>
-#include <mc/AnimatePacket.hpp>
 #include "WorldEdit.h"
+#include <mc/AnimatePacket.hpp>
+#include <mc/ItemStack.hpp>
+#include <mc/ServerPlayer.hpp>
 
-namespace worldedit {
-    void playerSubscribe();
-    bool playerLeftClick(Player* player,
-                         const bool isLong,
-                         class ItemStack* item,
-                         BlockInstance& blockInstance,
-                         FaceID mFace);
-    bool playerRightClick(Player* player,
-                          const bool isLong,
-                          class ItemStack* item,
-                          BlockInstance& blockInstance,
-                          FaceID mFace);
-}  // namespace worldedit
+namespace we {
+void playerSubscribe();
+bool playerLeftClick(
+    Player*          player,
+    const bool       isLong,
+    class ItemStack* item,
+    BlockInstance&   blockInstance,
+    FaceID           mFace
+);
+bool playerRightClick(
+    Player*          player,
+    const bool       isLong,
+    class ItemStack* item,
+    BlockInstance&   blockInstance,
+    FaceID           mFace
+);
+} // namespace we

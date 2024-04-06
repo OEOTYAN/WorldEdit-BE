@@ -15,6 +15,8 @@ public:
 
     [[nodiscard]] ll::plugin::NativePlugin& getSelf() const { return mSelf; }
 
+    [[nodiscard]] bsci::GeometryGroup& getGeo() const { return *mGeometryGroup; }
+
     [[nodiscard]] ll::Logger& getLogger() const { return getSelf().getLogger(); }
 
     [[nodiscard]] Config& getConfig() { return *mConfig; }
@@ -34,8 +36,9 @@ public:
     bool unload();
 
 private:
-    ll::plugin::NativePlugin& mSelf;
-    std::optional<Config>     mConfig;
+    ll::plugin::NativePlugin&            mSelf;
+    std::optional<Config>                mConfig;
+    std::unique_ptr<bsci::GeometryGroup> mGeometryGroup;
 };
 
 } // namespace we

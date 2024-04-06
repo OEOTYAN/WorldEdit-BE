@@ -27,7 +27,7 @@ target("WorldEdit") -- Change this to your plugin name.
         "/w44738",
         "/w45204"
     ) 
-    add_defines("NOMINMAX", "UNICODE")
+    add_defines("_HAS_CXX23=1", "NOMINMAX", "UNICODE")
     add_files("src/**.cpp")
     add_includedirs("src")
     add_files("thirdparty/**.cpp")
