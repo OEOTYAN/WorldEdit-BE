@@ -8,4 +8,4 @@ template <ll::concepts::Require<phmap::has_hash_value> T>
 struct hash<T> {
     inline size_t operator()(T const& val) const { return hash_value(val); }
 };
-}
+} // namespace std
