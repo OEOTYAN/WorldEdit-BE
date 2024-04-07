@@ -1,6 +1,6 @@
 #pragma once
 
-#include "worldedit/WorldEdit.h"
+#include "worldedit/Global.h"
 
 namespace we {
 

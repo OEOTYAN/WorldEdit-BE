@@ -39,7 +39,7 @@ bool PlayerData::changeVicePos(BlockInstance blockInstance, bool output) {
         return false;
     }
     if (region == nullptr) {
-        region = Region::createRegion(RegionType::CUBOID);
+        region = Region::create(RegionType::CUBOID);
     }
     auto pos = blockInstance.getPosition();
     if (player->getDimensionId() != region->getDimensionID()) {
@@ -69,7 +69,7 @@ bool PlayerData::changeMainPos(BlockInstance blockInstance, bool output) {
         return false;
     }
     if (region == nullptr) {
-        region = Region::createRegion(RegionType::CUBOID);
+        region = Region::create(RegionType::CUBOID);
     }
     auto pos = blockInstance.getPosition();
     if (player->getDimensionId() != region->getDimensionID()) {

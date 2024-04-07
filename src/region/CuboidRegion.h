@@ -19,7 +19,7 @@ public:
 
     void updateBoundingBox() override;
 
-    Type getType() const override { return Cuboid; }
+    RegionType getType() const override { return RegionType::Cuboid; }
 
     bool needResetVice() const override { return false; }
 

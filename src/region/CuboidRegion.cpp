@@ -1,5 +1,6 @@
 #include "CuboidRegion.h"
 #include "utils/Serialize.h"
+#include "worldedit/WorldEdit.h"
 
 namespace we {
 void CuboidRegion::serialize(CompoundTag& tag) const {

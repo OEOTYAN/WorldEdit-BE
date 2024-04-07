@@ -1,6 +1,7 @@
 #include "SphereRegion.h"
 #include "utils/Math.h"
 #include "utils/Serialize.h"
+#include "worldedit/WorldEdit.h"
 
 namespace we {
 void SphereRegion::serialize(CompoundTag& tag) const {

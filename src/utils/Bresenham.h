@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Math.h"
-#include "worldedit/WorldEdit.h"
 
 namespace we {
 class Node : public Vec3 {

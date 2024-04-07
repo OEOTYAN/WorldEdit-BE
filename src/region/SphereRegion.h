@@ -21,7 +21,7 @@ public:
 
     void updateBoundingBox() override;
 
-    Type getType() const override { return Sphere; }
+    RegionType getType() const override { return RegionType::Sphere; }
 
     bool expand(std::span<BlockPos>) override;
 

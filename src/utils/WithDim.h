@@ -7,6 +7,6 @@ template <class T>
 class WithDim {
 public:
     T             pos{};
-    DimensionType dim{-1};
+    DimensionType dim{};
 };
 } // namespace we

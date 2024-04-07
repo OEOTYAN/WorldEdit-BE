@@ -1,5 +1,5 @@
-
 #include "ConvexRegion.h"
+#include "worldedit/WorldEdit.h"
 
 namespace we {
 void ConvexRegion::updateBoundingBox() {

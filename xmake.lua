@@ -32,7 +32,7 @@ target("WorldEdit") -- Change this to your plugin name.
     add_includedirs("src")
     add_files("thirdparty/**.cpp")
     add_includedirs("thirdparty")
-    set_pcxxheader("src/worldedit/WorldEdit.h")
+    set_pcxxheader("src/worldedit/Global.h")
     add_packages("levilamina", "bsci", "parallel-hashmap", "openimageio", "boost", "tinyobjloader")
     add_shflags("/DELAYLOAD:bedrock_server.dll") -- To use symbols provided by SymbolProvider.
     set_exceptions("none") -- To avoid conflicts with /EHa.

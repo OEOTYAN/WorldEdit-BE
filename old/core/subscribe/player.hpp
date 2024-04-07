@@ -21,13 +21,13 @@ bool playerLeftClick(
     const bool       isLong,
     class ItemStack* item,
     BlockInstance&   blockInstance,
-    FaceID           mFace
+    FacingID         mFace
 );
 bool playerRightClick(
     Player*          player,
     const bool       isLong,
     class ItemStack* item,
     BlockInstance&   blockInstance,
-    FaceID           mFace
+    FacingID         mFace
 );
 } // namespace we

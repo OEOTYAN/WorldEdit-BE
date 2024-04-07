@@ -21,7 +21,9 @@
 #include <mc/world/level/levelgen/structure/BoundingBox.h>
 #include <mc/world/phys/AABB.h>
 #include <parallel_hashmap/phmap.h>
+#include <ll/api/schedule/Scheduler.h>
 #include <utils/Hash.h>
+#include <utils/LockedMap.h>
 #include <utils/WithDim.h>
 
 using namespace ll::i18n_literals;

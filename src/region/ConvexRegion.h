@@ -18,7 +18,7 @@ class ConvexRegion : public Region {
     phmap::flat_hash_set<WithGeo<Edge>> edges;
     phmap::flat_hash_set<BlockPos>      vertexBacklog;
 
-    BlockPos centerAccum;
+    ll::math::longlong3 centerAccum;
 
     Triangle mutable lastTriangle;
     bool mutable hasLast{};
@@ -30,7 +30,7 @@ public:
 
     void updateBoundingBox() override;
 
-    Type getType() const override { return Cuboid; }
+    RegionType getType() const override { return RegionType::Convex; }
 
     uint64_t size() const override;
 

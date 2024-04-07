@@ -1,6 +1,7 @@
 #pragma once
 
-#include "worldedit/WorldEdit.h"
+#include "worldedit/Global.h"
+#include "RegionType.h"
 
 #include "utils/GeoContainer.h"
 
@@ -14,19 +15,10 @@ protected:
     Region(DimensionType, BoundingBox const&);
 
 public:
-    enum Type {
-        Cuboid,
-        Expand,
-        Sphere,
-        Poly,
-        Convex,
-        Cylinder,
-        Loft,
-    };
     static std::shared_ptr<Region>
-    createRegion(Type, DimensionType, BoundingBox const&, bool update = true);
+    create(RegionType, DimensionType, BoundingBox const&, bool update = true);
 
-    static std::shared_ptr<Region> createRegion(CompoundTag const&);
+    static std::shared_ptr<Region> create(CompoundTag const&);
 
     DimensionType getDim() const { return dim; }
 
@@ -40,7 +32,7 @@ public:
 
     virtual bool needResetVice() const { return true; }
 
-    virtual Type getType() const = 0;
+    virtual RegionType getType() const = 0;
 
     virtual BoundingBox getBoundBox() const { return boundingBox; }
 

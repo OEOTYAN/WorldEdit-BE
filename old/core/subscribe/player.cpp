@@ -13,7 +13,7 @@ bool playerLeftClick(
     const bool       isLong,
     class ItemStack* item,
     BlockInstance&   blockInstance,
-    FaceID           mFace
+    FacingID         mFace
 ) {
     static phmap::flat_hash_map<std::string, long long> tickMap;
 
@@ -51,22 +51,22 @@ bool playerLeftClick(
                 if (brush->lneedFace && blockInstance != BlockInstance::Null) {
                     BlockPos bPos = blockInstance.getPosition();
                     switch (mFace) {
-                    case FaceID::Down:
+                    case FacingID::Down:
                         bPos.y -= 1;
                         break;
-                    case FaceID::Up:
+                    case FacingID::Up:
                         bPos.y += 1;
                         break;
-                    case FaceID::North:
+                    case FacingID::North:
                         bPos.z -= 1;
                         break;
-                    case FaceID::South:
+                    case FacingID::South:
                         bPos.z += 1;
                         break;
-                    case FaceID::West:
+                    case FacingID::West:
                         bPos.x -= 1;
                         break;
-                    case FaceID::East:
+                    case FacingID::East:
                         bPos.x += 1;
                         break;
                     default:
@@ -89,7 +89,7 @@ bool playerRightClick(
     const bool       isLong,
     class ItemStack* item,
     BlockInstance&   blockInstance,
-    FaceID           mFace
+    FacingID         mFace
 ) {
     static phmap::flat_hash_map<std::string, long long> tickMap;
 
@@ -128,22 +128,22 @@ bool playerRightClick(
                 if (brush->needFace && blockInstance != BlockInstance::Null) {
                     BlockPos bPos = blockInstance.getPosition();
                     switch (mFace) {
-                    case FaceID::Down:
+                    case FacingID::Down:
                         bPos.y -= 1;
                         break;
-                    case FaceID::Up:
+                    case FacingID::Up:
                         bPos.y += 1;
                         break;
-                    case FaceID::North:
+                    case FacingID::North:
                         bPos.z -= 1;
                         break;
-                    case FaceID::South:
+                    case FacingID::South:
                         bPos.z += 1;
                         break;
-                    case FaceID::West:
+                    case FacingID::West:
                         bPos.x -= 1;
                         break;
-                    case FaceID::East:
+                    case FacingID::East:
                         bPos.x += 1;
                         break;
                     default:
@@ -171,7 +171,7 @@ void playerSubscribe() {
             false,
             ev.mItemStack,
             *const_cast<BlockInstance*>(&ev.mBlockInstance),
-            static_cast<FaceID>(ev.mFace)
+            static_cast<FacingID>(ev.mFace)
         );
     });
     Event::PlayerUseItemEvent::subscribe([](const Event::PlayerUseItemEvent& ev) {
@@ -186,7 +186,7 @@ void playerSubscribe() {
             != BedrockBlocks::mAir) {
             requiereWater = false;
         }
-        FaceID        face;
+        FacingID      face;
         BlockInstance blockInstance =
             ev.mPlayer->getBlockFromViewVector(face, requiereWater, false, 2048.0f);
         return playerRightClick(ev.mPlayer, true, ev.mItemStack, blockInstance, face);
@@ -205,7 +205,7 @@ void playerSubscribe() {
             != BedrockBlocks::mAir) {
             requiereWater = false;
         }
-        FaceID face;
+        FacingID face;
         ev.mPlayer->getBlockFromViewVector(face, requiereWater);
         bool res = playerLeftClick(
             ev.mPlayer,
@@ -256,7 +256,7 @@ void playerSubscribe() {
                 != BedrockBlocks::mAir) {
                 requiereWater = false;
             }
-            FaceID        face;
+            FacingID      face;
             BlockInstance blockInstance =
                 ev.mPlayer->getBlockFromViewVector(face, requiereWater);
             return playerRightClick(
@@ -281,7 +281,7 @@ void playerSubscribe() {
             != BedrockBlocks::mAir) {
             requiereWater = false;
         }
-        FaceID        face;
+        FacingID      face;
         BlockInstance blockInstance =
             ev.mPlayer->getBlockFromViewVector(face, requiereWater);
         return playerRightClick(
@@ -303,7 +303,7 @@ void playerSubscribe() {
     // != BedrockBlocks::mAir) {
     //     requiereWater = false;
     // }
-    // FaceID face;
+    // FacingID face;
     // BlockInstance blockInstance = player->getBlockFromViewVector(face, requiereWater,
     // false, 2048.0f); worldedit::playerLeftClick(player, true, player->getHandSlot(),
     // blockInstance, face);
@@ -330,7 +330,7 @@ THook(
             != BedrockBlocks::mAir) {
             requiereWater = false;
         }
-        FaceID        face;
+        FacingID      face;
         BlockInstance blockInstance =
             player->getBlockFromViewVector(face, requiereWater, false, 2048.0f);
         worldedit::playerLeftClick(

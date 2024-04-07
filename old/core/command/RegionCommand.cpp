@@ -94,7 +94,7 @@ void regionCommandSetup() {
                 }
                 switch (do_hash2(action)) {
                 case do_hash2("cuboid"):
-                    playerData.region = worldedit::Region::createRegion(
+                    playerData.region = worldedit::Region::create(
                         worldedit::CUBOID,
                         tmpbox,
                         origin.getPlayer()->getDimensionId()
@@ -102,7 +102,7 @@ void regionCommandSetup() {
                     output.trSuccess("worldedit.region.set.cuboid");
                     break;
                 case do_hash2("extend"):
-                    playerData.region = worldedit::Region::createRegion(
+                    playerData.region = worldedit::Region::create(
                         worldedit::EXPAND,
                         tmpbox,
                         origin.getPlayer()->getDimensionId()
@@ -110,7 +110,7 @@ void regionCommandSetup() {
                     output.trSuccess("worldedit.region.set.extend");
                     break;
                 case do_hash2("poly"):
-                    playerData.region = worldedit::Region::createRegion(
+                    playerData.region = worldedit::Region::create(
                         worldedit::POLY,
                         tmpbox,
                         origin.getPlayer()->getDimensionId()
@@ -118,7 +118,7 @@ void regionCommandSetup() {
                     output.trSuccess("worldedit.region.set.poly");
                     break;
                 case do_hash2("sphere"):
-                    playerData.region = worldedit::Region::createRegion(
+                    playerData.region = worldedit::Region::create(
                         worldedit::SPHERE,
                         tmpbox,
                         origin.getPlayer()->getDimensionId()
@@ -126,7 +126,7 @@ void regionCommandSetup() {
                     output.trSuccess("worldedit.region.set.sphere");
                     break;
                 case do_hash2("cylinder"):
-                    playerData.region = worldedit::Region::createRegion(
+                    playerData.region = worldedit::Region::create(
                         worldedit::CYLINDER,
                         tmpbox,
                         origin.getPlayer()->getDimensionId()
@@ -134,7 +134,7 @@ void regionCommandSetup() {
                     output.trSuccess("worldedit.region.set.cylinder");
                     break;
                 case do_hash2("convex"):
-                    playerData.region = worldedit::Region::createRegion(
+                    playerData.region = worldedit::Region::create(
                         worldedit::CONVEX,
                         tmpbox,
                         origin.getPlayer()->getDimensionId()
@@ -142,7 +142,7 @@ void regionCommandSetup() {
                     output.trSuccess("worldedit.region.set.convex");
                     break;
                 case do_hash2("loft"):
-                    playerData.region = worldedit::Region::createRegion(
+                    playerData.region = worldedit::Region::create(
                         worldedit::LOFT,
                         tmpbox,
                         origin.getPlayer()->getDimensionId()

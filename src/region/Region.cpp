@@ -61,23 +61,23 @@ int Region::getHeighest(Pos2d xz) const {
 Region::Region(DimensionType d, BoundingBox const& b) : boundingBox(b), dim(d) {}
 
 std::shared_ptr<Region>
-Region::createRegion(Type type, DimensionType dim, BoundingBox const& box, bool update) {
+Region::create(RegionType type, DimensionType dim, BoundingBox const& box, bool update) {
     std::shared_ptr<Region> res;
     switch (type) {
-    case Cuboid:
+    case RegionType::Cuboid:
         res = std::make_shared<CuboidRegion>(dim, box);
         break;
-    case Expand:
+    case RegionType::Expand:
         return std::make_shared<ExpandRegion>(dim, box);
-    case Sphere:
+    case RegionType::Sphere:
         return std::make_shared<SphereRegion>(dim, box);
-    // case Poly:
+    // case RegionType::Poly:
     //     return std::make_shared<PolyRegion>(dim, box, show);
-    // case Convex:
+    // case RegionType::Convex:
     //     return std::make_shared<ConvexRegion>(dim, box, show);
-    // case Cylinder:
+    // case RegionType::Cylinder:
     //     return std::make_shared<CylinderRegion>(dim, box, show);
-    // case Loft:
+    // case RegionType::Loft:
     //     return std::make_shared<LoftRegion>(dim, box, show);
     default:
         std::unreachable();
@@ -88,9 +88,9 @@ Region::createRegion(Type type, DimensionType dim, BoundingBox const& box, bool 
     return res;
 }
 
-std::shared_ptr<Region> Region::createRegion(CompoundTag const& tag) {
-    auto res = createRegion(
-        doDeserialize<Type>(tag["type"]),
+std::shared_ptr<Region> Region::create(CompoundTag const& tag) {
+    auto res = create(
+        doDeserialize<RegionType>(tag["type"]),
         doDeserialize<int>(tag["dim"]),
         doDeserialize<BoundingBox>(tag["boundingBox"]),
         false

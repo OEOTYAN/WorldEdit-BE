@@ -8,7 +8,7 @@ class ExpandRegion : public CuboidRegion {
 public:
     ExpandRegion(DimensionType, BoundingBox const&);
 
-    Type getType() const override { return Expand; }
+    RegionType getType() const override { return RegionType::Expand; }
 
     bool needResetVice() const override { return true; }
 

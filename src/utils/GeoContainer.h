@@ -1,6 +1,6 @@
 #pragma once
 
-#include "worldedit/WorldEdit.h"
+#include "worldedit/Global.h"
 
 namespace we {
 struct GeoContainer {
@@ -9,23 +9,15 @@ struct GeoContainer {
     GeoContainer(GeoContainer const&) noexcept            = delete;
     GeoContainer& operator=(GeoContainer const&) noexcept = delete;
 
-    GeoContainer() noexcept : geo({0}) {}
+    GeoContainer() noexcept;
 
-    GeoContainer(bsci::GeometryGroup::GeoId id) noexcept : geo(id) {}
+    GeoContainer(bsci::GeometryGroup::GeoId id) noexcept;
 
-    GeoContainer(GeoContainer&& other) noexcept : GeoContainer(other.geo) {
-        other.geo = {0};
-    }
-    GeoContainer& operator=(GeoContainer&& other) noexcept {
-        if (this == std::addressof(other)) {
-            return *this;
-        }
-        WorldEdit::getInstance().getGeo().remove(geo);
-        geo       = other.geo;
-        other.geo = {0};
-        return *this;
-    }
-    ~GeoContainer() { WorldEdit::getInstance().getGeo().remove(geo); }
+    GeoContainer(GeoContainer&& other) noexcept;
+
+    GeoContainer& operator=(GeoContainer&& other) noexcept;
+
+    ~GeoContainer();
 };
 template <class T>
 struct WithGeo {
