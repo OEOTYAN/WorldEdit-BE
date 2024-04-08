@@ -19,6 +19,7 @@
 #include <mc/world/level/Level.h>
 #include <mc/world/level/block/actor/BlockActor.h>
 #include <mc/world/level/dimension/Dimension.h>
+#include <ll/api/utils/ErrorUtils.h>
 
 namespace we {
 
@@ -169,7 +170,6 @@ PlayerStateManager::PlayerStateManager()
             hit.mFacing
         );
     }));
-    WorldEdit::getInstance().getLogger().warn("{}", listeners.size());
 }
 PlayerStateManager::~PlayerStateManager() {
     using namespace ll::event;
@@ -187,7 +187,6 @@ PlayerStateManager::~PlayerStateManager() {
     });
 }
 std::shared_ptr<PlayerState> PlayerStateManager::getOrCreate(mce::UUID const& uuid) {
-    WorldEdit::getInstance().getLogger().warn("{}", uuid.asString());
     std::shared_ptr<PlayerState> res;
     playerStates.lazy_emplace_l(
         uuid,
@@ -200,7 +199,11 @@ std::shared_ptr<PlayerState> PlayerStateManager::getOrCreate(mce::UUID const& uu
             }
             res = std::make_shared<PlayerState>(uuid);
             if (nbt) {
-                res->deserialize(*CompoundTag::fromBinaryNbt(*nbt));
+                try{
+                    res->deserialize(*CompoundTag::fromBinaryNbt(*nbt));
+                }catch(...){
+                    ll::error_utils::printCurrentException(WorldEdit::getInstance().getLogger());
+                }
             }
             ctor(uuid, res);
         }

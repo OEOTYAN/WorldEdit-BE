@@ -26,6 +26,9 @@ struct Config {
         double maximum_brush_length  = 2048;
         int    minimum_response_tick = 3;
     } player_state;
+    struct {
+        int player_log_level = 3;
+    } log;
 
     struct PlayerConfig {
         RegionType default_region_type{RegionType::Cuboid};

@@ -8,6 +8,7 @@
 #include <ll/api/plugin/NativePlugin.h>
 #include <ll/api/plugin/RegisterHelper.h>
 #include <ll/api/utils/ErrorUtils.h>
+#include <mc/network/packet/TextPacket.h>
 
 namespace we {
 
@@ -18,7 +19,8 @@ WorldEdit& WorldEdit::getInstance() { return *instance; }
 WorldEdit::WorldEdit(ll::plugin::NativePlugin& self)
 : mSelf(self),
   mThreadPool(std::clamp(std::thread::hardware_concurrency(), 1u, 16u)),
-  mScheduler(mThreadPool) {}
+  mScheduler(mThreadPool),
+  mServerScheduler(mTickSyncTaskPool) {}
 
 std::filesystem::path WorldEdit::getConfigPath() const {
     return getSelf().getConfigDir() / u8"config.json";
@@ -46,6 +48,12 @@ bool WorldEdit::load() {
     if (!loadConfig()) {
         return false;
     }
+    getLogger().playerLevel = getConfig().log.player_log_level;
+    getLogger().setPlayerOutputFunc([this](std::string_view msg) {
+        getTickPool().addTask([pkt = TextPacket::createRawMessage(msg)] {
+            const_cast<TextPacket&>(pkt).sendToClients();
+        });
+    });
     return true;
 }
 

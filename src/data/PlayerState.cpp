@@ -21,7 +21,7 @@ void PlayerState::setVicePosInternal() {
         auto& we     = WorldEdit::getInstance();
         vicePos->geo = we.getGeo().box(
             vicePos->data.dim,
-            AABB{vicePos->data.pos}.shrink(-0.07),
+            AABB{vicePos->data.pos}.shrink(-0.06),
             we.getConfig().colors.off_hand_color
         );
     }

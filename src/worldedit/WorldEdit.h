@@ -28,7 +28,9 @@ public:
         return *mPlayerStateManager;
     }
 
-    [[nodiscard]] ll::thread::ThreadPool& getPool() { return mThreadPool; }
+    [[nodiscard]] ThreadPoolWrapper getPool() { return mThreadPool; }
+
+    [[nodiscard]] TickPoolWrapper getTickPool() { return mTickSyncTaskPool; }
 
     [[nodiscard]] auto& getScheduler() { return mScheduler; }
 
@@ -55,7 +57,8 @@ private:
     std::shared_ptr<PlayerStateManager>  mPlayerStateManager;
     ll::thread::ThreadPool               mThreadPool;
     ll::schedule::Scheduler<std::chrono::system_clock, ThreadPoolWrapper> mScheduler;
-    ll::schedule::ServerTimeScheduler mServerScheduler;
+    ll::thread::TickSyncTaskPool                                      mTickSyncTaskPool;
+    ll::schedule::Scheduler<ll::chrono::ServerClock, TickPoolWrapper> mServerScheduler;
 };
 
 } // namespace we
