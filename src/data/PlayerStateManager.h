@@ -41,5 +41,7 @@ public:
     ~PlayerStateManager();
 
     std::shared_ptr<PlayerState> getOrCreate(mce::UUID const& uuid);
+
+    void remove(mce::UUID const& uuid);
 };
 } // namespace we

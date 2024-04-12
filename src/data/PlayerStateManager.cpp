@@ -14,16 +14,16 @@
 #include <ll/api/event/player/PlayerUseItemOnEvent.h>
 
 #include <ll/api/service/Bedrock.h>
+#include <ll/api/utils/ErrorUtils.h>
 #include <mc/world/item/VanillaItemNames.h>
 #include <mc/world/level/BlockSource.h>
 #include <mc/world/level/Level.h>
 #include <mc/world/level/block/actor/BlockActor.h>
 #include <mc/world/level/dimension/Dimension.h>
-#include <ll/api/utils/ErrorUtils.h>
 
 namespace we {
 
-static auto saveDelayTime = 1h;
+static auto saveDelayTime = 72h;
 
 PlayerStateManager::PlayerStateManager()
 : storagedState(WorldEdit::getInstance().getSelf().getDataDir() / u8"player_states") {
@@ -63,16 +63,13 @@ PlayerStateManager::PlayerStateManager()
                 WorldEdit::getInstance().geServerScheduler().add<ll::schedule::DelayTask>(
                     1_tick,
                     [dst = WithDim<BlockPos>{ev.pos(), ev.self().getDimensionId()}] {
-                        auto dim = ll::service::getLevel()->getDimension(dst.dim);
-                        if (dim) {
-                            return;
-                        }
-                        auto blockActor =
-                            dim->getBlockSourceFromMainChunkSource().getBlockEntity(
-                                dst.pos
-                            );
-                        if (blockActor) {
-                            blockActor->refresh(dim->getBlockSourceFromMainChunkSource());
+                        if (auto dim = ll::service::getLevel()->getDimension(dst.dim);
+                            dim) {
+                            auto& blockSource = dim->getBlockSourceFromMainChunkSource();
+                            if (auto blockActor = blockSource.getBlockEntity(dst.pos);
+                                blockActor) {
+                                blockActor->refresh(blockSource);
+                            }
                         }
                     }
                 );
@@ -142,7 +139,7 @@ PlayerStateManager::PlayerStateManager()
                 false,
                 ev.item(),
                 {ev.blockPos(), ev.self().getDimensionId()},
-                (FacingID)ev.face()
+                ev.face()
             ));
         })
     );
@@ -199,11 +196,7 @@ std::shared_ptr<PlayerState> PlayerStateManager::getOrCreate(mce::UUID const& uu
             }
             res = std::make_shared<PlayerState>(uuid);
             if (nbt) {
-                try{
-                    res->deserialize(*CompoundTag::fromBinaryNbt(*nbt));
-                }catch(...){
-                    ll::error_utils::printCurrentException(WorldEdit::getInstance().getLogger());
-                }
+                res->deserialize(CompoundTag::fromBinaryNbt(*nbt).value());
             }
             ctor(uuid, res);
         }
@@ -227,6 +220,11 @@ bool PlayerStateManager::release(mce::UUID const& uuid) {
     });
 }
 
+void PlayerStateManager::remove(mce::UUID const& uuid) {
+    playerStates.erase(uuid);
+    std::unique_lock lock{dbmutex};
+    storagedState.del(uuid.asString());
+}
 
 bool PlayerStateManager::playerLeftClick(
     Player&                  player,

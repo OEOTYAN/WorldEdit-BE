@@ -51,7 +51,7 @@ bool WorldEdit::load() {
     getLogger().playerLevel = getConfig().log.player_log_level;
     getLogger().setPlayerOutputFunc([this](std::string_view msg) {
         getTickPool().addTask([pkt = TextPacket::createRawMessage(msg)] {
-            const_cast<TextPacket&>(pkt).sendToClients();
+            pkt.sendToClients();
         });
     });
     return true;
