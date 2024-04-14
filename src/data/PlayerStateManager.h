@@ -9,11 +9,11 @@
 
 class Player;
 class ItemStack;
+class CommandOrigin;
 
 namespace we {
 class PlayerStateManager : public std::enable_shared_from_this<PlayerStateManager> {
     ll::data::KeyValueDB storagedState;
-    std::shared_mutex    dbmutex;
 
     std::vector<ll::event::ListenerPtr> listeners;
 
@@ -21,14 +21,19 @@ class PlayerStateManager : public std::enable_shared_from_this<PlayerStateManage
 
     bool release(mce::UUID const& uuid);
 
-    bool playerLeftClick(
+    enum class ClickState {
+        Pass,
+        Hold,
+    };
+
+    ClickState playerLeftClick(
         Player&                  player,
         bool                     isLong,
         ItemStack const&         item,
         WithDim<BlockPos> const& dst,
         FacingID                 mFace
     );
-    bool playerRightClick(
+    ClickState playerRightClick(
         Player&                  player,
         bool                     isLong,
         ItemStack const&         item,
@@ -40,8 +45,18 @@ public:
     PlayerStateManager();
     ~PlayerStateManager();
 
-    std::shared_ptr<PlayerState> getOrCreate(mce::UUID const& uuid);
+    // bool has(mce::UUID const& uuid, bool temp = false);
+
+    std::shared_ptr<PlayerState> get(mce::UUID const& uuid, bool temp = false);
+
+    std::shared_ptr<PlayerState> getOrCreate(mce::UUID const& uuid, bool temp = false);
+
+    std::shared_ptr<PlayerState> get(CommandOrigin const&);
+
+    std::shared_ptr<PlayerState> getOrCreate(CommandOrigin const&);
 
     void remove(mce::UUID const& uuid);
+
+    void removeTemps();
 };
 } // namespace we

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "region/Region.h"
 #include "Config.h"
+#include "region/Region.h"
 
 #include <mc/deps/core/mce/UUID.h>
 #include <mc/world/level/Tick.h>
@@ -16,13 +16,9 @@ class PlayerState {
     std::atomic<Tick> mutable lastLeftClick;
     std::atomic<Tick> mutable lastRightClick;
 
+    bool temp;
+
     mce::UUID uuid;
-
-    std::optional<WithGeo<WithDim<BlockPos>>> mainPos;
-    std::optional<WithGeo<WithDim<BlockPos>>> vicePos;
-
-    std::optional<RegionType> regionType;
-    std::shared_ptr<Region>   region;
 
     void setMainPosInternal();
     void setVicePosInternal();
@@ -30,11 +26,15 @@ class PlayerState {
     Region& getOrCreateRegion(WithDim<BlockPos> const&);
 
 public:
-    Config::PlayerConfig config;
+    std::optional<WithGeo<WithDim<BlockPos>>> mainPos;
+    std::optional<WithGeo<WithDim<BlockPos>>> vicePos;
+    std::optional<RegionType> regionType;
+    std::shared_ptr<Region>   region;
+    Config::PlayerConfig      config;
 
     bool dirty() const { return mDirty; }
 
-    PlayerState(mce::UUID const& uuid);
+    PlayerState(mce::UUID const& uuid, bool temp);
 
     bool setMainPos(WithDim<BlockPos> const&);
     bool setVicePos(WithDim<BlockPos> const&);

@@ -14,7 +14,9 @@ struct Config {
         CommandPermissionLevel permission = CommandPermissionLevel::GameDirectors;
     };
     struct {
-        CmdSetting weconfig{};
+        struct {
+            CmdSetting sel{};
+        } region;
     } commands{};
     struct {
         mce::Color region_line_color{"#FFEC27"};

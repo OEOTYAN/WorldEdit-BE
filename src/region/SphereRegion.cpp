@@ -11,12 +11,12 @@ void SphereRegion::serialize(CompoundTag& tag) const {
 }
 void SphereRegion::deserialize(CompoundTag const& tag) {
     Region::deserialize(tag);
-    ll::reflection::deserialize(center, tag["center"]);
-    ll::reflection::deserialize(radius, tag["radius"]);
+    ll::reflection::deserialize(center, tag.at("center"));
+    ll::reflection::deserialize(radius, tag.at("radius"));
 }
 
 void SphereRegion::updateBoundingBox() {
-    auto newRadius    = (int)std::ceil(radius);
+    auto newRadius    = (int)std::ceil(std::max(radius - 0.5, 0.0));
     boundingBox.min.x = center.x - newRadius;
     boundingBox.min.y = center.y - newRadius;
     boundingBox.min.z = center.z - newRadius;

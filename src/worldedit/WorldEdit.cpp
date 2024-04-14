@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "utils/Serialize.h"
+#include "command/Commands.h"
 
 #include <ll/api/Config.h>
 #include <ll/api/plugin/NativePlugin.h>
@@ -20,6 +21,7 @@ WorldEdit::WorldEdit(ll::plugin::NativePlugin& self)
 : mSelf(self),
   mThreadPool(std::clamp(std::thread::hardware_concurrency(), 1u, 16u)),
   mScheduler(mThreadPool),
+  mTickSyncTaskPool(),
   mServerScheduler(mTickSyncTaskPool) {}
 
 std::filesystem::path WorldEdit::getConfigPath() const {
@@ -48,6 +50,8 @@ bool WorldEdit::load() {
     if (!loadConfig()) {
         return false;
     }
+    ll::i18n::load(getSelf().getLangDir());
+
     getLogger().playerLevel = getConfig().log.player_log_level;
     getLogger().setPlayerOutputFunc([this](std::string_view msg) {
         getTickPool().addTask([pkt = TextPacket::createRawMessage(msg)] {
@@ -62,6 +66,7 @@ bool WorldEdit::enable() {
         loadConfig();
     }
     mPlayerStateManager = std::make_shared<PlayerStateManager>();
+    setupCommands();
     return true;
 }
 

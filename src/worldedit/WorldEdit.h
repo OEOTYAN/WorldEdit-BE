@@ -7,6 +7,8 @@
 
 #include <ll/api/plugin/NativePlugin.h>
 
+#define DBGLOG(...) ::we::WorldEdit::getInstance().getLogger().warn(__VA_ARGS__);
+
 namespace we {
 
 class WorldEdit {

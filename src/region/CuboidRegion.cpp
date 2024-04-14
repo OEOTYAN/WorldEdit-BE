@@ -10,8 +10,8 @@ void CuboidRegion::serialize(CompoundTag& tag) const {
 }
 void CuboidRegion::deserialize(CompoundTag const& tag) {
     Region::deserialize(tag);
-    ll::reflection::deserialize(mainPos, tag["mainPos"]);
-    ll::reflection::deserialize(vicePos, tag["vicePos"]);
+    ll::reflection::deserialize(mainPos, tag.at("mainPos"));
+    ll::reflection::deserialize(vicePos, tag.at("vicePos"));
 }
 
 void CuboidRegion::updateBoundingBox() {

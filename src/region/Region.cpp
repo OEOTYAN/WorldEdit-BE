@@ -1,4 +1,5 @@
 #include "Region.h"
+#include "ConvexRegion.h"
 #include "CuboidRegion.h"
 #include "ExpandRegion.h"
 #include "SphereRegion.h"
@@ -68,17 +69,20 @@ Region::create(RegionType type, DimensionType dim, BoundingBox const& box, bool 
         res = std::make_shared<CuboidRegion>(dim, box);
         break;
     case RegionType::Expand:
-        return std::make_shared<ExpandRegion>(dim, box);
+        res = std::make_shared<ExpandRegion>(dim, box);
+        break;
     case RegionType::Sphere:
-        return std::make_shared<SphereRegion>(dim, box);
+        res = std::make_shared<SphereRegion>(dim, box);
+        break;
     // case RegionType::Poly:
-    //     return std::make_shared<PolyRegion>(dim, box, show);
-    // case RegionType::Convex:
-    //     return std::make_shared<ConvexRegion>(dim, box, show);
+    //     res = std::make_shared<PolyRegion>(dim, box); break;
+    case RegionType::Convex:
+        res = std::make_shared<ConvexRegion>(dim, box);
+        break;
     // case RegionType::Cylinder:
-    //     return std::make_shared<CylinderRegion>(dim, box, show);
+    //     res = std::make_shared<CylinderRegion>(dim, box); break;
     // case RegionType::Loft:
-    //     return std::make_shared<LoftRegion>(dim, box, show);
+    //     res = std::make_shared<LoftRegion>(dim, box); break;
     default:
         std::unreachable();
     }

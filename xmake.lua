@@ -2,9 +2,6 @@ add_rules("mode.release")
 
 add_repositories("liteldev-repo https://github.com/LiteLDev/xmake-repo.git")
 
--- add_requires("levilamina x.x.x") for a specific version
--- add_requires("levilamina develop") to use develop version
--- please note that you should add bdslibrary yourself if using dev version
 add_requires("levilamina")
 add_requires("bsci")
 add_requires("parallel-hashmap")

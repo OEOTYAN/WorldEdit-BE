@@ -16,9 +16,7 @@ public:
     }
 };
 inline size_t hash_value(Edge const& rc) {
-    size_t seed = std::hash<BlockPos>()(rc.start);
-    ll::hash_utils::hashCombine(std::hash<BlockPos>()(rc.start), seed);
-    return seed;
+    return std::hash<BlockPos>()(rc.start) ^ std::hash<BlockPos>()(rc.end);
 }
 struct Triangle {
     std::array<BlockPos, 3> vertices;
@@ -49,8 +47,7 @@ struct Triangle {
     bool above(BlockPos const& pt) const { return normal.dot(pt) > maxDotProduct; }
 
     bool operator==(Triangle const& v) const {
-        return (v.maxDotProduct == maxDotProduct) && (v.normal == normal)
-            && (v.vertices[0] == vertices[0]) && (v.vertices[1] == vertices[1])
+        return (v.vertices[0] == vertices[0]) && (v.vertices[1] == vertices[1])
             && (v.vertices[2] == vertices[2]);
     }
 };

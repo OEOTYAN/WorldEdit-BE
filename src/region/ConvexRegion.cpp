@@ -1,10 +1,26 @@
 #include "ConvexRegion.h"
+#include "utils/Serialize.h"
 #include "worldedit/WorldEdit.h"
 
 namespace we {
+void ConvexRegion::serialize(CompoundTag& tag) const {
+    Region::serialize(tag);
+    auto& vec = tag["indexedVertices"].emplace<ListTag>();
+    for (auto& v : indexedVertices) {
+        vec.mList.push_back(ll::reflection::serialize<CompoundTagVariant>(v.data));
+    }
+}
+void ConvexRegion::deserialize(CompoundTag const& tag) {
+    Region::deserialize(tag);
+    for (auto& v : tag.at("indexedVertices").get<ListTag>().mList) {
+        addVertexWithIndex(doDeserialize<BlockPos, CompoundTagVariant>(v));
+    }
+}
 void ConvexRegion::updateBoundingBox() {
-    boundingBox.min = *vertices.begin();
-    boundingBox.max = *vertices.begin();
+    if (vertices.empty()) {
+        return;
+    }
+    boundingBox = *vertices.begin();
     for (auto& v : vertices) {
         boundingBox.min.x = std::min(boundingBox.min.x, v.x);
         boundingBox.min.y = std::min(boundingBox.min.y, v.y);
@@ -90,16 +106,8 @@ bool ConvexRegion::addVertex(BlockPos const& vertex) {
         return true;
     };
     case 3: {
-        triangles.emplace_back(
-            indexedVertices[0].data,
-            indexedVertices[1].data,
-            indexedVertices[2].data
-        );
-        triangles.emplace_back(
-            indexedVertices[0].data,
-            indexedVertices[2].data,
-            indexedVertices[1].data
-        );
+        triangles.emplace_back(indexedVertices[0].data, indexedVertices[1].data, vertex);
+        triangles.emplace_back(indexedVertices[0].data, vertex, indexedVertices[1].data);
         updateEdges();
         return true;
     };

@@ -65,6 +65,6 @@ public:
     virtual void
     forEachLine(std::function<void(BlockPos const&, BlockPos const&)>&&) const {}
 
-    virtual bool removePoint(int, std::optional<BlockPos> const&) { return false; }
+    virtual bool removePoint(std::optional<BlockPos> const&) { return false; }
 };
 } // namespace we

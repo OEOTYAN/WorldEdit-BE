@@ -13,9 +13,9 @@ protected:
 public:
     CuboidRegion(DimensionType, BoundingBox const&);
 
-    virtual void serialize(CompoundTag&) const;
+    void serialize(CompoundTag&) const override;
 
-    virtual void deserialize(CompoundTag const&);
+    void deserialize(CompoundTag const&) override;
 
     void updateBoundingBox() override;
 
