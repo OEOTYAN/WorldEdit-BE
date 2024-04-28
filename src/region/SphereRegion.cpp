@@ -6,13 +6,13 @@
 namespace we {
 void SphereRegion::serialize(CompoundTag& tag) const {
     Region::serialize(tag);
-    doSerialize(center, tag["center"]);
-    doSerialize(radius, tag["radius"]);
+    ll::reflection::serialize_to(tag["center"], center).value();
+    ll::reflection::serialize_to(tag["radius"], radius).value();
 }
 void SphereRegion::deserialize(CompoundTag const& tag) {
     Region::deserialize(tag);
-    ll::reflection::deserialize(center, tag.at("center"));
-    ll::reflection::deserialize(radius, tag.at("radius"));
+    ll::reflection::deserialize(center, tag.at("center")).value();
+    ll::reflection::deserialize(radius, tag.at("radius")).value();
 }
 
 void SphereRegion::updateBoundingBox() {
@@ -85,12 +85,9 @@ bool SphereRegion::setMainPos(BlockPos const& pos) {
 }
 
 bool SphereRegion::setVicePos(BlockPos const& pos) {
-    if (auto dis = pos.distanceTo(center); dis > radius) {
-        radius = dis + 0.5f;
-        updateBoundingBox();
-        return true;
-    }
-    return false;
+    radius = pos.distanceTo(center) + 0.5;
+    updateBoundingBox();
+    return true;
 }
 
 std::optional<int> SphereRegion::checkChanges(std::span<BlockPos> changes) {

@@ -5,13 +5,13 @@
 namespace we {
 void CuboidRegion::serialize(CompoundTag& tag) const {
     Region::serialize(tag);
-    doSerialize(mainPos, tag["mainPos"]);
-    doSerialize(vicePos, tag["vicePos"]);
+    ll::reflection::serialize_to(tag["mainPos"], mainPos).value();
+    ll::reflection::serialize_to(tag["vicePos"], vicePos).value();
 }
 void CuboidRegion::deserialize(CompoundTag const& tag) {
     Region::deserialize(tag);
-    ll::reflection::deserialize(mainPos, tag.at("mainPos"));
-    ll::reflection::deserialize(vicePos, tag.at("vicePos"));
+    ll::reflection::deserialize(mainPos, tag.at("mainPos")).value();
+    ll::reflection::deserialize(vicePos, tag.at("vicePos")).value();
 }
 
 void CuboidRegion::updateBoundingBox() {

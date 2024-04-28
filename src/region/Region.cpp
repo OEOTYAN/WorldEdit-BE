@@ -8,9 +8,9 @@
 namespace we {
 
 void Region::serialize(CompoundTag& tag) const {
-    doSerialize(getType(), tag["type"]);
-    doSerialize(boundingBox, tag["boundingBox"]);
-    doSerialize(dim.id, tag["dim"]);
+    ll::reflection::serialize_to(tag["type"], getType()).value();
+    ll::reflection::serialize_to(tag["boundingBox"], boundingBox).value();
+    ll::reflection::serialize_to(tag["dim"], dim.id).value();
 }
 void Region::deserialize(CompoundTag const&) {}
 
@@ -94,9 +94,9 @@ Region::create(RegionType type, DimensionType dim, BoundingBox const& box, bool 
 
 std::shared_ptr<Region> Region::create(CompoundTag const& tag) {
     auto res = create(
-        doDeserialize<RegionType>(tag["type"]),
-        doDeserialize<int>(tag["dim"]),
-        doDeserialize<BoundingBox>(tag["boundingBox"]),
+        ll::reflection::deserialize_to<RegionType>(tag["type"]).value(),
+        ll::reflection::deserialize_to<int>(tag["dim"]).value(),
+        ll::reflection::deserialize_to<BoundingBox>(tag["boundingBox"]).value(),
         false
     );
     res->deserialize(tag);

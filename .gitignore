@@ -558,3 +558,4 @@ fabric.properties
 /.idea/
 /.vscode/
 /bin/
+src/command/test/

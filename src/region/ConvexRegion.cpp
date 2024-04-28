@@ -7,13 +7,16 @@ void ConvexRegion::serialize(CompoundTag& tag) const {
     Region::serialize(tag);
     auto& vec = tag["indexedVertices"].emplace<ListTag>();
     for (auto& v : indexedVertices) {
-        vec.mList.push_back(ll::reflection::serialize<CompoundTagVariant>(v.data));
+        vec.mList.push_back(ll::reflection::serialize<CompoundTagVariant>(v.data).value()
+        );
     }
 }
 void ConvexRegion::deserialize(CompoundTag const& tag) {
     Region::deserialize(tag);
     for (auto& v : tag.at("indexedVertices").get<ListTag>().mList) {
-        addVertexWithIndex(doDeserialize<BlockPos, CompoundTagVariant>(v));
+        addVertexWithIndex(
+            ll::reflection::deserialize_to<BlockPos>(CompoundTagVariant{v}).value()
+        );
     }
 }
 void ConvexRegion::updateBoundingBox() {

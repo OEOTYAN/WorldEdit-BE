@@ -11,14 +11,11 @@ class PlayerStateManager;
 class PlayerState {
     friend PlayerStateManager;
     std::atomic_bool mutable mDirty;
-    std::atomic<std::chrono::system_clock::time_point> mutable lastUsedTime;
-
     std::atomic<Tick> mutable lastLeftClick;
     std::atomic<Tick> mutable lastRightClick;
 
-    bool temp;
-
-    mce::UUID uuid;
+    bool const      temp;
+    mce::UUID const uuid;
 
     void setMainPosInternal();
     void setVicePosInternal();
@@ -28,9 +25,9 @@ class PlayerState {
 public:
     std::optional<WithGeo<WithDim<BlockPos>>> mainPos;
     std::optional<WithGeo<WithDim<BlockPos>>> vicePos;
-    std::optional<RegionType> regionType;
-    std::shared_ptr<Region>   region;
-    Config::PlayerConfig      config;
+    std::optional<RegionType>                 regionType;
+    std::shared_ptr<Region>                   region;
+    Config::PlayerConfig                      config;
 
     bool dirty() const { return mDirty; }
 

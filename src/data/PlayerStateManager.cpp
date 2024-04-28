@@ -16,16 +16,12 @@
 #include "mc/server/commands/CommandOrigin.h"
 #include <ll/api/service/Bedrock.h>
 #include <ll/api/utils/ErrorUtils.h>
-#include <mc/world/item/VanillaItemNames.h>
 #include <mc/world/level/BlockSource.h>
 #include <mc/world/level/Level.h>
 #include <mc/world/level/block/actor/BlockActor.h>
 #include <mc/world/level/dimension/Dimension.h>
 
 namespace we {
-
-static auto saveDelayTime = 72h;
-
 PlayerStateManager::PlayerStateManager()
 : storagedState(WorldEdit::getInstance().getSelf().getDataDir() / u8"player_states") {
     using namespace ll::event;
@@ -42,12 +38,10 @@ PlayerStateManager::PlayerStateManager()
     );
     listeners.emplace_back(
         bus.emplaceListener<PlayerLeaveEvent>([this](PlayerLeaveEvent& ev) {
-            WorldEdit::getInstance().getScheduler().add<ll::schedule::DelayTask>(
-                saveDelayTime,
-                [id = ev.self().getUuid(), ptr = weak_from_this()] {
-                    if (!ptr.expired()) ptr.lock()->release(id);
-                }
-            );
+            WorldEdit::getInstance().getPool().addTask([id  = ev.self().getUuid(),
+                                                        ptr = weak_from_this()] {
+                if (!ptr.expired()) ptr.lock()->release(id);
+            });
         })
     );
     listeners.emplace_back(
@@ -200,7 +194,6 @@ PlayerStateManager::~PlayerStateManager() {
 std::shared_ptr<PlayerState> PlayerStateManager::get(mce::UUID const& uuid, bool temp) {
     std::shared_ptr<PlayerState> res;
     if (playerStates.if_contains(uuid, [&](auto&& p) { res = p.second; })) {
-        res->lastUsedTime = std::chrono::system_clock::now();
         return res;
     } else if (!temp) {
         std::optional<std::string> nbt = storagedState.get(uuid.asString());
@@ -221,15 +214,16 @@ PlayerStateManager::getOrCreate(mce::UUID const& uuid, bool temp) {
         [&, this](auto&& ctor) {
             res = std::make_shared<PlayerState>(uuid, temp);
             if (!temp) {
-                std::optional<std::string> nbt = storagedState.get(uuid.asString());
-                if (nbt) {
-                    res->deserialize(CompoundTag::fromBinaryNbt(*nbt).value());
-                }
+                try {
+                    std::optional<std::string> nbt = storagedState.get(uuid.asString());
+                    if (nbt) {
+                        res->deserialize(CompoundTag::fromBinaryNbt(*nbt).value());
+                    }
+                } catch (...) {}
             }
             ctor(uuid, res);
         }
     );
-    res->lastUsedTime = std::chrono::system_clock::now();
     return res;
 }
 
@@ -257,10 +251,6 @@ std::shared_ptr<PlayerState> PlayerStateManager::getOrCreate(CommandOrigin const
 
 bool PlayerStateManager::release(mce::UUID const& uuid) {
     return playerStates.erase_if(uuid, [&](auto&& p) {
-        if (std::chrono::system_clock::now() - p.second->lastUsedTime.load()
-            <= saveDelayTime) {
-            return false;
-        }
         if (p.second->temp || !p.second->dirty()) {
             return true;
         }
@@ -302,7 +292,7 @@ PlayerStateManager::ClickState PlayerStateManager::playerLeftClick(
         needDiscard = true;
     }
     auto& itemName = item.getFullNameHash();
-    if (itemName == VanillaItemNames::WoodenAxe) {
+    if (data->config.wand == itemName) {
         if (isLong) {
             return ClickState::Pass;
         }
@@ -329,7 +319,7 @@ PlayerStateManager::ClickState PlayerStateManager::playerRightClick(
         needDiscard = true;
     }
     auto& itemName = item.getFullNameHash();
-    if (itemName == VanillaItemNames::WoodenAxe) {
+    if (data->config.wand == itemName) {
         if (isLong) {
             return ClickState::Pass;
         }

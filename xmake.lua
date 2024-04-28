@@ -5,7 +5,7 @@ add_repositories("liteldev-repo https://github.com/LiteLDev/xmake-repo.git")
 add_requires("levilamina")
 add_requires("bsci")
 add_requires("parallel-hashmap")
-add_requires("openimageio 2.5.10+1", {verify = false})
+-- add_requires("openimageio 2.5.10+1", {verify = false})
 add_requires("tinyobjloader")
 
 if not has_config("vs_runtime") then
@@ -30,7 +30,7 @@ target("WorldEdit") -- Change this to your plugin name.
     add_files("thirdparty/**.cpp")
     add_includedirs("thirdparty")
     set_pcxxheader("src/worldedit/Global.h")
-    add_packages("levilamina", "bsci", "parallel-hashmap", "openimageio", "boost", "tinyobjloader")
+    add_packages("levilamina", "bsci", "parallel-hashmap", "boost", "tinyobjloader")
     add_shflags("/DELAYLOAD:bedrock_server.dll") -- To use symbols provided by SymbolProvider.
     set_exceptions("none") -- To avoid conflicts with /EHa.
     set_kind("shared")

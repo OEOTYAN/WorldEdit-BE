@@ -61,26 +61,26 @@ bool PlayerState::setVicePos(WithDim<BlockPos> const& v) {
 }
 
 void PlayerState::serialize(CompoundTag& nbt) const {
-    doSerialize(config, nbt["config"]);
-    if (mainPos) doSerialize(mainPos->data, nbt["mainPos"]);
-    if (vicePos) doSerialize(vicePos->data, nbt["vicePos"]);
-    if (regionType) doSerialize(*regionType, nbt["regionType"]);
+    ll::reflection::serialize_to(nbt["config"], config).value();
+    if (mainPos) ll::reflection::serialize_to(nbt["mainPos"], mainPos->data).value();
+    if (vicePos) ll::reflection::serialize_to(nbt["vicePos"], vicePos->data).value();
+    if (regionType) ll::reflection::serialize_to(nbt["regionType"], *regionType).value();
     if (region) region->serialize(nbt["region"].emplace<CompoundTag>());
 }
 void PlayerState::deserialize(CompoundTag const& nbt) {
-    ll::reflection::deserialize(config, nbt["config"]);
+    ll::reflection::deserialize(config, nbt["config"]).value();
     if (nbt.contains("mainPos")) {
         mainPos.emplace();
-        ll::reflection::deserialize(mainPos->data, nbt["mainPos"]);
+        ll::reflection::deserialize(mainPos->data, nbt["mainPos"]).value();
         setMainPosInternal();
     }
     if (nbt.contains("vicePos")) {
         vicePos.emplace();
-        ll::reflection::deserialize(vicePos->data, nbt["vicePos"]);
+        ll::reflection::deserialize(vicePos->data, nbt["vicePos"]).value();
         setVicePosInternal();
     }
     if (nbt.contains("regionType")) {
-        ll::reflection::deserialize(*regionType, nbt["regionType"]);
+        ll::reflection::deserialize(*regionType, nbt["regionType"]).value();
     }
     if (nbt.contains("region")) {
         region = Region::create(nbt["region"].get<CompoundTag>());

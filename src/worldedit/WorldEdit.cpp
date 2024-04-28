@@ -77,7 +77,10 @@ bool WorldEdit::disable() {
     return true;
 }
 
-bool WorldEdit::unload() { return true; }
+bool WorldEdit::unload() {
+    getLogger().setPlayerOutputFunc(nullptr);
+    return true;
+}
 
 } // namespace we
 

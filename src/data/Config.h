@@ -5,6 +5,7 @@
 
 #include <ll/api/reflection/Dispatcher.h>
 #include <mc/server/commands/CommandPermissionLevel.h>
+#include <mc/world/item/VanillaItemNames.h>
 
 namespace we {
 struct Config {
@@ -33,7 +34,8 @@ struct Config {
     } log;
 
     struct PlayerConfig {
-        RegionType default_region_type{RegionType::Cuboid};
+        RegionType   default_region_type{RegionType::Cuboid};
+        HashedString wand = VanillaItemNames::WoodenAxe;
     } player_default_config;
 };
 } // namespace we
