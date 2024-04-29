@@ -1,7 +1,7 @@
 #pragma once
 
-#include "worldedit/Global.h"
 #include "RegionType.h"
+#include "worldedit/Global.h"
 
 #include "utils/GeoContainer.h"
 
@@ -18,7 +18,7 @@ public:
     static std::shared_ptr<Region>
     create(RegionType, DimensionType, BoundingBox const&, bool update = true);
 
-    static std::shared_ptr<Region> create(CompoundTag const&);
+    static ll::Expected<std::shared_ptr<Region>> create(CompoundTag const&);
 
     DimensionType getDim() const { return dim; }
 
@@ -26,9 +26,9 @@ public:
 
     virtual ~Region() = default;
 
-    virtual void serialize(CompoundTag&) const;
+    virtual ll::Expected<> serialize(CompoundTag&) const;
 
-    virtual void deserialize(CompoundTag const&);
+    virtual ll::Expected<> deserialize(CompoundTag const&);
 
     virtual bool needResetVice() const { return true; }
 

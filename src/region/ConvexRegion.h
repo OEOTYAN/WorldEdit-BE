@@ -28,9 +28,9 @@ class ConvexRegion : public Region {
 public:
     ConvexRegion(DimensionType, BoundingBox const&);
 
-     void serialize(CompoundTag&) const override;
+     ll::Expected<> serialize(CompoundTag&) const override;
 
-     void deserialize(CompoundTag const&) override;
+     ll::Expected<> deserialize(CompoundTag const&) override;
 
      void updateBoundingBox() override;
 

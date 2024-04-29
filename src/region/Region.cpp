@@ -7,12 +7,15 @@
 
 namespace we {
 
-void Region::serialize(CompoundTag& tag) const {
-    ll::reflection::serialize_to(tag["type"], getType()).value();
-    ll::reflection::serialize_to(tag["boundingBox"], boundingBox).value();
-    ll::reflection::serialize_to(tag["dim"], dim.id).value();
+ll::Expected<> Region::serialize(CompoundTag& tag) const {
+    return ll::reflection::serialize_to(tag["type"], getType())
+        .and_then([&, this]() {
+            return ll::reflection::serialize_to(tag["boundingBox"], boundingBox);
+        })
+        .and_then([&, this]() { return ll::reflection::serialize_to(tag["dim"], dim.id); }
+        );
 }
-void Region::deserialize(CompoundTag const&) {}
+ll::Expected<> Region::deserialize(CompoundTag const&) { return {}; }
 
 void Region::forEachBlockInRegion(std::function<void(BlockPos const&)>&& todo) const {
     boundingBox.forEachPos([todo = std::move(todo), this](BlockPos const& pos) {
@@ -91,16 +94,29 @@ Region::create(RegionType type, DimensionType dim, BoundingBox const& box, bool 
     }
     return res;
 }
-
-std::shared_ptr<Region> Region::create(CompoundTag const& tag) {
-    auto res = create(
-        ll::reflection::deserialize_to<RegionType>(tag["type"]).value(),
-        ll::reflection::deserialize_to<int>(tag["dim"]).value(),
-        ll::reflection::deserialize_to<BoundingBox>(tag["boundingBox"]).value(),
-        false
-    );
-    res->deserialize(tag);
-    res->updateBoundingBox();
-    return res;
+ll::Expected<std::shared_ptr<Region>> Region::create(CompoundTag const& tag) {
+    RegionType type;
+    int        dim;
+    return ll::reflection::deserialize_to<RegionType>(tag["type"])
+        .and_then([&](auto&& r) {
+            type = r;
+            return ll::reflection::deserialize_to<int>(tag["dim"]);
+        })
+        .and_then([&](auto&& r) {
+            dim = r;
+            return ll::reflection::deserialize_to<BoundingBox>(tag["boundingBox"]);
+        })
+        .transform([&](auto&& r) { return create(type, dim, r, false); })
+        .and_then([&](auto&& r) -> ll::Expected<std::shared_ptr<Region>> {
+            if (auto res = r->deserialize(tag); res) {
+                return r;
+            } else {
+                return ll::forwardError(res.error());
+            }
+        })
+        .transform([&](auto&& r) {
+            r->updateBoundingBox();
+            return r;
+        });
 }
 } // namespace we

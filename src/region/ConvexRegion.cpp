@@ -3,21 +3,41 @@
 #include "worldedit/WorldEdit.h"
 
 namespace we {
-void ConvexRegion::serialize(CompoundTag& tag) const {
-    Region::serialize(tag);
+ll::Expected<> ConvexRegion::serialize(CompoundTag& tag) const {
+    auto res = Region::serialize(tag);
+    if (!res) {
+        return res;
+    }
     auto& vec = tag["indexedVertices"].emplace<ListTag>();
     for (auto& v : indexedVertices) {
-        vec.mList.push_back(ll::reflection::serialize<CompoundTagVariant>(v.data).value()
-        );
+        if (res) {
+            if (auto t = ll::reflection::serialize<CompoundTagVariant>(v.data); t) {
+                vec.mList.push_back(std::move(*t));
+            } else {
+                res = ll::forwardError(t.error());
+                break;
+            }
+        }
     }
+    return res;
 }
-void ConvexRegion::deserialize(CompoundTag const& tag) {
-    Region::deserialize(tag);
-    for (auto& v : tag.at("indexedVertices").get<ListTag>().mList) {
-        addVertexWithIndex(
-            ll::reflection::deserialize_to<BlockPos>(CompoundTagVariant{v}).value()
-        );
+ll::Expected<> ConvexRegion::deserialize(CompoundTag const& tag) {
+    auto res = Region::deserialize(tag);
+    if (!res) {
+        return res;
     }
+    for (auto& v : tag.at("indexedVertices").get<ListTag>().mList) {
+        if (res) {
+            if (auto t = ll::reflection::deserialize_to<BlockPos>(CompoundTagVariant{v});
+                t) {
+                addVertexWithIndex(std::move(*t));
+            } else {
+                res = ll::forwardError(t.error());
+                break;
+            }
+        }
+    }
+    return res;
 }
 void ConvexRegion::updateBoundingBox() {
     if (vertices.empty()) {

@@ -4,15 +4,23 @@
 #include "worldedit/WorldEdit.h"
 
 namespace we {
-void SphereRegion::serialize(CompoundTag& tag) const {
-    Region::serialize(tag);
-    ll::reflection::serialize_to(tag["center"], center).value();
-    ll::reflection::serialize_to(tag["radius"], radius).value();
+ll::Expected<> SphereRegion::serialize(CompoundTag& tag) const {
+    return Region::serialize(tag)
+        .and_then([&, this]() {
+            return ll::reflection::serialize_to(tag["center"], center);
+        })
+        .and_then([&, this]() {
+            return ll::reflection::serialize_to(tag["radius"], radius);
+        });
 }
-void SphereRegion::deserialize(CompoundTag const& tag) {
-    Region::deserialize(tag);
-    ll::reflection::deserialize(center, tag.at("center")).value();
-    ll::reflection::deserialize(radius, tag.at("radius")).value();
+ll::Expected<> SphereRegion::deserialize(CompoundTag const& tag) {
+    return Region::deserialize(tag)
+        .and_then([&, this]() {
+            return ll::reflection::deserialize(center, tag.at("center"));
+        })
+        .and_then([&, this]() {
+            return ll::reflection::deserialize(radius, tag.at("radius"));
+        });
 }
 
 void SphereRegion::updateBoundingBox() {

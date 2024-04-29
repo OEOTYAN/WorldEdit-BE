@@ -3,15 +3,23 @@
 #include "worldedit/WorldEdit.h"
 
 namespace we {
-void CuboidRegion::serialize(CompoundTag& tag) const {
-    Region::serialize(tag);
-    ll::reflection::serialize_to(tag["mainPos"], mainPos).value();
-    ll::reflection::serialize_to(tag["vicePos"], vicePos).value();
+ll::Expected<> CuboidRegion::serialize(CompoundTag& tag) const {
+    return Region::serialize(tag)
+        .and_then([&, this]() {
+            return ll::reflection::serialize_to(tag["mainPos"], mainPos);
+        })
+        .and_then([&, this]() {
+            return ll::reflection::serialize_to(tag["vicePos"], vicePos);
+        });
 }
-void CuboidRegion::deserialize(CompoundTag const& tag) {
-    Region::deserialize(tag);
-    ll::reflection::deserialize(mainPos, tag.at("mainPos")).value();
-    ll::reflection::deserialize(vicePos, tag.at("vicePos")).value();
+ll::Expected<> CuboidRegion::deserialize(CompoundTag const& tag) {
+    return Region::deserialize(tag)
+        .and_then([&, this]() {
+            return ll::reflection::deserialize(mainPos, tag.at("mainPos"));
+        })
+        .and_then([&, this]() {
+            return ll::reflection::deserialize(vicePos, tag.at("vicePos"));
+        });
 }
 
 void CuboidRegion::updateBoundingBox() {

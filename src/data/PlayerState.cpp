@@ -60,30 +60,62 @@ bool PlayerState::setVicePos(WithDim<BlockPos> const& v) {
     return false;
 }
 
-void PlayerState::serialize(CompoundTag& nbt) const {
-    ll::reflection::serialize_to(nbt["config"], config).value();
-    if (mainPos) ll::reflection::serialize_to(nbt["mainPos"], mainPos->data).value();
-    if (vicePos) ll::reflection::serialize_to(nbt["vicePos"], vicePos->data).value();
-    if (regionType) ll::reflection::serialize_to(nbt["regionType"], *regionType).value();
-    if (region) region->serialize(nbt["region"].emplace<CompoundTag>());
+ll::Expected<> PlayerState::serialize(CompoundTag& nbt) const {
+    return ll::reflection::serialize_to(nbt["config"], config)
+        .and_then([&, this]() {
+            if (mainPos)
+                return ll::reflection::serialize_to(nbt["mainPos"], mainPos->data);
+            return ll::Expected<>{};
+        })
+        .and_then([&, this]() {
+            if (vicePos)
+                return ll::reflection::serialize_to(nbt["vicePos"], vicePos->data);
+            return ll::Expected<>{};
+        })
+        .and_then([&, this]() {
+            if (regionType)
+                return ll::reflection::serialize_to(nbt["regionType"], *regionType);
+            return ll::Expected<>{};
+        })
+        .and_then([&, this]() {
+            if (region) return region->serialize(nbt["region"].emplace<CompoundTag>());
+            return ll::Expected<>{};
+        });
 }
-void PlayerState::deserialize(CompoundTag const& nbt) {
-    ll::reflection::deserialize(config, nbt["config"]).value();
-    if (nbt.contains("mainPos")) {
-        mainPos.emplace();
-        ll::reflection::deserialize(mainPos->data, nbt["mainPos"]).value();
-        setMainPosInternal();
-    }
-    if (nbt.contains("vicePos")) {
-        vicePos.emplace();
-        ll::reflection::deserialize(vicePos->data, nbt["vicePos"]).value();
-        setVicePosInternal();
-    }
-    if (nbt.contains("regionType")) {
-        ll::reflection::deserialize(*regionType, nbt["regionType"]).value();
-    }
-    if (nbt.contains("region")) {
-        region = Region::create(nbt["region"].get<CompoundTag>());
-    }
+ll::Expected<> PlayerState::deserialize(CompoundTag const& nbt) {
+    return ll::reflection::deserialize(config, nbt["config"])
+        .and_then([&, this]() {
+            ll::Expected<> res;
+            if (nbt.contains("mainPos")) {
+                mainPos.emplace();
+                res = ll::reflection::deserialize(mainPos->data, nbt["mainPos"]);
+                if (res) setMainPosInternal();
+            }
+            return res;
+        })
+        .and_then([&, this]() {
+            ll::Expected<> res;
+            if (nbt.contains("vicePos")) {
+                vicePos.emplace();
+                res = ll::reflection::deserialize(vicePos->data, nbt["vicePos"]);
+                if (res) setMainPosInternal();
+            }
+            return res;
+        })
+        .and_then([&, this]() {
+            if (nbt.contains("regionType"))
+                return ll::reflection::deserialize(*regionType, nbt["regionType"]);
+            return ll::Expected<>{};
+        })
+        .and_then([&, this]() -> ll::Expected<> {
+            if (nbt.contains("region")) {
+                if (auto res = Region::create(nbt["region"].get<CompoundTag>()); res) {
+                    region = std::move(*res);
+                } else {
+                    return ll::forwardError(res.error());
+                }
+            }
+            return {};
+        });
 }
 } // namespace we

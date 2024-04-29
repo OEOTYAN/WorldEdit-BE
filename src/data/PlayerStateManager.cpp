@@ -196,10 +196,11 @@ std::shared_ptr<PlayerState> PlayerStateManager::get(mce::UUID const& uuid, bool
     if (playerStates.if_contains(uuid, [&](auto&& p) { res = p.second; })) {
         return res;
     } else if (!temp) {
-        std::optional<std::string> nbt = storagedState.get(uuid.asString());
-        if (nbt) {
+        if (auto nbt = storagedState.get(uuid.asString()); nbt) {
             res = std::make_shared<PlayerState>(uuid, temp);
-            res->deserialize(CompoundTag::fromBinaryNbt(*nbt).value());
+            CompoundTag::fromBinaryNbt(*nbt).and_then([&](CompoundTag&& tag) {
+                return res->deserialize(tag);
+            });
             return res;
         }
     }
@@ -214,12 +215,11 @@ PlayerStateManager::getOrCreate(mce::UUID const& uuid, bool temp) {
         [&, this](auto&& ctor) {
             res = std::make_shared<PlayerState>(uuid, temp);
             if (!temp) {
-                try {
-                    std::optional<std::string> nbt = storagedState.get(uuid.asString());
-                    if (nbt) {
-                        res->deserialize(CompoundTag::fromBinaryNbt(*nbt).value());
-                    }
-                } catch (...) {}
+                if (auto nbt = storagedState.get(uuid.asString()); nbt) {
+                    CompoundTag::fromBinaryNbt(*nbt).and_then([&](CompoundTag&& tag) {
+                        return res->deserialize(tag);
+                    });
+                }
             }
             ctor(uuid, res);
         }

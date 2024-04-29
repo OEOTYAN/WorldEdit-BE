@@ -10,6 +10,7 @@
 #include <ll/api/reflection/Deserialization.h>
 #include <ll/api/reflection/Serialization.h>
 #include <ll/api/schedule/Scheduler.h>
+#include <ll/api/Expected.h>
 #include <ll/api/utils/HashUtils.h>
 #include <mc/math/Vec2.h>
 #include <mc/math/Vec3.h>
