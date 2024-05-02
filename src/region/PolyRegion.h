@@ -3,21 +3,14 @@
 #include "Region.h"
 
 namespace we {
-class CylinderRegion : public Region {
-    Pos2d  center;
-    double radius;
-    int    minY, maxY;
-
-    GeoContainer circles;
-    GeoContainer startbox;
-    GeoContainer endbox;
-    GeoContainer centerline;
-
-    std::optional<int> checkChanges(std::span<BlockPos>) const;
-    bool               setY(int y);
+class PolyRegion : public Region {
+    std::vector<Pos2d> points;
+    int                minY;
+    int                maxY;
+    GeoContainer       outline;
 
 public:
-    CylinderRegion(DimensionType, BoundingBox const&);
+    PolyRegion(DimensionType, BoundingBox const&);
 
     ll::Expected<> serialize(CompoundTag&) const override;
 
@@ -25,21 +18,21 @@ public:
 
     void updateBoundingBox() override;
 
-    RegionType getType() const override { return RegionType::Cylinder; }
-
-    uint64 size() const override {
-        return (uint64)std::round(std::numbers::pi * radius * radius * (maxY - minY + 1));
-    };
-
     bool expand(std::span<BlockPos>) override;
 
     bool contract(std::span<BlockPos>) override;
 
     bool shift(BlockPos const&) override;
 
+    RegionType getType() const override { return RegionType::Poly; }
+
+    uint64 size() const override;
+
     void
     forEachBlockUVInRegion(std::function<void(BlockPos const&, double, double)>&& todo
     ) const override;
+
+    Vec3 getCenter() const override;
 
     bool setMainPos(BlockPos const&) override;
 

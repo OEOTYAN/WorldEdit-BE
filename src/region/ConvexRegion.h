@@ -28,20 +28,20 @@ class ConvexRegion : public Region {
 public:
     ConvexRegion(DimensionType, BoundingBox const&);
 
-     ll::Expected<> serialize(CompoundTag&) const override;
+    ll::Expected<> serialize(CompoundTag&) const override;
 
-     ll::Expected<> deserialize(CompoundTag const&) override;
+    ll::Expected<> deserialize(CompoundTag const&) override;
 
-     void updateBoundingBox() override;
+    void updateBoundingBox() override;
 
-     RegionType getType() const override { return RegionType::Convex; }
+    RegionType getType() const override { return RegionType::Convex; }
 
-     uint64_t size() const override;
+    uint64 size() const override;
 
-     bool shift(BlockPos const&) override;
+    bool shift(BlockPos const&) override;
 
-     Vec3 getCenter() const override {
-         return Vec3{centerAccum} * (1.0f / vertices.size()) + 0.5;
+    Vec3 getCenter() const override {
+        return Vec3{centerAccum} * (1.0f / vertices.size()) + 0.5;
     };
 
     void

@@ -1,6 +1,7 @@
 #include "ExpandRegion.h"
 
 namespace we {
+ExpandRegion::ExpandRegion(DimensionType d, BoundingBox const& b) : CuboidRegion(d, b) {}
 
 bool ExpandRegion::setMainPos(BlockPos const& pos) {
     mainPos = pos;
@@ -23,6 +24,4 @@ bool ExpandRegion::setVicePos(BlockPos const& pos) {
     updateBoundingBox();
     return true;
 }
-ExpandRegion::ExpandRegion(DimensionType d, BoundingBox const& b) : CuboidRegion(d, b) {}
-
 } // namespace we

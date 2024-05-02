@@ -2,7 +2,15 @@
 #include "utils/Math.h"
 #include "utils/Serialize.h"
 #include "worldedit/WorldEdit.h"
+
 namespace we {
+CylinderRegion::CylinderRegion(DimensionType d, BoundingBox const& b)
+: Region(d, b),
+  center((b.min + b.max) / 2),
+  radius(b.getSideLength().dot({1, 0, 1}) / 4.0),
+  minY(b.min.y),
+  maxY(b.max.y) {}
+
 ll::Expected<> CylinderRegion::serialize(CompoundTag& tag) const {
     return Region::serialize(tag)
         .and_then([&, this]() {
@@ -192,11 +200,4 @@ bool CylinderRegion::shift(BlockPos const& change) {
     updateBoundingBox();
     return true;
 }
-CylinderRegion::CylinderRegion(DimensionType d, BoundingBox const& b)
-: Region(d, b),
-  center((b.min + b.max) / 2),
-  radius(b.getSideLength().dot({1, 0, 1}) / 4.0),
-  minY(b.min.y),
-  maxY(b.max.y) {}
-
 } // namespace we

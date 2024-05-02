@@ -31,8 +31,8 @@ public:
 
     Vec3 getCenter() const override { return center.center(); };
 
-    uint64_t size() const override {
-        return (uint64_t
+    uint64 size() const override {
+        return (uint64
         )std::round((4.0 / 3.0 * std::numbers::pi) * radius * radius * radius);
     };
 

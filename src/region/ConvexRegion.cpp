@@ -3,41 +3,43 @@
 #include "worldedit/WorldEdit.h"
 
 namespace we {
+ConvexRegion::ConvexRegion(DimensionType d, BoundingBox const& b)
+: Region(d, (b.max + b.min) / 2) {}
+
 ll::Expected<> ConvexRegion::serialize(CompoundTag& tag) const {
-    auto res = Region::serialize(tag);
-    if (!res) {
+    if (auto res = Region::serialize(tag); !res) {
         return res;
     }
     auto& vec = tag["indexedVertices"].emplace<ListTag>();
     for (auto& v : indexedVertices) {
-        if (res) {
-            if (auto t = ll::reflection::serialize<CompoundTagVariant>(v.data); t) {
-                vec.mList.push_back(std::move(*t));
-            } else {
-                res = ll::forwardError(t.error());
-                break;
-            }
+        if (auto t = ll::reflection::serialize<CompoundTagVariant>(v.data); t) {
+            vec.mList.push_back(std::move(*t));
+        } else {
+            return ll::forwardError(t.error());
         }
     }
-    return res;
+    return {};
 }
 ll::Expected<> ConvexRegion::deserialize(CompoundTag const& tag) {
     auto res = Region::deserialize(tag);
     if (!res) {
         return res;
     }
+    hasLast = false;
+    vertices.clear();
+    triangles.clear();
+    vertexBacklog.clear();
+    edges.clear();
+    indexedVertices.clear();
+    centerAccum = 0;
     for (auto& v : tag.at("indexedVertices").get<ListTag>().mList) {
-        if (res) {
-            if (auto t = ll::reflection::deserialize_to<BlockPos>(CompoundTagVariant{v});
-                t) {
-                addVertexWithIndex(std::move(*t));
-            } else {
-                res = ll::forwardError(t.error());
-                break;
-            }
+        if (auto t = ll::reflection::deserialize_to<BlockPos>(CompoundTagVariant{v}); t) {
+            addVertexWithIndex(std::move(*t));
+        } else {
+            return ll::forwardError(t.error());
         }
     }
-    return res;
+    return {};
 }
 void ConvexRegion::updateBoundingBox() {
     if (vertices.empty()) {
@@ -83,8 +85,6 @@ void ConvexRegion::updateEdges() {
         }
     }
 }
-
-ConvexRegion::ConvexRegion(DimensionType d, BoundingBox const& b) : Region(d, b) {}
 
 bool ConvexRegion::containsRaw(BlockPos const& pt) const {
     if (hasLast && lastTriangle.above(pt)) {
@@ -254,12 +254,12 @@ void ConvexRegion::forEachLine(
     }
 }
 
-uint64_t ConvexRegion::size() const {
+uint64 ConvexRegion::size() const {
     double volume = 0;
     for (auto triangle : triangles) {
         volume +=
             triangle.getVertex(0).cross(triangle.getVertex(1)).dot(triangle.getVertex(2));
     }
-    return (uint64_t)std::abs(volume / 6.0);
+    return (uint64)std::abs(volume / 6.0);
 };
 } // namespace we

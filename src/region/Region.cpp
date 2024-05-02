@@ -3,6 +3,7 @@
 #include "CuboidRegion.h"
 #include "CylinderRegion.h"
 #include "ExpandRegion.h"
+#include "PolyRegion.h"
 #include "SphereRegion.h"
 #include "utils/Serialize.h"
 
@@ -78,8 +79,9 @@ Region::create(RegionType type, DimensionType dim, BoundingBox const& box, bool 
     case RegionType::Sphere:
         res = std::make_shared<SphereRegion>(dim, box);
         break;
-    // case RegionType::Poly:
-    //     res = std::make_shared<PolyRegion>(dim, box); break;
+    case RegionType::Poly:
+        res = std::make_shared<PolyRegion>(dim, box);
+        break;
     case RegionType::Convex:
         res = std::make_shared<ConvexRegion>(dim, box);
         break;

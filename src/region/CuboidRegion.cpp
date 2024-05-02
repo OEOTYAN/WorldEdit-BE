@@ -3,6 +3,11 @@
 #include "worldedit/WorldEdit.h"
 
 namespace we {
+CuboidRegion::CuboidRegion(DimensionType d, BoundingBox const& b)
+: Region(d, b),
+  mainPos(b.min),
+  vicePos(b.max) {}
+
 ll::Expected<> CuboidRegion::serialize(CompoundTag& tag) const {
     return Region::serialize(tag)
         .and_then([&, this]() {
@@ -156,10 +161,5 @@ void CuboidRegion::forEachLine(
     std::function<void(BlockPos const&, BlockPos const&)>&& todo
 ) const {
     todo(mainPos, vicePos);
-}
-
-CuboidRegion::CuboidRegion(DimensionType d, BoundingBox const& b) : Region(d, b) {
-    mainPos = b.min;
-    vicePos = b.max;
 }
 } // namespace we

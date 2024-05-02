@@ -4,6 +4,11 @@
 #include "worldedit/WorldEdit.h"
 
 namespace we {
+SphereRegion::SphereRegion(DimensionType d, BoundingBox const& b)
+: Region(d, b),
+  center((b.min + b.max) / 2),
+  radius(b.getSideLength().dot(1) / 6.0) {}
+
 ll::Expected<> SphereRegion::serialize(CompoundTag& tag) const {
     return Region::serialize(tag)
         .and_then([&, this]() {
@@ -137,9 +142,4 @@ bool SphereRegion::shift(BlockPos const& change) {
     updateBoundingBox();
     return true;
 }
-
-SphereRegion::SphereRegion(DimensionType d, BoundingBox const& b)
-: Region(d, b),
-  center((b.min + b.max) / 2),
-  radius(b.getSideLength().dot(1) / 6.0) {}
 } // namespace we
