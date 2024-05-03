@@ -22,6 +22,7 @@ struct Config {
     struct {
         mce::Color region_line_color{"#FFEC27"};
         mce::Color region_point_color{"#10E436"};
+        mce::Color region_point_color2{"#94FFD8"};
         mce::Color main_hand_color{"#FF3040"};
         mce::Color off_hand_color{"#29ADFF"};
     } colors{};

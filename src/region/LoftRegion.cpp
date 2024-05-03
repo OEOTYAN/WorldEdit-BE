@@ -109,10 +109,15 @@ void LoftRegion::updateBoundingBox() {
         addline(line);
     }
     for (auto& points : loftPoints) {
+        bool first{true};
         for (auto& point : points) {
-            ids.emplace_back(
-                geo.box(getDim(), point, we.getConfig().colors.region_point_color)
-            );
+            ids.emplace_back(geo.box(
+                getDim(),
+                point,
+                first ? we.getConfig().colors.region_point_color2
+                      : we.getConfig().colors.region_point_color
+            ));
+            first = false;
         }
     }
     views = geo.merge(ids);
