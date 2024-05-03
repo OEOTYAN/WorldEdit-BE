@@ -66,7 +66,10 @@ void CylinderRegion::updateBoundingBox() {
     boundingBox.max.x = center.x + newRadius;
     boundingBox.max.y = maxY;
     boundingBox.max.z = center.z + newRadius;
-    auto& geo         = WorldEdit::getInstance().getGeo();
+
+    auto& we = WorldEdit::getInstance();
+
+    auto& geo = we.getGeo();
 
     std::vector<bsci::GeometryGroup::GeoId> ids;
     for (uint i = 0, e = std::min(8, std::max(3, maxY - minY + 1) / 3); i <= e; i++) {
@@ -77,26 +80,26 @@ void CylinderRegion::updateBoundingBox() {
              center.z + 0.5},
             {0, 1, 0},
             (float)radius,
-            WorldEdit::getInstance().getConfig().colors.region_line_color
+            we.getConfig().colors.region_line_color
         ));
     }
     circles  = geo.merge(ids);
     startbox = geo.box(
         getDim(),
         BlockPos{center.x, minY, center.z},
-        WorldEdit::getInstance().getConfig().colors.region_point_color
+        we.getConfig().colors.region_point_color
     );
     if (maxY != minY) {
         endbox = geo.box(
             getDim(),
             BlockPos{center.x, maxY, center.z},
-            WorldEdit::getInstance().getConfig().colors.region_point_color
+            we.getConfig().colors.region_point_color
         );
         centerline = geo.line(
             getDim(),
             BlockPos{center.x, minY, center.z}.center(),
             BlockPos{center.x, maxY, center.z}.center(),
-            WorldEdit::getInstance().getConfig().colors.region_point_color
+            we.getConfig().colors.region_point_color
         );
     } else {
         endbox     = {};

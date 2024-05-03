@@ -8,6 +8,12 @@ namespace we {
 
 inline double posfmod(double x, double y) { return x - std::floor(x / y) * y; }
 
+template <std::integral T1, std::integral T2>
+inline auto posmod(T1 i, T2 n) {
+    return (i % n + n) % n;
+}
+
+
 template <class T>
 constexpr T binpow(T const& a, uint64 const& b) {
     if (b == 0) return static_cast<T>(1);

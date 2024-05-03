@@ -1,27 +1,44 @@
 #include "LoftRegion.h"
+#include "utils/Math.h"
+#include "utils/Serialize.h"
+#include "worldedit/WorldEdit.h"
 
 namespace we {
-LoftRegion::LoftRegion(const BoundingBox& region, int dim) : Region(BoundingBox(), dim) {
-    loftPoints.clear();
-    interpolations.clear();
-    cache1.clear();
-    cache2.clear();
-    regionType = LOFT;
-}
+LoftRegion::LoftRegion(DimensionType d, BoundingBox const& b)
+: Region(d, (b.max + b.min) / 2) {}
 
+ll::Expected<> LoftRegion::serialize(CompoundTag& tag) const {
+    return Region::serialize(tag)
+        .and_then([&, this]() {
+            return ll::reflection::serialize_to(tag["maxPointCount"], maxPointCount);
+        })
+        .and_then([&, this]() {
+            return ll::reflection::serialize_to(tag["loftPoints"], loftPoints);
+        });
+}
+ll::Expected<> LoftRegion::deserialize(CompoundTag const& tag) {
+    return Region::deserialize(tag)
+        .and_then([&, this]() {
+            return ll::reflection::deserialize(maxPointCount, tag.at("maxPointCount"));
+        })
+        .and_then([&, this]() {
+            return ll::reflection::deserialize(loftPoints, tag.at("loftPoints"));
+        });
+}
 void LoftRegion::updateBoundingBox() {
     posCached   = false;
     boundingBox = BoundingBox();
     interpolations.clear();
-    cache1.clear();
-    cache2.clear();
+    verticalCurves.clear();
+    std::vector<KochanekBartelsInterpolation> cache2;
     if (maxPointCount == 1) {
         std::vector<Node> nodes2;
         nodes2.clear();
         for (auto& point : loftPoints) {
-            nodes2.push_back(Node(point[0]));
+            nodes2.push_back(Node(point.front()));
         }
-        cache1.push_back(KochanekBartelsInterpolation(nodes2, circle));
+        if (!nodes2.empty())
+            verticalCurves.push_back(KochanekBartelsInterpolation(nodes2, circle));
     } else {
         for (auto& points : loftPoints) {
             std::vector<Node> nodes;
@@ -39,7 +56,7 @@ void LoftRegion::updateBoundingBox() {
             for (auto& curve : interpolations) {
                 nodes2.push_back(Node(curve.getPosition(t)));
             }
-            cache1.push_back(KochanekBartelsInterpolation(nodes2, circle));
+            verticalCurves.push_back(KochanekBartelsInterpolation(nodes2, circle));
         }
         auto rSize = loftPoints.size() + circle - 1;
         for (int i = 1; i <= rSize; ++i) {
@@ -47,33 +64,69 @@ void LoftRegion::updateBoundingBox() {
             nodes2.clear();
             for (int j = 0; j < maxPointCount; ++j) {
                 double t = (i * 2 - 1) / (rSize * 2.0);
-                nodes2.push_back(Node(cache1[j * 2].getPosition(t)));
+                nodes2.push_back(Node(verticalCurves[j * 2].getPosition(t)));
             }
             cache2.push_back(KochanekBartelsInterpolation(nodes2));
         }
     }
-    rendertick = 0;
+    auto& we = WorldEdit::getInstance();
+
+    auto& geo = we.getGeo();
+
+    std::vector<bsci::GeometryGroup::GeoId> ids;
+
+    auto addline = [&](KochanekBartelsInterpolation const& line) {
+        if (line.segCount == 0) {
+            return;
+        } else if (line.segCount == 1) {
+            ids.emplace_back(geo.line(
+                getDim(),
+                line.getPosition(0.0),
+                line.getPosition(1.0),
+                we.getConfig().colors.region_line_color
+            ));
+        }
+        std::vector<Vec3> points;
+        for (int i = 0; i < line.segCount; i++) {
+            size_t linenum =
+                2 * std::clamp<size_t>((size_t)(line.arcLength(i) / 1.2), 1, 32);
+            for (int j = 0; j < linenum; j++) {
+                points.emplace_back(line.getPosition(i, j / (double)linenum));
+            }
+        }
+        points.emplace_back(line.getPosition(1.0));
+        ids.emplace_back(
+            geo.line(getDim(), points, we.getConfig().colors.region_line_color)
+        );
+    };
+    for (auto& line : interpolations) {
+        addline(line);
+    }
+    for (auto& line : verticalCurves) {
+        addline(line);
+    }
+    for (auto& line : cache2) {
+        addline(line);
+    }
+    for (auto& points : loftPoints) {
+        for (auto& point : points) {
+            ids.emplace_back(
+                geo.box(getDim(), point, we.getConfig().colors.region_point_color)
+            );
+        }
+    }
+    views = geo.merge(ids);
 }
 
-bool LoftRegion::contains(BlockPos const& pos) {
+bool LoftRegion::contains(BlockPos const& pos) const {
     if (posCached) {
         return posCache.contains(pos);
     }
     return false;
 };
 
-bool LoftRegion::removePoint(int dim, BlockPos const& pos) {
-    if (!selecting) {
-        return false;
-    }
-    if (dim != dimensionID) {
-        return false;
-    }
-    if (loftPoints.size() == 1 && loftPoints[0].size() == 1) {
-        selecting = false;
-        return true;
-    }
-    if (pos == BlockPos::MIN) {
+bool LoftRegion::removePoint(std::optional<BlockPos> const& pos) {
+    if (!pos) {
         auto& points = loftPoints.back();
         if (points.size() == 1) {
             loftPoints.pop_back();
@@ -85,7 +138,7 @@ bool LoftRegion::removePoint(int dim, BlockPos const& pos) {
         size_t pi = 0, pj = 0;
         for (size_t endi = loftPoints.size(), i = 0; i < endi; ++i) {
             for (size_t endj = loftPoints[i].size(), j = 0; j < endj; ++j) {
-                auto length = (loftPoints[i][j] - pos).length();
+                auto length = (loftPoints[i][j] - *pos).length();
                 if (length <= minDis) {
                     minDis = length;
                     pi     = i;
@@ -103,11 +156,8 @@ bool LoftRegion::removePoint(int dim, BlockPos const& pos) {
     return true;
 }
 
-void LoftRegion::buildCache() {
+void LoftRegion::buildCache() const {
     if (posCached) {
-        return;
-    }
-    if (!selecting) {
         return;
     }
     if (interpolations.size() == 0) {
@@ -130,7 +180,7 @@ void LoftRegion::buildCache() {
         auto tmpCurve = KochanekBartelsInterpolation(nodes, circle);
         auto step2    = (1.0 / tmpCurve.arcLength()) / quality;
         for (double t2 = 0; t2 <= 1.0; t2 += step2) {
-            auto tmpPos      = tmpCurve.getPosition(t2).toBlockPos();
+            BlockPos tmpPos  = tmpCurve.getPosition(t2);
             posCache[tmpPos] = std::make_pair(1 - t2, 1 - t);
             box              = box.merge(tmpPos);
         }
@@ -138,12 +188,12 @@ void LoftRegion::buildCache() {
     boundingBox = box;
 }
 
-BoundingBox LoftRegion::getBoundBox() {
+BoundingBox LoftRegion::getBoundBox() const {
     buildCache();
     return boundingBox;
 }
 
-void LoftRegion::forEachBlockInRegion(const std::function<void(BlockPos const&)>& todo) {
+void LoftRegion::forEachBlockInRegion(std::function<void(BlockPos const&)>&& todo) const {
     buildCache();
     for (auto& pos : posCache) {
         todo(pos.first);
@@ -151,8 +201,8 @@ void LoftRegion::forEachBlockInRegion(const std::function<void(BlockPos const&)>
 }
 
 void LoftRegion::forEachBlockUVInRegion(
-    const std::function<void(BlockPos const&, double, double)>& todo
-) {
+    std::function<void(BlockPos const&, double, double)>&& todo
+) const {
     buildCache();
     for (auto& pos : posCache) {
         todo(pos.first, pos.second.first, pos.second.second);
@@ -164,9 +214,6 @@ void LoftRegion::forEachBlockInLines(
     bool                                        isX,
     const std::function<void(BlockPos const&)>& todo
 ) {
-    if (!selecting) {
-        return;
-    }
     if (num < 2) {
         return;
     }
@@ -190,8 +237,7 @@ void LoftRegion::forEachBlockInLines(
                 auto tmpCurve = KochanekBartelsInterpolation(nodes2, circle);
                 auto step2    = (1.0 / tmpCurve.arcLength()) / quality;
                 for (double t2 = 0; t2 <= 1.0; t2 += step2) {
-                    auto tmpPos = tmpCurve.getPosition(t2).toBlockPos();
-                    posCache2.insert(tmpPos);
+                    posCache2.insert(tmpCurve.getPosition(t2));
                 }
             }
             for (auto& pos : posCache2) {
@@ -206,15 +252,14 @@ void LoftRegion::forEachBlockInLines(
             std::vector<Node> nodes2;
             nodes2.clear();
             double t = i / (double)(num - 1 + circle);
-            for (size_t endj = cache1.size(), j = 0; j < endj; j += 2) {
-                auto& curve = cache1[j];
+            for (size_t endj = verticalCurves.size(), j = 0; j < endj; j += 2) {
+                auto& curve = verticalCurves[j];
                 nodes2.push_back(Node(curve.getPosition(t)));
             }
             auto tmpCurve = KochanekBartelsInterpolation(nodes2);
             auto step2    = (1.0 / tmpCurve.arcLength()) / quality;
             for (double t2 = 0; t2 <= 1.0; t2 += step2) {
-                auto tmpPos = tmpCurve.getPosition(t2).toBlockPos();
-                posCache2.insert(tmpPos);
+                posCache2.insert(tmpCurve.getPosition(t2));
             }
         }
 
@@ -224,54 +269,14 @@ void LoftRegion::forEachBlockInLines(
         return;
     }
 }
-
-void LoftRegion::renderRegion() {
-    if (selecting && dimensionID >= 0 && rendertick <= 0) {
-        rendertick = 40;
-        for (auto& point : loftPoints) {
-            globalPT().drawCuboid(point[0], dimensionID, mce::ColorPalette::SLATE);
-            for (size_t endi = point.size(), i = 1; i < endi; ++i) {
-                globalPT().drawCuboid(point[i], dimensionID, mce::ColorPalette::GREEN);
-            }
-        }
-        for (auto& curve : interpolations) {
-            drawCurve(curve, mce::ColorPalette::YELLOW, dimensionID);
-        }
-        for (auto& curve : cache1) {
-            drawCurve(curve, mce::ColorPalette::YELLOW, dimensionID);
-        }
-        for (auto& curve : cache2) {
-            drawCurve(curve, mce::ColorPalette::YELLOW, dimensionID);
-        }
-    }
-    rendertick--;
-}
-
-bool LoftRegion::setMainPos(BlockPos const& pos, int dim) {
-    if (!selecting) {
-        dimensionID = dim;
-        selecting   = true;
-        loftPoints.clear();
-        maxPointCount = 1;
-    }
-    if (dim != dimensionID) {
-        return false;
-    }
-    std::vector<BlockPos> point;
-    point.clear();
-    point.push_back(pos);
-    loftPoints.push_back(point);
-
+bool LoftRegion::setMainPos(BlockPos const& pos) {
+    loftPoints.push_back({pos});
     updateBoundingBox();
     return true;
 }
-bool LoftRegion::setVicePos(BlockPos const& pos, int dim) {
-    if (!selecting || dim != dimensionID) {
-        return false;
-    }
-    (loftPoints.back()).push_back(pos);
-    maxPointCount = std::max(maxPointCount, (int)(loftPoints.back().size()));
-
+bool LoftRegion::setVicePos(BlockPos const& pos) {
+    loftPoints.back().push_back(pos);
+    maxPointCount = std::max(maxPointCount, loftPoints.back().size());
     updateBoundingBox();
     return true;
 }
@@ -282,7 +287,7 @@ bool LoftRegion::shift(BlockPos const& change) {
         }
     }
     updateBoundingBox();
-    return {"worldedit.shift.shifted", true};
+    return true;
 }
 
 } // namespace we

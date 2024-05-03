@@ -14,7 +14,7 @@ public:
       bias(bias),
       continuity(continuity) {}
     Node(BlockPos const& pos, double tension = 0, double bias = 0, double continuity = 0)
-    : Node(Vec3{pos} + 0.5, tension, bias, continuity) {}
+    : Node(pos.center(), tension, bias, continuity) {}
 
     Vec3 const& getVec3() const { return *this; }
 };
@@ -25,7 +25,7 @@ public:
     std::vector<Vec3> coeffB;
     std::vector<Vec3> coeffC;
     std::vector<Vec3> coeffD;
-    double            scaling;
+    int               segCount;
     bool              circle = false;
     KochanekBartelsInterpolation(bool c = false) : circle(c) {}
     KochanekBartelsInterpolation(std::vector<Node> n, bool c = false) : circle(c) {
@@ -34,8 +34,10 @@ public:
     Vec3   retrieve(int index) const;
     void   setNodes(std::vector<Node> nodes);
     Vec3   getPosition(double position) const;
+    Vec3   getPosition(int index, double position) const;
     Vec3   get1stDerivative(double position) const;
     double arcLength(double positionA = 0, double positionB = 1) const;
+    double arcLength(int index) const;
     int    getSegment(double position) const;
 
 private:

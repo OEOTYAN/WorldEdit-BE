@@ -7,25 +7,18 @@ ConvexRegion::ConvexRegion(DimensionType d, BoundingBox const& b)
 : Region(d, (b.max + b.min) / 2) {}
 
 ll::Expected<> ConvexRegion::serialize(CompoundTag& tag) const {
-    if (auto res = Region::serialize(tag); !res) {
-        return res;
-    }
-    auto& vec = tag["indexedVertices"].emplace<ListTag>();
-    for (auto& v : indexedVertices) {
-        if (auto t = ll::reflection::serialize<CompoundTagVariant>(v.data); t) {
-            vec.mList.push_back(std::move(*t));
-        } else {
-            return ll::forwardError(t.error());
-        }
-    }
-    return {};
+    return Region::serialize(tag).and_then([&, this]() {
+        return ll::reflection::serialize_to(
+            tag["indexedVertices"],
+            indexedVertices | std::views::transform([](auto& v) { return v.data; })
+        );
+    });
 }
 ll::Expected<> ConvexRegion::deserialize(CompoundTag const& tag) {
     auto res = Region::deserialize(tag);
     if (!res) {
         return res;
     }
-    hasLast = false;
     vertices.clear();
     triangles.clear();
     vertexBacklog.clear();
@@ -40,6 +33,39 @@ ll::Expected<> ConvexRegion::deserialize(CompoundTag const& tag) {
         }
     }
     return {};
+}
+bool ConvexRegion::removePoint(std::optional<BlockPos> const& pos) {
+    if (indexedVertices.empty()) {
+        return false;
+    }
+    std::vector<BlockPos> tmp;
+    tmp.append_range(indexedVertices | std::views::transform([](auto& v) {
+                         return v.data;
+                     }));
+    vertices.clear();
+    triangles.clear();
+    vertexBacklog.clear();
+    edges.clear();
+    indexedVertices.clear();
+    centerAccum = 0;
+    if (!pos) {
+        tmp.pop_back();
+    } else {
+        double minDis = DBL_MAX;
+        size_t pi     = 0;
+        for (size_t j = 0; j < tmp.size(); ++j) {
+            auto length = tmp[j].distanceTo(*pos);
+            if (length <= minDis) {
+                minDis = length;
+                pi     = j;
+            }
+        }
+        tmp.erase(tmp.begin() + pi);
+    }
+    for (auto& v : tmp) {
+        addVertexWithIndex(v);
+    }
+    return true;
 }
 void ConvexRegion::updateBoundingBox() {
     if (vertices.empty()) {
@@ -65,7 +91,8 @@ void ConvexRegion::updateBoundingBox() {
 }
 
 void ConvexRegion::updateEdges() {
-    auto temp{std::move(edges)};
+    auto& we = WorldEdit::getInstance();
+    auto  temp{std::move(edges)};
     for (auto& triangle : triangles) {
         for (int i = 0; i < 3; ++i) {
             Edge edge = triangle.getEdge(i);
@@ -74,11 +101,11 @@ void ConvexRegion::updateEdges() {
             } else {
                 edges.emplace(
                     edge,
-                    WorldEdit::getInstance().getGeo().line(
+                    we.getGeo().line(
                         getDim(),
                         Vec3{edge.start} + 0.5,
                         Vec3{edge.end} + 0.5,
-                        WorldEdit::getInstance().getConfig().colors.region_line_color
+                        we.getConfig().colors.region_line_color
                     )
                 );
             }
@@ -87,7 +114,7 @@ void ConvexRegion::updateEdges() {
 }
 
 bool ConvexRegion::containsRaw(BlockPos const& pt) const {
-    if (hasLast && lastTriangle.above(pt)) {
+    if (lastTriangle && lastTriangle->above(pt)) {
         return false;
     }
     for (auto& triangle : triangles) {
@@ -95,7 +122,6 @@ bool ConvexRegion::containsRaw(BlockPos const& pt) const {
             continue;
         }
         if (triangle.above(pt)) {
-            hasLast      = true;
             lastTriangle = triangle;
             return false;
         }
@@ -104,7 +130,7 @@ bool ConvexRegion::containsRaw(BlockPos const& pt) const {
 }
 
 bool ConvexRegion::addVertex(BlockPos const& vertex) {
-    hasLast = false;
+    lastTriangle = std::nullopt;
     if (vertices.contains(vertex)) {
         return false;
     }
@@ -184,7 +210,6 @@ bool ConvexRegion::addVertexWithIndex(BlockPos const& pos) {
 }
 
 bool ConvexRegion::setMainPos(BlockPos const& pos) {
-    hasLast = false;
     vertices.clear();
     triangles.clear();
     vertexBacklog.clear();
@@ -227,7 +252,6 @@ bool ConvexRegion::shift(BlockPos const& change) {
         );
     }
     centerAccum = centerAccum + change * (int)vertices.size();
-    hasLast     = false;
 
     return true;
 }

@@ -87,8 +87,10 @@ ll::Expected<> PlayerState::deserialize(CompoundTag const& nbt) {
         .and_then([&, this]() {
             ll::Expected<> res;
             if (nbt.contains("mainPos")) {
-                mainPos.emplace();
-                if (res = ll::reflection::deserialize(mainPos->data, nbt["mainPos"]))
+                if (res = ll::reflection::deserialize(
+                        mainPos.emplace().data,
+                        nbt["mainPos"]
+                    ))
                     setMainPosInternal();
             }
             return res;
@@ -96,15 +98,17 @@ ll::Expected<> PlayerState::deserialize(CompoundTag const& nbt) {
         .and_then([&, this]() {
             ll::Expected<> res;
             if (nbt.contains("vicePos")) {
-                vicePos.emplace();
-                if (res = ll::reflection::deserialize(vicePos->data, nbt["vicePos"]))
+                if (res = ll::reflection::deserialize(
+                        vicePos.emplace().data,
+                        nbt["vicePos"]
+                    ))
                     setMainPosInternal();
             }
             return res;
         })
         .and_then([&, this]() {
             if (nbt.contains("regionType"))
-                return ll::reflection::deserialize(*regionType, nbt["regionType"]);
+                return ll::reflection::deserialize(regionType.emplace(), nbt["regionType"]);
             return ll::Expected<>{};
         })
         .and_then([&, this]() -> ll::Expected<> {

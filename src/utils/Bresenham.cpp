@@ -4,20 +4,11 @@ namespace we {
 
 
 Vec3 KochanekBartelsInterpolation::retrieve(int index) const {
-    if (index < 0) {
-        if (circle) {
-            return nodes[(int)(round(posfmod(index, (double)(nodes.size()))))];
-        } else {
-            return nodes[0];
-        }
-    } else if (index >= nodes.size()) {
-        if (circle) {
-            return nodes[(int)(round(posfmod(index, (double)(nodes.size()))))];
-        } else {
-            return nodes[nodes.size() - 1];
-        }
+    if (circle) {
+        return nodes[posmod(index, (int)nodes.size())];
+    } else {
+        return nodes[std::clamp(index, 0, (int)(nodes.size() - 1))];
     }
-    return nodes[index];
 }
 Vec3 KochanekBartelsInterpolation::linearCombination(
     int    baseIndex,
@@ -26,8 +17,8 @@ Vec3 KochanekBartelsInterpolation::linearCombination(
     double f3,
     double f4
 ) const {
-    return retrieve(baseIndex - 1) * (float)f1 + retrieve(baseIndex) * (float)f2
-         + retrieve(baseIndex + 1) * (float)f3 + retrieve(baseIndex + 2) * (float)f4;
+    return retrieve(baseIndex - 1) * f1 + retrieve(baseIndex) * f2
+         + retrieve(baseIndex + 1) * f3 + retrieve(baseIndex + 2) * f4;
 }
 
 void KochanekBartelsInterpolation::recalc() {
@@ -47,12 +38,12 @@ void KochanekBartelsInterpolation::recalc() {
     double biasB       = nodeB.bias;
     double continuityB = nodeB.continuity;
     for (int i = 0; i < nNodes; ++i) {
-        const double tensionA    = tensionB;
-        const double biasA       = biasB;
-        const double continuityA = continuityB;
+        double tensionA    = tensionB;
+        double biasA       = biasB;
+        double continuityA = continuityB;
         if (i + 1 < nNodes) {
             if (circle) {
-                nodeB = nodes[(int)(round(posfmod(i + 1, (double)(nodes.size()))))];
+                nodeB = nodes[posmod(i + 1, (int)nodes.size())];
             } else {
                 nodeB = nodes[i + 1];
             }
@@ -61,10 +52,10 @@ void KochanekBartelsInterpolation::recalc() {
             continuityB = nodeB.continuity;
         }
 
-        const double ta = (1 - tensionA) * (1 + biasA) * (1 + continuityA) / 2;
-        const double tb = (1 - tensionA) * (1 - biasA) * (1 - continuityA) / 2;
-        const double tc = (1 - tensionB) * (1 + biasB) * (1 - continuityB) / 2;
-        const double td = (1 - tensionB) * (1 - biasB) * (1 + continuityB) / 2;
+        double ta = (1 - tensionA) * (1 + biasA) * (1 + continuityA) / 2;
+        double tb = (1 - tensionA) * (1 - biasA) * (1 - continuityA) / 2;
+        double tc = (1 - tensionB) * (1 + biasB) * (1 - continuityB) / 2;
+        double td = (1 - tensionB) * (1 - biasB) * (1 + continuityB) / 2;
 
         coeffA[i] = linearCombination(i, -ta, ta - tb - tc + 2, tb + tc - td - 2, td);
         coeffB[i] = linearCombination(
@@ -77,9 +68,9 @@ void KochanekBartelsInterpolation::recalc() {
         coeffC[i] = linearCombination(i, -ta, ta - tb, tb, 0);
         coeffD[i] = retrieve(i);
     }
-    scaling = (int)nodes.size();
+    segCount = (int)nodes.size();
     if (!circle) {
-        scaling -= 1;
+        segCount -= 1;
     }
 }
 void KochanekBartelsInterpolation::setNodes(std::vector<Node> inNodes) {
@@ -88,38 +79,47 @@ void KochanekBartelsInterpolation::setNodes(std::vector<Node> inNodes) {
 }
 
 Vec3 KochanekBartelsInterpolation::getPosition(double position) const {
-    position     = std::max(0.0, std::min(position, 1.0));
-    position    *= scaling;
-    int   index  = (int)position;
-    float f      = (float)(position - index);
-    return ((coeffA[index] * f + coeffB[index]) * f + coeffC[index]) * f + coeffD[index];
+    position      = std::clamp(position, 0.0, 1.0);
+    position     *= segCount;
+    int    index  = (int)position;
+    double f      = position - index;
+    return getPosition(index, f);
+}
+
+Vec3 KochanekBartelsInterpolation::getPosition(int index, double position) const {
+    return ((coeffA[index] * position + coeffB[index]) * position + coeffC[index])
+             * position
+         + coeffD[index];
 }
 
 Vec3 KochanekBartelsInterpolation::get1stDerivative(double position) const {
-    position   = std::max(0.0, std::min(position, 1.0));
-    position  *= scaling;
+    position   = std::clamp(position, 0.0, 1.0);
+    position  *= segCount;
     int index  = (int)position;
-    return ((coeffA[index] * (float)(1.5 * position - 3.0 * index) + coeffB[index])
-                * (float)(2.0 * position)
-            + (coeffA[index] * (float)(1.5 * index) - coeffB[index])
-                  * (float)(2.0 * index)
+    return ((coeffA[index] * (1.5 * position - 3.0 * index) + coeffB[index])
+                * (2.0 * position)
+            + (coeffA[index] * (1.5 * index) - coeffB[index]) * (2.0 * index)
             + coeffC[index])
-         * (float)scaling;
+         * segCount;
 }
 
 double KochanekBartelsInterpolation::arcLength(double positionA, double positionB) const {
     if (positionA > positionB) {
         std::swap(positionA, positionB);
     }
-    positionA      = std::max(0.0, std::min(positionA, 1.0));
-    positionB      = std::max(0.0, std::min(positionB, 1.0));
-    positionA     *= scaling;
-    positionB     *= scaling;
+    positionA      = std::clamp(positionA, 0.0, 1.0);
+    positionB      = std::clamp(positionB, 0.0, 1.0);
+    positionA     *= segCount;
+    positionB     *= segCount;
     int    indexA  = (int)positionA;
     int    indexB  = (int)positionB;
     double fA      = positionA - indexA;
     double fB      = positionB - indexB;
     return arcLengthRecursive(indexA, fA, indexB, fB);
+}
+
+double KochanekBartelsInterpolation::arcLength(int index) const {
+    return arcLengthRecursive(index, 0.0, 1.0);
 }
 
 double KochanekBartelsInterpolation::arcLengthRecursive(
@@ -152,24 +152,20 @@ double KochanekBartelsInterpolation::arcLengthRecursive(
     auto b = coeffB[index] * 2;
     auto c = coeffC[index];
 
-    const int nPoints = 8;
+    constexpr int nPoints = 8;
 
-    double accum =
-        ((a * (float)remainderLeft + b) * (float)remainderLeft + c).length() * 0.5;
+    double accum = ((a * remainderLeft + b) * remainderLeft + c).length() * 0.5;
     for (int i = 0; i < nPoints - 1; ++i) {
-        float t  = (float)((double)i / (double)nPoints);
-        t        = (float)((remainderRight - remainderLeft) * t + remainderLeft);
-        accum   += ((a * t + b) * t + c).length();
+        double t  = ((double)i / (double)nPoints);
+        t         = ((remainderRight - remainderLeft) * t + remainderLeft);
+        accum    += ((a * t + b) * t + c).length();
     }
-    accum += ((a * (float)remainderRight + b) * (float)remainderRight + c).length() * 0.5;
+    accum += ((a * remainderRight + b) * remainderRight + c).length() * 0.5;
     return accum * (remainderRight - remainderLeft) / (double)nPoints;
 }
 
 int KochanekBartelsInterpolation::getSegment(double position) const {
-    position   = std::max(0.0, std::min(position, 1.0));
-    position  *= scaling;
-    int index  = (int)position;
-    return index;
+    return (int)(std::clamp(position, 0.0, 1.0) * segCount);
 }
 
 } // namespace we

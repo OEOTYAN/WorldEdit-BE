@@ -8,32 +8,14 @@ PolyRegion::PolyRegion(DimensionType d, BoundingBox const& b)
 : Region(d, (b.max + b.min) / 2) {}
 
 ll::Expected<> PolyRegion::serialize(CompoundTag& tag) const {
-    if (auto res = Region::serialize(tag); !res) {
-        return res;
-    }
-    auto& vec = tag["points"].emplace<ListTag>();
-    for (auto& point : points) {
-        if (auto t = ll::reflection::serialize<CompoundTagVariant>(point); t) {
-            vec.mList.push_back(std::move(*t));
-        } else {
-            return ll::forwardError(t.error());
-        }
-    }
-    return {};
+    return Region::serialize(tag).and_then([&, this]() {
+        return ll::reflection::serialize_to(tag["points"], points);
+    });
 }
 ll::Expected<> PolyRegion::deserialize(CompoundTag const& tag) {
-    if (auto res = Region::deserialize(tag); !res) {
-        return res;
-    }
-    points.clear();
-    for (auto& v : tag.at("points").get<ListTag>().mList) {
-        if (auto t = ll::reflection::deserialize_to<Pos2d>(CompoundTagVariant{v}); t) {
-            points.push_back(*t);
-        } else {
-            return ll::forwardError(t.error());
-        }
-    }
-    return {};
+    return Region::deserialize(tag).and_then([&, this]() {
+        return ll::reflection::deserialize(points, tag.at("points"));
+    });
 }
 void PolyRegion::updateBoundingBox() {
     if (points.empty()) {
@@ -46,7 +28,9 @@ void PolyRegion::updateBoundingBox() {
     boundingBox.max.x = points.front().x;
     boundingBox.max.z = points.front().z;
 
-    auto& geo = WorldEdit::getInstance().getGeo();
+    auto& we = WorldEdit::getInstance();
+
+    auto& geo = we.getGeo();
 
     std::vector<bsci::GeometryGroup::GeoId> ids;
     for (auto& point : points) {
@@ -59,26 +43,23 @@ void PolyRegion::updateBoundingBox() {
             getDim(),
             {point.x + 0.5, minY, point.z + 0.5},
             {point.x + 0.5, maxY + 1, point.z + 0.5},
-            WorldEdit::getInstance().getConfig().colors.region_line_color
+            we.getConfig().colors.region_line_color
         ));
     }
     for (auto y : {minY, maxY + 1}) {
         for (auto [start, end] : points | std::views::transform([&](auto& p) {
                                      return Vec3{p.x + 0.5, y, p.z + 0.5};
                                  }) | std::views::pairwise) {
-            ids.emplace_back(geo.line(
-                getDim(),
-                start,
-                end,
-                WorldEdit::getInstance().getConfig().colors.region_line_color
-            ));
+            ids.emplace_back(
+                geo.line(getDim(), start, end, we.getConfig().colors.region_line_color)
+            );
         }
         if (points.size() > 2) {
             ids.emplace_back(geo.line(
                 getDim(),
                 {points.front().x + 0.5, y, points.front().z + 0.5},
                 {points.back().x + 0.5, y, points.back().z + 0.5},
-                WorldEdit::getInstance().getConfig().colors.region_line_color
+                we.getConfig().colors.region_line_color
             ));
         }
     }

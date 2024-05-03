@@ -20,8 +20,7 @@ class ConvexRegion : public Region {
 
     ll::math::longlong3 centerAccum;
 
-    Triangle mutable lastTriangle;
-    bool mutable hasLast{};
+    mutable std::optional<Triangle> lastTriangle;
 
     std::vector<WithGeo<BlockPos>> indexedVertices;
 
@@ -52,5 +51,7 @@ public:
     bool setVicePos(BlockPos const&) override;
 
     bool contains(BlockPos const&) const override;
+
+    bool removePoint(std::optional<BlockPos> const&) override;
 };
 } // namespace we

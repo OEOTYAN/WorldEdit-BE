@@ -3,6 +3,7 @@
 #include "CuboidRegion.h"
 #include "CylinderRegion.h"
 #include "ExpandRegion.h"
+#include "LoftRegion.h"
 #include "PolyRegion.h"
 #include "SphereRegion.h"
 #include "utils/Serialize.h"
@@ -88,8 +89,9 @@ Region::create(RegionType type, DimensionType dim, BoundingBox const& box, bool 
     case RegionType::Cylinder:
         res = std::make_shared<CylinderRegion>(dim, box);
         break;
-    // case RegionType::Loft:
-    //     res = std::make_shared<LoftRegion>(dim, box); break;
+    case RegionType::Loft:
+        res = std::make_shared<LoftRegion>(dim, box);
+        break;
     default:
         std::unreachable();
     }
