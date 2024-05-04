@@ -28,6 +28,8 @@ public:
 
     uint64 size() const override;
 
+    bool removePoint(std::optional<BlockPos> const&) override;
+
     void
     forEachBlockUVInRegion(std::function<void(BlockPos const&, double, double)>&& todo
     ) const override;

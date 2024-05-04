@@ -65,6 +65,28 @@ void PolyRegion::updateBoundingBox() {
     }
     outline = geo.merge(ids);
 }
+
+bool PolyRegion::removePoint(std::optional<BlockPos> const& pos) {
+    if (points.empty()) {
+        return false;
+    }
+    if (!pos) {
+        points.pop_back();
+    } else {
+        double minDis = DBL_MAX;
+        size_t pi     = 0;
+        for (size_t j = 0; j < points.size(); ++j) {
+            auto length = points[j].distanceTo(*pos);
+            if (length <= minDis) {
+                minDis = length;
+                pi     = j;
+            }
+        }
+        points.erase(points.begin() + pi);
+    }
+    updateBoundingBox();
+    return true;
+}
 void PolyRegion::forEachBlockUVInRegion(
     std::function<void(BlockPos const&, double, double)>&& todo
 ) const {
