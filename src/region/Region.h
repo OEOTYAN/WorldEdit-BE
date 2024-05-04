@@ -53,7 +53,7 @@ public:
 
     virtual bool setMainPos(BlockPos const&) { return false; }
 
-    virtual bool setVicePos(BlockPos const&) { return false; }
+    virtual bool setOffPos(BlockPos const&) { return false; }
 
     virtual bool contains(BlockPos const& pos) const { return boundingBox.contains(pos); }
 

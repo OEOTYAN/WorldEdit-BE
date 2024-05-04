@@ -18,13 +18,13 @@ class PlayerState {
     mce::UUID const uuid;
 
     void setMainPosInternal();
-    void setVicePosInternal();
+    void setOffPosInternal();
 
     Region& getOrCreateRegion(WithDim<BlockPos> const&);
 
 public:
     std::optional<WithGeo<WithDim<BlockPos>>> mainPos;
-    std::optional<WithGeo<WithDim<BlockPos>>> vicePos;
+    std::optional<WithGeo<WithDim<BlockPos>>> offPos;
     std::optional<RegionType>                 regionType;
     std::shared_ptr<Region>                   region;
     Config::PlayerConfig                      config;
@@ -34,7 +34,7 @@ public:
     PlayerState(mce::UUID const& uuid, bool temp);
 
     bool setMainPos(WithDim<BlockPos> const&);
-    bool setVicePos(WithDim<BlockPos> const&);
+    bool setOffPos(WithDim<BlockPos> const&);
 
     ll::Expected<> serialize(CompoundTag&) const;
     ll::Expected<> deserialize(CompoundTag const&);

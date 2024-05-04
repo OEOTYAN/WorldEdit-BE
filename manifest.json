@@ -5,7 +5,8 @@
     "type": "native",
     "dependencies": [
         {
-            "name": "BedrockServerClientInterface"
+            "name": "BedrockServerClientInterface",
+            "version": "0.1.3"
         }
     ]
 }

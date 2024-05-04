@@ -41,7 +41,7 @@ void setupSel() {
         }
         state->region.reset();
         state->mainPos.reset();
-        state->vicePos.reset();
+        state->offPos.reset();
         output.success("region cleared"_tr());
     });
     command.overload<SelRm>().text("remove").required("type").execute(
@@ -86,8 +86,8 @@ void setupSel() {
             );
             state->regionType = params.type;
             state->mainPos.reset();
-            state->vicePos.reset();
-            output.success("region switch to {}"_tr(params.type));
+            state->offPos.reset();
+            output.success("region switch to {0}"_tr(params.type));
         }
     );
 }

@@ -97,7 +97,7 @@ bool SphereRegion::setMainPos(BlockPos const& pos) {
     return true;
 }
 
-bool SphereRegion::setVicePos(BlockPos const& pos) {
+bool SphereRegion::setOffPos(BlockPos const& pos) {
     radius = pos.distanceTo(center) + 0.5;
     updateBoundingBox();
     return true;

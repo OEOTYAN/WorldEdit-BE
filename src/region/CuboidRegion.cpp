@@ -6,7 +6,7 @@ namespace we {
 CuboidRegion::CuboidRegion(DimensionType d, BoundingBox const& b)
 : Region(d, b),
   mainPos(b.min),
-  vicePos(b.max) {}
+  offPos(b.max) {}
 
 ll::Expected<> CuboidRegion::serialize(CompoundTag& tag) const {
     return Region::serialize(tag)
@@ -14,7 +14,7 @@ ll::Expected<> CuboidRegion::serialize(CompoundTag& tag) const {
             return ll::reflection::serialize_to(tag["mainPos"], mainPos);
         })
         .and_then([&, this]() {
-            return ll::reflection::serialize_to(tag["vicePos"], vicePos);
+            return ll::reflection::serialize_to(tag["offPos"], offPos);
         });
 }
 ll::Expected<> CuboidRegion::deserialize(CompoundTag const& tag) {
@@ -23,18 +23,18 @@ ll::Expected<> CuboidRegion::deserialize(CompoundTag const& tag) {
             return ll::reflection::deserialize(mainPos, tag.at("mainPos"));
         })
         .and_then([&, this]() {
-            return ll::reflection::deserialize(vicePos, tag.at("vicePos"));
+            return ll::reflection::deserialize(offPos, tag.at("offPos"));
         });
 }
 
 void CuboidRegion::updateBoundingBox() {
-    boundingBox.min.x = std::min(mainPos.x, vicePos.x);
-    boundingBox.min.y = std::min(mainPos.y, vicePos.y);
-    boundingBox.min.z = std::min(mainPos.z, vicePos.z);
-    boundingBox.max.x = std::max(mainPos.x, vicePos.x);
-    boundingBox.max.y = std::max(mainPos.y, vicePos.y);
-    boundingBox.max.z = std::max(mainPos.z, vicePos.z);
-    boundingBox.max.x = std::max(mainPos.x, vicePos.x);
+    boundingBox.min.x = std::min(mainPos.x, offPos.x);
+    boundingBox.min.y = std::min(mainPos.y, offPos.y);
+    boundingBox.min.z = std::min(mainPos.z, offPos.z);
+    boundingBox.max.x = std::max(mainPos.x, offPos.x);
+    boundingBox.max.y = std::max(mainPos.y, offPos.y);
+    boundingBox.max.z = std::max(mainPos.z, offPos.z);
+    boundingBox.max.x = std::max(mainPos.x, offPos.x);
     box               = WorldEdit::getInstance().getGeo().box(
         getDim(),
         boundingBox,
@@ -48,8 +48,8 @@ bool CuboidRegion::setMainPos(BlockPos const& pos) {
     return true;
 }
 
-bool CuboidRegion::setVicePos(BlockPos const& pos) {
-    vicePos = pos;
+bool CuboidRegion::setOffPos(BlockPos const& pos) {
+    offPos = pos;
     updateBoundingBox();
     return true;
 }
@@ -57,44 +57,44 @@ bool CuboidRegion::setVicePos(BlockPos const& pos) {
 bool CuboidRegion::expand(std::span<BlockPos> changes) {
     for (auto& change : changes) {
         if (change.x > 0) {
-            if (std::max(mainPos.x, vicePos.x) == mainPos.x) {
+            if (std::max(mainPos.x, offPos.x) == mainPos.x) {
                 mainPos += {change.x, 0, 0};
             } else {
-                vicePos += {change.x, 0, 0};
+                offPos += {change.x, 0, 0};
             }
         } else {
-            if (std::min(mainPos.x, vicePos.x) == mainPos.x) {
+            if (std::min(mainPos.x, offPos.x) == mainPos.x) {
                 mainPos += {change.x, 0, 0};
             } else {
-                vicePos += {change.x, 0, 0};
+                offPos += {change.x, 0, 0};
             }
         }
 
         if (change.y > 0) {
-            if (std::max(mainPos.y, vicePos.y) == mainPos.y) {
+            if (std::max(mainPos.y, offPos.y) == mainPos.y) {
                 mainPos += {0, change.y, 0};
             } else {
-                vicePos += {0, change.y, 0};
+                offPos += {0, change.y, 0};
             }
         } else {
-            if (std::min(mainPos.y, vicePos.y) == mainPos.y) {
+            if (std::min(mainPos.y, offPos.y) == mainPos.y) {
                 mainPos += {0, change.y, 0};
             } else {
-                vicePos += {0, change.y, 0};
+                offPos += {0, change.y, 0};
             }
         }
 
         if (change.z > 0) {
-            if (std::max(mainPos.z, vicePos.z) == mainPos.z) {
+            if (std::max(mainPos.z, offPos.z) == mainPos.z) {
                 mainPos += {0, 0, change.z};
             } else {
-                vicePos += {0, 0, change.z};
+                offPos += {0, 0, change.z};
             }
         } else {
-            if (std::min(mainPos.z, vicePos.z) == mainPos.z) {
+            if (std::min(mainPos.z, offPos.z) == mainPos.z) {
                 mainPos += {0, 0, change.z};
             } else {
-                vicePos += {0, 0, change.z};
+                offPos += {0, 0, change.z};
             }
         }
     }
@@ -105,44 +105,44 @@ bool CuboidRegion::expand(std::span<BlockPos> changes) {
 bool CuboidRegion::contract(std::span<BlockPos> changes) {
     for (auto& change : changes) {
         if (change.x < 0) {
-            if (std::max(mainPos.x, vicePos.x) == mainPos.x) {
+            if (std::max(mainPos.x, offPos.x) == mainPos.x) {
                 mainPos += {change.x, 0, 0};
             } else {
-                vicePos += {change.x, 0, 0};
+                offPos += {change.x, 0, 0};
             }
         } else {
-            if (std::min(mainPos.x, vicePos.x) == mainPos.x) {
+            if (std::min(mainPos.x, offPos.x) == mainPos.x) {
                 mainPos += {change.x, 0, 0};
             } else {
-                vicePos += {change.x, 0, 0};
+                offPos += {change.x, 0, 0};
             }
         }
 
         if (change.y < 0) {
-            if (std::max(mainPos.y, vicePos.y) == mainPos.y) {
+            if (std::max(mainPos.y, offPos.y) == mainPos.y) {
                 mainPos += {0, change.y, 0};
             } else {
-                vicePos += {0, change.y, 0};
+                offPos += {0, change.y, 0};
             }
         } else {
-            if (std::min(mainPos.y, vicePos.y) == mainPos.y) {
+            if (std::min(mainPos.y, offPos.y) == mainPos.y) {
                 mainPos += {0, change.y, 0};
             } else {
-                vicePos += {0, change.y, 0};
+                offPos += {0, change.y, 0};
             }
         }
 
         if (change.z < 0) {
-            if (std::max(mainPos.z, vicePos.z) == mainPos.z) {
+            if (std::max(mainPos.z, offPos.z) == mainPos.z) {
                 mainPos += {0, 0, change.z};
             } else {
-                vicePos += {0, 0, change.z};
+                offPos += {0, 0, change.z};
             }
         } else {
-            if (std::min(mainPos.z, vicePos.z) == mainPos.z) {
+            if (std::min(mainPos.z, offPos.z) == mainPos.z) {
                 mainPos += {0, 0, change.z};
             } else {
-                vicePos += {0, 0, change.z};
+                offPos += {0, 0, change.z};
             }
         }
     }
@@ -152,7 +152,7 @@ bool CuboidRegion::contract(std::span<BlockPos> changes) {
 
 bool CuboidRegion::shift(BlockPos const& change) {
     mainPos += change;
-    vicePos += change;
+    offPos  += change;
     updateBoundingBox();
     return true;
 }
@@ -160,6 +160,6 @@ bool CuboidRegion::shift(BlockPos const& change) {
 void CuboidRegion::forEachLine(
     std::function<void(BlockPos const&, BlockPos const&)>&& todo
 ) const {
-    todo(mainPos, vicePos);
+    todo(mainPos, offPos);
 }
 } // namespace we

@@ -71,19 +71,13 @@ void CylinderRegion::updateBoundingBox() {
 
     auto& geo = we.getGeo();
 
-    std::vector<bsci::GeometryGroup::GeoId> ids;
-    for (uint i = 0, e = std::min(8, std::max(3, maxY - minY + 1) / 3); i <= e; i++) {
-        ids.emplace_back(geo.circle(
-            getDim(),
-            {center.x + 0.5,
-             (i / static_cast<double>(e)) * (maxY - minY + 1) + minY,
-             center.z + 0.5},
-            {0, 1, 0},
-            (float)radius,
-            we.getConfig().colors.region_line_color
-        ));
-    }
-    circles  = geo.merge(ids);
+    circles = geo.cylinder(
+        getDim(),
+        {center.x + 0.5, maxY + 1, center.z + 0.5},
+        {center.x + 0.5, minY, center.z + 0.5},
+        (float)radius,
+        we.getConfig().colors.region_line_color
+    );
     startbox = geo.box(
         getDim(),
         BlockPos{center.x, minY, center.z},
@@ -99,7 +93,7 @@ void CylinderRegion::updateBoundingBox() {
             getDim(),
             BlockPos{center.x, minY, center.z}.center(),
             BlockPos{center.x, maxY, center.z}.center(),
-            we.getConfig().colors.region_point_color
+            we.getConfig().colors.region_point_color2
         );
     } else {
         endbox     = {};
@@ -127,7 +121,7 @@ bool CylinderRegion::setMainPos(BlockPos const& pos) {
     return true;
 }
 
-bool CylinderRegion::setVicePos(BlockPos const& pos) {
+bool CylinderRegion::setOffPos(BlockPos const& pos) {
     auto   disx = pos.x - center.x;
     auto   disz = pos.z - center.z;
     double dis  = sqrt(disx * disx + disz * disz);

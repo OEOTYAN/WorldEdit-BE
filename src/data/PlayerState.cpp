@@ -19,12 +19,12 @@ void PlayerState::setMainPosInternal() {
         );
     }
 }
-void PlayerState::setVicePosInternal() {
-    if (vicePos) {
-        auto& we     = WorldEdit::getInstance();
-        vicePos->geo = we.getGeo().box(
-            vicePos->data.dim,
-            AABB{vicePos->data.pos}.shrink(-0.06),
+void PlayerState::setOffPosInternal() {
+    if (offPos) {
+        auto& we    = WorldEdit::getInstance();
+        offPos->geo = we.getGeo().box(
+            offPos->data.dim,
+            AABB{offPos->data.pos}.shrink(-0.06),
             we.getConfig().colors.off_hand_color
         );
     }
@@ -43,17 +43,17 @@ bool PlayerState::setMainPos(WithDim<BlockPos> const& v) {
         mainPos.emplace(v);
         setMainPosInternal();
         if (r.needResetVice()) {
-            vicePos.reset();
+            offPos.reset();
         }
         mDirty = true;
         return true;
     }
     return false;
 }
-bool PlayerState::setVicePos(WithDim<BlockPos> const& v) {
-    if (getOrCreateRegion(v).setVicePos(v.pos)) {
-        vicePos.emplace(v);
-        setVicePosInternal();
+bool PlayerState::setOffPos(WithDim<BlockPos> const& v) {
+    if (getOrCreateRegion(v).setOffPos(v.pos)) {
+        offPos.emplace(v);
+        setOffPosInternal();
         mDirty = true;
         return true;
     }
@@ -68,8 +68,7 @@ ll::Expected<> PlayerState::serialize(CompoundTag& nbt) const {
             return ll::Expected<>{};
         })
         .and_then([&, this]() {
-            if (vicePos)
-                return ll::reflection::serialize_to(nbt["vicePos"], vicePos->data);
+            if (offPos) return ll::reflection::serialize_to(nbt["offPos"], offPos->data);
             return ll::Expected<>{};
         })
         .and_then([&, this]() {
@@ -97,18 +96,19 @@ ll::Expected<> PlayerState::deserialize(CompoundTag const& nbt) {
         })
         .and_then([&, this]() {
             ll::Expected<> res;
-            if (nbt.contains("vicePos")) {
-                if (res = ll::reflection::deserialize(
-                        vicePos.emplace().data,
-                        nbt["vicePos"]
-                    ))
+            if (nbt.contains("offPos")) {
+                if (res =
+                        ll::reflection::deserialize(offPos.emplace().data, nbt["offPos"]))
                     setMainPosInternal();
             }
             return res;
         })
         .and_then([&, this]() {
             if (nbt.contains("regionType"))
-                return ll::reflection::deserialize(regionType.emplace(), nbt["regionType"]);
+                return ll::reflection::deserialize(
+                    regionType.emplace(),
+                    nbt["regionType"]
+                );
             return ll::Expected<>{};
         })
         .and_then([&, this]() -> ll::Expected<> {

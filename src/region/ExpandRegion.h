@@ -14,6 +14,6 @@ public:
 
     bool setMainPos(BlockPos const&) override;
 
-    bool setVicePos(BlockPos const&) override;
+    bool setOffPos(BlockPos const&) override;
 };
 } // namespace we

@@ -11,7 +11,7 @@ class LoftRegion : public Region {
 
     std::vector<KochanekBartelsInterpolation> interpolations;
     std::vector<KochanekBartelsInterpolation> verticalCurves;
-    bool                                      circle = false;
+    bool                                      cycle = false;
 
     GeoContainer views;
 
@@ -38,8 +38,8 @@ public:
 
     bool shift(BlockPos const& change) override;
 
-    void setCircle(bool value) {
-        circle = value;
+    void setCycle(bool value) {
+        cycle = value;
         updateBoundingBox();
     };
 
@@ -66,7 +66,7 @@ public:
 
     bool setMainPos(BlockPos const& pos) override;
 
-    bool setVicePos(BlockPos const& pos) override;
+    bool setOffPos(BlockPos const& pos) override;
 
     bool contains(BlockPos const& pos) const override;
 };

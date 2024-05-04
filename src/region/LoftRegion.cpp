@@ -14,6 +14,9 @@ ll::Expected<> LoftRegion::serialize(CompoundTag& tag) const {
         })
         .and_then([&, this]() {
             return ll::reflection::serialize_to(tag["loftPoints"], loftPoints);
+        })
+        .and_then([&, this]() {
+            return ll::reflection::serialize_to(tag["cycle"], cycle);
         });
 }
 ll::Expected<> LoftRegion::deserialize(CompoundTag const& tag) {
@@ -23,6 +26,9 @@ ll::Expected<> LoftRegion::deserialize(CompoundTag const& tag) {
         })
         .and_then([&, this]() {
             return ll::reflection::deserialize(loftPoints, tag.at("loftPoints"));
+        })
+        .and_then([&, this]() {
+            return ll::reflection::deserialize(cycle, tag.at("cycle"));
         });
 }
 void LoftRegion::updateBoundingBox() {
@@ -38,7 +44,7 @@ void LoftRegion::updateBoundingBox() {
             nodes2.push_back(Node(point.front()));
         }
         if (!nodes2.empty())
-            verticalCurves.push_back(KochanekBartelsInterpolation(nodes2, circle));
+            verticalCurves.push_back(KochanekBartelsInterpolation(nodes2, cycle));
     } else {
         for (auto& points : loftPoints) {
             std::vector<Node> nodes;
@@ -56,9 +62,9 @@ void LoftRegion::updateBoundingBox() {
             for (auto& curve : interpolations) {
                 nodes2.push_back(Node(curve.getPosition(t)));
             }
-            verticalCurves.push_back(KochanekBartelsInterpolation(nodes2, circle));
+            verticalCurves.push_back(KochanekBartelsInterpolation(nodes2, cycle));
         }
-        auto rSize = loftPoints.size() + circle - 1;
+        auto rSize = loftPoints.size() + cycle - 1;
         for (int i = 1; i <= rSize; ++i) {
             std::vector<Node> nodes2;
             nodes2.clear();
@@ -89,7 +95,7 @@ void LoftRegion::updateBoundingBox() {
         std::vector<Vec3> points;
         for (int i = 0; i < line.segCount; i++) {
             size_t linenum =
-                2 * std::clamp<size_t>((size_t)(line.arcLength(i) / 1.2), 1, 32);
+                2 * std::clamp<size_t>((size_t)(line.arcLength(i) / 1.5), 1, 8);
             for (int j = 0; j < linenum; j++) {
                 points.emplace_back(line.getPosition(i, j / (double)linenum));
             }
@@ -182,7 +188,7 @@ void LoftRegion::buildCache() const {
         for (auto& curve : interpolations) {
             nodes.push_back(Node(curve.getPosition(t)));
         }
-        auto tmpCurve = KochanekBartelsInterpolation(nodes, circle);
+        auto tmpCurve = KochanekBartelsInterpolation(nodes, cycle);
         auto step2    = (1.0 / tmpCurve.arcLength()) / quality;
         for (double t2 = 0; t2 <= 1.0; t2 += step2) {
             BlockPos tmpPos  = tmpCurve.getPosition(t2);
@@ -239,7 +245,7 @@ void LoftRegion::forEachBlockInLines(
                     nodes2.push_back(Node(curve.getPosition(t)));
                 }
 
-                auto tmpCurve = KochanekBartelsInterpolation(nodes2, circle);
+                auto tmpCurve = KochanekBartelsInterpolation(nodes2, cycle);
                 auto step2    = (1.0 / tmpCurve.arcLength()) / quality;
                 for (double t2 = 0; t2 <= 1.0; t2 += step2) {
                     posCache2.insert(tmpCurve.getPosition(t2));
@@ -256,7 +262,7 @@ void LoftRegion::forEachBlockInLines(
         for (int i = 0; i < num; ++i) {
             std::vector<Node> nodes2;
             nodes2.clear();
-            double t = i / (double)(num - 1 + circle);
+            double t = i / (double)(num - 1 + cycle);
             for (size_t endj = verticalCurves.size(), j = 0; j < endj; j += 2) {
                 auto& curve = verticalCurves[j];
                 nodes2.push_back(Node(curve.getPosition(t)));
@@ -279,7 +285,7 @@ bool LoftRegion::setMainPos(BlockPos const& pos) {
     updateBoundingBox();
     return true;
 }
-bool LoftRegion::setVicePos(BlockPos const& pos) {
+bool LoftRegion::setOffPos(BlockPos const& pos) {
     loftPoints.back().push_back(pos);
     maxPointCount = std::max(maxPointCount, loftPoints.back().size());
     updateBoundingBox();

@@ -26,9 +26,9 @@ public:
     std::vector<Vec3> coeffC;
     std::vector<Vec3> coeffD;
     int               segCount;
-    bool              circle = false;
-    KochanekBartelsInterpolation(bool c = false) : circle(c) {}
-    KochanekBartelsInterpolation(std::vector<Node> n, bool c = false) : circle(c) {
+    bool              cycle = false;
+    KochanekBartelsInterpolation(bool c = false) : cycle(c) {}
+    KochanekBartelsInterpolation(std::vector<Node> n, bool c = false) : cycle(c) {
         setNodes(std::move(n));
     }
     Vec3   retrieve(int index) const;

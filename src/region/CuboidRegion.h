@@ -8,7 +8,7 @@ class CuboidRegion : public Region {
 
 protected:
     BlockPos mainPos;
-    BlockPos vicePos;
+    BlockPos offPos;
 
 public:
     CuboidRegion(DimensionType, BoundingBox const&);
@@ -31,7 +31,7 @@ public:
 
     bool setMainPos(BlockPos const&) override;
 
-    bool setVicePos(BlockPos const&) override;
+    bool setOffPos(BlockPos const&) override;
 
     void forEachLine(std::function<void(BlockPos const&, BlockPos const&)>&& todo
     ) const override;

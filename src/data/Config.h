@@ -17,6 +17,17 @@ struct Config {
     struct {
         struct {
             CmdSetting sel{};
+            CmdSetting loftcycle{};
+            CmdSetting pos1{};
+            CmdSetting pos2{};
+            CmdSetting hpos1{};
+            CmdSetting hpos2{};
+            CmdSetting chunk{};
+            CmdSetting contract{};
+            CmdSetting expand{};
+            CmdSetting shift{};
+            CmdSetting outset{};
+            CmdSetting inset{};
         } region;
     } commands{};
     struct {
@@ -27,8 +38,8 @@ struct Config {
         mce::Color off_hand_color{"#29ADFF"};
     } colors{};
     struct {
-        double maximum_brush_length  = 2048;
-        int    minimum_response_tick = 3;
+        float maximum_trace_length  = 2048;
+        int   minimum_response_tick = 3;
     } player_state;
     struct {
         int player_log_level = 3;

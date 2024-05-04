@@ -219,7 +219,7 @@ bool ConvexRegion::setMainPos(BlockPos const& pos) {
     return addVertexWithIndex(pos);
 }
 
-bool ConvexRegion::setVicePos(BlockPos const& pos) { return addVertexWithIndex(pos); }
+bool ConvexRegion::setOffPos(BlockPos const& pos) { return addVertexWithIndex(pos); }
 
 bool ConvexRegion::shift(BlockPos const& change) {
     boundingBox.min = boundingBox.min + change;

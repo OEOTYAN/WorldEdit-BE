@@ -151,7 +151,7 @@ bool PolyRegion::setMainPos(BlockPos const& pos) {
     updateBoundingBox();
     return true;
 }
-bool PolyRegion::setVicePos(BlockPos const& pos) {
+bool PolyRegion::setOffPos(BlockPos const& pos) {
     for (auto& p : points) {
         if (p.x == pos.x && p.z == pos.z) {
             minY = std::min(minY, pos.y);

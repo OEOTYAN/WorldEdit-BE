@@ -41,7 +41,7 @@ public:
 
     bool setMainPos(BlockPos const&) override;
 
-    bool setVicePos(BlockPos const&) override;
+    bool setOffPos(BlockPos const&) override;
 
     bool contains(BlockPos const& pos) const override {
         return pos.distanceTo(center) <= radius;

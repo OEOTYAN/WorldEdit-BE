@@ -76,31 +76,31 @@ PlayerStateManager::PlayerStateManager()
             }
         })
     );
-    listeners.emplace_back(bus.emplaceListener<PlayerSwingEvent>([this](
-                                                                     PlayerSwingEvent& ev
-                                                                 ) {
-        if (!ev.self().isOperator() || !ev.self().isCreative()) {
-            return;
-        }
-        auto hit = ev.self().traceRay(
-            (float)WorldEdit::getInstance().getConfig().player_state.maximum_brush_length,
-            false
-        );
-        if (!hit) {
-            return;
-        }
-        if (hit.mIsHitLiquid && !ev.self().isImmersedInWater()) {
-            hit.mBlockPos = hit.mLiquidPos;
-            hit.mFacing   = hit.mLiquidFacing;
-        }
-        playerLeftClick(
-            ev.self(),
-            true,
-            ev.self().getSelectedItem(),
-            {hit.mBlockPos, ev.self().getDimensionId()},
-            hit.mFacing
-        );
-    }));
+    listeners.emplace_back(
+        bus.emplaceListener<PlayerSwingEvent>([this](PlayerSwingEvent& ev) {
+            if (!ev.self().isOperator() || !ev.self().isCreative()) {
+                return;
+            }
+            auto hit = ev.self().traceRay(
+                WorldEdit::getInstance().getConfig().player_state.maximum_trace_length,
+                false
+            );
+            if (!hit) {
+                return;
+            }
+            if (hit.mIsHitLiquid && !ev.self().isImmersedInWater()) {
+                hit.mBlockPos = hit.mLiquid;
+                hit.mFacing   = hit.mLiquidFacing;
+            }
+            playerLeftClick(
+                ev.self(),
+                true,
+                ev.self().getSelectedItem(),
+                {hit.mBlockPos, ev.self().getDimensionId()},
+                hit.mFacing
+            );
+        })
+    );
     listeners.emplace_back(bus.emplaceListener<PlayerInteractBlockEvent>(
         [this](PlayerInteractBlockEvent& ev) {
             if (!ev.self().isOperator() || !ev.self().isCreative()) {
@@ -152,30 +152,31 @@ PlayerStateManager::PlayerStateManager()
             );
         })
     );
-    listeners.emplace_back(bus.emplaceListener<
-                           PlayerUseItemEvent>([this](PlayerUseItemEvent& ev) {
-        if (!ev.self().isOperator() || !ev.self().isCreative()) {
-            return;
-        }
-        auto hit = ev.self().traceRay(
-            (float)WorldEdit::getInstance().getConfig().player_state.maximum_brush_length,
-            false
-        );
-        if (!hit) {
-            return;
-        }
-        if (hit.mIsHitLiquid && !ev.self().isImmersedInWater()) {
-            hit.mBlockPos = hit.mLiquidPos;
-            hit.mFacing   = hit.mLiquidFacing;
-        }
-        playerRightClick(
-            ev.self(),
-            true,
-            ev.item(),
-            {hit.mBlockPos, ev.self().getDimensionId()},
-            hit.mFacing
-        );
-    }));
+    listeners.emplace_back(
+        bus.emplaceListener<PlayerUseItemEvent>([this](PlayerUseItemEvent& ev) {
+            if (!ev.self().isOperator() || !ev.self().isCreative()) {
+                return;
+            }
+            auto hit = ev.self().traceRay(
+                WorldEdit::getInstance().getConfig().player_state.maximum_trace_length,
+                false
+            );
+            if (!hit) {
+                return;
+            }
+            if (hit.mIsHitLiquid && !ev.self().isImmersedInWater()) {
+                hit.mBlockPos = hit.mLiquid;
+                hit.mFacing   = hit.mLiquidFacing;
+            }
+            playerRightClick(
+                ev.self(),
+                true,
+                ev.item(),
+                {hit.mBlockPos, ev.self().getDimensionId()},
+                hit.mFacing
+            );
+        })
+    );
 }
 PlayerStateManager::~PlayerStateManager() {
     using namespace ll::event;
@@ -325,7 +326,7 @@ PlayerStateManager::ClickState PlayerStateManager::playerRightClick(
         }
         data->lastRightClick = current;
         if (!needDiscard) {
-            data->setVicePos(dst);
+            data->setOffPos(dst);
         }
         return ClickState::Hold;
     }

@@ -4,7 +4,7 @@ namespace we {
 
 
 Vec3 KochanekBartelsInterpolation::retrieve(int index) const {
-    if (circle) {
+    if (cycle) {
         return nodes[posmod(index, (int)nodes.size())];
     } else {
         return nodes[std::clamp(index, 0, (int)(nodes.size() - 1))];
@@ -23,7 +23,7 @@ Vec3 KochanekBartelsInterpolation::linearCombination(
 
 void KochanekBartelsInterpolation::recalc() {
     int nNodes = (int)nodes.size();
-    if (circle) {
+    if (cycle) {
         nNodes += 1;
     }
     coeffA.resize(nNodes);
@@ -42,7 +42,7 @@ void KochanekBartelsInterpolation::recalc() {
         double biasA       = biasB;
         double continuityA = continuityB;
         if (i + 1 < nNodes) {
-            if (circle) {
+            if (cycle) {
                 nodeB = nodes[posmod(i + 1, (int)nodes.size())];
             } else {
                 nodeB = nodes[i + 1];
@@ -69,7 +69,7 @@ void KochanekBartelsInterpolation::recalc() {
         coeffD[i] = retrieve(i);
     }
     segCount = (int)nodes.size();
-    if (!circle) {
+    if (!cycle) {
         segCount -= 1;
     }
 }
