@@ -13,13 +13,10 @@
 #include <ll/api/event/player/PlayerUseItemEvent.h>
 #include <ll/api/event/player/PlayerUseItemOnEvent.h>
 
-#include "mc/server/commands/CommandOrigin.h"
 #include <ll/api/service/Bedrock.h>
 #include <ll/api/utils/ErrorUtils.h>
-#include <mc/world/level/BlockSource.h>
-#include <mc/world/level/Level.h>
+#include <mc/server/commands/CommandOrigin.h>
 #include <mc/world/level/block/actor/BlockActor.h>
-#include <mc/world/level/dimension/Dimension.h>
 
 namespace we {
 PlayerStateManager::PlayerStateManager()

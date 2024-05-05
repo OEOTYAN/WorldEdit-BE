@@ -2,9 +2,6 @@
 #include "region/LoftRegion.h"
 #include "worldedit/WorldEdit.h"
 
-#include <ll/api/command/CommandHandle.h>
-#include <ll/api/command/CommandRegistrar.h>
-
 namespace we {
 
 struct Params {
@@ -24,8 +21,7 @@ void setupLoftcycle() {
 
     command.overload<Params>().required("cycle").execute(
         [](CommandOrigin const& origin, CommandOutput& output, Params const& params) {
-            auto& manager = WorldEdit::getInstance().getPlayerStateManager();
-            auto  state   = manager.get(origin);
+            auto state = WorldEdit::getInstance().getPlayerStateManager().get(origin);
             if (!state) {
                 output.error("origin didn't have state"_tr());
                 return;

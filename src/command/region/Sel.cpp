@@ -2,11 +2,6 @@
 #include "region/Region.h"
 #include "worldedit/WorldEdit.h"
 
-#include <ll/api/command/CommandHandle.h>
-#include <ll/api/command/CommandRegistrar.h>
-
-#include <mc/world/level/dimension/Dimension.h>
-
 namespace we {
 
 struct Sel {
@@ -33,8 +28,7 @@ void setupSel() {
 
     command.overload().text("clear").execute([](CommandOrigin const& origin,
                                                 CommandOutput&       output) {
-        auto& manager = WorldEdit::getInstance().getPlayerStateManager();
-        auto  state   = manager.get(origin);
+        auto state = WorldEdit::getInstance().getPlayerStateManager().get(origin);
         if (!state) {
             output.error("origin didn't have state"_tr());
             return;
@@ -46,8 +40,7 @@ void setupSel() {
     });
     command.overload<SelRm>().text("remove").required("type").execute(
         [](CommandOrigin const& origin, CommandOutput& output, SelRm const& params) {
-            auto& manager = WorldEdit::getInstance().getPlayerStateManager();
-            auto  state   = manager.get(origin);
+            auto state = WorldEdit::getInstance().getPlayerStateManager().get(origin);
             if (!state) {
                 output.error("origin didn't have state"_tr());
                 return;
@@ -75,20 +68,23 @@ void setupSel() {
         }
     );
 
-    command.overload<Sel>().required("type").execute(
-        [](CommandOrigin const& origin, CommandOutput& output, Sel const& params) {
-            auto& manager = WorldEdit::getInstance().getPlayerStateManager();
-            auto  state   = manager.getOrCreate(origin);
+    command.overload<Sel>().required("type").execute([](CommandOrigin const& origin,
+                                                        CommandOutput&       output,
+                                                        Sel const&           params) {
+        auto state = WorldEdit::getInstance().getPlayerStateManager().getOrCreate(origin);
+        if (state->region) {
             state->region = Region::create(
                 params.type,
                 state->region->getDim(),
                 state->region->getBoundBox()
             );
-            state->regionType = params.type;
-            state->mainPos.reset();
-            state->offPos.reset();
-            output.success("region switch to {0}"_tr(params.type));
+        } else {
+            state->region = nullptr;
         }
-    );
+        state->regionType = params.type;
+        state->mainPos.reset();
+        state->offPos.reset();
+        output.success("region switch to {0}"_tr(params.type));
+    });
 }
 } // namespace we

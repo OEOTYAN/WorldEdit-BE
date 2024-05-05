@@ -4,8 +4,6 @@
 #include "worldedit/Global.h"
 
 #include <ll/api/reflection/Dispatcher.h>
-#include <mc/server/commands/CommandPermissionLevel.h>
-#include <mc/world/item/VanillaItemNames.h>
 
 namespace we {
 struct Config {
