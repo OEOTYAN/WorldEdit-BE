@@ -11,9 +11,9 @@
 #include <ll/api/event/player/PlayerInteractBlockEvent.h>
 #include <ll/api/event/player/PlayerPlaceBlockEvent.h>
 #include <ll/api/event/player/PlayerUseItemEvent.h>
-#include <ll/api/event/player/PlayerUseItemOnEvent.h>
 
 #include <ll/api/service/Bedrock.h>
+#include <ll/api/service/ServerInfo.h>
 #include <ll/api/utils/ErrorUtils.h>
 #include <mc/server/commands/CommandOrigin.h>
 #include <mc/world/level/block/actor/BlockActor.h>
@@ -22,6 +22,14 @@ namespace we {
 PlayerStateManager::PlayerStateManager()
 : storagedState(WorldEdit::getInstance().getSelf().getDataDir() / u8"player_states") {
     using namespace ll::event;
+    if (ll::getServerStatus() == ll::ServerStatus::Running && ll::service::getLevel()) {
+        ll::service::getLevel()->forEachPlayer([this](Player& player) {
+            if (!player.isSimulated()) {
+                getOrCreate(player.getUuid());
+            }
+            return true;
+        });
+    }
     auto& bus = EventBus::getInstance();
     listeners.emplace_back(
         bus.emplaceListener<PlayerConnectEvent>([this](PlayerConnectEvent& ev) {
@@ -98,23 +106,6 @@ PlayerStateManager::PlayerStateManager()
             );
         })
     );
-    listeners.emplace_back(bus.emplaceListener<PlayerInteractBlockEvent>(
-        [this](PlayerInteractBlockEvent& ev) {
-            if (!ev.self().isOperator() || !ev.self().isCreative()) {
-                return;
-            }
-            ev.setCancelled(
-                ClickState::Hold
-                == playerRightClick(
-                    ev.self(),
-                    false,
-                    ev.self().getSelectedItem(),
-                    {ev.pos(), ev.self().getDimensionId()},
-                    FacingID::Unknown
-                )
-            );
-        }
-    ));
     listeners.emplace_back(
         bus.emplaceListener<PlayerPlacingBlockEvent>([this](PlayerPlacingBlockEvent& ev) {
             if (!ev.self().isOperator() || !ev.self().isCreative()) {
@@ -132,8 +123,8 @@ PlayerStateManager::PlayerStateManager()
             );
         })
     );
-    listeners.emplace_back(
-        bus.emplaceListener<PlayerUseItemOnEvent>([this](PlayerUseItemOnEvent& ev) {
+    listeners.emplace_back(bus.emplaceListener<PlayerInteractBlockEvent>(
+        [this](PlayerInteractBlockEvent& ev) {
             if (!ev.self().isOperator() || !ev.self().isCreative()) {
                 return;
             }
@@ -147,8 +138,8 @@ PlayerStateManager::PlayerStateManager()
                     ev.face()
                 )
             );
-        })
-    );
+        }
+    ));
     listeners.emplace_back(
         bus.emplaceListener<PlayerUseItemEvent>([this](PlayerUseItemEvent& ev) {
             if (!ev.self().isOperator() || !ev.self().isCreative()) {

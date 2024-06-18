@@ -286,6 +286,9 @@ bool LoftRegion::setMainPos(BlockPos const& pos) {
     return true;
 }
 bool LoftRegion::setOffPos(BlockPos const& pos) {
+    if (loftPoints.empty()) {
+        return false;
+    }
     loftPoints.back().push_back(pos);
     maxPointCount = std::max(maxPointCount, loftPoints.back().size());
     updateBoundingBox();
