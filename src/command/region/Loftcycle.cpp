@@ -1,3 +1,4 @@
+#include "command/Commands.h"
 #include "data/PlayerStateManager.h"
 #include "region/LoftRegion.h"
 #include "worldedit/WorldEdit.h"
@@ -8,7 +9,7 @@ struct Params {
     bool cycle;
 };
 
-void setupLoftcycle() {
+static bool _ = addSetup("loftcycle", [] {
     auto& config = WorldEdit::getInstance().getConfig().commands.region.loftcycle;
     if (!config.enabled) {
         return;
@@ -34,5 +35,5 @@ void setupLoftcycle() {
             output.success("set loft region cycle to {0}"_tr(params.cycle));
         }
     );
-}
+});
 } // namespace we

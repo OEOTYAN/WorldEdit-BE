@@ -8,12 +8,12 @@
         "author": "OEOTYAN",
         "tags": [
             "levilamina",
-            "plugin"
+            "mod"
         ]
     },
     "asset_url": "https://github.com/OEOTYAN/WorldEdit/releases/download/v0.1.6/WorldEdit-windows-x64.zip",
     "prerequisites": {
-        "github.com/LiteLDev/LeviLamina": ">=0.10.0"
+        "github.com/LiteLDev/LeviLamina": ">=0.13.5"
     },
     "files": {
         "place": [

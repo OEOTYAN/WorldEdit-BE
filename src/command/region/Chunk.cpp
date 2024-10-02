@@ -1,9 +1,10 @@
+#include "command/Commands.h"
 #include "data/PlayerStateManager.h"
 #include "region/LoftRegion.h"
 #include "worldedit/WorldEdit.h"
 
 namespace we {
-void setupChunk() {
+static bool _ = addSetup("chunk", [] {
     auto& config = WorldEdit::getInstance().getConfig().commands.region.chunk;
     if (!config.enabled) {
         return;
@@ -37,5 +38,5 @@ void setupChunk() {
             state->regionType = RegionType::Cuboid;
             output.success("chunk selected"_tr());
         });
-}
+});
 } // namespace we

@@ -3,11 +3,10 @@
 #include "Global.h"
 #include "data/Config.h"
 #include "data/PlayerStateManager.h"
-#include "utils/ThreadPoolWrapper.h"
 
-#include <ll/api/plugin/NativePlugin.h>
+#include <ll/api/mod/NativeMod.h>
 
-#define DBGLOG(...) ::we::WorldEdit::getInstance().getLogger().warn(__VA_ARGS__);
+#define WEDEBUG(...) ::we::WorldEdit::getInstance().getLogger().debug(__VA_ARGS__)
 
 namespace we {
 
@@ -16,27 +15,19 @@ class WorldEdit {
 public:
     static WorldEdit& getInstance();
 
-    WorldEdit(ll::plugin::NativePlugin& self);
+    WorldEdit(ll::mod::NativeMod& self);
 
-    [[nodiscard]] ll::plugin::NativePlugin& getSelf() const { return mSelf; }
+    [[nodiscard]] ll::mod::NativeMod& getSelf() const { return mSelf; }
 
     [[nodiscard]] bsci::GeometryGroup& getGeo() const { return *mGeometryGroup; }
 
-    [[nodiscard]] ll::Logger& getLogger() const { return getSelf().getLogger(); }
+    [[nodiscard]] ll::io::Logger& getLogger() const { return getSelf().getLogger(); }
 
     [[nodiscard]] Config& getConfig() { return *mConfig; }
 
     [[nodiscard]] PlayerStateManager& getPlayerStateManager() {
         return *mPlayerStateManager;
     }
-
-    [[nodiscard]] ThreadPoolWrapper getPool() { return mThreadPool; }
-
-    [[nodiscard]] TickPoolWrapper getTickPool() { return mTickSyncTaskPool; }
-
-    [[nodiscard]] auto& getScheduler() { return mScheduler; }
-
-    [[nodiscard]] auto& geServerScheduler() { return mScheduler; }
 
     [[nodiscard]] std::filesystem::path getConfigPath() const;
 
@@ -53,14 +44,12 @@ public:
     bool unload();
 
 private:
-    ll::plugin::NativePlugin&            mSelf;
+    ll::mod::NativeMod&                  mSelf;
     std::unique_ptr<bsci::GeometryGroup> mGeometryGroup;
     std::optional<Config>                mConfig;
     std::shared_ptr<PlayerStateManager>  mPlayerStateManager;
-    ll::thread::ThreadPool               mThreadPool;
-    ll::schedule::Scheduler<std::chrono::system_clock, ThreadPoolWrapper> mScheduler;
-    ll::thread::TickSyncTaskPool                                      mTickSyncTaskPool;
-    ll::schedule::Scheduler<ll::chrono::ServerClock, TickPoolWrapper> mServerScheduler;
 };
+
+inline ll::io::Logger& logger() { return WorldEdit::getInstance().getLogger(); }
 
 } // namespace we

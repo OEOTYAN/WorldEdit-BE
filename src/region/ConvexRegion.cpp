@@ -25,7 +25,7 @@ ll::Expected<> ConvexRegion::deserialize(CompoundTag const& tag) {
     edges.clear();
     indexedVertices.clear();
     centerAccum = 0;
-    for (auto& v : tag.at("indexedVertices").get<ListTag>().mList) {
+    for (auto& v : tag.at("indexedVertices").get<ListTag>()) {
         if (auto t = ll::reflection::deserialize_to<BlockPos>(CompoundTagVariant{v}); t) {
             addVertexWithIndex(std::move(*t));
         } else {
@@ -151,15 +151,13 @@ bool ConvexRegion::addVertex(BlockPos const& vertex) {
     switch (vertices.size()) {
     case 0:
     case 1:
-    case 2: {
+    case 2:
         return true;
-    };
-    case 3: {
+    case 3:
         triangles.emplace_back(indexedVertices[0].data, indexedVertices[1].data, vertex);
         triangles.emplace_back(indexedVertices[0].data, vertex, indexedVertices[1].data);
         updateEdges();
         return true;
-    };
     default:
         break;
     }

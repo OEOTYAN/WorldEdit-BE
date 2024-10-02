@@ -9,11 +9,16 @@
 #include <ll/api/command/CommandHandle.h>
 #include <ll/api/command/CommandRegistrar.h>
 #include <ll/api/command/runtime/ParamKind.h>
+#include <ll/api/coro/CoroTask.h>
 #include <ll/api/i18n/I18n.h>
+#include <ll/api/io/Logger.h>
 #include <ll/api/reflection/Deserialization.h>
 #include <ll/api/reflection/Serialization.h>
-#include <ll/api/schedule/Scheduler.h>
+#include <ll/api/thread/ServerThreadExecutor.h>
+#include <ll/api/thread/ThreadPoolExecutor.h>
+#include <ll/api/utils/ErrorUtils.h>
 #include <ll/api/utils/HashUtils.h>
+#include <ll/api/utils/StringUtils.h>
 #include <mc/math/Vec2.h>
 #include <mc/math/Vec3.h>
 #include <mc/nbt/CompoundTag.h>
@@ -30,9 +35,7 @@
 #include <mc/world/level/dimension/DimensionHeightRange.h>
 #include <mc/world/level/levelgen/structure/BoundingBox.h>
 #include <mc/world/phys/AABB.h>
-#include <parallel_hashmap/phmap.h>
 #include <utils/Hash.h>
-#include <utils/LockedMap.h>
 #include <utils/WithDim.h>
 
 using namespace ll::i18n_literals;

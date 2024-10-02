@@ -17,7 +17,7 @@ class PlayerStateManager : public std::enable_shared_from_this<PlayerStateManage
 
     std::vector<ll::event::ListenerPtr> listeners;
 
-    pfh_map<mce::UUID, std::shared_ptr<PlayerState>> playerStates;
+    ll::ConcurrentDenseMap<mce::UUID, std::shared_ptr<PlayerState>> playerStates;
 
     bool release(mce::UUID const& uuid);
 

@@ -3,7 +3,7 @@
 
 #include <ll/api/event/EventBus.h>
 #include <ll/api/event/player/PlayerConnectEvent.h>
-#include <ll/api/event/player/PlayerLeaveEvent.h>
+#include <ll/api/event/player/PlayerDisconnectEvent.h>
 
 #include <ll/api/event/player/PlayerDestroyBlockEvent.h>
 #include <ll/api/event/player/PlayerSwingEvent.h>
@@ -13,6 +13,7 @@
 #include <ll/api/event/player/PlayerUseItemEvent.h>
 
 #include <ll/api/service/Bedrock.h>
+#include <ll/api/service/GamingStatus.h>
 #include <ll/api/service/ServerInfo.h>
 #include <ll/api/utils/ErrorUtils.h>
 #include <mc/server/commands/CommandOrigin.h>
@@ -22,7 +23,7 @@ namespace we {
 PlayerStateManager::PlayerStateManager()
 : storagedState(WorldEdit::getInstance().getSelf().getDataDir() / u8"player_states") {
     using namespace ll::event;
-    if (ll::getServerStatus() == ll::ServerStatus::Running && ll::service::getLevel()) {
+    if (ll::getGamingStatus() == ll::GamingStatus::Running && ll::service::getLevel()) {
         ll::service::getLevel()->forEachPlayer([this](Player& player) {
             if (!player.isSimulated()) {
                 getOrCreate(player.getUuid());
@@ -34,19 +35,21 @@ PlayerStateManager::PlayerStateManager()
     listeners.emplace_back(
         bus.emplaceListener<PlayerConnectEvent>([this](PlayerConnectEvent& ev) {
             if (!ev.self().isSimulated()) {
-                WorldEdit::getInstance().getPool().addTask([id  = ev.self().getUuid(),
-                                                            ptr = weak_from_this()] {
-                    if (!ptr.expired()) ptr.lock()->getOrCreate(id);
-                });
+                ll::thread::ThreadPoolExecutor::getDefault().execute(
+                    [id = ev.self().getUuid(), ptr = weak_from_this()] {
+                        if (!ptr.expired()) ptr.lock()->getOrCreate(id);
+                    }
+                );
             }
         })
     );
     listeners.emplace_back(
-        bus.emplaceListener<PlayerLeaveEvent>([this](PlayerLeaveEvent& ev) {
-            WorldEdit::getInstance().getPool().addTask([id  = ev.self().getUuid(),
-                                                        ptr = weak_from_this()] {
-                if (!ptr.expired()) ptr.lock()->release(id);
-            });
+        bus.emplaceListener<PlayerDisconnectEvent>([this](PlayerDisconnectEvent& ev) {
+            ll::thread::ThreadPoolExecutor::getDefault().execute(
+                [id = ev.self().getUuid(), ptr = weak_from_this()] {
+                    if (!ptr.expired()) ptr.lock()->release(id);
+                }
+            );
         })
     );
     listeners.emplace_back(
@@ -65,8 +68,7 @@ PlayerStateManager::PlayerStateManager()
                 )
             );
             if (ev.isCancelled()) {
-                WorldEdit::getInstance().geServerScheduler().add<ll::schedule::DelayTask>(
-                    1_tick,
+                ll::thread::ThreadPoolExecutor::getDefault().executeAfter(
                     [dst = WithDim<BlockPos>{ev.pos(), ev.self().getDimensionId()}] {
                         if (auto dim = ll::service::getLevel()->getDimension(dst.dim);
                             dim) {
@@ -76,7 +78,8 @@ PlayerStateManager::PlayerStateManager()
                                 blockActor->refresh(blockSource);
                             }
                         }
-                    }
+                    },
+                    1_tick
                 );
             }
         })

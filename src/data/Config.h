@@ -40,11 +40,11 @@ struct Config {
         int   minimum_response_tick = 3;
     } player_state;
     struct {
-        int player_log_level = 3;
+        ll::io::LogLevel player_log_level{ll::io::LogLevel::Warn};
     } log;
 
     struct PlayerConfig {
-        RegionType   default_region_type{RegionType::Cuboid};
+        RegionType   default_region_type{RegionType::Expand};
         HashedString wand = VanillaItemNames::WoodenAxe;
     } player_default_config;
 };

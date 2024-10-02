@@ -1,3 +1,4 @@
+#include "command/Commands.h"
 #include "data/PlayerStateManager.h"
 #include "region/Region.h"
 #include "worldedit/WorldEdit.h"
@@ -15,7 +16,7 @@ struct SelRm {
     SelRemoveType type;
 };
 
-void setupSel() {
+static bool _ = addSetup("sel", [] {
     auto& config = WorldEdit::getInstance().getConfig().commands.region.sel;
     if (!config.enabled) {
         return;
@@ -86,5 +87,5 @@ void setupSel() {
         state->offPos.reset();
         output.success("region switch to {0}"_tr(params.type));
     });
-}
+});
 } // namespace we

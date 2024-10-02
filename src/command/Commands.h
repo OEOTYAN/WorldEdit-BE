@@ -1,13 +1,11 @@
 #pragma once
 
-#include "command/region/RegionCommands.h"
+#include "worldedit/Global.h"
 
 namespace we {
-// void setupTick();
-// void setupbrush();
-void setupCommands() {
-    setupRegionCommands();
-    // setupTick();
-    // setupbrush();
-}
+
+void setupCommands();
+
+bool addSetup(std::string name, std::function<void()>) noexcept;
+
 } // namespace we

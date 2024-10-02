@@ -1,9 +1,10 @@
+#include "command/Commands.h"
 #include "data/PlayerStateManager.h"
 #include "region/LoftRegion.h"
 #include "worldedit/WorldEdit.h"
 
 namespace we {
-void setupHpos1() {
+static bool _ = addSetup("hpos1", [] {
     auto& config = WorldEdit::getInstance().getConfig().commands.region.hpos1;
     if (!config.enabled) {
         return;
@@ -44,5 +45,5 @@ void setupHpos1() {
                 output.error("can't set main position at {0}"_tr(hitResult.mBlockPos));
             }
         });
-}
+});
 } // namespace we

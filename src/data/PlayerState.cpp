@@ -14,7 +14,7 @@ void PlayerState::setMainPosInternal() {
         auto& we     = WorldEdit::getInstance();
         mainPos->geo = we.getGeo().box(
             mainPos->data.dim,
-            AABB{mainPos->data.pos}.shrink(-0.07),
+            AABB{mainPos->data.pos}.shrink(-0.07f),
             we.getConfig().colors.main_hand_color
         );
     }
@@ -24,7 +24,7 @@ void PlayerState::setOffPosInternal() {
         auto& we    = WorldEdit::getInstance();
         offPos->geo = we.getGeo().box(
             offPos->data.dim,
-            AABB{offPos->data.pos}.shrink(-0.06),
+            AABB{offPos->data.pos}.shrink(-0.06f),
             we.getConfig().colors.off_hand_color
         );
     }
