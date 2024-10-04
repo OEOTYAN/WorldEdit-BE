@@ -16,7 +16,6 @@ REG_CMD(region, hpos2, "sets the off position to the cursor position") {
         }
         if (hitResult.mIsHitLiquid && !player->isImmersedInWater()) {
             hitResult.mBlockPos = hitResult.mLiquid;
-            hitResult.mFacing   = hitResult.mLiquidFacing;
         }
         if (pctx->setOffPos({hitResult.mBlockPos, player->getDimensionId()})) {
             ctx.success("set off position at {0}", hitResult.mBlockPos);

@@ -8,20 +8,20 @@ auto& setupCommandFunctions() {
 }
 void setupCommands() {
     for (auto& [name, fn] : setupCommandFunctions()) {
-        WE_DEBUG("setup command {}", name);
+        WE_DEBUG("setup command {0}", name);
         try {
             fn();
         } catch (...) {
-            logger().error("threw from setup command {}", name);
+            logger().error("threw from setup command {0}", name);
             ll::error_utils::printCurrentException(logger());
         }
-        WE_DEBUG("setup command {} done", name);
+        WE_DEBUG("setup command {0} done", name);
     }
 }
 bool SetupCommandFunctor::operator|(void (*fn)(ll::command::CommandHandle&)) noexcept {
     auto& map = setupCommandFunctions();
     WE_ASSERT(!map.contains(name), "setup same cmd twice");
-    setupCommandFunctions().try_emplace(std::move(name), [handler = handler, fn] {
+    map.try_emplace(std::move(name), [handler = handler, fn] {
         handler().transform([&](auto& handle) {
             fn(handle);
             return true;

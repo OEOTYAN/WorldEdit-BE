@@ -16,7 +16,6 @@ REG_CMD(region, hpos1, "sets the main position to the cursor position") {
         }
         if (hitResult.mIsHitLiquid && !player->isImmersedInWater()) {
             hitResult.mBlockPos = hitResult.mLiquid;
-            hitResult.mFacing   = hitResult.mLiquidFacing;
         }
         if (pctx->setMainPos({hitResult.mBlockPos, player->getDimensionId()})) {
             ctx.success("set main position at {0}", hitResult.mBlockPos);

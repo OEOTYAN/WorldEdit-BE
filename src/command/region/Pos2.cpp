@@ -10,7 +10,7 @@ REG_CMD(region, pos2, "sets the off position to the given or current position") 
         [](CommandContextRef const& ctx, Params const& params) {
             auto dim = checkDimension(ctx);
             if (!dim) return;
-            BlockPos pos  = params.pos.transform(ctx.transformPos()).value_or(ctx.pos());
+            BlockPos pos = params.pos.transform(ctx.transformPos()).value_or(ctx.pos());
             if (getPlayerContext(ctx)->setOffPos({pos, dim->getDimensionId()})) {
                 ctx.success("set off position at {0}", pos);
             } else {

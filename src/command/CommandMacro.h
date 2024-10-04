@@ -28,6 +28,14 @@ public:
     template <class... Args>
     void success(fmt::format_string<Args...> fmt, Args&&... args) const {
         auto fsv = fmt.get();
+        WE_DEBUG(
+            "command [{0}] [success]: {0}",
+            cmd.getCommandName(),
+            fmt::vformat(
+                ll::i18n::getInstance().get({fsv.data(), fsv.size()}, {}),
+                fmt::make_format_args(args...)
+            )
+        );
         output.success(fmt::vformat(
             ll::i18n::getInstance().get({fsv.data(), fsv.size()}, {}),
             fmt::make_format_args(args...)
@@ -37,6 +45,14 @@ public:
     template <class... Args>
     void error(fmt::format_string<Args...> fmt, Args&&... args) const {
         auto fsv = fmt.get();
+        WE_DEBUG(
+            "command [{0}] [error]: {0}",
+            cmd.getCommandName(),
+            fmt::vformat(
+                ll::i18n::getInstance().get({fsv.data(), fsv.size()}, {}),
+                fmt::make_format_args(args...)
+            )
+        );
         output.error(fmt::vformat(
             ll::i18n::getInstance().get({fsv.data(), fsv.size()}, {}),
             fmt::make_format_args(args...)
