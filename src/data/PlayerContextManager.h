@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PlayerState.h"
+#include "PlayerContext.h"
 
 #include <ll/api/data/KeyValueDB.h>
 #include <ll/api/event/ListenerBase.h>
@@ -12,12 +12,14 @@ class ItemStack;
 class CommandOrigin;
 
 namespace we {
-class PlayerStateManager : public std::enable_shared_from_this<PlayerStateManager> {
+class PlayerContextManager : public std::enable_shared_from_this<PlayerContextManager> {
+    WorldEdit& mod;
+
     ll::data::KeyValueDB storagedState;
 
     std::vector<ll::event::ListenerPtr> listeners;
 
-    ll::ConcurrentDenseMap<mce::UUID, std::shared_ptr<PlayerState>> playerStates;
+    ll::ConcurrentDenseMap<mce::UUID, std::shared_ptr<PlayerContext>> playerStates;
 
     bool release(mce::UUID const& uuid);
 
@@ -42,18 +44,18 @@ class PlayerStateManager : public std::enable_shared_from_this<PlayerStateManage
     );
 
 public:
-    PlayerStateManager();
-    ~PlayerStateManager();
+    PlayerContextManager();
+    ~PlayerContextManager();
 
     // bool has(mce::UUID const& uuid, bool temp = false);
 
-    std::shared_ptr<PlayerState> get(mce::UUID const& uuid, bool temp = false);
+    std::shared_ptr<PlayerContext> get(mce::UUID const& uuid, bool temp = false);
 
-    std::shared_ptr<PlayerState> getOrCreate(mce::UUID const& uuid, bool temp = false);
+    std::shared_ptr<PlayerContext> getOrCreate(mce::UUID const& uuid, bool temp = false);
 
-    std::shared_ptr<PlayerState> get(CommandOrigin const&);
+    std::shared_ptr<PlayerContext> get(CommandOrigin const&);
 
-    std::shared_ptr<PlayerState> getOrCreate(CommandOrigin const&);
+    std::shared_ptr<PlayerContext> getOrCreate(CommandOrigin const&);
 
     void remove(mce::UUID const& uuid);
 

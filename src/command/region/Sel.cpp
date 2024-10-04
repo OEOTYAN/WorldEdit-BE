@@ -1,10 +1,6 @@
-#include "command/Commands.h"
-#include "data/PlayerStateManager.h"
-#include "region/Region.h"
-#include "worldedit/WorldEdit.h"
+#include "command/CommandMacro.h"
 
 namespace we {
-
 struct Sel {
     RegionType type;
 };
@@ -13,79 +9,63 @@ enum class SelRemoveType {
     Near,
 };
 struct SelRm {
-    SelRemoveType type;
+    SelRemoveType                               type;
+    ll::command::Optional<CommandPositionFloat> pos;
 };
-
-static bool _ = addSetup("sel", [] {
-    auto& config = WorldEdit::getInstance().getConfig().commands.region.sel;
-    if (!config.enabled) {
-        return;
-    }
-    auto& command = ll::command::CommandRegistrar::getInstance().getOrCreateCommand(
-        "sel",
-        "manipulate region"_tr(),
-        config.permission
-    );
-
-    command.overload().text("clear").execute([](CommandOrigin const& origin,
-                                                CommandOutput&       output) {
-        auto state = WorldEdit::getInstance().getPlayerStateManager().get(origin);
-        if (!state) {
-            output.error("origin didn't have state"_tr());
-            return;
+REG_CMD(region, sel, "manipulate region") {
+    command.overload().text("clear").execute(
+        CmdCtxBuilder{} |
+        [](CommandContextRef const& ctx) {
+            auto pctx = checkPlayerContext(ctx);
+            if (!pctx) return;
+            pctx->region.reset();
+            pctx->mainPos.reset();
+            pctx->offPos.reset();
+            ctx.success("region cleared");
         }
-        state->region.reset();
-        state->mainPos.reset();
-        state->offPos.reset();
-        output.success("region cleared"_tr());
-    });
-    command.overload<SelRm>().text("remove").required("type").execute(
-        [](CommandOrigin const& origin, CommandOutput& output, SelRm const& params) {
-            auto state = WorldEdit::getInstance().getPlayerStateManager().get(origin);
-            if (!state) {
-                output.error("origin didn't have state"_tr());
-                return;
-            }
-            if (!state->region) {
-                output.error("origin didn't selected any region"_tr());
-                return;
-            }
-            if (auto* dim = origin.getDimension();
-                !dim || dim->getDimensionId() != state->region->getDim()) {
-                output.error("origin dimension doesn't match region dimension"_tr());
+    );
+    command.overload<SelRm>().text("remove").required("type").optional("pos").execute(
+        CmdCtxBuilder{} |
+        [](CommandContextRef const& ctx, SelRm const& params) {
+            auto dim = checkDimension(ctx);
+            if (!dim) return;
+            auto region = checkRegion(ctx);
+            if (!region) return;
+            if (dim->getDimensionId() != region->getDim()) {
+                ctx.error("origin dimension doesn't match region dimension");
                 return;
             }
             bool res;
             if (params.type == SelRemoveType::Last) {
-                res = state->region->removePoint(std::nullopt);
+                res = region->removePoint(std::nullopt);
             } else {
-                res = state->region->removePoint(origin.getBlockPosition());
+                res = region->removePoint(
+                    params.pos.transform(ctx.transformPos()).value_or(ctx.pos())
+                );
             }
             if (res) {
-                output.success("selected postion removed"_tr());
+                ctx.success("selected postion removed");
             } else {
-                output.error("fail to remove selected postion"_tr());
+                ctx.error("fail to remove selected postion");
             }
         }
     );
-
-    command.overload<Sel>().required("type").execute([](CommandOrigin const& origin,
-                                                        CommandOutput&       output,
-                                                        Sel const&           params) {
-        auto state = WorldEdit::getInstance().getPlayerStateManager().getOrCreate(origin);
-        if (state->region) {
-            state->region = Region::create(
-                params.type,
-                state->region->getDim(),
-                state->region->getBoundBox()
-            );
-        } else {
-            state->region = nullptr;
+    command.overload<Sel>().required("type").execute(
+        CmdCtxBuilder{} |
+        [](CommandContextRef const& ctx, Sel const& params) {
+            auto pctx = getPlayerContext(ctx);
+            if (pctx->region) {
+                pctx->region = Region::create(
+                    params.type,
+                    pctx->region->getDim(),
+                    pctx->region->getBoundBox()
+                );
+            }
+            pctx->regionType = params.type;
+            pctx->mainPos.reset();
+            pctx->offPos.reset();
+            ctx.success("region switch to {0}", params.type);
         }
-        state->regionType = params.type;
-        state->mainPos.reset();
-        state->offPos.reset();
-        output.success("region switch to {0}"_tr(params.type));
-    });
-});
+    );
+};
 } // namespace we

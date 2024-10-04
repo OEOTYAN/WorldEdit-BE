@@ -41,3 +41,7 @@
 using namespace ll::i18n_literals;
 using namespace ll::hash_literals;
 using namespace ll::chrono_literals;
+
+namespace we {
+class WorldEdit;
+}

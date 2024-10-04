@@ -7,9 +7,9 @@
 #include <mc/world/level/Tick.h>
 
 namespace we {
-class PlayerStateManager;
-class PlayerState {
-    friend PlayerStateManager;
+class PlayerContextManager;
+class PlayerContext {
+    friend PlayerContextManager;
     std::atomic_bool mutable mDirty;
     std::atomic<Tick> mutable lastLeftClick;
     std::atomic<Tick> mutable lastRightClick;
@@ -31,7 +31,7 @@ public:
 
     bool dirty() const { return mDirty; }
 
-    PlayerState(mce::UUID const& uuid, bool temp);
+    PlayerContext(mce::UUID const& uuid, bool temp);
 
     bool setMainPos(WithDim<BlockPos> const&);
     bool setOffPos(WithDim<BlockPos> const&);

@@ -1,39 +1,23 @@
-#include "command/Commands.h"
-#include "data/PlayerStateManager.h"
+#include "command/CommandMacro.h"
 #include "region/LoftRegion.h"
-#include "worldedit/WorldEdit.h"
 
 namespace we {
-
 struct Params {
     bool cycle;
 };
-
-static bool _ = addSetup("loftcycle", [] {
-    auto& config = WorldEdit::getInstance().getConfig().commands.region.loftcycle;
-    if (!config.enabled) {
-        return;
-    }
-    auto& command = ll::command::CommandRegistrar::getInstance().getOrCreateCommand(
-        "loftcycle",
-        "set loft region curve is connected end to end"_tr(),
-        config.permission
-    );
-
+REG_CMD(region, loftcycle, "set loft region curve is connected end to end") {
     command.overload<Params>().required("cycle").execute(
-        [](CommandOrigin const& origin, CommandOutput& output, Params const& params) {
-            auto state = WorldEdit::getInstance().getPlayerStateManager().get(origin);
-            if (!state) {
-                output.error("origin didn't have state"_tr());
+        CmdCtxBuilder{} |
+        [](CommandContextRef const& ctx, Params const& params) {
+            auto region = checkRegion(ctx);
+            if (!region) return;
+            if (region->getType() != RegionType::Loft) {
+                ctx.error("origin didn't selected loft region");
                 return;
             }
-            if (!state->region || state->region->getType() != RegionType::Loft) {
-                output.error("origin didn't selected loft region"_tr());
-                return;
-            }
-            std::static_pointer_cast<LoftRegion>(state->region)->setCycle(params.cycle);
-            output.success("set loft region cycle to {0}"_tr(params.cycle));
+            std::static_pointer_cast<LoftRegion>(region)->setCycle(params.cycle);
+            ctx.success("set loft region cycle to {0}", params.cycle);
         }
     );
-});
+};
 } // namespace we

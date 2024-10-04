@@ -1,4 +1,4 @@
-#include "PlayerStateManager.h"
+#include "PlayerContextManager.h"
 #include "worldedit/WorldEdit.h"
 
 #include <ll/api/event/EventBus.h>
@@ -20,8 +20,9 @@
 #include <mc/world/level/block/actor/BlockActor.h>
 
 namespace we {
-PlayerStateManager::PlayerStateManager()
-: storagedState(WorldEdit::getInstance().getSelf().getDataDir() / u8"player_states") {
+PlayerContextManager::PlayerContextManager()
+: mod(WorldEdit::getInstance()),
+  storagedState(mod.getSelf().getDataDir() / u8"player_states") {
     using namespace ll::event;
     if (ll::getGamingStatus() == ll::GamingStatus::Running && ll::service::getLevel()) {
         ll::service::getLevel()->forEachPlayer([this](Player& player) {
@@ -84,31 +85,29 @@ PlayerStateManager::PlayerStateManager()
             }
         })
     );
-    listeners.emplace_back(
-        bus.emplaceListener<PlayerSwingEvent>([this](PlayerSwingEvent& ev) {
-            if (!ev.self().isOperator() || !ev.self().isCreative()) {
-                return;
-            }
-            auto hit = ev.self().traceRay(
-                WorldEdit::getInstance().getConfig().player_state.maximum_trace_length,
-                false
-            );
-            if (!hit) {
-                return;
-            }
-            if (hit.mIsHitLiquid && !ev.self().isImmersedInWater()) {
-                hit.mBlockPos = hit.mLiquid;
-                hit.mFacing   = hit.mLiquidFacing;
-            }
-            playerLeftClick(
-                ev.self(),
-                true,
-                ev.self().getSelectedItem(),
-                {hit.mBlockPos, ev.self().getDimensionId()},
-                hit.mFacing
-            );
-        })
-    );
+    listeners.emplace_back(bus.emplaceListener<PlayerSwingEvent>([this](
+                                                                     PlayerSwingEvent& ev
+                                                                 ) {
+        if (!ev.self().isOperator() || !ev.self().isCreative()) {
+            return;
+        }
+        auto hit =
+            ev.self().traceRay(mod.getConfig().player_state.maximum_trace_length, false);
+        if (!hit) {
+            return;
+        }
+        if (hit.mIsHitLiquid && !ev.self().isImmersedInWater()) {
+            hit.mBlockPos = hit.mLiquid;
+            hit.mFacing   = hit.mLiquidFacing;
+        }
+        playerLeftClick(
+            ev.self(),
+            true,
+            ev.self().getSelectedItem(),
+            {hit.mBlockPos, ev.self().getDimensionId()},
+            hit.mFacing
+        );
+    }));
     listeners.emplace_back(
         bus.emplaceListener<PlayerPlacingBlockEvent>([this](PlayerPlacingBlockEvent& ev) {
             if (!ev.self().isOperator() || !ev.self().isCreative()) {
@@ -149,7 +148,7 @@ PlayerStateManager::PlayerStateManager()
                 return;
             }
             auto hit = ev.self().traceRay(
-                WorldEdit::getInstance().getConfig().player_state.maximum_trace_length,
+                mod.getConfig().player_state.maximum_trace_length,
                 false
             );
             if (!hit) {
@@ -169,7 +168,7 @@ PlayerStateManager::PlayerStateManager()
         })
     );
 }
-PlayerStateManager::~PlayerStateManager() {
+PlayerContextManager::~PlayerContextManager() {
     using namespace ll::event;
     for (auto& l : listeners) {
         EventBus::getInstance().removeListener(l);
@@ -183,29 +182,30 @@ PlayerStateManager::~PlayerStateManager() {
         storagedState.set(p.first.asString(), nbt.toBinaryNbt());
     });
 }
-std::shared_ptr<PlayerState> PlayerStateManager::get(mce::UUID const& uuid, bool temp) {
-    std::shared_ptr<PlayerState> res;
+std::shared_ptr<PlayerContext>
+PlayerContextManager::get(mce::UUID const& uuid, bool temp) {
+    std::shared_ptr<PlayerContext> res;
     if (playerStates.if_contains(uuid, [&](auto&& p) { res = p.second; })) {
         return res;
     } else if (!temp) {
         if (auto nbt = storagedState.get(uuid.asString()); nbt) {
-            res = std::make_shared<PlayerState>(uuid, temp);
+            res = std::make_shared<PlayerContext>(uuid, temp);
             CompoundTag::fromBinaryNbt(*nbt).and_then([&](CompoundTag&& tag) {
                 return res->deserialize(tag);
             });
-            return res;
+            return playerStates.try_emplace(uuid, res).first->second;
         }
     }
-    return {};
+    return res;
 }
-std::shared_ptr<PlayerState>
-PlayerStateManager::getOrCreate(mce::UUID const& uuid, bool temp) {
-    std::shared_ptr<PlayerState> res;
+std::shared_ptr<PlayerContext>
+PlayerContextManager::getOrCreate(mce::UUID const& uuid, bool temp) {
+    std::shared_ptr<PlayerContext> res;
     playerStates.lazy_emplace_l(
         uuid,
         [&](auto&& p) { res = p.second; },
         [&, this](auto&& ctor) {
-            res = std::make_shared<PlayerState>(uuid, temp);
+            res = std::make_shared<PlayerContext>(uuid, temp);
             if (!temp) {
                 if (auto nbt = storagedState.get(uuid.asString()); nbt) {
                     CompoundTag::fromBinaryNbt(*nbt).and_then([&](CompoundTag&& tag) {
@@ -219,7 +219,7 @@ PlayerStateManager::getOrCreate(mce::UUID const& uuid, bool temp) {
     return res;
 }
 
-std::shared_ptr<PlayerState> PlayerStateManager::get(CommandOrigin const& o) {
+std::shared_ptr<PlayerContext> PlayerContextManager::get(CommandOrigin const& o) {
     if (auto actor = o.getEntity(); actor && actor->isPlayer()) {
         return get(
             static_cast<Player*>(actor)->getUuid(),
@@ -230,7 +230,7 @@ std::shared_ptr<PlayerState> PlayerStateManager::get(CommandOrigin const& o) {
     }
 }
 
-std::shared_ptr<PlayerState> PlayerStateManager::getOrCreate(CommandOrigin const& o) {
+std::shared_ptr<PlayerContext> PlayerContextManager::getOrCreate(CommandOrigin const& o) {
     if (auto actor = o.getEntity(); actor && actor->isPlayer()) {
         return getOrCreate(
             static_cast<Player*>(actor)->getUuid(),
@@ -241,7 +241,7 @@ std::shared_ptr<PlayerState> PlayerStateManager::getOrCreate(CommandOrigin const
     }
 }
 
-bool PlayerStateManager::release(mce::UUID const& uuid) {
+bool PlayerContextManager::release(mce::UUID const& uuid) {
     return playerStates.erase_if(uuid, [&](auto&& p) {
         if (p.second->temp || !p.second->dirty()) {
             return true;
@@ -252,12 +252,12 @@ bool PlayerStateManager::release(mce::UUID const& uuid) {
     });
 }
 
-void PlayerStateManager::remove(mce::UUID const& uuid) {
+void PlayerContextManager::remove(mce::UUID const& uuid) {
     playerStates.erase(uuid);
     storagedState.del(uuid.asString());
 }
 
-// bool PlayerStateManager::has(mce::UUID const& uuid, bool temp) {
+// bool PlayerContextManager::has(mce::UUID const& uuid, bool temp) {
 //     if (temp) {
 //         return playerStates.contains(uuid);
 //     } else {
@@ -265,11 +265,11 @@ void PlayerStateManager::remove(mce::UUID const& uuid) {
 //     }
 // }
 
-void PlayerStateManager::removeTemps() {
+void PlayerContextManager::removeTemps() {
     erase_if(playerStates, [](auto&& p) { return p.second->temp; });
 }
 
-PlayerStateManager::ClickState PlayerStateManager::playerLeftClick(
+PlayerContextManager::ClickState PlayerContextManager::playerLeftClick(
     Player&                  player,
     bool                     isLong,
     ItemStack const&         item,
@@ -280,7 +280,7 @@ PlayerStateManager::ClickState PlayerStateManager::playerLeftClick(
     auto& current = player.getLevel().getCurrentTick();
     bool  needDiscard{};
     if (current.t - data->lastLeftClick.load().t
-        < WorldEdit::getInstance().getConfig().player_state.minimum_response_tick) {
+        < mod.getConfig().player_state.minimum_response_tick) {
         needDiscard = true;
     }
     auto& itemName = item.getFullNameHash();
@@ -296,7 +296,7 @@ PlayerStateManager::ClickState PlayerStateManager::playerLeftClick(
     }
     return ClickState::Pass;
 }
-PlayerStateManager::ClickState PlayerStateManager::playerRightClick(
+PlayerContextManager::ClickState PlayerContextManager::playerRightClick(
     Player&                  player,
     bool                     isLong,
     ItemStack const&         item,
@@ -307,7 +307,7 @@ PlayerStateManager::ClickState PlayerStateManager::playerRightClick(
     auto& current = player.getLevel().getCurrentTick();
     bool  needDiscard{};
     if (current.t - data->lastRightClick.load().t
-        < WorldEdit::getInstance().getConfig().player_state.minimum_response_tick) {
+        < mod.getConfig().player_state.minimum_response_tick) {
         needDiscard = true;
     }
     auto& itemName = item.getFullNameHash();

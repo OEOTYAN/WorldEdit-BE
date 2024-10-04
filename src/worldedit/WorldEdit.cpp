@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "command/Commands.h"
+#include "command/Command.h"
 #include "utils/Serialize.h"
 
 #include <ll/api/Config.h>
@@ -56,7 +56,7 @@ bool WorldEdit::enable() {
     if (!mConfig) {
         loadConfig();
     }
-    mPlayerStateManager = std::make_shared<PlayerStateManager>();
+    mPlayerContextManager = std::make_shared<PlayerContextManager>();
     setupCommands();
     return true;
 }
@@ -64,13 +64,11 @@ bool WorldEdit::enable() {
 bool WorldEdit::disable() {
     saveConfig();
     mConfig.reset();
-    mPlayerStateManager.reset();
+    mPlayerContextManager.reset();
     return true;
 }
 
-bool WorldEdit::unload() {
-    return true;
-}
+bool WorldEdit::unload() { return true; }
 
 } // namespace we
 

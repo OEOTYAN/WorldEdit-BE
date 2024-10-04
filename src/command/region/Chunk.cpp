@@ -1,42 +1,27 @@
-#include "command/Commands.h"
-#include "data/PlayerStateManager.h"
-#include "region/LoftRegion.h"
-#include "worldedit/WorldEdit.h"
+#include "command/CommandMacro.h"
 
 namespace we {
-static bool _ = addSetup("chunk", [] {
-    auto& config = WorldEdit::getInstance().getConfig().commands.region.chunk;
-    if (!config.enabled) {
-        return;
-    }
-    ll::command::CommandRegistrar::getInstance()
-        .getOrCreateCommand("chunk", "select current chunk"_tr(), config.permission)
-        .overload()
-        .execute([](CommandOrigin const& origin, CommandOutput& output) {
-            Dimension* dim;
-            if (dim = origin.getDimension(); !dim) {
-                output.error("origin doesn't have dimension"_tr());
-                return;
-            }
-            auto state =
-                WorldEdit::getInstance().getPlayerStateManager().getOrCreate(origin);
+REG_CMD(region, chunk, "select current chunk") {
+    command.overload().execute(CmdCtxBuilder{} | [](CommandContextRef const& ctx) {
+        auto dim = checkDimension(ctx);
+        if (!dim) return;
+        auto  pctx  = getPlayerContext(ctx);
+        auto& range = dim->getHeightRange();
+        auto  pos   = ctx.origin.getBlockPosition();
+        pos.x       = (pos.x >> 4) << 4;
+        pos.z       = (pos.z >> 4) << 4;
+        pos.y       = range.min;
 
-            auto& range = dim->getHeightRange();
-            auto  pos   = origin.getBlockPosition();
-            pos.x       = (pos.x >> 4) << 4;
-            pos.z       = (pos.z >> 4) << 4;
-            pos.y       = range.min;
-
-            state->region = Region::create(
-                RegionType::Cuboid,
-                dim->getDimensionId(),
-                {
-                    pos,
-                    {pos.x + 15, range.max - 1, pos.z + 15}
-            }
-            );
-            state->regionType = RegionType::Cuboid;
-            output.success("chunk selected"_tr());
-        });
-});
+        pctx->region = Region::create(
+            RegionType::Cuboid,
+            dim->getDimensionId(),
+            {
+                pos,
+                {pos.x + 15, range.max - 1, pos.z + 15}
+        }
+        );
+        pctx->regionType = RegionType::Cuboid;
+        ctx.success("chunk selected");
+    });
+};
 } // namespace we

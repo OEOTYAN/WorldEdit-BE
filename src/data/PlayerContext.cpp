@@ -1,15 +1,15 @@
-#include "PlayerState.h"
+#include "PlayerContext.h"
 #include "utils/Serialize.h"
 #include "worldedit/WorldEdit.h"
 
 namespace we {
 
-PlayerState::PlayerState(mce::UUID const& uuid, bool temp)
+PlayerContext::PlayerContext(mce::UUID const& uuid, bool temp)
 : temp(temp),
   uuid(uuid),
   config(WorldEdit::getInstance().getConfig().player_default_config) {}
 
-void PlayerState::setMainPosInternal() {
+void PlayerContext::setMainPosInternal() {
     if (mainPos) {
         auto& we     = WorldEdit::getInstance();
         mainPos->geo = we.getGeo().box(
@@ -19,7 +19,7 @@ void PlayerState::setMainPosInternal() {
         );
     }
 }
-void PlayerState::setOffPosInternal() {
+void PlayerContext::setOffPosInternal() {
     if (offPos) {
         auto& we    = WorldEdit::getInstance();
         offPos->geo = we.getGeo().box(
@@ -29,7 +29,7 @@ void PlayerState::setOffPosInternal() {
         );
     }
 }
-Region& PlayerState::getOrCreateRegion(WithDim<BlockPos> const& v) {
+Region& PlayerContext::getOrCreateRegion(WithDim<BlockPos> const& v) {
     if (!region || region->getDim() != v.dim) {
         region =
             Region::create(regionType.value_or(config.default_region_type), v.dim, v.pos);
@@ -38,7 +38,7 @@ Region& PlayerState::getOrCreateRegion(WithDim<BlockPos> const& v) {
     }
     return *region;
 }
-bool PlayerState::setMainPos(WithDim<BlockPos> const& v) {
+bool PlayerContext::setMainPos(WithDim<BlockPos> const& v) {
     if (auto& r = getOrCreateRegion(v); r.setMainPos(v.pos)) {
         mainPos.emplace(v);
         setMainPosInternal();
@@ -50,7 +50,7 @@ bool PlayerState::setMainPos(WithDim<BlockPos> const& v) {
     }
     return false;
 }
-bool PlayerState::setOffPos(WithDim<BlockPos> const& v) {
+bool PlayerContext::setOffPos(WithDim<BlockPos> const& v) {
     if (getOrCreateRegion(v).setOffPos(v.pos)) {
         offPos.emplace(v);
         setOffPosInternal();
@@ -60,7 +60,7 @@ bool PlayerState::setOffPos(WithDim<BlockPos> const& v) {
     return false;
 }
 
-ll::Expected<> PlayerState::serialize(CompoundTag& nbt) const {
+ll::Expected<> PlayerContext::serialize(CompoundTag& nbt) const {
     return ll::reflection::serialize_to(nbt["config"], config)
         .and_then([&, this]() {
             if (mainPos)
@@ -81,7 +81,7 @@ ll::Expected<> PlayerState::serialize(CompoundTag& nbt) const {
             return ll::Expected<>{};
         });
 }
-ll::Expected<> PlayerState::deserialize(CompoundTag const& nbt) {
+ll::Expected<> PlayerContext::deserialize(CompoundTag const& nbt) {
     return ll::reflection::deserialize(config, nbt["config"])
         .and_then([&, this]() {
             ll::Expected<> res;

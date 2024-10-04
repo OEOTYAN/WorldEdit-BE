@@ -1,12 +1,11 @@
 #pragma once
 
 #include "Global.h"
+#include "Macros.h"
 #include "data/Config.h"
-#include "data/PlayerStateManager.h"
+#include "data/PlayerContextManager.h"
 
 #include <ll/api/mod/NativeMod.h>
-
-#define WEDEBUG(...) ::we::WorldEdit::getInstance().getLogger().debug(__VA_ARGS__)
 
 namespace we {
 
@@ -25,8 +24,8 @@ public:
 
     [[nodiscard]] Config& getConfig() { return *mConfig; }
 
-    [[nodiscard]] PlayerStateManager& getPlayerStateManager() {
-        return *mPlayerStateManager;
+    [[nodiscard]] PlayerContextManager& getPlayerContextManager() {
+        return *mPlayerContextManager;
     }
 
     [[nodiscard]] std::filesystem::path getConfigPath() const;
@@ -44,10 +43,10 @@ public:
     bool unload();
 
 private:
-    ll::mod::NativeMod&                  mSelf;
-    std::unique_ptr<bsci::GeometryGroup> mGeometryGroup;
-    std::optional<Config>                mConfig;
-    std::shared_ptr<PlayerStateManager>  mPlayerStateManager;
+    ll::mod::NativeMod&                   mSelf;
+    std::unique_ptr<bsci::GeometryGroup>  mGeometryGroup;
+    std::optional<Config>                 mConfig;
+    std::shared_ptr<PlayerContextManager> mPlayerContextManager;
 };
 
 inline ll::io::Logger& logger() { return WorldEdit::getInstance().getLogger(); }

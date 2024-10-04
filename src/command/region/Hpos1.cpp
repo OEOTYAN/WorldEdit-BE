@@ -1,49 +1,28 @@
-#include "command/Commands.h"
-#include "data/PlayerStateManager.h"
-#include "region/LoftRegion.h"
-#include "worldedit/WorldEdit.h"
+#include "command/CommandMacro.h"
 
 namespace we {
-static bool _ = addSetup("hpos1", [] {
-    auto& config = WorldEdit::getInstance().getConfig().commands.region.hpos1;
-    if (!config.enabled) {
-        return;
-    }
-    ll::command::CommandRegistrar::getInstance()
-        .getOrCreateCommand(
-            "hpos1",
-            "sets the main position to the cursor position"_tr(),
-            config.permission
-        )
-        .overload()
-        .execute([](CommandOrigin const& origin, CommandOutput& output) {
-            DimensionType dimId;
-            auto*         e = origin.getEntity();
-            if (e && e->isPlayer()) {
-                dimId = e->getDimensionId();
-            } else {
-                output.error("origin isn't player"_tr());
-                return;
-            }
-            auto state =
-                WorldEdit::getInstance().getPlayerStateManager().getOrCreate(origin);
-            auto hitResult = static_cast<Player*>(e)->traceRay(
-                WorldEdit::getInstance().getConfig().player_state.maximum_trace_length,
-                false
-            );
-            if (!hitResult) {
-                output.error("can't trace cursor position"_tr());
-                return;
-            }
-            if (hitResult.mIsHitLiquid && !static_cast<Player*>(e)->isImmersedInWater()) {
-                hitResult.mBlockPos = hitResult.mLiquid;
-                hitResult.mFacing   = hitResult.mLiquidFacing;
-            }
-            if (state->setMainPos({hitResult.mBlockPos, dimId})) {
-                output.success("set main position at {0}"_tr(hitResult.mBlockPos));
-            } else {
-                output.error("can't set main position at {0}"_tr(hitResult.mBlockPos));
-            }
-        });
-});
+REG_CMD(region, hpos1, "sets the main position to the cursor position") {
+    command.overload().execute(CmdCtxBuilder{} | [](CommandContextRef const& ctx) {
+        auto player = checkPlayer(ctx);
+        if (!player) return;
+        auto pctx      = getPlayerContext(ctx);
+        auto hitResult = player->traceRay(
+            WorldEdit::getInstance().getConfig().player_state.maximum_trace_length,
+            false
+        );
+        if (!hitResult) {
+            ctx.error("can't trace cursor position");
+            return;
+        }
+        if (hitResult.mIsHitLiquid && !player->isImmersedInWater()) {
+            hitResult.mBlockPos = hitResult.mLiquid;
+            hitResult.mFacing   = hitResult.mLiquidFacing;
+        }
+        if (pctx->setMainPos({hitResult.mBlockPos, player->getDimensionId()})) {
+            ctx.success("set main position at {0}", hitResult.mBlockPos);
+        } else {
+            ctx.error("can't set main position at {0}", hitResult.mBlockPos);
+        }
+    });
+};
 } // namespace we
