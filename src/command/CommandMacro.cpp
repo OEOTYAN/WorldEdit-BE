@@ -1,9 +1,10 @@
 #include "CommandMacro.h"
 #include "Command.h"
+#include "utils/FacingUtils.h"
 
 namespace we {
 auto& setupCommandFunctions() {
-    static ll::DenseMap<std::string, std::function<void()>> ins;
+    static ll::OrderedMap<std::string, std::function<void()>> ins;
     return ins;
 }
 void setupCommands() {
@@ -29,7 +30,6 @@ bool SetupCommandFunctor::operator|(void (*fn)(ll::command::CommandHandle&)) noe
     });
     return true;
 }
-
 optional_ref<Dimension> checkDimension(CommandContextRef const& ctx) {
     auto* dim = ctx.origin.getDimension();
     if (!dim) {
@@ -63,5 +63,17 @@ std::shared_ptr<Region> checkRegion(CommandContextRef const& ctx) {
     } else {
         return pctx->region;
     }
+}
+std::optional<FacingID> checkFacing(CommandFacing facing, CommandContextRef const& ctx) {
+    if (facing == CommandFacing::Me) {
+        auto player = checkPlayer(ctx);
+        if (!player) return std::nullopt;
+        return dirToFacing(player->getViewVector());
+    } else if (facing == CommandFacing::Back) {
+        auto player = checkPlayer(ctx);
+        if (!player) return std::nullopt;
+        return opposite(dirToFacing(player->getViewVector()));
+    }
+    return (FacingID)facing;
 }
 } // namespace we

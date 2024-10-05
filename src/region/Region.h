@@ -34,7 +34,7 @@ public:
 
     virtual RegionType getType() const = 0;
 
-    virtual BoundingBox getBoundBox() const { return boundingBox; }
+    virtual BoundingBox getBoundingBox() const { return boundingBox; }
 
     virtual void updateBoundingBox() = 0;
 

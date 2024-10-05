@@ -2,10 +2,10 @@
 #include "region/LoftRegion.h"
 
 namespace we {
-struct Params {
-    bool cycle;
-};
 REG_CMD(region, loftcycle, "set loft region curve is connected end to end") {
+    struct Params {
+        bool cycle;
+    };
     command.overload<Params>().required("cycle").execute(
         CmdCtxBuilder{} |
         [](CommandContextRef const& ctx, Params const& params) {

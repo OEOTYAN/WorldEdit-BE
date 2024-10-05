@@ -1,12 +1,12 @@
 add_rules("mode.release")
 
+add_rules("plugin.compile_commands.autoupdate", {outputdir=".vscode"})
+
 add_repositories("liteldev-repo https://github.com/LiteLDev/xmake-repo.git")
 
 package("bscidev")
     add_urls("https://github.com/OEOTYAN/BedrockServerClientInterface.git")
     add_versions("0.1.5", "50503ed2f734a9d13145b38d9a18961d7e8ac8d3")
-
-    add_deps("levilamina develop")
     on_install(function (package)
         import("package.tools.xmake").install(package)
     end)

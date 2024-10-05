@@ -55,9 +55,6 @@ PlayerContextManager::PlayerContextManager()
     );
     listeners.emplace_back(
         bus.emplaceListener<PlayerDestroyBlockEvent>([this](PlayerDestroyBlockEvent& ev) {
-            if (!ev.self().isOperator() || !ev.self().isCreative()) {
-                return;
-            }
             ev.setCancelled(
                 ClickState::Hold
                 == playerLeftClick(
@@ -88,9 +85,6 @@ PlayerContextManager::PlayerContextManager()
     listeners.emplace_back(bus.emplaceListener<PlayerSwingEvent>([this](
                                                                      PlayerSwingEvent& ev
                                                                  ) {
-        if (!ev.self().isOperator() || !ev.self().isCreative()) {
-            return;
-        }
         auto hit =
             ev.self().traceRay(mod.getConfig().player_state.maximum_trace_length, false);
         if (!hit) {
@@ -110,9 +104,6 @@ PlayerContextManager::PlayerContextManager()
     }));
     listeners.emplace_back(
         bus.emplaceListener<PlayerPlacingBlockEvent>([this](PlayerPlacingBlockEvent& ev) {
-            if (!ev.self().isOperator() || !ev.self().isCreative()) {
-                return;
-            }
             ev.setCancelled(
                 ClickState::Hold
                 == playerRightClick(
@@ -127,9 +118,6 @@ PlayerContextManager::PlayerContextManager()
     );
     listeners.emplace_back(bus.emplaceListener<PlayerInteractBlockEvent>(
         [this](PlayerInteractBlockEvent& ev) {
-            if (!ev.self().isOperator() || !ev.self().isCreative()) {
-                return;
-            }
             ev.setCancelled(
                 ClickState::Hold
                 == playerRightClick(
@@ -144,9 +132,6 @@ PlayerContextManager::PlayerContextManager()
     ));
     listeners.emplace_back(
         bus.emplaceListener<PlayerUseItemEvent>([this](PlayerUseItemEvent& ev) {
-            if (!ev.self().isOperator() || !ev.self().isCreative()) {
-                return;
-            }
             auto hit = ev.self().traceRay(
                 mod.getConfig().player_state.maximum_trace_length,
                 false
@@ -174,7 +159,7 @@ PlayerContextManager::~PlayerContextManager() {
         EventBus::getInstance().removeListener(l);
     }
     playerStates.for_each([&](auto&& p) {
-        if (p.second->temp || !p.second->dirty()) {
+        if (p.second->temp) {
             return;
         }
         CompoundTag nbt;
@@ -243,7 +228,7 @@ std::shared_ptr<PlayerContext> PlayerContextManager::getOrCreate(CommandOrigin c
 
 bool PlayerContextManager::release(mce::UUID const& uuid) {
     return playerStates.erase_if(uuid, [&](auto&& p) {
-        if (p.second->temp || !p.second->dirty()) {
+        if (p.second->temp) {
             return true;
         }
         CompoundTag nbt;

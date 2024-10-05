@@ -30,7 +30,7 @@ public:
 
     ll::Expected<> deserialize(CompoundTag const&) override;
 
-    BoundingBox getBoundBox() const override;
+    BoundingBox getBoundingBox() const override;
 
     void updateBoundingBox() override;
 

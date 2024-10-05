@@ -1,10 +1,10 @@
 #include "command/CommandMacro.h"
 
 namespace we {
-struct Params {
-    ll::command::Optional<CommandPositionFloat> pos;
-};
 REG_CMD(region, pos2, "sets the off position to the given or current position") {
+    struct Params {
+        ll::command::Optional<CommandPositionFloat> pos;
+    };
     command.overload<Params>().optional("pos").execute(
         CmdCtxBuilder{} |
         [](CommandContextRef const& ctx, Params const& params) {

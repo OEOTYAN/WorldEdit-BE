@@ -10,7 +10,6 @@ namespace we {
 class PlayerContextManager;
 class PlayerContext {
     friend PlayerContextManager;
-    std::atomic_bool mutable mDirty;
     std::atomic<Tick> mutable lastLeftClick;
     std::atomic<Tick> mutable lastRightClick;
 
@@ -28,8 +27,6 @@ public:
     std::optional<RegionType>                 regionType;
     std::shared_ptr<Region>                   region;
     Config::PlayerConfig                      config;
-
-    bool dirty() const { return mDirty; }
 
     PlayerContext(mce::UUID const& uuid, bool temp);
 

@@ -1,18 +1,18 @@
 #include "command/CommandMacro.h"
 
 namespace we {
-struct Sel {
-    RegionType type;
-};
-enum class SelRemoveType {
-    Last,
-    Near,
-};
-struct SelRm {
-    SelRemoveType                               type;
-    ll::command::Optional<CommandPositionFloat> pos;
-};
 REG_CMD(region, sel, "manipulate region") {
+    struct Sel {
+        RegionType type;
+    };
+    enum class SelRemoveType {
+        Last,
+        Near,
+    };
+    struct SelRm {
+        SelRemoveType                               type;
+        ll::command::Optional<CommandPositionFloat> pos;
+    };
     command.overload().text("clear").execute(
         CmdCtxBuilder{} |
         [](CommandContextRef const& ctx) {
@@ -58,7 +58,7 @@ REG_CMD(region, sel, "manipulate region") {
                 pctx->region = Region::create(
                     params.type,
                     pctx->region->getDim(),
-                    pctx->region->getBoundBox()
+                    pctx->region->getBoundingBox()
                 );
             }
             pctx->regionType = params.type;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "data/PlayerContextManager.h"
+#include "mc/enums/FacingID.h"
 #include "worldedit/WorldEdit.h"
 
 namespace we {
@@ -29,7 +30,7 @@ public:
     void success(fmt::format_string<Args...> fmt, Args&&... args) const {
         auto fsv = fmt.get();
         WE_DEBUG(
-            "command [{0}] [success]: {0}",
+            "command [{0}] [success]: {1}",
             cmd.getCommandName(),
             fmt::vformat(
                 ll::i18n::getInstance().get({fsv.data(), fsv.size()}, {}),
@@ -46,7 +47,7 @@ public:
     void error(fmt::format_string<Args...> fmt, Args&&... args) const {
         auto fsv = fmt.get();
         WE_DEBUG(
-            "command [{0}] [error]: {0}",
+            "command [{0}] [error]: {1}",
             cmd.getCommandName(),
             fmt::vformat(
                 ll::i18n::getInstance().get({fsv.data(), fsv.size()}, {}),
@@ -102,11 +103,32 @@ public:
     }
 };
 
+enum class CommandFacing : schar {
+    Down  = 0,
+    Up    = 1,
+    North = 2,
+    South = 3,
+    West  = 4,
+    East  = 5,
+    NegY  = Down,
+    PosY  = Up,
+    NegZ  = North,
+    PosZ  = South,
+    NegX  = West,
+    PosX  = East,
+    Me    = 0x10,
+    Back  = 0x11,
+};
+
+enum class ArgHV {};
+
 optional_ref<Dimension>        checkDimension(CommandContextRef const& ctx);
 optional_ref<Player>           checkPlayer(CommandContextRef const& ctx);
 std::shared_ptr<Region>        checkRegion(CommandContextRef const& ctx);
 std::shared_ptr<PlayerContext> checkPlayerContext(CommandContextRef const& ctx);
 std::shared_ptr<PlayerContext> getPlayerContext(CommandContextRef const& ctx);
+std::optional<FacingID>        checkFacing(CommandFacing, CommandContextRef const& ctx);
+
 } // namespace we
 
 #ifndef REG_CMD
@@ -114,7 +136,7 @@ std::shared_ptr<PlayerContext> getPlayerContext(CommandContextRef const& ctx);
 #define REG_CMD(type, name, description)                                                 \
     [[maybe_unused]] static bool _##name =                                               \
         SetupCommandFunctor{                                                             \
-            #name,                                                                       \
+            #type "." #name,                                                             \
             []() -> optional_ref<ll::command::CommandHandle> {                           \
                 auto& config = WorldEdit::getInstance().getConfig().commands.type.name;  \
                 if (!config.enabled) {                                                   \

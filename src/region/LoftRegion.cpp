@@ -199,7 +199,7 @@ void LoftRegion::buildCache() const {
     boundingBox = box;
 }
 
-BoundingBox LoftRegion::getBoundBox() const {
+BoundingBox LoftRegion::getBoundingBox() const {
     buildCache();
     return boundingBox;
 }

@@ -2,6 +2,9 @@
 
 #include <expected>
 
+#include "utils/Hash.h"
+#include "utils/InplaceVector.h"
+#include "utils/WithDim.h"
 #include <bsci/GeometryGroup.h>
 #include <ll/api/Expected.h>
 #include <ll/api/Global.h>
@@ -35,12 +38,8 @@
 #include <mc/world/level/dimension/DimensionHeightRange.h>
 #include <mc/world/level/levelgen/structure/BoundingBox.h>
 #include <mc/world/phys/AABB.h>
-#include <utils/Hash.h>
-#include <utils/WithDim.h>
 
-using namespace ll::i18n_literals;
-using namespace ll::hash_literals;
-using namespace ll::chrono_literals;
+using namespace ll::literals;
 
 namespace we {
 class WorldEdit;

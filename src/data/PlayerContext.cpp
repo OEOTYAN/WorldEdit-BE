@@ -34,7 +34,6 @@ Region& PlayerContext::getOrCreateRegion(WithDim<BlockPos> const& v) {
         region =
             Region::create(regionType.value_or(config.default_region_type), v.dim, v.pos);
         regionType = region->getType();
-        mDirty     = true;
     }
     return *region;
 }
@@ -45,7 +44,6 @@ bool PlayerContext::setMainPos(WithDim<BlockPos> const& v) {
         if (r.needResetVice()) {
             offPos.reset();
         }
-        mDirty = true;
         return true;
     }
     return false;
@@ -54,7 +52,6 @@ bool PlayerContext::setOffPos(WithDim<BlockPos> const& v) {
     if (getOrCreateRegion(v).setOffPos(v.pos)) {
         offPos.emplace(v);
         setOffPosInternal();
-        mDirty = true;
         return true;
     }
     return false;
