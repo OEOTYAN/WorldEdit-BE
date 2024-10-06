@@ -16,11 +16,11 @@ REG_CMD(region, sel, "manipulate region") {
     command.overload().text("clear").execute(
         CmdCtxBuilder{} |
         [](CommandContextRef const& ctx) {
-            auto pctx = checkPlayerContext(ctx);
-            if (!pctx) return;
-            pctx->region.reset();
-            pctx->mainPos.reset();
-            pctx->offPos.reset();
+            auto lctx = checkLocalContext(ctx);
+            if (!lctx) return;
+            lctx->region.reset();
+            lctx->mainPos.reset();
+            lctx->offPos.reset();
             ctx.success("region cleared");
         }
     );
@@ -53,17 +53,17 @@ REG_CMD(region, sel, "manipulate region") {
     command.overload<Sel>().required("type").execute(
         CmdCtxBuilder{} |
         [](CommandContextRef const& ctx, Sel const& params) {
-            auto pctx = getPlayerContext(ctx);
-            if (pctx->region) {
-                pctx->region = Region::create(
+            auto lctx = getLocalContext(ctx);
+            if (lctx->region) {
+                lctx->region = Region::create(
                     params.type,
-                    pctx->region->getDim(),
-                    pctx->region->getBoundingBox()
+                    lctx->region->getDim(),
+                    lctx->region->getBoundingBox()
                 );
             }
-            pctx->regionType = params.type;
-            pctx->mainPos.reset();
-            pctx->offPos.reset();
+            lctx->regionType = params.type;
+            lctx->mainPos.reset();
+            lctx->offPos.reset();
             ctx.success("region switch to {0}", params.type);
         }
     );

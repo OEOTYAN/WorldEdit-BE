@@ -1,8 +1,9 @@
 #pragma once
 
-#include "data/PlayerContextManager.h"
-#include "mc/enums/FacingID.h"
+#include "data/LocalContextManager.h"
 #include "worldedit/WorldEdit.h"
+
+#include <mc/enums/FacingID.h>
 
 namespace we {
 
@@ -120,16 +121,72 @@ enum class CommandFacing : schar {
     Back  = 0x11,
 };
 
-enum class ArgHV {};
+template <class T>
+concept IsVaArg = ll::reflection::type_unprefix_name_v<T>.starts_with("we::")
+               && ll::reflection::type_unprefix_name_v<T>.contains("VaArg");
 
-optional_ref<Dimension>        checkDimension(CommandContextRef const& ctx);
-optional_ref<Player>           checkPlayer(CommandContextRef const& ctx);
-std::shared_ptr<Region>        checkRegion(CommandContextRef const& ctx);
-std::shared_ptr<PlayerContext> checkPlayerContext(CommandContextRef const& ctx);
-std::shared_ptr<PlayerContext> getPlayerContext(CommandContextRef const& ctx);
-std::optional<FacingID>        checkFacing(CommandFacing, CommandContextRef const& ctx);
+optional_ref<Dimension>       checkDimension(CommandContextRef const& ctx);
+optional_ref<Player>          checkPlayer(CommandContextRef const& ctx);
+std::shared_ptr<Region>       checkRegion(CommandContextRef const& ctx);
+std::shared_ptr<LocalContext> checkLocalContext(CommandContextRef const& ctx);
+std::shared_ptr<LocalContext> getLocalContext(CommandContextRef const& ctx);
+std::optional<FacingID>       checkFacing(CommandFacing, CommandContextRef const& ctx);
 
 } // namespace we
+
+template <we::IsVaArg T>
+struct ll::command::ParamTraits<T> : ParamTraitsBase<T> {
+    using Base = ParamTraitsBase<T>;
+    struct Parser {
+        bool
+        operator()(CommandRegistry const&, void* storage, CommandRegistry::ParseToken const& token, CommandOrigin const&, int, std::string&, std::vector<std::string>&)
+            const {
+            std::string str = token.toString();
+            ll::reflection::forEachMember(
+                *(T*)storage,
+                [&](std::string_view name, bool& value) {
+                    value = str.contains(name.front());
+                }
+            );
+            return true;
+        }
+    };
+    static inline auto enumName = [] {
+        std::string str{"we::va_arg_"};
+        for (size_t i = 0; i < ll::reflection::member_count_v<T>; ++i) {
+            str += ll::reflection::member_name_array_v<T>[i].front();
+        }
+        return str;
+    }();
+    static inline auto enumValues = [] {
+        std::vector<std::pair<std::string, uint64>> values;
+        for (uint64 i = 1; i < (uint64)std::exp2(ll::reflection::member_count_v<T>);
+             ++i) {
+            std::string arg{"-"};
+            for (uint64 j = 0; j < ll::reflection::member_count_v<T>; ++j) {
+                if ((i >> j) & 1)
+                    arg += ll::reflection::member_name_array_v<T>[j].front();
+            }
+            values.emplace_back(std::move(arg), i);
+        }
+        return values;
+    }();
+    static constexpr CommandParameterDataType dataType() {
+        return CommandParameterDataType::Enum;
+    }
+    static constexpr CommandParameterOption options() {
+        return CommandParameterOption::EnumAutocompleteExpansion;
+    }
+    static inline std::string_view enumNameOrPostfix() {
+        WE_DEBUG("{}", enumName);
+        return enumName;
+    }
+    static void transformData(CommandParameterData&) {
+        WE_DEBUG("{}", enumValues);
+        CommandRegistrar::getInstance()
+            .tryRegisterEnum(enumName, enumValues, Base::typeId(), Base::parseFn());
+    }
+};
 
 #ifndef REG_CMD
 

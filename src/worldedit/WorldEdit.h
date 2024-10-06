@@ -3,7 +3,7 @@
 #include "Global.h"
 #include "Macros.h"
 #include "data/Config.h"
-#include "data/PlayerContextManager.h"
+#include "data/LocalContextManager.h"
 
 #include <ll/api/mod/NativeMod.h>
 
@@ -24,8 +24,8 @@ public:
 
     [[nodiscard]] Config& getConfig() { return *mConfig; }
 
-    [[nodiscard]] PlayerContextManager& getPlayerContextManager() {
-        return *mPlayerContextManager;
+    [[nodiscard]] LocalContextManager& getLocalContextManager() {
+        return *mLocalContextManager;
     }
 
     [[nodiscard]] std::filesystem::path getConfigPath() const;
@@ -43,10 +43,10 @@ public:
     bool unload();
 
 private:
-    ll::mod::NativeMod&                   mSelf;
-    std::unique_ptr<bsci::GeometryGroup>  mGeometryGroup;
-    std::optional<Config>                 mConfig;
-    std::shared_ptr<PlayerContextManager> mPlayerContextManager;
+    ll::mod::NativeMod&                  mSelf;
+    std::unique_ptr<bsci::GeometryGroup> mGeometryGroup;
+    std::optional<Config>                mConfig;
+    std::shared_ptr<LocalContextManager> mLocalContextManager;
 };
 
 inline ll::io::Logger& logger() { return WorldEdit::getInstance().getLogger(); }

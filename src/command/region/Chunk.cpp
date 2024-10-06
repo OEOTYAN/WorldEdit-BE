@@ -5,14 +5,14 @@ REG_CMD(region, chunk, "select current chunk") {
     command.overload().execute(CmdCtxBuilder{} | [](CommandContextRef const& ctx) {
         auto dim = checkDimension(ctx);
         if (!dim) return;
-        auto  pctx  = getPlayerContext(ctx);
+        auto  lctx  = getLocalContext(ctx);
         auto& range = dim->getHeightRange();
         auto  pos   = ctx.origin.getBlockPosition();
         pos.x       = (pos.x >> 4) << 4;
         pos.z       = (pos.z >> 4) << 4;
         pos.y       = range.min;
 
-        pctx->region = Region::create(
+        lctx->region = Region::create(
             RegionType::Cuboid,
             dim->getDimensionId(),
             {
@@ -20,7 +20,7 @@ REG_CMD(region, chunk, "select current chunk") {
                 {pos.x + 15, range.max - 1, pos.z + 15}
         }
         );
-        pctx->regionType = RegionType::Cuboid;
+        lctx->regionType = RegionType::Cuboid;
         ctx.success("current chunk selected");
     });
 };

@@ -2,10 +2,13 @@
 #include "utils/FacingUtils.h"
 
 namespace we {
-REG_CMD(region, inset, "expand region on all axes") {
+REG_CMD(region, inset, "contract region on all axes") {
     struct Params {
-        int                                dis{};
-        ll::command::Optional<std::string> args; // TODO: hv
+        int dis{};
+        struct VaArgs {
+            bool horizontal{true};
+            bool vertical{true};
+        } args;
     };
     command.overload<Params>().required("dis").optional("args").execute(
         CmdCtxBuilder{} |
@@ -13,17 +16,21 @@ REG_CMD(region, inset, "expand region on all axes") {
             auto region = checkRegion(ctx);
             if (!region) return;
             inplace_vector<BlockPos, 6> transformer;
-            transformer.emplace_back(-params.dis, 0, 0);
-            transformer.emplace_back(params.dis, 0, 0);
-            transformer.emplace_back(0, -params.dis, 0);
-            transformer.emplace_back(0, params.dis, 0);
-            transformer.emplace_back(0, 0, -params.dis);
-            transformer.emplace_back(0, 0, params.dis);
+            if (params.args.horizontal) {
+                transformer.emplace_back(-params.dis, 0, 0);
+                transformer.emplace_back(params.dis, 0, 0);
+                transformer.emplace_back(0, 0, -params.dis);
+                transformer.emplace_back(0, 0, params.dis);
+            }
+            if (params.args.vertical) {
+                transformer.emplace_back(0, -params.dis, 0);
+                transformer.emplace_back(0, params.dis, 0);
+            }
             auto res = region->contract(transformer);
             if (res) {
-                ctx.success("region inseted successfully");
+                ctx.success("region contracted successfully");
             } else {
-                ctx.error("region inseted failed");
+                ctx.error("region contracted failed");
             }
         }
     );

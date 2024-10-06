@@ -56,7 +56,7 @@ bool WorldEdit::enable() {
     if (!mConfig) {
         loadConfig();
     }
-    mPlayerContextManager = std::make_shared<PlayerContextManager>();
+    mLocalContextManager = std::make_shared<LocalContextManager>();
     setupCommands();
     return true;
 }
@@ -64,7 +64,7 @@ bool WorldEdit::enable() {
 bool WorldEdit::disable() {
     saveConfig();
     mConfig.reset();
-    mPlayerContextManager.reset();
+    mLocalContextManager.reset();
     return true;
 }
 

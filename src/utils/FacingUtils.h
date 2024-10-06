@@ -1,8 +1,8 @@
 #pragma once
 
-#include "mc/enums/FacingID.h"
-#include "mc/math/Vec3.h"
-#include "mc/world/level/BlockPos.h"
+#include <mc/enums/FacingID.h>
+#include <mc/math/Vec3.h>
+#include <mc/world/level/BlockPos.h>
 
 namespace we {
 template <class Vec>

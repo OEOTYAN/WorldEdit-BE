@@ -46,22 +46,24 @@ optional_ref<Player> checkPlayer(CommandContextRef const& ctx) {
         return nullptr;
     }
 }
-std::shared_ptr<PlayerContext> checkPlayerContext(CommandContextRef const& ctx) {
-    auto pctx = WorldEdit::getInstance().getPlayerContextManager().get(ctx.origin);
-    if (!pctx) {
-        ctx.error("origin didn't have pctx");
+std::shared_ptr<LocalContext> checkLocalContext(CommandContextRef const& ctx) {
+    auto lctx = WorldEdit::getInstance().getLocalContextManager().get(ctx.origin);
+    if (!lctx) {
+        ctx.error("origin didn't have LocalContext");
     }
-    return pctx;
+    return lctx;
 }
-std::shared_ptr<PlayerContext> getPlayerContext(CommandContextRef const& ctx) {
-    return WorldEdit::getInstance().getPlayerContextManager().getOrCreate(ctx.origin);
+std::shared_ptr<LocalContext> getLocalContext(CommandContextRef const& ctx) {
+    return WorldEdit::getInstance().getLocalContextManager().getOrCreate(ctx.origin);
 }
 std::shared_ptr<Region> checkRegion(CommandContextRef const& ctx) {
-    if (auto pctx = checkPlayerContext(ctx); !pctx->region) {
+    auto lctx = checkLocalContext(ctx);
+    if (!lctx) return nullptr;
+    if (!lctx->region) {
         ctx.error("origin didn't selected any region");
         return nullptr;
     } else {
-        return pctx->region;
+        return lctx->region;
     }
 }
 std::optional<FacingID> checkFacing(CommandFacing facing, CommandContextRef const& ctx) {

@@ -7,9 +7,9 @@
 #include <mc/world/level/Tick.h>
 
 namespace we {
-class PlayerContextManager;
-class PlayerContext {
-    friend PlayerContextManager;
+class LocalContextManager;
+class LocalContext {
+    friend LocalContextManager;
     std::atomic<Tick> mutable lastLeftClick;
     std::atomic<Tick> mutable lastRightClick;
 
@@ -28,7 +28,7 @@ public:
     std::shared_ptr<Region>                   region;
     Config::PlayerConfig                      config;
 
-    PlayerContext(mce::UUID const& uuid, bool temp);
+    LocalContext(mce::UUID const& uuid, bool temp);
 
     bool setMainPos(WithDim<BlockPos> const&);
     bool setOffPos(WithDim<BlockPos> const&);

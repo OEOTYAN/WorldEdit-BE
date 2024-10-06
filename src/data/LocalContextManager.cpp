@@ -1,4 +1,4 @@
-#include "PlayerContextManager.h"
+#include "LocalContextManager.h"
 #include "worldedit/WorldEdit.h"
 
 #include <ll/api/event/EventBus.h>
@@ -20,7 +20,7 @@
 #include <mc/world/level/block/actor/BlockActor.h>
 
 namespace we {
-PlayerContextManager::PlayerContextManager()
+LocalContextManager::LocalContextManager()
 : mod(WorldEdit::getInstance()),
   storagedState(mod.getSelf().getDataDir() / u8"player_states") {
     using namespace ll::event;
@@ -153,7 +153,7 @@ PlayerContextManager::PlayerContextManager()
         })
     );
 }
-PlayerContextManager::~PlayerContextManager() {
+LocalContextManager::~LocalContextManager() {
     using namespace ll::event;
     for (auto& l : listeners) {
         EventBus::getInstance().removeListener(l);
@@ -167,14 +167,13 @@ PlayerContextManager::~PlayerContextManager() {
         storagedState.set(p.first.asString(), nbt.toBinaryNbt());
     });
 }
-std::shared_ptr<PlayerContext>
-PlayerContextManager::get(mce::UUID const& uuid, bool temp) {
-    std::shared_ptr<PlayerContext> res;
+std::shared_ptr<LocalContext> LocalContextManager::get(mce::UUID const& uuid, bool temp) {
+    std::shared_ptr<LocalContext> res;
     if (playerStates.if_contains(uuid, [&](auto&& p) { res = p.second; })) {
         return res;
     } else if (!temp) {
         if (auto nbt = storagedState.get(uuid.asString()); nbt) {
-            res = std::make_shared<PlayerContext>(uuid, temp);
+            res = std::make_shared<LocalContext>(uuid, temp);
             CompoundTag::fromBinaryNbt(*nbt).and_then([&](CompoundTag&& tag) {
                 return res->deserialize(tag);
             });
@@ -183,14 +182,14 @@ PlayerContextManager::get(mce::UUID const& uuid, bool temp) {
     }
     return res;
 }
-std::shared_ptr<PlayerContext>
-PlayerContextManager::getOrCreate(mce::UUID const& uuid, bool temp) {
-    std::shared_ptr<PlayerContext> res;
+std::shared_ptr<LocalContext>
+LocalContextManager::getOrCreate(mce::UUID const& uuid, bool temp) {
+    std::shared_ptr<LocalContext> res;
     playerStates.lazy_emplace_l(
         uuid,
         [&](auto&& p) { res = p.second; },
         [&, this](auto&& ctor) {
-            res = std::make_shared<PlayerContext>(uuid, temp);
+            res = std::make_shared<LocalContext>(uuid, temp);
             if (!temp) {
                 if (auto nbt = storagedState.get(uuid.asString()); nbt) {
                     CompoundTag::fromBinaryNbt(*nbt).and_then([&](CompoundTag&& tag) {
@@ -204,7 +203,7 @@ PlayerContextManager::getOrCreate(mce::UUID const& uuid, bool temp) {
     return res;
 }
 
-std::shared_ptr<PlayerContext> PlayerContextManager::get(CommandOrigin const& o) {
+std::shared_ptr<LocalContext> LocalContextManager::get(CommandOrigin const& o) {
     if (auto actor = o.getEntity(); actor && actor->isPlayer()) {
         return get(
             static_cast<Player*>(actor)->getUuid(),
@@ -215,7 +214,7 @@ std::shared_ptr<PlayerContext> PlayerContextManager::get(CommandOrigin const& o)
     }
 }
 
-std::shared_ptr<PlayerContext> PlayerContextManager::getOrCreate(CommandOrigin const& o) {
+std::shared_ptr<LocalContext> LocalContextManager::getOrCreate(CommandOrigin const& o) {
     if (auto actor = o.getEntity(); actor && actor->isPlayer()) {
         return getOrCreate(
             static_cast<Player*>(actor)->getUuid(),
@@ -226,7 +225,7 @@ std::shared_ptr<PlayerContext> PlayerContextManager::getOrCreate(CommandOrigin c
     }
 }
 
-bool PlayerContextManager::release(mce::UUID const& uuid) {
+bool LocalContextManager::release(mce::UUID const& uuid) {
     return playerStates.erase_if(uuid, [&](auto&& p) {
         if (p.second->temp) {
             return true;
@@ -237,12 +236,12 @@ bool PlayerContextManager::release(mce::UUID const& uuid) {
     });
 }
 
-void PlayerContextManager::remove(mce::UUID const& uuid) {
+void LocalContextManager::remove(mce::UUID const& uuid) {
     playerStates.erase(uuid);
     storagedState.del(uuid.asString());
 }
 
-// bool PlayerContextManager::has(mce::UUID const& uuid, bool temp) {
+// bool LocalContextManager::has(mce::UUID const& uuid, bool temp) {
 //     if (temp) {
 //         return playerStates.contains(uuid);
 //     } else {
@@ -250,11 +249,11 @@ void PlayerContextManager::remove(mce::UUID const& uuid) {
 //     }
 // }
 
-void PlayerContextManager::removeTemps() {
+void LocalContextManager::removeTemps() {
     erase_if(playerStates, [](auto&& p) { return p.second->temp; });
 }
 
-PlayerContextManager::ClickState PlayerContextManager::playerLeftClick(
+LocalContextManager::ClickState LocalContextManager::playerLeftClick(
     Player&                  player,
     bool                     isLong,
     ItemStack const&         item,
@@ -281,7 +280,7 @@ PlayerContextManager::ClickState PlayerContextManager::playerLeftClick(
     }
     return ClickState::Pass;
 }
-PlayerContextManager::ClickState PlayerContextManager::playerRightClick(
+LocalContextManager::ClickState LocalContextManager::playerRightClick(
     Player&                  player,
     bool                     isLong,
     ItemStack const&         item,

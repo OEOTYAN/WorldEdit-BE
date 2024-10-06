@@ -17,6 +17,7 @@
 #include <ll/api/io/Logger.h>
 #include <ll/api/reflection/Deserialization.h>
 #include <ll/api/reflection/Serialization.h>
+#include <ll/api/service/Bedrock.h>
 #include <ll/api/thread/ServerThreadExecutor.h>
 #include <ll/api/thread/ThreadPoolExecutor.h>
 #include <ll/api/utils/ErrorUtils.h>
