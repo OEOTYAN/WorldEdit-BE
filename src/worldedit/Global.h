@@ -23,8 +23,8 @@
 #include <ll/api/utils/ErrorUtils.h>
 #include <ll/api/utils/HashUtils.h>
 #include <ll/api/utils/StringUtils.h>
-#include <mc/math/Vec2.h>
-#include <mc/math/Vec3.h>
+#include <mc/deps/core/math/Vec2.h>
+#include <mc/deps/core/math/Vec3.h>
 #include <mc/nbt/CompoundTag.h>
 #include <mc/server/commands/CommandPermissionLevel.h>
 #include <mc/world/item/VanillaItemNames.h>

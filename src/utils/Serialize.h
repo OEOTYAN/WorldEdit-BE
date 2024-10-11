@@ -3,8 +3,8 @@
 #include <ll/api/reflection/Deserialization.h>
 #include <ll/api/reflection/Serialization.h>
 
-#include <mc/deps/core/mce/Color.h>
-#include <mc/world/AutomaticID.h>
+#include <mc/deps/core/math/Color.h>
+#include <mc/deps/core/utility/AutomaticID.h>
 
 namespace mce {
 template <class J>

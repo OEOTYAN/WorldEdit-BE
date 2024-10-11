@@ -4,8 +4,8 @@
 
 #include <ll/api/data/KeyValueDB.h>
 #include <ll/api/event/ListenerBase.h>
-#include <mc/deps/core/mce/UUID.h>
-#include <mc/enums/FacingID.h>
+#include <mc/common/FacingID.h>
+#include <mc/platform/UUID.h>
 
 class Player;
 class ItemStack;

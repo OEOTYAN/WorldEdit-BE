@@ -1,6 +1,6 @@
 #pragma once
 
-#include <mc/world/AutomaticID.h>
+#include <mc/deps/core/utility/AutomaticID.h>
 
 namespace we {
 template <class T>

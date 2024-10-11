@@ -3,7 +3,7 @@
 #include "data/LocalContextManager.h"
 #include "worldedit/WorldEdit.h"
 
-#include <mc/enums/FacingID.h>
+#include <mc/common/FacingID.h>
 
 namespace we {
 

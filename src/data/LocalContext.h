@@ -3,7 +3,7 @@
 #include "Config.h"
 #include "region/Region.h"
 
-#include <mc/deps/core/mce/UUID.h>
+#include <mc/platform/UUID.h>
 #include <mc/world/level/Tick.h>
 
 namespace we {

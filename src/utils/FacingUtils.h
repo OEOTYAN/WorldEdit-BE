@@ -1,7 +1,7 @@
 #pragma once
 
-#include <mc/enums/FacingID.h>
-#include <mc/math/Vec3.h>
+#include <mc/common/FacingID.h>
+#include <mc/deps/core/math/Vec3.h>
 #include <mc/world/level/BlockPos.h>
 
 namespace we {
