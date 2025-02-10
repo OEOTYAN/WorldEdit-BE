@@ -1,7 +1,7 @@
 # WorldEdit-BE
 WorldEdit-BE
 
-# QQ 群：760193614
+# QQ：760193614
 
 ## Stargazers over time
 
