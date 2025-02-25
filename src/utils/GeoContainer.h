@@ -33,6 +33,11 @@ struct WithGeo {
     WithGeo& operator=(WithGeo&&) noexcept      = default;
 
     constexpr bool operator==(WithGeo const& other) const { return data == other.data; }
+
+    T const* operator->() const { return &data; }
+    T*       operator->() { return &data; }
+    T const& operator*() const { return data; }
+    T&       operator*() { return data; }
 };
 template <class T>
 inline size_t hash_value(WithGeo<T> const& d) {

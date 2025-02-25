@@ -57,7 +57,7 @@ bool LocalContext::setOffPos(WithDim<BlockPos> const& v) {
     return false;
 }
 
-ll::Expected<> LocalContext::serialize(CompoundTag& nbt) const {
+ll::Expected<> LocalContext::serialize(CompoundTag& nbt) const noexcept try {
     return ll::reflection::serialize_to(nbt["config"], config)
         .and_then([&, this]() {
             if (mainPos)
@@ -77,8 +77,10 @@ ll::Expected<> LocalContext::serialize(CompoundTag& nbt) const {
             if (region) return region->serialize(nbt["region"].emplace<CompoundTag>());
             return ll::Expected<>{};
         });
+} catch (...) {
+    return ll::makeExceptionError();
 }
-ll::Expected<> LocalContext::deserialize(CompoundTag const& nbt) {
+ll::Expected<> LocalContext::deserialize(CompoundTag const& nbt) noexcept try {
     return ll::reflection::deserialize(config, nbt["config"])
         .and_then([&, this]() {
             ll::Expected<> res;
@@ -118,5 +120,7 @@ ll::Expected<> LocalContext::deserialize(CompoundTag const& nbt) {
             }
             return {};
         });
+} catch (...) {
+    return ll::makeExceptionError();
 }
 } // namespace we

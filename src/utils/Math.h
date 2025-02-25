@@ -37,7 +37,7 @@ inline T sign(T const& a) {
     if (a == 0) {
         return 0;
     }
-    return std::copysign(1, a);
+    return std::copysign(T(1), a);
 }
 
 template <class T>
@@ -50,4 +50,14 @@ void plotLine(
     BlockPos const&                             pos1,
     std::function<void(BlockPos const&)> const& todo
 );
+
+inline std::pair<Vec3, Vec3> branchlessONB(Vec3 const& n) {
+    float const sign = std::copysign(1.0f, n.z);
+    float const a    = -1.0f / (sign + n.z);
+    float const b    = n.x * n.y * a;
+    return {
+        {1.0f + sign * n.x * n.x * a, sign * b,             -sign * n.x},
+        {b,                           sign + n.y * n.y * a, -n.y       }
+    };
+}
 } // namespace we

@@ -44,7 +44,7 @@ class LocalContextManager : public std::enable_shared_from_this<LocalContextMana
     );
 
 public:
-    LocalContextManager();
+    LocalContextManager(WorldEdit&);
     ~LocalContextManager();
 
     // bool has(mce::UUID const& uuid, bool temp = false);

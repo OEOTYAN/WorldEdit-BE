@@ -13,6 +13,7 @@
 #include <ll/api/command/CommandRegistrar.h>
 #include <ll/api/command/runtime/ParamKind.h>
 #include <ll/api/coro/CoroTask.h>
+#include <ll/api/coro/Generator.h>
 #include <ll/api/i18n/I18n.h>
 #include <ll/api/io/Logger.h>
 #include <ll/api/reflection/Deserialization.h>
@@ -25,8 +26,10 @@
 #include <ll/api/utils/StringUtils.h>
 #include <mc/deps/core/math/Vec2.h>
 #include <mc/deps/core/math/Vec3.h>
+#include <mc/deps/core/string/HashedString.h>
 #include <mc/nbt/CompoundTag.h>
 #include <mc/server/commands/CommandPermissionLevel.h>
+#include <mc/world/item/SaveContext.h>
 #include <mc/world/item/VanillaItemNames.h>
 #include <mc/world/level/BlockPos.h>
 #include <mc/world/level/BlockSource.h>
@@ -39,6 +42,7 @@
 #include <mc/world/level/dimension/DimensionHeightRange.h>
 #include <mc/world/level/levelgen/structure/BoundingBox.h>
 #include <mc/world/phys/AABB.h>
+#include <mc/world/phys/HitResult.h>
 
 using namespace ll::literals;
 

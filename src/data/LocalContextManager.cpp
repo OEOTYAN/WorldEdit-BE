@@ -20,8 +20,8 @@
 #include <mc/world/level/block/actor/BlockActor.h>
 
 namespace we {
-LocalContextManager::LocalContextManager()
-: mod(WorldEdit::getInstance()),
+LocalContextManager::LocalContextManager(WorldEdit& we)
+: mod(we),
   storagedState(mod.getSelf().getDataDir() / u8"player_states") {
     using namespace ll::event;
     if (ll::getGamingStatus() == ll::GamingStatus::Running && ll::service::getLevel()) {
@@ -91,15 +91,15 @@ LocalContextManager::LocalContextManager()
             return;
         }
         if (hit.mIsHitLiquid && !ev.self().isImmersedInWater()) {
-            hit.mBlockPos = hit.mLiquid;
-            hit.mFacing   = hit.mLiquidFacing;
+            hit.mBlock  = hit.mLiquid;
+            hit.mFacing = hit.mLiquidFacing;
         }
         playerLeftClick(
             ev.self(),
             true,
             ev.self().getSelectedItem(),
-            {hit.mBlockPos, ev.self().getDimensionId()},
-            hit.mFacing
+            {hit.mBlock, ev.self().getDimensionId()},
+            (FacingID)hit.mFacing
         );
     }));
     listeners.emplace_back(
@@ -140,15 +140,15 @@ LocalContextManager::LocalContextManager()
                 return;
             }
             if (hit.mIsHitLiquid && !ev.self().isImmersedInWater()) {
-                hit.mBlockPos = hit.mLiquid;
-                hit.mFacing   = hit.mLiquidFacing;
+                hit.mBlock  = hit.mLiquid;
+                hit.mFacing = hit.mLiquidFacing;
             }
             playerRightClick(
                 ev.self(),
                 true,
                 ev.item(),
-                {hit.mBlockPos, ev.self().getDimensionId()},
-                hit.mFacing
+                {hit.mBlock, ev.self().getDimensionId()},
+                (FacingID)hit.mFacing
             );
         })
     );
@@ -210,7 +210,7 @@ std::shared_ptr<LocalContext> LocalContextManager::get(CommandOrigin const& o) {
             !static_cast<Player*>(actor)->isSimulated()
         );
     } else {
-        return get(mce::UUID::EMPTY, true);
+        return get({}, true);
     }
 }
 
@@ -221,7 +221,7 @@ std::shared_ptr<LocalContext> LocalContextManager::getOrCreate(CommandOrigin con
             !static_cast<Player*>(actor)->isSimulated()
         );
     } else {
-        return getOrCreate(mce::UUID::EMPTY, true);
+        return getOrCreate({}, true);
     }
 }
 
@@ -263,7 +263,7 @@ LocalContextManager::ClickState LocalContextManager::playerLeftClick(
     auto  data    = getOrCreate(player.getUuid(), player.isSimulated());
     auto& current = player.getLevel().getCurrentTick();
     bool  needDiscard{};
-    if (current.t - data->lastLeftClick.load().t
+    if (current.tickID - data->lastLeftClick.load().tickID
         < mod.getConfig().player_state.minimum_response_tick) {
         needDiscard = true;
     }
@@ -290,7 +290,7 @@ LocalContextManager::ClickState LocalContextManager::playerRightClick(
     auto  data    = getOrCreate(player.getUuid(), player.isSimulated());
     auto& current = player.getLevel().getCurrentTick();
     bool  needDiscard{};
-    if (current.t - data->lastRightClick.load().t
+    if (current.tickID - data->lastRightClick.load().tickID
         < mod.getConfig().player_state.minimum_response_tick) {
         needDiscard = true;
     }

@@ -62,9 +62,8 @@ std::shared_ptr<Region> checkRegion(CommandContextRef const& ctx) {
     if (!lctx->region) {
         ctx.error("origin didn't selected any region");
         return nullptr;
-    } else {
-        return lctx->region;
     }
+    return lctx->region;
 }
 std::optional<FacingID> checkFacing(CommandFacing facing, CommandContextRef const& ctx) {
     if (facing == CommandFacing::Me) {

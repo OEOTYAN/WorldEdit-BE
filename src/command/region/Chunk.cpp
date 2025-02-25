@@ -10,14 +10,14 @@ REG_CMD(region, chunk, "select current chunk") {
         auto  pos   = ctx.origin.getBlockPosition();
         pos.x       = (pos.x >> 4) << 4;
         pos.z       = (pos.z >> 4) << 4;
-        pos.y       = range.min;
+        pos.y       = range.mMin;
 
         lctx->region = Region::create(
             RegionType::Cuboid,
             dim->getDimensionId(),
             {
                 pos,
-                {pos.x + 15, range.max - 1, pos.z + 15}
+                {pos.x + 15, range.mMax - 1, pos.z + 15}
         }
         );
         lctx->regionType = RegionType::Cuboid;

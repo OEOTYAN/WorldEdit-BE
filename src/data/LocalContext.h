@@ -33,7 +33,7 @@ public:
     bool setMainPos(WithDim<BlockPos> const&);
     bool setOffPos(WithDim<BlockPos> const&);
 
-    ll::Expected<> serialize(CompoundTag&) const;
-    ll::Expected<> deserialize(CompoundTag const&);
+    ll::Expected<> serialize(CompoundTag&) const noexcept;
+    ll::Expected<> deserialize(CompoundTag const&) noexcept;
 };
 } // namespace we

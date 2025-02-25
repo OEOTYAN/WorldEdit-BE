@@ -15,12 +15,12 @@ REG_CMD(region, hpos2, "sets the off position to the cursor position") {
             return;
         }
         if (hitResult.mIsHitLiquid && !player->isImmersedInWater()) {
-            hitResult.mBlockPos = hitResult.mLiquid;
+            hitResult.mBlock = hitResult.mLiquid;
         }
-        if (lctx->setOffPos({hitResult.mBlockPos, player->getDimensionId()})) {
-            ctx.success("set off position at {0}", hitResult.mBlockPos);
+        if (lctx->setOffPos({hitResult.mBlock, player->getDimensionId()})) {
+            ctx.success("set off position at {0}", hitResult.mBlock);
         } else {
-            ctx.error("can't set off position at {0}", hitResult.mBlockPos);
+            ctx.error("can't set off position at {0}", hitResult.mBlock);
         }
     });
 };

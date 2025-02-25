@@ -13,11 +13,10 @@
 
 namespace we {
 
-static std::unique_ptr<WorldEdit> instance;
-
-WorldEdit& WorldEdit::getInstance() { return *instance; }
-
-WorldEdit::WorldEdit(ll::mod::NativeMod& self) : mSelf(self) {}
+WorldEdit& WorldEdit::getInstance() {
+    static WorldEdit instance;
+    return instance;
+}
 
 std::filesystem::path WorldEdit::getConfigPath() const {
     return getSelf().getConfigDir() / u8"config.json";
@@ -56,7 +55,7 @@ bool WorldEdit::enable() {
     if (!mConfig) {
         loadConfig();
     }
-    mLocalContextManager = std::make_shared<LocalContextManager>();
+    mLocalContextManager = std::make_shared<LocalContextManager>(*this);
     setupCommands();
     return true;
 }
@@ -72,4 +71,4 @@ bool WorldEdit::unload() { return true; }
 
 } // namespace we
 
-LL_REGISTER_MOD(we::WorldEdit, we::instance);
+LL_REGISTER_MOD(we::WorldEdit, we::WorldEdit::getInstance());

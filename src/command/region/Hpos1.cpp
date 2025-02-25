@@ -15,12 +15,12 @@ REG_CMD(region, hpos1, "sets the main position to the cursor position") {
             return;
         }
         if (hitResult.mIsHitLiquid && !player->isImmersedInWater()) {
-            hitResult.mBlockPos = hitResult.mLiquid;
+            hitResult.mBlock = hitResult.mLiquid;
         }
-        if (lctx->setMainPos({hitResult.mBlockPos, player->getDimensionId()})) {
-            ctx.success("set main position at {0}", hitResult.mBlockPos);
+        if (lctx->setMainPos({hitResult.mBlock, player->getDimensionId()})) {
+            ctx.success("set main position at {0}", hitResult.mBlock);
         } else {
-            ctx.error("can't set main position at {0}", hitResult.mBlockPos);
+            ctx.error("can't set main position at {0}", hitResult.mBlock);
         }
     });
 };

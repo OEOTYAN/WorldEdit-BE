@@ -14,7 +14,7 @@ class WorldEdit {
 public:
     static WorldEdit& getInstance();
 
-    WorldEdit(ll::mod::NativeMod& self);
+    WorldEdit() : mSelf(*ll::mod::NativeMod::current()) {}
 
     [[nodiscard]] ll::mod::NativeMod& getSelf() const { return mSelf; }
 

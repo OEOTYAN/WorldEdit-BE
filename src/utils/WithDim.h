@@ -8,5 +8,10 @@ class WithDim {
 public:
     T             pos{};
     DimensionType dim{};
+
+    T const* operator->() const { return &pos; }
+    T*       operator->() { return &pos; }
+    T const& operator*() const { return pos; }
+    T&       operator*() { return pos; }
 };
 } // namespace we

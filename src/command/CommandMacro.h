@@ -4,6 +4,8 @@
 #include "worldedit/WorldEdit.h"
 
 #include <mc/common/FacingID.h>
+#include <mc/server/commands/CommandOrigin.h>
+#include <mc/server/commands/CommandOutput.h>
 
 namespace we {
 
