@@ -6,7 +6,7 @@ REG_CMD(region, chunk, "select current chunk") {
         auto dim = checkDimension(ctx);
         if (!dim) return;
         auto  lctx  = getLocalContext(ctx);
-        auto& range = dim->getHeightRange();
+        auto& range = dim->mHeightRange.get();
         auto  pos   = ctx.origin.getBlockPosition();
         pos.x       = (pos.x >> 4) << 4;
         pos.z       = (pos.z >> 4) << 4;

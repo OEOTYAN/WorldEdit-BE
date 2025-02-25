@@ -112,12 +112,15 @@ REG_CMD(region, expand, "expand region") {
             if (!dim) return;
 
             inplace_vector<BlockPos, 2> transformer;
-            auto                        heightRange = dim->getHeightRange();
+            auto&                       heightRange = dim->mHeightRange.get();
             auto                        boundingBox = region->getBoundingBox();
             transformer
                 .emplace_back(0, std::min(heightRange.mMin - boundingBox.min.y, 0), 0);
-            transformer
-                .emplace_back(0, std::max(heightRange.mMax - boundingBox.max.y - 1, 0), 0);
+            transformer.emplace_back(
+                0,
+                std::max(heightRange.mMax - boundingBox.max.y - 1, 0),
+                0
+            );
 
             if (bool res = region->expand(transformer); res) {
                 ctx.success("region expanded successfully");

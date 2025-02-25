@@ -49,7 +49,7 @@ public:
 
     virtual bool shift(BlockPos const&) { return false; }
 
-    virtual Vec3 getCenter() const { return AABB{boundingBox}.getCenter(); }
+    virtual Vec3 getCenter() const { return AABB{boundingBox}.center(); }
 
     virtual bool setMainPos(BlockPos const&) { return false; }
 

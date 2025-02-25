@@ -21,12 +21,11 @@ ll::Expected<> Region::serialize(CompoundTag& tag) const {
 ll::Expected<> Region::deserialize(CompoundTag const&) { return {}; }
 
 void Region::forEachBlockInRegion(std::function<void(BlockPos const&)>&& todo) const {
-    boundingBox.forEachPos([todo = std::move(todo), this](BlockPos const& pos) {
+    for (auto&& pos : boundingBox.forEachPos()) {
         if (contains(pos)) {
             todo(pos);
         }
-        return true;
-    });
+    }
 }
 void Region::forEachBlockUVInRegion(
     std::function<void(BlockPos const&, double, double)>&& todo

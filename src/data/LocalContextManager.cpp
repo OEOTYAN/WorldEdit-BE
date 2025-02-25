@@ -68,7 +68,8 @@ LocalContextManager::LocalContextManager(WorldEdit& we)
             if (ev.isCancelled()) {
                 ll::thread::ThreadPoolExecutor::getDefault().executeAfter(
                     [dst = WithDim<BlockPos>{ev.pos(), ev.self().getDimensionId()}] {
-                        if (auto dim = ll::service::getLevel()->getDimension(dst.dim);
+                        if (auto dim =
+                                ll::service::getLevel()->getDimension(dst.dim).lock();
                             dim) {
                             auto& blockSource = dim->getBlockSourceFromMainChunkSource();
                             if (auto blockActor = blockSource.getBlockEntity(dst.pos);
@@ -90,7 +91,7 @@ LocalContextManager::LocalContextManager(WorldEdit& we)
         if (!hit) {
             return;
         }
-        if (hit.mIsHitLiquid && !ev.self().isImmersedInWater()) {
+        if (hit.mIsHitLiquid && !ev.self()._isHeadInWater()) {
             hit.mBlock  = hit.mLiquid;
             hit.mFacing = hit.mLiquidFacing;
         }
@@ -139,7 +140,7 @@ LocalContextManager::LocalContextManager(WorldEdit& we)
             if (!hit) {
                 return;
             }
-            if (hit.mIsHitLiquid && !ev.self().isImmersedInWater()) {
+            if (hit.mIsHitLiquid && !ev.self()._isHeadInWater()) {
                 hit.mBlock  = hit.mLiquid;
                 hit.mFacing = hit.mLiquidFacing;
             }

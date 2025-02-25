@@ -14,7 +14,7 @@ REG_CMD(region, hpos2, "sets the off position to the cursor position") {
             ctx.error("can't trace cursor position");
             return;
         }
-        if (hitResult.mIsHitLiquid && !player->isImmersedInWater()) {
+        if (hitResult.mIsHitLiquid && !player->_isHeadInWater()) {
             hitResult.mBlock = hitResult.mLiquid;
         }
         if (lctx->setOffPos({hitResult.mBlock, player->getDimensionId()})) {
