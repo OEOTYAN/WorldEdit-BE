@@ -9,8 +9,10 @@ public:
     BlockPos start;
     BlockPos end;
 
-    constexpr Edge(BlockPos const& start, BlockPos const& end) : start(start), end(end){};
-    constexpr bool operator==(Edge const& other) const {
+    constexpr Edge(BlockPos const& start, BlockPos const& end)
+    : start(start),
+      end(end) {};
+    bool operator==(Edge const& other) const {
         return (start == other.start && end == other.end)
             || (end == other.start && start == other.end);
     }
