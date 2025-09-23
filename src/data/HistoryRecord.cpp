@@ -40,6 +40,11 @@ void HistoryRecord::record(
         // position is masked, do not record
         return;
     }
+    if (positionMap.contains(op.pos)) {
+        // already recorded
+        return;
+    }
+    positionMap[op.pos] = newData.operations.size();
     oldData.operations.push_back(op.record(context, region));
     newData.operations.push_back(std::move(op));
 }
