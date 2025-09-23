@@ -7,6 +7,7 @@ namespace we {
 HistoryManager::HistoryManager(size_t maxHistoryLength, size_t maxSerializedLength)
 : mMaxHistoryLength(maxHistoryLength),
   mMaxSerializedLength(maxSerializedLength),
+  mHeadIndex(0),
   mCurrentIndex(0),
   mSize(0) {
     mHistoryRecords.resize(mMaxHistoryLength);
@@ -21,36 +22,30 @@ void HistoryManager::addRecord(std::unique_ptr<HistoryRecord> record) {
 
     // 如果当前不在历史记录的末尾，清除后续的记录
     if (mCurrentIndex < mSize) {
-        size_t actualIndex = getActualIndex(mCurrentIndex);
-
         // 清除从当前位置到末尾的所有记录
         for (size_t i = mCurrentIndex; i < mSize; ++i) {
-            size_t idx = getActualIndex(i);
-            if (idx < mHistoryRecords.size()) {
-                mHistoryRecords[idx].reset();
-            }
+            size_t actualIndex = (mHeadIndex + i) % mMaxHistoryLength;
+            mHistoryRecords[actualIndex].reset();
         }
         mSize = mCurrentIndex;
     }
 
-    // 如果已达到最大容量，移除最老的记录
-    if (mSize >= mMaxHistoryLength) {
-        cleanupOldRecords();
+    // 计算新记录的位置
+    size_t insertIndex;
+    if (mSize < mMaxHistoryLength) {
+        // 还有空间，直接在末尾添加
+        insertIndex = (mHeadIndex + mSize) % mMaxHistoryLength;
+        ++mSize;
+    } else {
+        // 数组已满，覆盖最老的记录，移动头部
+        insertIndex = mHeadIndex;
+        mHeadIndex  = (mHeadIndex + 1) % mMaxHistoryLength;
+        // mSize 保持不变
     }
 
     // 添加新记录
-    if (mHistoryRecords.size() <= mSize) {
-        mHistoryRecords.resize(mSize + 1);
-    }
-
-    size_t actualIndex = getActualIndex(mSize);
-    if (actualIndex >= mHistoryRecords.size()) {
-        mHistoryRecords.resize(actualIndex + 1);
-    }
-
-    mHistoryRecords[actualIndex] = std::move(record);
-    ++mSize;
-    mCurrentIndex = mSize;
+    mHistoryRecords[insertIndex] = std::move(record);
+    mCurrentIndex                = mSize;
 }
 
 optional_ref<HistoryRecord const> HistoryManager::undo() {
@@ -61,9 +56,9 @@ optional_ref<HistoryRecord const> HistoryManager::undo() {
     }
 
     --mCurrentIndex;
-    size_t actualIndex = getActualIndex(mCurrentIndex);
+    size_t actualIndex = (mHeadIndex + mCurrentIndex) % mMaxHistoryLength;
 
-    if (actualIndex < mHistoryRecords.size() && mHistoryRecords[actualIndex]) {
+    if (mHistoryRecords[actualIndex]) {
         return *mHistoryRecords[actualIndex];
     }
 
@@ -77,10 +72,10 @@ optional_ref<HistoryRecord const> HistoryManager::redo() {
         return nullptr;
     }
 
-    size_t actualIndex = getActualIndex(mCurrentIndex);
+    size_t actualIndex = (mHeadIndex + mCurrentIndex) % mMaxHistoryLength;
     ++mCurrentIndex;
 
-    if (actualIndex < mHistoryRecords.size() && mHistoryRecords[actualIndex]) {
+    if (mHistoryRecords[actualIndex]) {
         return *mHistoryRecords[actualIndex];
     }
 
@@ -105,16 +100,40 @@ void HistoryManager::setMaxHistoryLength(size_t maxLength) {
         maxLength = 1; // 至少保留一个历史记录
     }
 
-    mMaxHistoryLength = maxLength;
-
-    // 如果新的限制小于当前大小，需要清理
-    if (mSize > mMaxHistoryLength) {
-        cleanupOldRecords();
+    if (maxLength == mMaxHistoryLength) {
+        return; // 没有变化
     }
 
-    // 调整容器大小
-    if (mHistoryRecords.size() > mMaxHistoryLength) {
-        mHistoryRecords.resize(mMaxHistoryLength);
+    if (maxLength < mMaxHistoryLength) {
+        // 缩小容量，需要重新组织数据
+        std::vector<std::unique_ptr<HistoryRecord>> newRecords(maxLength);
+        size_t                                      newSize = std::min(mSize, maxLength);
+
+        // 保留最新的记录
+        for (size_t i = 0; i < newSize; ++i) {
+            size_t oldIndex = (mHeadIndex + (mSize - newSize) + i) % mMaxHistoryLength;
+            newRecords[i]   = std::move(mHistoryRecords[oldIndex]);
+        }
+
+        mHistoryRecords   = std::move(newRecords);
+        mMaxHistoryLength = maxLength;
+        mHeadIndex        = 0;
+        mSize             = newSize;
+        mCurrentIndex     = std::min(mCurrentIndex, mSize);
+    } else {
+        // 扩大容量
+        std::vector<std::unique_ptr<HistoryRecord>> newRecords(maxLength);
+
+        // 复制现有记录到新数组的开头
+        for (size_t i = 0; i < mSize; ++i) {
+            size_t oldIndex = (mHeadIndex + i) % mMaxHistoryLength;
+            newRecords[i]   = std::move(mHistoryRecords[oldIndex]);
+        }
+
+        mHistoryRecords   = std::move(newRecords);
+        mMaxHistoryLength = maxLength;
+        mHeadIndex        = 0;
+        // mSize 和 mCurrentIndex 保持不变
     }
 }
 
@@ -128,9 +147,14 @@ void HistoryManager::setMaxSerializedLength(size_t maxLength) {
 void HistoryManager::clear() {
     std::lock_guard<std::mutex> lock(mMutex);
 
-    mHistoryRecords.clear();
+    // 清空所有记录
+    for (auto& record : mHistoryRecords) {
+        record.reset();
+    }
+
     mCurrentIndex = 0;
     mSize         = 0;
+    mHeadIndex    = 0;
 }
 
 size_t HistoryManager::getEstimatedMemoryUsage() const {
@@ -148,32 +172,4 @@ size_t HistoryManager::getEstimatedMemoryUsage() const {
     return totalSize;
 }
 
-void HistoryManager::cleanupOldRecords() {
-    if (mSize <= mMaxHistoryLength) {
-        return;
-    }
-
-    // 计算需要移除的记录数量
-    size_t recordsToRemove = mSize - mMaxHistoryLength;
-
-    // 移除最老的记录
-    for (size_t i = 0; i < recordsToRemove; ++i) {
-        size_t actualIndex = getActualIndex(i);
-        if (actualIndex < mHistoryRecords.size()) {
-            mHistoryRecords[actualIndex].reset();
-        }
-    }
-
-    // 更新大小和当前索引
-    mSize = mMaxHistoryLength;
-    if (mCurrentIndex > recordsToRemove) {
-        mCurrentIndex -= recordsToRemove;
-    } else {
-        mCurrentIndex = 0;
-    }
-}
-
-size_t HistoryManager::getActualIndex(size_t logicalIndex) const {
-    return logicalIndex % mMaxHistoryLength;
-}
 } // namespace we

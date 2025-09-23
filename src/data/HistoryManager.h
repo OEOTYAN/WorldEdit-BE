@@ -20,23 +20,11 @@ private:
 
     size_t mMaxHistoryLength;    ///< 最大历史记录长度
     size_t mMaxSerializedLength; ///< 最大序列化历史记录长度
-    size_t mCurrentIndex;        ///< 当前历史记录索引
+    size_t mHeadIndex;           ///< 循环数组的头部索引（最老记录的位置）
+    size_t mCurrentIndex;        ///< 当前历史记录索引（相对于头部的逻辑位置）
     size_t mSize;                ///< 当前历史记录数量
 
     mutable std::mutex mMutex; ///< 线程安全保护
-
-    /**
-     * @brief 内部方法：清理超出限制的历史记录
-     */
-    void cleanupOldRecords();
-
-    /**
-     * @brief 内部方法：获取实际的向量索引
-     *
-     * @param logicalIndex 逻辑索引
-     * @return size_t 实际向量索引
-     */
-    size_t getActualIndex(size_t logicalIndex) const;
 
 public:
     /**
