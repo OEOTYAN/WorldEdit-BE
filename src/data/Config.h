@@ -46,6 +46,7 @@ struct Config {
     struct PlayerConfig {
         RegionType   default_region_type{RegionType::Expand};
         HashedString wand = VanillaItemNames::WoodenAxe();
+        std::string  global_mask;
     } player_default_config;
 };
 } // namespace we

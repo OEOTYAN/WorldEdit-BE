@@ -73,16 +73,16 @@ public:
     /**
      * @brief 撤销操作
      *
-     * @return std::shared_ptr<HistoryRecord> 撤销的历史记录，如果无法撤销则返回 nullptr
+     * @return  撤销的历史记录，如果无法撤销则返回 nullptr
      */
-    std::shared_ptr<HistoryRecord> undo();
+    optional_ref<HistoryRecord const> undo();
 
     /**
      * @brief 重做操作
      *
-     * @return std::shared_ptr<HistoryRecord> 重做的历史记录，如果无法重做则返回 nullptr
+     * @return  重做的历史记录，如果无法重做则返回 nullptr
      */
-    std::shared_ptr<HistoryRecord> redo();
+    optional_ref<HistoryRecord const> redo();
 
     /**
      * @brief 检查是否可以撤销
@@ -144,24 +144,6 @@ public:
      * @return size_t 估计的内存使用量
      */
     size_t getEstimatedMemoryUsage() const;
-
-    /**
-     * @brief 序列化历史记录管理器到 CompoundTag
-     *
-     * 只序列化最近的 maxSerializedLength 个历史记录
-     *
-     * @param tag 用于存储序列化数据的 CompoundTag 引用
-     * @return ll::Expected<> 成功时返回空的 Expected，失败时返回错误信息
-     */
-    ll::Expected<> serialize(CompoundTag& tag) const noexcept;
-
-    /**
-     * @brief 从 CompoundTag 反序列化历史记录管理器
-     *
-     * @param tag 包含序列化数据的 CompoundTag 常引用
-     * @return ll::Expected<> 成功时返回空的 Expected，失败时返回错误信息
-     */
-    ll::Expected<> deserialize(CompoundTag const& tag) noexcept;
 };
 
 } // namespace we
