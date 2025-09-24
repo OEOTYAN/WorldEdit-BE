@@ -34,5 +34,5 @@ REG_CMD(region, inset, "contract region on all axes") {
             }
         }
     );
-};
+}
 } // namespace we

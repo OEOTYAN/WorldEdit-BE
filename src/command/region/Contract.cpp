@@ -104,5 +104,5 @@ REG_CMD(region, contract, "contract region") {
             }
         }
     );
-};
+}
 } // namespace we

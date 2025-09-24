@@ -16,6 +16,7 @@ namespace we {
  */
 class HistoryManager {
 private:
+    LocalContext&                               context;
     std::vector<std::shared_ptr<HistoryRecord>> mHistoryRecords;
 
     size_t mMaxHistoryLength;    ///< 最大历史记录长度
@@ -34,7 +35,8 @@ public:
      * @param maxSerializedLength 最大序列化历史记录长度（默认10）
      */
     explicit HistoryManager(
-        size_t maxHistoryLength    = 20,
+        LocalContext& context,
+        size_t maxHistoryLength    = 128,
         size_t maxSerializedLength = 10
     );
 

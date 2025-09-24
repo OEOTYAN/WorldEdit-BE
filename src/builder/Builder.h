@@ -3,11 +3,22 @@
 #include "worldedit/Global.h"
 
 namespace we {
+
 class LocalContext;
+
+enum class BuilderType {
+    None,
+    Inplace,
+    Bot
+};
+
 class Builder {
     LocalContext& context;
+    BuilderType type;
 public:
-    Builder(LocalContext& context) : context(context) {}
+    Builder(LocalContext& context) : context(context){}
+
+    BuilderType getType() const { return type; }
 
     virtual ~Builder() = default;
 
@@ -25,6 +36,7 @@ public:
     virtual bool setBiome(BlockSource&, BlockPos const&, Biome const&) const {
         return false;
     }
+    static std::unique_ptr<Builder> create(BuilderType type, LocalContext& context);
 };
 
 } // namespace we

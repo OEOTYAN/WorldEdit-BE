@@ -4,9 +4,11 @@
 #include "builder/Builder.h"
 #include "data/HistoryManager.h"
 #include "region/Region.h"
+#include "expression/expression.h"
 
 #include <mc/platform/UUID.h>
 #include <mc/world/level/Tick.h>
+#include <mc/server/commands/PlayerPermissionLevel.h>
 
 namespace we {
 class LocalContextManager;
@@ -34,12 +36,21 @@ public:
 
     LocalContext(mce::UUID const& uuid, bool temp);
 
+    void setupBuilder(BuilderType type);
+
+    void updateBuilderByPerm(bool isOp);
+
     bool setMainPos(WithDim<BlockPos> const&);
     bool setOffPos(WithDim<BlockPos> const&);
 
     bool masked(BlockSource&, BlockPos const&) const;
 
-    bool setBlock(BlockSource&, BlockPos const&, Block const&, std::shared_ptr<BlockActor>) const;
+    bool setBlock(
+        BlockSource&,
+        BlockPos const&,
+        Block const&,
+        std::shared_ptr<BlockActor>
+    ) const;
     bool setExtraBlock(BlockSource&, BlockPos const&, Block const&) const;
     bool setBiome(BlockSource&, BlockPos const&, Biome const&) const;
 

@@ -23,5 +23,5 @@ REG_CMD(region, hpos2, "sets the off position to the cursor position") {
             ctx.error("can't set off position at {0}", hitResult.mBlock);
         }
     });
-};
+}
 } // namespace we

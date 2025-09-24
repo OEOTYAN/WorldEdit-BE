@@ -1,11 +1,16 @@
 #include "HistoryManager.h"
+#include "data/LocalContext.h"
 #include "utils/Serialize.h"
-#include <algorithm>
 
 namespace we {
 
-HistoryManager::HistoryManager(size_t maxHistoryLength, size_t maxSerializedLength)
-: mMaxHistoryLength(maxHistoryLength),
+HistoryManager::HistoryManager(
+    LocalContext& context,
+    size_t        maxHistoryLength,
+    size_t        maxSerializedLength
+)
+: context(context),
+  mMaxHistoryLength(maxHistoryLength),
   mMaxSerializedLength(maxSerializedLength),
   mHeadIndex(0),
   mCurrentIndex(0),
@@ -103,6 +108,8 @@ void HistoryManager::setMaxHistoryLength(size_t maxLength) {
     if (maxLength == mMaxHistoryLength) {
         return; // 没有变化
     }
+
+    context.config.history_length = maxLength;
 
     if (maxLength < mMaxHistoryLength) {
         // 缩小容量，需要重新组织数据

@@ -34,5 +34,5 @@ REG_CMD(region, outset, "expand region on all axes") {
             }
         }
     );
-};
+}
 } // namespace we

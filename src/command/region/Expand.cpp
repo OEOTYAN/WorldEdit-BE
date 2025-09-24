@@ -129,5 +129,5 @@ REG_CMD(region, expand, "expand region") {
             }
         }
     );
-};
+}
 } // namespace we

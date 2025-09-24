@@ -18,5 +18,5 @@ REG_CMD(region, pos2, "sets the off position to the given or current position") 
             }
         }
     );
-};
+}
 } // namespace we

@@ -18,5 +18,5 @@ REG_CMD(region, pos1, "sets the main position to the given or current position")
             }
         }
     );
-};
+}
 } // namespace we

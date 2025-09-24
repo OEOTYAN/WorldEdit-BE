@@ -23,5 +23,5 @@ REG_CMD(region, hpos1, "sets the main position to the cursor position") {
             ctx.error("can't set main position at {0}", hitResult.mBlock);
         }
     });
-};
+}
 } // namespace we

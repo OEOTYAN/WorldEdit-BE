@@ -10,14 +10,14 @@ public:
 
     virtual ~SimulatedPlayerBuilder() = default;
 
-    virtual bool setBlock(
-        BlockSource&,
-        BlockPos const&,
-        Block const&,
-        std::shared_ptr<BlockActor>
-    ) const;
-    virtual bool setExtraBlock(BlockSource&, BlockPos const&, Block const&) const;
-    virtual bool setBiome(BlockSource&, BlockPos const&, Biome const&) const;
+    // virtual bool setBlock(
+    //     BlockSource&,
+    //     BlockPos const&,
+    //     Block const&,
+    //     std::shared_ptr<BlockActor>
+    // ) const;
+    // virtual bool setExtraBlock(BlockSource&, BlockPos const&, Block const&) const;
+    // virtual bool setBiome(BlockSource&, BlockPos const&, Biome const&) const;
 };
 
 } // namespace we

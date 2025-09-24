@@ -21,7 +21,7 @@ bool OperationData::BlockOperation::apply(
 }
 
 OperationData::BlockOperation OperationData::BlockOperation::record(
-    LocalContext&   context,
+    LocalContext&,
     BlockSource&    region,
     BlockPos const& pos
 ) const {

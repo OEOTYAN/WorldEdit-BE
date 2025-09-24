@@ -67,5 +67,5 @@ REG_CMD(region, sel, "manipulate region") {
             ctx.success("region switch to {0}", params.type);
         }
     );
-};
+}
 } // namespace we

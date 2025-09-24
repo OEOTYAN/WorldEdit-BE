@@ -70,7 +70,7 @@ public:
     Vec3 pos() const { return origin.getWorldPosition(); }
     Vec3 blockPos() const { return origin.getBlockPosition(); }
 
-    std::string_view localeCode() const { return {}; }
+    std::string localeCode() const { return origin.getLocaleCode(); }
 
     Vec3 transformPos(CommandPositionFloat const& pos) const {
         return origin.getExecutePosition(cmd.mVersion, pos);
@@ -206,6 +206,7 @@ struct ll::command::ParamTraits<T> : ParamTraitsBase<T> {
 #ifndef REG_CMD
 
 #define REG_CMD(type, name, description)                                                 \
+    static void type##_##name##_sb_reg_fn(ll::command::CommandHandle& command);          \
     [[maybe_unused]] static bool _##name =                                               \
         SetupCommandFunctor{                                                             \
             #type "." #name,                                                             \
@@ -218,5 +219,6 @@ struct ll::command::ParamTraits<T> : ParamTraitsBase<T> {
                     .getOrCreateCommand(#name, description##_tr(), config.permission);   \
             }                                                                            \
         }                                                                                \
-        | [](ll::command::CommandHandle & command) -> void
+        | &type##_##name##_sb_reg_fn;                                                    \
+    static void type##_##name##_sb_reg_fn(ll::command::CommandHandle& command)
 #endif

@@ -8,6 +8,7 @@
 #include <ll/api/event/player/PlayerDestroyBlockEvent.h>
 #include <ll/api/event/player/PlayerSwingEvent.h>
 
+#include <ll/api/event/player/PlayerChangePermEvent.h>
 #include <ll/api/event/player/PlayerInteractBlockEvent.h>
 #include <ll/api/event/player/PlayerPlaceBlockEvent.h>
 #include <ll/api/event/player/PlayerUseItemEvent.h>
@@ -35,13 +36,17 @@ LocalContextManager::LocalContextManager(WorldEdit& we)
     auto& bus = EventBus::getInstance();
     listeners.emplace_back(
         bus.emplaceListener<PlayerConnectEvent>([this](PlayerConnectEvent& ev) {
-            if (!ev.self().isSimulated()) {
-                ll::thread::ThreadPoolExecutor::getDefault().execute(
-                    [id = ev.self().getUuid(), ptr = weak_from_this()] {
-                        if (!ptr.expired()) ptr.lock()->getOrCreate(id);
-                    }
-                );
+            if (ev.self().isSimulated()) {
+                return;
             }
+            ll::thread::ThreadPoolExecutor::getDefault().execute(
+                [id   = ev.self().getUuid(),
+                 ptr  = weak_from_this(),
+                 isOp = ev.self().isOperator()] {
+                    if (!ptr.expired())
+                        ptr.lock()->getOrCreate(id)->updateBuilderByPerm(isOp);
+                }
+            );
         })
     );
     listeners.emplace_back(
@@ -66,7 +71,7 @@ LocalContextManager::LocalContextManager(WorldEdit& we)
                 )
             );
             if (ev.isCancelled()) {
-                ll::thread::ThreadPoolExecutor::getDefault().executeAfter(
+                ll::thread::ServerThreadExecutor::getDefault().executeAfter(
                     [dst = WithDim<BlockPos>{ev.pos(), ev.self().getDimensionId()}] {
                         if (auto dim =
                                 ll::service::getLevel()->getDimension(dst.dim).lock();
@@ -150,6 +155,27 @@ LocalContextManager::LocalContextManager(WorldEdit& we)
                 ev.item(),
                 {hit.mBlock, ev.self().getDimensionId()},
                 (FacingID)hit.mFacing
+            );
+        })
+    );
+    listeners.emplace_back(
+        bus.emplaceListener<PlayerChangePermEvent>([this](PlayerChangePermEvent& ev) {
+            if (ev.self().isSimulated()) {
+                return;
+            }
+            WE_DEBUG(
+                "Player {} permission changed to {} {}",
+                ev.self().getRealName(),
+                static_cast<int>(ev.newPerm()),
+                ev.self().isOperator()
+            );
+            ll::thread::ThreadPoolExecutor::getDefault().execute(
+                [id   = ev.self().getUuid(),
+                 ptr  = weak_from_this(),
+                 isOp = ev.self().isOperator()] {
+                    if (!ptr.expired())
+                        ptr.lock()->getOrCreate(id)->updateBuilderByPerm(isOp);
+                }
             );
         })
     );

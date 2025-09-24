@@ -23,5 +23,5 @@ REG_CMD(region, chunk, "select current chunk") {
         lctx->regionType = RegionType::Cuboid;
         ctx.success("current chunk selected");
     });
-};
+}
 } // namespace we

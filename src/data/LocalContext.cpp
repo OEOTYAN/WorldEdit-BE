@@ -7,7 +7,10 @@ namespace we {
 LocalContext::LocalContext(mce::UUID const& uuid, bool temp)
 : temp(temp),
   uuid(uuid),
-  config(WorldEdit::getInstance().getConfig().player_default_config) {}
+  config(WorldEdit::getInstance().getConfig().player_default_config),
+  history(*this) {
+    setupBuilder(temp ? BuilderType::Inplace : BuilderType::None);
+}
 
 void LocalContext::setMainPosInternal() {
     if (mainPos) {
@@ -57,6 +60,26 @@ bool LocalContext::setOffPos(WithDim<BlockPos> const& v) {
     return false;
 }
 
+void LocalContext::setupBuilder(BuilderType type) {
+    auto& gConfig = WorldEdit::getInstance().getConfig().player_state;
+    if (!gConfig.allow_inplace_builder && type != BuilderType::Bot) {
+        type = BuilderType::None;
+    }
+    if (!gConfig.allow_bot_builder && type == BuilderType::Bot) {
+        type = BuilderType::None;
+    }
+    if (!builder || builder->getType() != type) {
+        builder = Builder::create(type, *this);
+    }
+}
+
+void LocalContext::updateBuilderByPerm(bool isOp) {
+    if (builder->getType() == BuilderType::None) {
+        setupBuilder(isOp ? BuilderType::Inplace : BuilderType::Bot);
+    } else if (!isOp) {
+        setupBuilder(BuilderType::Bot);
+    }
+}
 
 bool LocalContext::masked(BlockSource&, BlockPos const&) const { return false; }
 
@@ -68,10 +91,18 @@ bool LocalContext::setBlock(
 ) const {
     return builder->setBlock(source, pos, block, blockActor);
 }
-bool LocalContext::setExtraBlock(BlockSource& source, BlockPos const& pos, Block const& block) const {
+bool LocalContext::setExtraBlock(
+    BlockSource&    source,
+    BlockPos const& pos,
+    Block const&    block
+) const {
     return builder->setExtraBlock(source, pos, block);
 }
-bool LocalContext::setBiome(BlockSource& source, BlockPos const& pos, Biome const& biome) const {
+bool LocalContext::setBiome(
+    BlockSource&    source,
+    BlockPos const& pos,
+    Biome const&    biome
+) const {
     return builder->setBiome(source, pos, biome);
 }
 
@@ -94,12 +125,24 @@ ll::Expected<> LocalContext::serialize(CompoundTag& nbt) const noexcept try {
         .and_then([&, this]() {
             if (region) return region->serialize(nbt["region"].emplace<CompoundTag>());
             return ll::Expected<>{};
+        })
+        .and_then([&, this]() {
+            if (builder)
+                return ll::reflection::serialize_to(
+                    nbt["builderType"],
+                    builder->getType()
+                );
+            return ll::Expected<>{};
         });
 } catch (...) {
     return ll::makeExceptionError();
 }
 ll::Expected<> LocalContext::deserialize(CompoundTag const& nbt) noexcept try {
     return ll::reflection::deserialize(config, nbt["config"])
+        .and_then([&, this]() {
+            history.setMaxHistoryLength(config.history_length);
+            return ll::Expected<>{};
+        })
         .and_then([&, this]() {
             ll::Expected<> res;
             if (nbt.contains("mainPos")) {
@@ -137,6 +180,14 @@ ll::Expected<> LocalContext::deserialize(CompoundTag const& nbt) noexcept try {
                 }
             }
             return {};
+        })
+        .and_then([&, this]() {
+            ll::Expected<> result;
+            BuilderType    builderType = BuilderType::None;
+            if (nbt.contains("builderType"))
+                result = ll::reflection::deserialize(builderType, nbt["builderType"]);
+            setupBuilder(builderType);
+            return result;
         });
 } catch (...) {
     return ll::makeExceptionError();

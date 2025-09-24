@@ -22,5 +22,5 @@ REG_CMD(region, shift, "shift region") {
             }
         }
     );
-};
+}
 } // namespace we

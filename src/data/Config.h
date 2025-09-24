@@ -27,6 +27,13 @@ struct Config {
             CmdSetting outset{};
             CmdSetting inset{};
         } region;
+        struct {
+            CmdSetting undo{};
+            CmdSetting redo{};
+            CmdSetting clearhistory{};
+            CmdSetting maxhistorylength{};
+
+        } history;
     } commands{};
     struct {
         mce::Color region_line_color{"#FFEC27"};
@@ -38,6 +45,8 @@ struct Config {
     struct {
         float maximum_trace_length  = 2048;
         int   minimum_response_tick = 3;
+        bool  allow_bot_builder     = false;
+        bool  allow_inplace_builder = true;
     } player_state;
     struct {
         ll::io::LogLevel player_log_level{ll::io::LogLevel::Warn};
@@ -47,6 +56,7 @@ struct Config {
         RegionType   default_region_type{RegionType::Expand};
         HashedString wand = VanillaItemNames::WoodenAxe();
         std::string  global_mask;
+        size_t       history_length = 128;
     } player_default_config;
 };
 } // namespace we

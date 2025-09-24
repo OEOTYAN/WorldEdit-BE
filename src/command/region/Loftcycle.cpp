@@ -19,5 +19,5 @@ REG_CMD(region, loftcycle, "set loft region curve is connected end to end") {
             ctx.success("set loft region cycle to {0}", params.cycle);
         }
     );
-};
+}
 } // namespace we
