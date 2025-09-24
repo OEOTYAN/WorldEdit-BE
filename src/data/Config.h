@@ -34,6 +34,9 @@ struct Config {
             CmdSetting maxhistorylength{};
 
         } history;
+        struct {
+            CmdSetting set{};
+        } edit;
     } commands{};
     struct {
         mce::Color region_line_color{"#FFEC27"};

@@ -34,7 +34,7 @@ REG_CMD(history, redo, "Redo the last action") {
                 redoneSteps++;
             }
             ctx.success(
-                "Redone {} step(s), {} block(s) modified",
+                "Redone {0} step(s), {1} block(s) modified",
                 redoneSteps,
                 redoneBlocks
             );

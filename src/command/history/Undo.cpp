@@ -34,7 +34,7 @@ REG_CMD(history, undo, "Undo the last action") {
                 undoneSteps++;
             }
             ctx.success(
-                "Undone {} step(s), {} block(s) modified",
+                "Undone {0} step(s), {1} block(s) modified",
                 undoneSteps,
                 undoneBlocks
             );
