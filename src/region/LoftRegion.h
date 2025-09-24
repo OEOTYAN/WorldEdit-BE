@@ -43,11 +43,11 @@ public:
         updateBoundingBox();
     };
 
-    uint64_t size() const override {
+    size_t size() const override {
         auto bSize = boundingBox.max - boundingBox.min + 1;
         return std::max(
-            std::max((uint64_t)bSize.x * bSize.z, (uint64_t)bSize.x * bSize.y),
-            (uint64_t)bSize.y * bSize.z
+            std::max((size_t)bSize.x * bSize.z, (size_t)bSize.x * bSize.y),
+            (size_t)bSize.y * bSize.z
         );
     }
 
@@ -55,8 +55,9 @@ public:
 
     void forEachBlockInRegion(std::function<void(BlockPos const&)>&&) const override;
 
-    void forEachBlockUVInRegion(std::function<void(BlockPos const&, double, double)>&&)
-        const override;
+    void forEachBlockUVInRegion(
+        std::function<void(BlockPos const&, double, double)>&&
+    ) const override;
 
     void forEachBlockInLines(
         int                                         num,

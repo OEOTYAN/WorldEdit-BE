@@ -36,14 +36,16 @@ public:
             "command [{0}] [success]: {1}",
             cmd.getCommandName(),
             fmt::vformat(
-                ll::i18n::getInstance().get({fsv.data(), fsv.size()}, {}),
+                ll::i18n::getInstance().get({fsv.data(), fsv.size()}, localeCode()),
                 fmt::make_format_args(args...)
             )
         );
-        output.success(fmt::vformat(
-            ll::i18n::getInstance().get({fsv.data(), fsv.size()}, {}),
-            fmt::make_format_args(args...)
-        ));
+        output.success(
+            fmt::vformat(
+                ll::i18n::getInstance().get({fsv.data(), fsv.size()}, localeCode()),
+                fmt::make_format_args(args...)
+            )
+        );
     }
 
     template <class... Args>
@@ -53,18 +55,22 @@ public:
             "command [{0}] [error]: {1}",
             cmd.getCommandName(),
             fmt::vformat(
-                ll::i18n::getInstance().get({fsv.data(), fsv.size()}, {}),
+                ll::i18n::getInstance().get({fsv.data(), fsv.size()}, localeCode()),
                 fmt::make_format_args(args...)
             )
         );
-        output.error(fmt::vformat(
-            ll::i18n::getInstance().get({fsv.data(), fsv.size()}, {}),
-            fmt::make_format_args(args...)
-        ));
+        output.error(
+            fmt::vformat(
+                ll::i18n::getInstance().get({fsv.data(), fsv.size()}, localeCode()),
+                fmt::make_format_args(args...)
+            )
+        );
     }
 
     Vec3 pos() const { return origin.getWorldPosition(); }
     Vec3 blockPos() const { return origin.getBlockPosition(); }
+
+    std::string_view localeCode() const { return {}; }
 
     Vec3 transformPos(CommandPositionFloat const& pos) const {
         return origin.getExecutePosition(cmd.mVersion, pos);
@@ -84,11 +90,12 @@ public:
             || requires(Fn fn) { fn(); }
         )
     constexpr auto operator|(Fn&& fn) const noexcept {
-        return [fn = std::forward<Fn>(fn
-                )](CommandOrigin const& origin,
+        return [fn = std::forward<Fn>(fn)](
+                   CommandOrigin const& origin,
                    CommandOutput&       output,
                    auto&                param,
-                   ::Command const&     cmd) {
+                   ::Command const&     cmd
+               ) {
             CommandContextRef ctxref{origin, output, cmd};
             if constexpr (std::is_invocable_v<
                               Fn,
@@ -140,9 +147,15 @@ template <we::IsVaArg T>
 struct ll::command::ParamTraits<T> : ParamTraitsBase<T> {
     using Base = ParamTraitsBase<T>;
     struct Parser {
-        bool
-        operator()(CommandRegistry const&, void* storage, CommandRegistry::ParseToken const& token, CommandOrigin const&, int, std::string&, std::vector<std::string>&)
-            const {
+        bool operator()(
+            CommandRegistry const&,
+            void*                              storage,
+            CommandRegistry::ParseToken const& token,
+            CommandOrigin const&,
+            int,
+            std::string&,
+            std::vector<std::string>&
+        ) const {
             std::string str = token.toString();
             ll::reflection::forEachMember(
                 *(T*)storage,
@@ -205,5 +218,5 @@ struct ll::command::ParamTraits<T> : ParamTraitsBase<T> {
                     .getOrCreateCommand(#name, description##_tr(), config.permission);   \
             }                                                                            \
         }                                                                                \
-        | [](ll::command::CommandHandle & command)
+        | [](ll::command::CommandHandle & command) -> void
 #endif

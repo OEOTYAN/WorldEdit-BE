@@ -35,7 +35,7 @@ public:
 
     RegionType getType() const override { return RegionType::Convex; }
 
-    uint64 size() const override;
+    size_t size() const override;
 
     bool shift(BlockPos const&) override;
 

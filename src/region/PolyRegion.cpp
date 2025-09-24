@@ -210,7 +210,7 @@ bool PolyRegion::shift(BlockPos const& change) {
     updateBoundingBox();
     return true;
 }
-uint64 PolyRegion::size() const {
+size_t PolyRegion::size() const {
     if (points.empty()) {
         return 0;
     } else if (points.size() == 1) {
@@ -222,7 +222,7 @@ uint64 PolyRegion::size() const {
         area      += lastPoint.x * point.z - lastPoint.z * point.x;
         lastPoint  = point;
     }
-    return (uint64)std::floor(std::abs((double)area * 0.5)) * (maxY - minY + 1);
+    return (size_t)std::floor(std::abs((double)area * 0.5)) * (maxY - minY + 1);
 };
 bool PolyRegion::contains(BlockPos const& pos) const {
     if (points.size() < 3 || pos.y < minY || pos.y > maxY) {

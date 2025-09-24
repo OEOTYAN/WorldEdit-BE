@@ -276,12 +276,12 @@ void ConvexRegion::forEachLine(
     }
 }
 
-uint64 ConvexRegion::size() const {
+size_t ConvexRegion::size() const {
     double volume = 0;
     for (auto triangle : triangles) {
         volume +=
             triangle.getVertex(0).cross(triangle.getVertex(1)).dot(triangle.getVertex(2));
     }
-    return (uint64)std::abs(volume / 6.0);
+    return (size_t)std::abs(volume / 6.0);
 };
 } // namespace we

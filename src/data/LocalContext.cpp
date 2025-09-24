@@ -57,6 +57,24 @@ bool LocalContext::setOffPos(WithDim<BlockPos> const& v) {
     return false;
 }
 
+
+bool LocalContext::masked(BlockSource&, BlockPos const&) const { return false; }
+
+bool LocalContext::setBlock(
+    BlockSource&                source,
+    BlockPos const&             pos,
+    Block const&                block,
+    std::shared_ptr<BlockActor> blockActor
+) const {
+    return builder->setBlock(source, pos, block, blockActor);
+}
+bool LocalContext::setExtraBlock(BlockSource& source, BlockPos const& pos, Block const& block) const {
+    return builder->setExtraBlock(source, pos, block);
+}
+bool LocalContext::setBiome(BlockSource& source, BlockPos const& pos, Biome const& biome) const {
+    return builder->setBiome(source, pos, biome);
+}
+
 ll::Expected<> LocalContext::serialize(CompoundTag& nbt) const noexcept try {
     return ll::reflection::serialize_to(nbt["config"], config)
         .and_then([&, this]() {

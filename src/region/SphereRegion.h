@@ -31,13 +31,15 @@ public:
 
     Vec3 getCenter() const override { return center.center(); };
 
-    uint64 size() const override {
-        return (uint64
-        )std::round((4.0 / 3.0 * std::numbers::pi) * radius * radius * radius);
+    size_t size() const override {
+        return (size_t)std::round(
+            (4.0 / 3.0 * std::numbers::pi) * radius * radius * radius
+        );
     };
 
-    void forEachBlockUVInRegion(std::function<void(BlockPos const&, double, double)>&&)
-        const override;
+    void forEachBlockUVInRegion(
+        std::function<void(BlockPos const&, double, double)>&&
+    ) const override;
 
     bool setMainPos(BlockPos const&) override;
 

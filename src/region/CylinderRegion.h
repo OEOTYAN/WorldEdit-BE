@@ -27,8 +27,8 @@ public:
 
     RegionType getType() const override { return RegionType::Cylinder; }
 
-    uint64 size() const override {
-        return (uint64)std::round(std::numbers::pi * radius * radius * (maxY - minY + 1));
+    size_t size() const override {
+        return (size_t)std::round(std::numbers::pi * radius * radius * (maxY - minY + 1));
     };
 
     bool expand(std::span<BlockPos>) override;
@@ -37,8 +37,8 @@ public:
 
     bool shift(BlockPos const&) override;
 
-    void
-    forEachBlockUVInRegion(std::function<void(BlockPos const&, double, double)>&& todo
+    void forEachBlockUVInRegion(
+        std::function<void(BlockPos const&, double, double)>&& todo
     ) const override;
 
     bool setMainPos(BlockPos const&) override;

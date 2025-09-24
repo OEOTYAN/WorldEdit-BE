@@ -16,7 +16,7 @@ namespace we {
  */
 class HistoryManager {
 private:
-    std::vector<std::unique_ptr<HistoryRecord>> mHistoryRecords;
+    std::vector<std::shared_ptr<HistoryRecord>> mHistoryRecords;
 
     size_t mMaxHistoryLength;    ///< 最大历史记录长度
     size_t mMaxSerializedLength; ///< 最大序列化历史记录长度
@@ -56,21 +56,21 @@ public:
      *
      * @param record 要添加的历史记录（转移所有权）
      */
-    void addRecord(std::unique_ptr<HistoryRecord> record);
+    void addRecord(std::shared_ptr<HistoryRecord> record);
 
     /**
      * @brief 撤销操作
      *
      * @return  撤销的历史记录，如果无法撤销则返回 nullptr
      */
-    optional_ref<HistoryRecord const> undo();
+   std::shared_ptr<HistoryRecord> undo();
 
     /**
      * @brief 重做操作
      *
      * @return  重做的历史记录，如果无法重做则返回 nullptr
      */
-    optional_ref<HistoryRecord const> redo();
+   std::shared_ptr<HistoryRecord> redo();
 
     /**
      * @brief 检查是否可以撤销

@@ -13,7 +13,7 @@ HistoryManager::HistoryManager(size_t maxHistoryLength, size_t maxSerializedLeng
     mHistoryRecords.resize(mMaxHistoryLength);
 }
 
-void HistoryManager::addRecord(std::unique_ptr<HistoryRecord> record) {
+void HistoryManager::addRecord(std::shared_ptr<HistoryRecord> record) {
     if (!record) {
         return;
     }
@@ -48,7 +48,7 @@ void HistoryManager::addRecord(std::unique_ptr<HistoryRecord> record) {
     mCurrentIndex                = mSize;
 }
 
-optional_ref<HistoryRecord const> HistoryManager::undo() {
+std::shared_ptr<HistoryRecord> HistoryManager::undo() {
     std::lock_guard<std::mutex> lock(mMutex);
 
     if (!canUndo()) {
@@ -59,13 +59,13 @@ optional_ref<HistoryRecord const> HistoryManager::undo() {
     size_t actualIndex = (mHeadIndex + mCurrentIndex) % mMaxHistoryLength;
 
     if (mHistoryRecords[actualIndex]) {
-        return *mHistoryRecords[actualIndex];
+        return mHistoryRecords[actualIndex];
     }
 
     return nullptr;
 }
 
-optional_ref<HistoryRecord const> HistoryManager::redo() {
+std::shared_ptr<HistoryRecord> HistoryManager::redo() {
     std::lock_guard<std::mutex> lock(mMutex);
 
     if (!canRedo()) {
@@ -76,7 +76,7 @@ optional_ref<HistoryRecord const> HistoryManager::redo() {
     ++mCurrentIndex;
 
     if (mHistoryRecords[actualIndex]) {
-        return *mHistoryRecords[actualIndex];
+        return mHistoryRecords[actualIndex];
     }
 
     return nullptr;
@@ -106,7 +106,7 @@ void HistoryManager::setMaxHistoryLength(size_t maxLength) {
 
     if (maxLength < mMaxHistoryLength) {
         // 缩小容量，需要重新组织数据
-        std::vector<std::unique_ptr<HistoryRecord>> newRecords(maxLength);
+        std::vector<std::shared_ptr<HistoryRecord>> newRecords(maxLength);
         size_t                                      newSize = std::min(mSize, maxLength);
 
         // 保留最新的记录
@@ -122,7 +122,7 @@ void HistoryManager::setMaxHistoryLength(size_t maxLength) {
         mCurrentIndex     = std::min(mCurrentIndex, mSize);
     } else {
         // 扩大容量
-        std::vector<std::unique_ptr<HistoryRecord>> newRecords(maxLength);
+        std::vector<std::shared_ptr<HistoryRecord>> newRecords(maxLength);
 
         // 复制现有记录到新数组的开头
         for (size_t i = 0; i < mSize; ++i) {
@@ -161,7 +161,7 @@ size_t HistoryManager::getEstimatedMemoryUsage() const {
     std::lock_guard<std::mutex> lock(mMutex);
 
     size_t totalSize = sizeof(HistoryManager);
-    totalSize += mHistoryRecords.capacity() * sizeof(std::unique_ptr<HistoryRecord>);
+    totalSize += mHistoryRecords.capacity() * sizeof(std::shared_ptr<HistoryRecord>);
 
     for (const auto& record : mHistoryRecords) {
         if (record) {

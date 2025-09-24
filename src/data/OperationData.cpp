@@ -9,13 +9,10 @@ bool OperationData::BlockOperation::apply(
 ) const {
     bool applied = false;
     if (block) {
-        applied |= context.setBlock(region, pos, *block);
+        applied |= context.setBlock(region, pos, *block, blockActor);
     }
     if (extraBlock) {
         applied |= context.setExtraBlock(region, pos, *extraBlock);
-    }
-    if (blockActor) {
-        applied |= context.setBlockActor(region, pos, blockActor);
     }
     if (biome) {
         applied |= context.setBiome(region, pos, *biome);

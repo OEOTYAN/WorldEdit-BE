@@ -20,12 +20,8 @@ public:
         record(LocalContext& context, BlockSource& region, BlockPos const& pos) const;
     };
     struct EntityOperation {
-        bool
-        apply(LocalContext& context, BlockSource& region, BlockPos const& pos) const {
-            return false;
-        }
-        EntityOperation
-        record(LocalContext& context, BlockSource& region, BlockPos const& pos) const {
+        bool apply(LocalContext&, BlockSource&, BlockPos const&) const { return false; }
+        EntityOperation record(LocalContext&, BlockSource&, BlockPos const&) const {
             return EntityOperation{};
         }
     };

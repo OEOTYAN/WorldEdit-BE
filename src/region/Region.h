@@ -38,8 +38,8 @@ public:
 
     virtual void updateBoundingBox() = 0;
 
-    virtual uint64 size() const {
-        return (uint64)(boundingBox.max.x - boundingBox.min.x + 1)
+    virtual size_t size() const {
+        return (size_t)(boundingBox.max.x - boundingBox.min.x + 1)
              * (boundingBox.max.y - boundingBox.min.y + 1)
              * (boundingBox.max.z - boundingBox.min.z + 1);
     }
