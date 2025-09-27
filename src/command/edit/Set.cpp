@@ -59,7 +59,10 @@ REG_CMD(edit, set, "Set blocks in the region to a specific block type") {
                     record->record(*lctx, blockSource, op);
                 });
                 auto num = record->apply(*lctx, blockSource);
-                lctx->history.addRecord(std::move(record));
+                if (!lctx->history.addRecord(std::move(record))) {
+                    ctx.output.error("Failed to set");
+                    return;
+                }
                 if (params.exblock) {
                     ctx.output.success(
                         "Set {0} blocks to {1} with {2}",

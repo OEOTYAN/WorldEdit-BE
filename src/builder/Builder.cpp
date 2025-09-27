@@ -10,6 +10,9 @@ std::unique_ptr<Builder> Builder::create(BuilderType type, LocalContext& context
     case BuilderType::Inplace:
         result = std::make_unique<InplaceBuilder>(context);
         break;
+    case BuilderType::InplaceNoNc:
+        result = std::make_unique<InplaceBuilder>(context, BlockUpdateFlag::Network);
+        break;
     case BuilderType::Bot:
         result = std::make_unique<SimulatedPlayerBuilder>(context);
         break;

@@ -65,3 +65,12 @@ enum {
     AllPriority         = All | Priority,
 };
 } // namespace BlockUpdateFlag
+
+namespace BlockLayer {
+using Type        = uint;
+using NetworkType = uint;
+enum {
+    Standard = 0,
+    Extra    = 1,
+};
+} // namespace BlockLayer

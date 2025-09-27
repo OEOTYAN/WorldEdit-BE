@@ -9,7 +9,8 @@ class LocalContext;
 enum class BuilderType {
     None,
     Inplace,
-    Bot
+    InplaceNoNc,
+    Bot,
 };
 
 class Builder {

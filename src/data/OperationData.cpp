@@ -1,44 +1,62 @@
 #include "OperationData.h"
 #include "data/LocalContext.h"
+#include <mc/world/level/chunk/ChunkSource.h>
+#include <mc/world/level/chunk/LevelChunk.h>
 
 namespace we {
 bool OperationData::BlockOperation::apply(
     LocalContext&   context,
-    BlockSource&    region,
+    BlockSource&    source,
     BlockPos const& pos
 ) const {
     bool applied = false;
     if (block) {
-        applied |= context.setBlock(region, pos, *block, blockActor);
+        applied |= context.setBlock(source, pos, *block, blockActor);
     }
     if (extraBlock) {
-        applied |= context.setExtraBlock(region, pos, *extraBlock);
+        applied |= context.setExtraBlock(source, pos, *extraBlock);
     }
     if (biome) {
-        applied |= context.setBiome(region, pos, *biome);
+        applied |= context.setBiome(source, pos, *biome);
     }
     return applied;
 }
 
 OperationData::BlockOperation OperationData::BlockOperation::record(
     LocalContext&,
-    BlockSource&    region,
-    BlockPos const& pos
+    BlockSource&    source,
+    BlockPos const& pos,
+    bool&           valid
 ) const {
     OperationData::BlockOperation result;
+    if (pos.y < source.getMinHeight() || source.getMaxHeight() <= pos.y) {
+        // out of height range
+        valid = false;
+        return result;
+    }
+    auto chunk = source.getChunkSource().getExistingChunk(ChunkPos{pos});
+    if (!chunk
+        || chunk->mLoadState->load(std::memory_order_relaxed)
+               <= ChunkState::CheckingForReplacementData) {
+        // chunk not loaded
+        valid = false;
+        return result;
+    }
+    valid = true;
+    ChunkBlockPos chunkBlockPos{pos, source.getMinHeight()};
     if (block) {
-        result.block      = &region.getBlock(pos);
-        result.extraBlock = &region.getExtraBlock(pos);
-        if (optional_ref<BlockActor> oldBlockActor = region.getBlockEntity(pos);
-            oldBlockActor) {
+        result.block      = &chunk->getBlock(chunkBlockPos);
+        result.extraBlock = &chunk->getExtraBlock(chunkBlockPos);
+        if (auto iter = chunk->mBlockEntities->mMap->find(chunkBlockPos);
+            iter != chunk->mBlockEntities->mMap->end()) {
             CompoundTag nbt;
-            if (oldBlockActor->save(nbt, SaveContext{})) {
+            if (iter->second->save(nbt, SaveContext{})) {
                 result.blockActor = BlockActor::create(nbt, pos);
             }
         }
     }
     if (biome) {
-        result.biome = &region.getBiome(pos);
+        result.biome = &source.getBiome(pos);
     }
     return result;
 }

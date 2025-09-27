@@ -12,7 +12,7 @@ size_t HistoryRecord::getEstimatedSize() const noexcept {
 
 size_t HistoryRecord::undo(
     LocalContext&                              context,
-    BlockSource&                               region,
+    BlockSource&                               source,
     brstd::function_ref<bool(BlockPos const&)> canUndo
 ) const {
     size_t totalUndone = 0;
@@ -21,7 +21,7 @@ size_t HistoryRecord::undo(
             // cannot undo this position
             continue;
         }
-        if (it->apply(context, region)) {
+        if (it->apply(context, source)) {
             // successfully undone
             totalUndone++;
         }
@@ -30,7 +30,7 @@ size_t HistoryRecord::undo(
 }
 size_t HistoryRecord::redo(
     LocalContext&                              context,
-    BlockSource&                               region,
+    BlockSource&                               source,
     brstd::function_ref<bool(BlockPos const&)> canRedo
 ) const {
     size_t totalRedone = 0;
@@ -39,17 +39,17 @@ size_t HistoryRecord::redo(
             // cannot redo this position
             continue;
         }
-        if (op.apply(context, region)) {
+        if (op.apply(context, source)) {
             // successfully redoed
             totalRedone++;
         }
     }
     return totalRedone;
 }
-size_t HistoryRecord::apply(LocalContext& context, BlockSource& region) const {
+size_t HistoryRecord::apply(LocalContext& context, BlockSource& source) const {
     size_t totalApplied = 0;
     for (auto const& op : newData.operations) {
-        if (op.apply(context, region)) {
+        if (op.apply(context, source)) {
             // successfully applied
             totalApplied++;
         }
@@ -59,10 +59,10 @@ size_t HistoryRecord::apply(LocalContext& context, BlockSource& region) const {
 
 void HistoryRecord::record(
     LocalContext&            context,
-    BlockSource&             region,
+    BlockSource&             source,
     OperationData::Operation op
 ) {
-    if (context.masked(region, op.pos)) {
+    if (context.masked(source, op.pos)) {
         // position is masked, do not record
         return;
     }
@@ -70,8 +70,13 @@ void HistoryRecord::record(
         // already recorded
         return;
     }
+    bool valid;
+    auto oldOp = op.record(context, source, valid);
+    if (!valid) {
+        return;
+    }
     positionMap[op.pos] = newData.operations.size();
-    oldData.operations.push_back(op.record(context, region));
+    oldData.operations.push_back(std::move(oldOp));
     newData.operations.push_back(std::move(op));
 }
 

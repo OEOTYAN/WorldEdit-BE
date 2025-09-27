@@ -1,8 +1,46 @@
 #include "InplaceBuilder.h"
 #include "utils/DirectAccessBlocks.h"
+#include <mc/world/level/block/BedrockBlockNames.h>
+#include <mc/world/level/block/actor/BlockActor.h>
+#include <mc/world/level/chunk/ChunkSource.h>
 #include <mc/world/level/chunk/LevelChunk.h>
 
+
 namespace we {
+
+void InplaceBuilder::fireBlockChanged(
+    BlockSource&     source,
+    BlockPos const&  pos,
+    BlockLayer::Type layer,
+    Block const&     oldBlock,
+    Block const&     newBlock
+) const {
+    if ((updateFlags & BlockUpdateFlag::Neighbors) != 0) {
+        source.updateNeighborsAt(pos);
+        source.fireBlockChanged(
+            pos,
+            layer,
+            newBlock,
+            oldBlock,
+            updateFlags,
+            BlockChangedEventTarget::NeighborBlock,
+            nullptr,
+            nullptr
+        );
+    }
+    if ((updateFlags & BlockUpdateFlag::Network) != 0) {
+        source.fireBlockChanged(
+            pos,
+            layer,
+            newBlock,
+            oldBlock,
+            updateFlags,
+            BlockChangedEventTarget::SelfBlock,
+            nullptr,
+            nullptr
+        );
+    }
+}
 
 bool InplaceBuilder::setBlock(
     BlockSource&                source,
@@ -10,7 +48,28 @@ bool InplaceBuilder::setBlock(
     Block const&                block,
     std::shared_ptr<BlockActor> blockActor
 ) const {
+    auto chunk   = source.getChunkSource().getExistingChunk(ChunkPos{pos});
     bool applied = false;
+    if (!chunk
+        || chunk->mLoadState->load(std::memory_order_relaxed)
+               <= ChunkState::CheckingForReplacementData) {
+        return applied;
+    }
+    ChunkBlockPos chunkBlockPos{pos, source.getMinHeight()};
+
+    if (auto iter = chunk->mBlockEntities->mMap->find(chunkBlockPos);
+        iter != chunk->mBlockEntities->mMap->end()) {
+        if (iter->second->mType != block.getBlockType().mBlockEntityType) {
+            applied = true;
+            chunk->removeBlockEntity(pos);
+        } else if (blockActor) {
+            // Update existing block entity with new data
+            iter->second = std::move(blockActor);
+            source.fireBlockEntityChanged(*iter->second);
+            blockActor = nullptr; // Prevent placing a new block entity
+        }
+    }
+
     {
         // for medium
         Block const* extra;
@@ -19,9 +78,27 @@ bool InplaceBuilder::setBlock(
         } else {
             extra = &DirectAccessBlocks::Air();
         }
-        applied |= source.setExtraBlock(pos, *extra, updateFlags);
+        auto& previousBlock = chunk->setExtraBlock(chunkBlockPos, *extra, &source);
+        if (previousBlock != *extra) {
+            applied = true;
+            fireBlockChanged(source, pos, BlockLayer::Extra, previousBlock, *extra);
+        }
     }
-    applied |= source.setBlock(pos, block, updateFlags, blockActor, nullptr, nullptr);
+
+    auto& previousBlock =
+        chunk->setBlock(chunkBlockPos, block, &source, std::move(blockActor));
+    if (previousBlock != block) {
+        applied           = true;
+        auto& borderBlock = source.getLevel().getRegisteredBorderBlock();
+        if (borderBlock.mNameInfo->mFullName->getHash()
+            != BedrockBlockNames::Air().mStrHash) {
+            bool currentIsBorder = &borderBlock == &block.getBlockType();
+            if (&borderBlock == &previousBlock.getBlockType() || currentIsBorder) {
+                chunk->setBorder(chunkBlockPos, currentIsBorder);
+            }
+        }
+        fireBlockChanged(source, pos, BlockLayer::Standard, previousBlock, block);
+    }
     return applied;
 }
 
@@ -30,7 +107,20 @@ bool InplaceBuilder::setExtraBlock(
     BlockPos const& pos,
     Block const&    block
 ) const {
-    return source.setExtraBlock(pos, block, updateFlags);
+    auto chunk = source.getChunkSource().getExistingChunk(ChunkPos{pos});
+    if (!chunk
+        || chunk->mLoadState->load(std::memory_order_relaxed)
+               <= ChunkState::CheckingForReplacementData) {
+        return false;
+    }
+
+    auto& previousBlock =
+        chunk->setExtraBlock(ChunkBlockPos{pos, source.getMinHeight()}, block, &source);
+    if (previousBlock != block) {
+        fireBlockChanged(source, pos, BlockLayer::Extra, previousBlock, block);
+        return true;
+    }
+    return false;
 }
 
 bool InplaceBuilder::setBiome(
@@ -38,8 +128,12 @@ bool InplaceBuilder::setBiome(
     BlockPos const& pos,
     Biome const&    biome
 ) const {
-    auto* chunk = source.getChunkAt(pos);
-    if (!chunk) return false;
+    auto chunk = source.getChunkSource().getExistingChunk(ChunkPos{pos});
+    if (!chunk
+        || chunk->mLoadState->load(std::memory_order_relaxed)
+               <= ChunkState::CheckingForReplacementData) {
+        return false;
+    }
     chunk->_setBiome(biome, ChunkBlockPos{pos, source.getMinHeight()}, false);
     return true;
 }

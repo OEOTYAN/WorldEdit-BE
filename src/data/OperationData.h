@@ -15,13 +15,13 @@ public:
         optional_ref<Block const>   extraBlock = nullptr;
         std::shared_ptr<BlockActor> blockActor = nullptr;
         optional_ref<Biome const>   biome      = nullptr;
-        bool apply(LocalContext& context, BlockSource& region, BlockPos const& pos) const;
+        bool apply(LocalContext& context, BlockSource& source, BlockPos const& pos) const;
         BlockOperation
-        record(LocalContext& context, BlockSource& region, BlockPos const& pos) const;
+        record(LocalContext& context, BlockSource& source, BlockPos const& pos, bool& valid) const;
     };
     struct EntityOperation {
         bool apply(LocalContext&, BlockSource&, BlockPos const&) const { return false; }
-        EntityOperation record(LocalContext&, BlockSource&, BlockPos const&) const {
+        EntityOperation record(LocalContext&, BlockSource&, BlockPos const&, bool&) const {
             return EntityOperation{};
         }
     };
@@ -31,18 +31,18 @@ public:
         BlockPos    pos;
         VariantType operation;
 
-        bool apply(LocalContext& context, BlockSource& region) const {
+        bool apply(LocalContext& context, BlockSource& source) const {
             return std::visit(
-                [&](auto&& arg) -> bool { return arg.apply(context, region, pos); },
+                [&](auto&& arg) -> bool { return arg.apply(context, source, pos); },
                 operation
             );
         }
-        Operation record(LocalContext& context, BlockSource& region) const {
+        Operation record(LocalContext& context, BlockSource& source, bool& valid) const {
             return Operation{
                 pos,
                 std::visit(
                     [&](auto&& arg) -> VariantType {
-                        return arg.record(context, region, pos);
+                        return arg.record(context, source, pos, valid);
                     },
                     operation
                 )

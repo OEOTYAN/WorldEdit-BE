@@ -58,7 +58,7 @@ public:
      *
      * @param record 要添加的历史记录（转移所有权）
      */
-    void addRecord(std::shared_ptr<HistoryRecord> record);
+    bool addRecord(std::shared_ptr<HistoryRecord> record);
 
     /**
      * @brief 撤销操作

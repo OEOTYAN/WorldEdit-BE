@@ -6,6 +6,14 @@ namespace we {
 class LocalContext;
 class InplaceBuilder : public Builder {
 
+    void fireBlockChanged(
+        BlockSource&     source,
+        BlockPos const&  pos,
+        BlockLayer::Type layer,
+        Block const&     oldBlock,
+        Block const&     newBlock
+    ) const;
+
 public:
     BlockUpdateFlag::Type updateFlags;
 

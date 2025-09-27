@@ -18,9 +18,9 @@ HistoryManager::HistoryManager(
     mHistoryRecords.resize(mMaxHistoryLength);
 }
 
-void HistoryManager::addRecord(std::shared_ptr<HistoryRecord> record) {
-    if (!record) {
-        return;
+bool HistoryManager::addRecord(std::shared_ptr<HistoryRecord> record) {
+    if (!record || record->size() == 0) {
+        return false;
     }
 
     std::lock_guard<std::mutex> lock(mMutex);
@@ -51,6 +51,7 @@ void HistoryManager::addRecord(std::shared_ptr<HistoryRecord> record) {
     // 添加新记录
     mHistoryRecords[insertIndex] = std::move(record);
     mCurrentIndex                = mSize;
+    return true;
 }
 
 std::shared_ptr<HistoryRecord> HistoryManager::undo() {

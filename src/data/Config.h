@@ -36,6 +36,7 @@ struct Config {
         } history;
         struct {
             CmdSetting set{};
+            CmdSetting buildercfg{};
         } edit;
     } commands{};
     struct {
