@@ -1,5 +1,5 @@
 #include "InplaceBuilder.h"
-#include "utils/DirectAccessBlocks.h"
+#include "utils/BlockUtils.h"
 #include <mc/world/level/block/BedrockBlockNames.h>
 #include <mc/world/level/block/actor/BlockActor.h>
 #include <mc/world/level/chunk/ChunkSource.h>
