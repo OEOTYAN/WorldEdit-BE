@@ -13,15 +13,21 @@ enum class BuilderType {
     Bot,
 };
 
-class Builder {
+class Builder : public std::enable_shared_from_this<Builder> {
+protected:
     LocalContext& context;
-    BuilderType type;
+    BuilderType   type;
+
 public:
-    Builder(LocalContext& context) : context(context){}
+    Builder(LocalContext& context) : context(context) {}
 
     BuilderType getType() const { return type; }
 
     virtual ~Builder() = default;
+
+    virtual void setup() {}
+
+    virtual void remove() {}
 
     virtual bool setBlock(
         BlockSource&,
@@ -37,7 +43,7 @@ public:
     virtual bool setBiome(BlockSource&, BlockPos const&, Biome const&) const {
         return false;
     }
-    static std::unique_ptr<Builder> create(BuilderType type, LocalContext& context);
+    static std::shared_ptr<Builder> create(BuilderType type, LocalContext& context);
 };
 
 } // namespace we

@@ -28,6 +28,7 @@
 #include <mc/deps/core/math/Vec3.h>
 #include <mc/deps/core/string/HashedString.h>
 #include <mc/nbt/CompoundTag.h>
+#include <mc/server/SimulatedPlayer.h>
 #include <mc/server/commands/CommandPermissionLevel.h>
 #include <mc/world/item/SaveContext.h>
 #include <mc/world/item/VanillaItemNames.h>

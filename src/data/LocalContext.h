@@ -3,12 +3,13 @@
 #include "Config.h"
 #include "builder/Builder.h"
 #include "data/HistoryManager.h"
-#include "region/Region.h"
 #include "expression/expression.h"
+#include "region/Region.h"
 
 #include <mc/platform/UUID.h>
-#include <mc/world/level/Tick.h>
+#include <mc/server/SimulatedPlayer.h>
 #include <mc/server/commands/PlayerPermissionLevel.h>
+#include <mc/world/level/Tick.h>
 
 namespace we {
 class LocalContextManager;
@@ -26,13 +27,18 @@ class LocalContext {
     Region& getOrCreateRegion(WithDim<BlockPos> const&);
 
 public:
+    mutable Vec3          lastPos;
+    mutable DimensionType lastDim;
+
     std::optional<WithGeo<WithDim<BlockPos>>> mainPos;
     std::optional<WithGeo<WithDim<BlockPos>>> offPos;
     std::optional<RegionType>                 regionType;
     std::shared_ptr<Region>                   region;
     Config::PlayerConfig                      config;
     HistoryManager                            history;
-    std::unique_ptr<Builder>                  builder;
+    std::shared_ptr<Builder>                  builder;
+
+    mce::UUID getUuid() const { return uuid; }
 
     LocalContext(mce::UUID const& uuid, bool temp);
 
@@ -42,6 +48,8 @@ public:
 
     bool setMainPos(WithDim<BlockPos> const&);
     bool setOffPos(WithDim<BlockPos> const&);
+
+    SimulatedPlayer* createSimulatedPlayer(std::string const& name) const;
 
     bool masked(BlockSource&, BlockPos const&) const;
 

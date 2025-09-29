@@ -230,25 +230,42 @@ LocalContextManager::getOrCreate(mce::UUID const& uuid, bool temp) {
     return res;
 }
 
+static std::shared_ptr<LocalContext>
+updateLocalContext(CommandOrigin const& o, std::shared_ptr<LocalContext>&& ctx) {
+    ctx->lastPos = o.getWorldPosition();
+    auto* dim    = o.getDimension();
+    if (dim) {
+        ctx->lastDim = dim->getDimensionId();
+    } else {
+        ctx->lastDim = 0;
+    }
+    return std::move(ctx);
+}
+
 std::shared_ptr<LocalContext> LocalContextManager::get(CommandOrigin const& o) {
+
     if (auto actor = o.getEntity(); actor && actor->isPlayer()) {
-        return get(
-            static_cast<Player*>(actor)->getUuid(),
-            !static_cast<Player*>(actor)->isSimulated()
+        return updateLocalContext(
+            o,
+            get(static_cast<Player*>(actor)->getUuid(),
+                !static_cast<Player*>(actor)->isSimulated())
         );
     } else {
-        return get({}, true);
+        return updateLocalContext(o, get({}, true));
     }
 }
 
 std::shared_ptr<LocalContext> LocalContextManager::getOrCreate(CommandOrigin const& o) {
     if (auto actor = o.getEntity(); actor && actor->isPlayer()) {
-        return getOrCreate(
-            static_cast<Player*>(actor)->getUuid(),
-            !static_cast<Player*>(actor)->isSimulated()
+        return updateLocalContext(
+            o,
+            getOrCreate(
+                static_cast<Player*>(actor)->getUuid(),
+                !static_cast<Player*>(actor)->isSimulated()
+            )
         );
     } else {
-        return getOrCreate({}, true);
+        return updateLocalContext(o, getOrCreate({}, true));
     }
 }
 

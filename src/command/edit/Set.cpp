@@ -29,13 +29,13 @@ REG_CMD(edit, set, "Set blocks in the region to a specific block type") {
                     auto&                     name = b.getBlockName();
                     auto states = BlockStateCommandParam::toStateMap(p);
                     if (!states) {
-                        ctx.output.error("Invalid block states:");
+                        ctx.error("Invalid block states:");
                         states.error().log(ctx.output);
                         return block;
                     }
                     block = Block::tryGetFromRegistry(name, states.value());
                     if (!block) {
-                        ctx.output.error("Unknown block type: {0}", name);
+                        ctx.error("Unknown block type: {0}", name);
                     }
                     return block;
                 };
@@ -60,11 +60,11 @@ REG_CMD(edit, set, "Set blocks in the region to a specific block type") {
                 });
                 auto num = record->apply(*lctx, blockSource);
                 if (!lctx->history.addRecord(std::move(record))) {
-                    ctx.output.error("Failed to set");
+                    ctx.error("Failed to set");
                     return;
                 }
                 if (params.exblock) {
-                    ctx.output.success(
+                    ctx.success(
                         "Set {0} blocks to {1} with {2}",
                         num,
                         exblock->getTypeName(),

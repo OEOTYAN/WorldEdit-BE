@@ -12,6 +12,10 @@ LocalContext::LocalContext(mce::UUID const& uuid, bool temp)
     setupBuilder(temp ? BuilderType::Inplace : BuilderType::None);
 }
 
+SimulatedPlayer* LocalContext::createSimulatedPlayer(std::string const& name) const {
+    return SimulatedPlayer::create(name, lastPos, lastDim);
+}
+
 void LocalContext::setMainPosInternal() {
     if (mainPos) {
         auto& we     = WorldEdit::getInstance();
@@ -69,6 +73,7 @@ void LocalContext::setupBuilder(BuilderType type) {
         type = BuilderType::None;
     }
     if (!builder || builder->getType() != type) {
+        if (builder) builder->remove();
         builder = Builder::create(type, *this);
     }
 }
