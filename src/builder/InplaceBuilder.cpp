@@ -61,7 +61,7 @@ bool InplaceBuilder::setBlock(
         iter != chunk->mBlockEntities->mMap->end()) {
         if (iter->second->mType != block.getBlockType().mBlockEntityType) {
             applied = true;
-            chunk->removeBlockEntity(pos);
+            chunk->mBlockEntities->mMap->erase(iter);
         } else if (blockActor) {
             // Update existing block entity with new data
             iter->second = std::move(blockActor);
@@ -94,7 +94,18 @@ bool InplaceBuilder::setBlock(
             != BedrockBlockNames::Air().mStrHash) {
             bool currentIsBorder = &borderBlock == &block.getBlockType();
             if (&borderBlock == &previousBlock.getBlockType() || currentIsBorder) {
-                chunk->setBorder(chunkBlockPos, currentIsBorder);
+                auto& ref =
+                    chunk->mBorderBlockMap->at(chunkBlockPos.x + (chunkBlockPos.z << 4));
+                auto previousIsBorder = ref;
+                if (previousIsBorder != currentIsBorder) {
+                    ref = currentIsBorder;
+                    auto totalTime = chunk->mFullChunkDirtyTicksCounters[4]->totalTime;
+                    if (totalTime < 0) {
+                        totalTime                                         = 0;
+                        chunk->mFullChunkDirtyTicksCounters[4]->totalTime = 0;
+                    }
+                    chunk->mFullChunkDirtyTicksCounters[4]->lastChange = totalTime;
+                }
             }
         }
         fireBlockChanged(source, pos, BlockLayer::Standard, previousBlock, block);

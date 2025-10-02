@@ -6,7 +6,7 @@ add_repositories("liteldev-repo https://github.com/LiteLDev/xmake-repo.git")
 add_repositories("oeo-repo https://github.com/OEOTYAN/xmake-repo.git")
 
 
-add_requires("levilamina")
+add_requires("levilamina 34dc3a47d8c83aa0fc64be14b6bfde2e11d7711a")
 add_requires("levibuildscript")
 
 add_requires("bsci")

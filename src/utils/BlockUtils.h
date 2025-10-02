@@ -1,5 +1,6 @@
 #pragma once
 
+#include <mc/world/level/block/BedrockBlockNames.h>
 #include <mc/world/level/block/Block.h>
 #include <mc/world/level/block/registry/BlockTypeRegistry.h>
 
@@ -10,8 +11,9 @@ public:
         return *BlockTypeRegistry::get().getDirectAccessBlocks().mAirBlock.mDefaultState;
     }
 };
-} // namespace we
-
-inline bool operator==(Block const& lhs, Block const& rhs) {
-    return lhs.mSerializationIdHash == rhs.mSerializationIdHash;
+inline bool isAir(Block const& block) {
+    return block.getBlockType().mNameInfo->mFullName->mStrHash
+        == BedrockBlockNames::Air().mStrHash;
 }
+
+} // namespace we

@@ -3,9 +3,6 @@
 #include <algorithm>
 #include <chrono>
 
-namespace sim {
-NavigateToPositionsIntent::~NavigateToPositionsIntent() = default;
-}
 namespace we::bot {
 
 double distanceHeuristic(Vec3 const& a, Vec3 const& b) {
@@ -308,7 +305,7 @@ BotPathfinder::BreakBlockState BotPathfinder::breakBlock(BlockPos const& pos) {
     Block const& block = blockSource->getBlock(pos);
 
     // Skip if block is already air
-    if (block.isAir()) return BreakBlockState::Success;
+    if (mMovements->isEmptyBlock(block)) return BreakBlockState::Success;
 
     // Equip best tool for this block
     if (!equipBestTool(&block)) {
@@ -332,11 +329,6 @@ bool BotPathfinder::placeBlock(BlockPos const& pos, Block const* block) {
     BlockSource* blockSource = getBlockSource();
     if (!blockSource) return false;
 
-    // Check if position is valid for placement
-    // if (!blockSource->getBlock(pos).isAir()) {
-    //     return false; // Position already occupied
-    // }
-    // Attempt to place the block
     bool success =
         blockSource
             ->setBlock(pos, *block, BlockUpdateFlag::All, nullptr, nullptr, mPlayer);

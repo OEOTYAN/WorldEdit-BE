@@ -12,7 +12,6 @@ bool ExpandRegion::setMainPos(BlockPos const& pos) {
 
 bool ExpandRegion::setOffPos(BlockPos const& pos) {
     if (contains(pos)) {
-        std::cout << "Enter" << std::endl;
         return false;
     }
     mainPos.x = std::min(mainPos.x, pos.x);
