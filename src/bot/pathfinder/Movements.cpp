@@ -56,7 +56,7 @@ bool Movements::shouldAvoidBlock(Block const& block) const {
     return false;
 }
 
-bool Movements::isEmptyBlock(Block const& block) const { return isAir(block); }
+bool Movements::isEmptyBlock(Block const& block) const { return block.isAir(); }
 
 bool Movements::isLiquidBlock(Block const& block) const {
     return ((uint64)block.getBlockType().mProperties & (uint64)BlockProperty::Liquid)
@@ -223,7 +223,7 @@ bool Movements::canPlaceBlock(BlockPos const& pos) const {
 
 float Movements::getBlockHeight(BlockPos const& pos) const {
     Block const* block = getBlock(pos);
-    if (!block || isAir(*block)) return pos.y;
+    if (!block || block->isAir()) return pos.y;
 
     auto box =
         block->getBlockType().getCollisionShape(*block, *getBlockSource(), pos, nullptr);

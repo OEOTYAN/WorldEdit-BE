@@ -11,9 +11,5 @@ public:
         return *BlockTypeRegistry::get().getDirectAccessBlocks().mAirBlock.mDefaultState;
     }
 };
-inline bool isAir(Block const& block) {
-    return block.getBlockType().mNameInfo->mFullName->mStrHash
-        == BedrockBlockNames::Air().mStrHash;
-}
 
 } // namespace we

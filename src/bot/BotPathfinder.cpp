@@ -35,7 +35,7 @@ BotPathfinder::getPathToAsync(Goal const& goal, std::chrono::milliseconds timeou
         timeout = thinkTimeout;
     }
 
-    auto currentPos = BlockPos(getCurrentPosition());
+    auto currentPos = BlockPos(getCurrentPosition() + Vec3(0.0f, 0.5f, 0.0f));
 
     // Create a start move from current position
     auto startMove = std::make_unique<Move>(
@@ -162,7 +162,7 @@ bool BotPathfinder::executeNextMove() {
     }
 
     // Check if we've reached the current waypoint
-    if (distance < 0.3 && !needsToBreakBlocks(currentMove)
+    if (distance < 0.5 && !needsToBreakBlocks(currentMove)
         && !needsToPlaceBlocks(currentMove)) {
         mCurrentPathIndex++;
         return true;
