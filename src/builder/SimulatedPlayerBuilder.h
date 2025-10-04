@@ -16,6 +16,7 @@ class Goal;          // Forward declaration
 } // namespace bot
 
 class LocalContext;
+class SimulatedPlayerBuilder;
 
 // Task priority levels
 enum class TaskPriority { Low = 0, Normal = 1, High = 2, Urgent = 3 };
@@ -35,7 +36,7 @@ struct BlockTask {
     std::chrono::steady_clock::time_point startTime;
     std::function<void(bool)>             callback; // Called when task completes
     int                                   retryCount;
-    static constexpr int                  MAX_RETRIES = 128;
+    static constexpr int                  MAX_RETRIES = 1000000;
 
     BlockTask(
         BlockPos                    pos,
@@ -65,23 +66,27 @@ struct TaskComparator {
         if (a->priority != b->priority) {
             return static_cast<int>(a->priority) < static_cast<int>(b->priority);
         }
+        if(a->pos.y != b->pos.y){
+            return a->pos.y > b->pos.y; // Lower Y first
+        }
         return a->createdTime > b->createdTime; // FIFO for same priority
     }
 };
 
 // SimulatedPlayer wrapper for task management
-struct ManagedSimulatedPlayer {
+struct ManagedSimulatedPlayer
+: public std::enable_shared_from_this<ManagedSimulatedPlayer> {
     SimulatedPlayer*                      player;
     DimensionType                         dimension;
-    std::unique_ptr<bot::BotPathfinder>   pathfinder;
+    std::shared_ptr<bot::BotPathfinder>   pathfinder;
     std::shared_ptr<BlockTask>            currentTask;
     std::chrono::steady_clock::time_point lastActivityTime;
     bool                                  isIdle;
 
     ManagedSimulatedPlayer(
-        SimulatedPlayer*                     player,
-        DimensionType                        dimension,
-        std::function<bool(BlockPos const&)> customBlockCheck
+        SimulatedPlayer*        player,
+        DimensionType           dimension,
+        SimulatedPlayerBuilder* builder
     );
     ~ManagedSimulatedPlayer() = default;
 
@@ -94,9 +99,7 @@ struct ManagedSimulatedPlayer {
 
 class SimulatedPlayerBuilder : public Builder {
 private:
-    std::atomic_bool mIsRunning;
-
-    ll::DenseSet<BlockPos> mPendingPositions; // To avoid break blocks
+    std::mutex taskMutex;
 
     // Task queue management
     std::priority_queue<
@@ -106,21 +109,22 @@ private:
         mTaskQueue;
 
     // SimulatedPlayer pool management
-    std::vector<std::unique_ptr<ManagedSimulatedPlayer>> mPlayerPool;
+    ll::SmallDenseMap<size_t, std::shared_ptr<ManagedSimulatedPlayer>> mPlayerPool;
+    ll::SmallDenseSet<size_t> mUnusedPlayerIndices;
 
     // Settings
-    size_t                    mMaxPlayers;
     std::chrono::milliseconds mPlayerIdleTimeout;
-    std::chrono::milliseconds mTaskTimeout;
-    size_t                    mTasksPerTick;
+    size_t                    mCleanupCounter = 0;
 
     // Statistics
     std::atomic<size_t> mTasksCompleted;
     std::atomic<size_t> mTasksFailed;
-    std::atomic<size_t> mActivePlayers;
 
 public:
-    SimulatedPlayerBuilder(LocalContext& context, size_t maxPlayers = 32);
+    std::atomic_bool                 mIsRunning;
+    ll::ConcurrentDenseSet<BlockPos> mDonePositions; // To avoid break blocks
+
+    SimulatedPlayerBuilder(LocalContext& context, size_t maxPlayers = 8);
     virtual ~SimulatedPlayerBuilder();
 
     void setup() override;
@@ -153,30 +157,15 @@ public:
     size_t getFailedTaskCount() const { return mTasksFailed.load(); }
 
     // SimulatedPlayer pool management
-    bool createSimulatedPlayer(
-        const std::string& name,
-        DimensionType      dimension = DimensionType{0}
-    );
-    void   removeIdlePlayers();
-    void   removeAllPlayers();
-    size_t getActivePlayerCount() const { return mActivePlayers.load(); }
-    size_t getMaxPlayerCount() const { return mMaxPlayers; }
-    void   setMaxPlayerCount(size_t maxPlayers) { mMaxPlayers = maxPlayers; }
+    bool createSimulatedPlayer(DimensionType dimension = DimensionType{0});
+    void removeIdlePlayers();
+    void removeAllPlayers();
 
     // Configuration
     void setPlayerIdleTimeout(std::chrono::milliseconds timeout) {
         mPlayerIdleTimeout = timeout;
     }
-    void setTaskTimeout(std::chrono::milliseconds timeout) { mTaskTimeout = timeout; }
-    void setTasksPerTick(size_t tasksPerTick) { mTasksPerTick = tasksPerTick; }
 
-    // Player-specific pathfinding methods
-    bot::BotPathfinder* getPlayerPathfinder(SimulatedPlayer* player);
-    void                stopPlayerPathfinding(SimulatedPlayer* player);
-
-    // Utility methods
-    bool                 isPlayerPathfinding(SimulatedPlayer* player) const;
-    Vec3                 getPlayerCurrentPosition(SimulatedPlayer* player) const;
     ll::coro::CoroTask<> processTasksAsync(); // Process tasks asynchronously
 
 private:
@@ -186,10 +175,11 @@ private:
         ManagedSimulatedPlayer*    managedPlayer
     );
     ll::coro::CoroTask<> processTaskAsync(ManagedSimulatedPlayer* managedPlayer);
-    void                 handleTaskFailure(
-                        std::shared_ptr<BlockTask> task,
-                        ManagedSimulatedPlayer*    managedPlayer
-                    );
+
+    void handleTaskFailure(
+        std::shared_ptr<BlockTask> task,
+        ManagedSimulatedPlayer*    managedPlayer
+    );
     SimulatedPlayer*
     createSimulatedPlayerInDimension(const std::string& name, DimensionType dimension);
     ManagedSimulatedPlayer* findIdlePlayer(DimensionType dimension);

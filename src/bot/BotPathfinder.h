@@ -13,23 +13,22 @@
 
 namespace we::bot {
 
-class BotPathfinder {
+
+class BotPathfinder : public std::enable_shared_from_this<BotPathfinder> {
 private:
+    bool initialized = false;
+    bool running     = false;
+
     // Core pathfinding components
-    std::unique_ptr<Goal>              mCurrentGoal;
-    bool                               mDynamicGoal = false;
-    std::unique_ptr<Movements>         mMovements;
     std::vector<std::unique_ptr<Move>> mCurrentPath;
 
     bool                        debugPath = true;
     std::optional<GeoContainer> mDebugPathGeo;
 
     // Pathfinding state tracking
-    bool mIsMoving      = false;
     bool mIsMining      = false;
     bool mIsBuilding    = false;
     bool mStopRequested = false;
-    bool mPathUpdated   = false;
 
     // Bot control state
     struct BotControlState {
@@ -42,37 +41,45 @@ private:
 
     // Execution state
     bool   mIsExecuting      = false;
+    bool   mFailToExecute    = false;
     size_t mCurrentPathIndex = 0;
 
-    size_t                               mCurrentTick      = 0;
+    size_t mCurrentTick = 0;
 
     // Path deviation tracking
-    size_t                                mLastProgressTick = 0;
-    size_t                                mLastProgressIndex = 0;
+    size_t mLastProgressTick  = 0;
+    size_t mLastProgressIndex = 0;
 
     // Path deviation thresholds
     static constexpr double MAX_DEVIATION_DISTANCE = 6.0; // Max distance from path
-    static constexpr size_t PROGRESS_TIMEOUT{
-        10 * 20
-    }; // 10 seconds without progress
+    static constexpr size_t PROGRESS_TIMEOUT{10 * 20};    // seconds without progress
+    static constexpr size_t SCAFFOLDING_TIMEOUT{60 * 20}; // seconds to keep scaffolding
 
     // Associated objects
     SimulatedPlayer* mPlayer;
 
-    // Events
-    std::function<void(std::string const&)>                        mOnPathReset;
-    std::function<void(Goal const*, bool)>                         mOnGoalUpdated;
-    std::function<void(std::vector<std::unique_ptr<Move>> const&)> mOnPathUpdated;
+    Block const* mScaffoldingBlock = nullptr;
 
-public:
+    std::function<bool(BlockPos const&)> mCustomBlockCheck;
+
+    struct PlacedBlock {
+        BlockPos pos;
+        size_t tick;
+       bool operator<(PlacedBlock const& other) const { return tick > other.tick; }
+    };
+
+    std::priority_queue<PlacedBlock> mRecentlyPlacedBlocks;
+
+    public :
     // Configuration
-    std::chrono::milliseconds thinkTimeout{20000}; // Total timeout for pathfinding
-    double                    searchRadius = -1.0; // Search radius limit (-1 = unlimited)
+    std::chrono::milliseconds thinkTimeout{20000};        // Total timeout for pathfinding
     bool                      enablePathShortcut = false; // Path optimization
     bool LOSWhenPlacingBlocks = true; // Line of sight for block placement
 
-    explicit BotPathfinder(SimulatedPlayer* player,
-                           std::function<bool(BlockPos const&)> customBlockCheck);
+    explicit BotPathfinder(
+        SimulatedPlayer*                     player,
+        std::function<bool(BlockPos const&)> customBlockCheck
+    );
     ~BotPathfinder() = default;
 
     // Non-copyable but movable
@@ -81,29 +88,32 @@ public:
     BotPathfinder(BotPathfinder&&)                 = default;
     BotPathfinder& operator=(BotPathfinder&&)      = default;
 
-    // Movement configuration
-    void             setMovements(std::unique_ptr<Movements> movements);
-    Movements const* getMovements() const { return mMovements.get(); }
-    Movements*       getMovements() { return mMovements.get(); }
-
     Block const* getScaffoldingBlock() const;
 
     // Path computation
-    ll::coro::CoroTask<ComputedPath> getPathToAsync(
-        Goal const&               goal,
-        std::chrono::milliseconds timeout = std::chrono::milliseconds(0)
+    static ll::coro::CoroTask<ComputedPath> getPathToAsync(
+        Vec3 const&                          start,
+        Goal const&                          goal,
+        BlockSource&                         bs,
+        std::function<bool(BlockPos const&)> customBlockCheck
     );
+
+    void initialize();
+
+    void finalize();
 
     // Path execution
     void stop();
     void reset(std::string const& reason = "manual_reset");
     void setExecutingPath(std::vector<std::unique_ptr<Move>> path);
 
+    bool failToExecute() const { return mFailToExecute; }
+    void resetFailToExecute() { mFailToExecute = false; }
+
     // State queries
-    bool isExecuting() const { return mIsExecuting; }
-    bool isMoving() const { return mIsMoving || mIsExecuting; }
-    bool isMining() const { return mIsMining; }
-    bool isBuilding() const { return mIsBuilding; }
+    bool                                      isExecuting() const { return mIsExecuting; }
+    bool                                      isMining() const { return mIsMining; }
+    bool                                      isBuilding() const { return mIsBuilding; }
     std::vector<std::unique_ptr<Move>> const& getCurrentPath() const {
         return mCurrentPath;
     }
@@ -126,7 +136,6 @@ public:
 
     // Configuration
     void setThinkTimeout(std::chrono::milliseconds timeout) { thinkTimeout = timeout; }
-    void setSearchRadius(double radius) { searchRadius = radius; }
     void setEnablePathShortcut(bool enable) { enablePathShortcut = enable; }
 
     // Player access methods
@@ -134,19 +143,7 @@ public:
     BlockSource*     getBlockSource() const;
     Dimension*       getDimension() const;
     SimulatedPlayer* getPlayer() const { return mPlayer; }
-
-    // Event handlers
-    void setOnPathReset(std::function<void(std::string const&)> callback) {
-        mOnPathReset = std::move(callback);
-    }
-    void setOnGoalUpdated(std::function<void(Goal const*, bool)> callback) {
-        mOnGoalUpdated = std::move(callback);
-    }
-    void setOnPathUpdated(
-        std::function<void(std::vector<std::unique_ptr<Move>> const&)> callback
-    ) {
-        mOnPathUpdated = std::move(callback);
-    }
+    void             resetPlayer() { mPlayer = nullptr; }
 
 private:
     // Core pathfinding methods

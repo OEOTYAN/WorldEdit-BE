@@ -1,6 +1,8 @@
 #include "Movements.h"
 #include "mc/world/actor/player/Inventory.h"
 #include "mc/world/actor/player/PlayerInventory.h"
+#include "mc/world/level/chunk/ChunkSource.h"
+#include "mc/world/level/chunk/LevelChunk.h"
 #include "utils/BlockUtils.h"
 #include <algorithm>
 #include <cmath>
@@ -18,11 +20,12 @@ static constexpr std::array<std::pair<int, int>, 4> DIAGONAL_DIRECTIONS = {
 };
 
 Movements::Movements(
-    SimulatedPlayer*                     player,
+    BlockSource*                         blockSource,
     std::function<bool(BlockPos const&)> customBlockCheck
 )
-: mPlayer(player),
-  mCustomBlockCheck(std::move(customBlockCheck)) {}
+: mBlockSource( blockSource->getWeakRef().lock()),
+  mCustomBlockCheck(std::move(customBlockCheck)) {
+  }
 
 // Block checking functions (replacing unordered_set based checks)
 bool Movements::canBreakBlockType(Block const& block) const {
@@ -186,7 +189,9 @@ bool Movements::isPassable(BlockPos const& pos) const {
 Block const* Movements::getBlock(BlockPos const& pos) const {
     auto blockSource = getBlockSource();
     if (!blockSource) return nullptr;
-    return &blockSource->getBlock(pos);
+    auto chunk = blockSource->getChunkSource().getExistingChunk(ChunkPos{pos});
+    if (!chunk || chunk->mLoadState->load() != ChunkState::Loaded) return nullptr;
+    return &chunk->getBlock(ChunkBlockPos{pos, blockSource->getMinHeight()});
 }
 
 bool Movements::canBreakBlock(BlockPos const& pos) const {
@@ -234,16 +239,7 @@ float Movements::getBlockHeight(BlockPos const& pos) const {
     return box.max.y;
 }
 
-size_t Movements::countScaffoldingItems() const {
-    // size_t count = 0;
-    // for(auto& item:  *mPlayer->mInventory->mInventory){
-    //     if (item.isBlock() && item.mBlock && isScaffoldingBlock(*item.mBlock)) {
-    //         count += item.mCount;
-    //     }
-    // }
-    // return count;
-    return 18 * 64;
-}
+size_t Movements::countScaffoldingItems() const { return 27 * 64; }
 
 bool Movements::hasScaffoldingItems() const { return countScaffoldingItems() > 0; }
 
@@ -274,7 +270,7 @@ bool Movements::isInExclusionArea(
     BlockPos const&                 pos,
     std::vector<BoundingBox> const& areas
 ) const {
-    if (mCustomBlockCheck && mCustomBlockCheck(pos)) {
+    if (mCustomBlockCheck(pos)) {
         return true;
     }
     for (auto const& area : areas) {
@@ -285,62 +281,7 @@ bool Movements::isInExclusionArea(
     return false;
 }
 
-void Movements::updateCollisionIndex() {
-    mEntityCollisions.clear();
-
-    if (!allowEntityDetection) return;
-
-    auto dimension = getDimension();
-    if (!dimension) return;
-
-    // This would need to be implemented with proper entity enumeration
-    // For now, we'll leave it as a placeholder since we need access to
-    // the dimension's entity list
-
-    // TODO: Implement entity enumeration and collision detection
-    // Example implementation would be:
-    // auto entities = dimension->getAllEntities();
-    // for (auto* entity : entities) {
-    //     if (entity && shouldAvoidEntity(entity)) {
-    //         Vec3 pos = entity->getPosition();
-    //         Vec3 size = entity->getAABBDim();
-    //         mEntityCollisions.push_back({pos, size, entity->getUniqueID()});
-    //     }
-    // }
-}
-
-void Movements::clearCollisionIndex() { mEntityCollisions.clear(); }
-
-bool Movements::isEntityCollision(Vec3 const& pos) const {
-    if (!allowEntityDetection) return false;
-
-    for (auto const& collision : mEntityCollisions) {
-        // Check if the position intersects with the entity's bounding box
-        Vec3 entityMin = collision.position - collision.size * 0.5f;
-        Vec3 entityMax = collision.position + collision.size * 0.5f;
-
-        if (pos.x >= entityMin.x && pos.x <= entityMax.x && pos.y >= entityMin.y
-            && pos.y <= entityMax.y && pos.z >= entityMin.z && pos.z <= entityMax.z) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-BlockSource* Movements::getBlockSource() const {
-    if (mPlayer) {
-        return &mPlayer->getDimensionBlockSource();
-    }
-    return nullptr;
-}
-
-Dimension* Movements::getDimension() const {
-    if (mPlayer) {
-        return &mPlayer->getDimension();
-    }
-    return nullptr;
-}
+BlockSource* Movements::getBlockSource() const { return mBlockSource.get(); }
 
 // Movement generation methods corresponding to JavaScript implementation
 void Movements::getMoveForward(

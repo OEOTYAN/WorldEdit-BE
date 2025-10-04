@@ -1,6 +1,7 @@
 #pragma once
 
 #include <expected>
+#include <semaphore>
 
 #include "utils/Hash.h"
 #include "utils/InplaceVector.h"
@@ -14,6 +15,7 @@
 #include <ll/api/command/runtime/ParamKind.h>
 #include <ll/api/coro/CoroTask.h>
 #include <ll/api/coro/Generator.h>
+#include <ll/api/coro/InterruptableSleep.h>
 #include <ll/api/i18n/I18n.h>
 #include <ll/api/io/Logger.h>
 #include <ll/api/reflection/Deserialization.h>

@@ -14,9 +14,10 @@ enum class BuilderType {
 };
 
 class Builder : public std::enable_shared_from_this<Builder> {
+    BuilderType   type;
+    
 protected:
     LocalContext& context;
-    BuilderType   type;
 
 public:
     Builder(LocalContext& context) : context(context) {}

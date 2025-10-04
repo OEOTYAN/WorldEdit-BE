@@ -8,12 +8,13 @@ namespace we {
 
 SimulatedPlayerBuilder::SimulatedPlayerBuilder(LocalContext& context, size_t maxPlayers)
 : Builder(context),
-  mMaxPlayers(maxPlayers),
-  mPlayerIdleTimeout(std::chrono::seconds(30)),
-  mTasksPerTick(1),
+  mPlayerIdleTimeout(std::chrono::seconds(10)),
   mTasksCompleted(0),
-  mTasksFailed(0),
-  mActivePlayers(0) {}
+  mTasksFailed(0) {
+    for (size_t i = 0; i < maxPlayers; ++i) {
+        mUnusedPlayerIndices.insert(i);
+    }
+}
 
 void SimulatedPlayerBuilder::setup() {
     mIsRunning = true;
@@ -28,11 +29,6 @@ void SimulatedPlayerBuilder::setup() {
             }
         }
     ).launch(ll::thread::ServerThreadExecutor::getDefault());
-
-    type = BuilderType::Bot;
-
-    // Reserve space for player pool
-    mPlayerPool.reserve(mMaxPlayers);
 }
 void SimulatedPlayerBuilder::remove() {
     WE_DEBUG("SimulatedPlayerBuilder::remove called");
@@ -46,17 +42,21 @@ SimulatedPlayerBuilder::~SimulatedPlayerBuilder() { remove(); }
 
 // ManagedSimulatedPlayer implementation
 ManagedSimulatedPlayer::ManagedSimulatedPlayer(
-    SimulatedPlayer*                     player,
-    DimensionType                        dimension,
-    std::function<bool(BlockPos const&)> customBlockCheck
+    SimulatedPlayer*        player,
+    DimensionType           dimension,
+    SimulatedPlayerBuilder* builder
 )
 : player(player),
   dimension(dimension),
   isIdle(true),
   lastActivityTime(std::chrono::steady_clock::now()) {
     // Create individual pathfinder for this player
-    pathfinder =
-        std::make_unique<bot::BotPathfinder>(player, std::move(customBlockCheck));
+    pathfinder = std::make_shared<bot::BotPathfinder>(
+        player,
+        [this, builder](BlockPos const& pos) {
+            return builder->mDonePositions.contains(pos);
+        }
+    );
 }
 
 bool SimulatedPlayerBuilder::setBlock(
@@ -86,8 +86,6 @@ bool SimulatedPlayerBuilder::setBlockQueued(
 ) {
     // Get dimension from BlockSource
     DimensionType dimension = getDimensionFromBlockSource(blockSource);
-
-    mPendingPositions.insert(pos);
 
     // Create new task with dimension info
     auto task = std::make_shared<BlockTask>(
@@ -120,7 +118,7 @@ void SimulatedPlayerBuilder::clearTasks() {
     }
 
     // Clear current tasks from players
-    for (auto& managedPlayer : mPlayerPool) {
+    for (auto& [_, managedPlayer] : mPlayerPool) {
         if (managedPlayer->currentTask) {
             managedPlayer->currentTask->status = TaskStatus::Cancelled;
             if (managedPlayer->currentTask->callback) {
@@ -132,62 +130,24 @@ void SimulatedPlayerBuilder::clearTasks() {
     }
 }
 
-// New per-player methods
-bot::BotPathfinder* SimulatedPlayerBuilder::getPlayerPathfinder(SimulatedPlayer* player) {
-    for (auto& managedPlayer : mPlayerPool) {
-        if (managedPlayer->player == player) {
-            return managedPlayer->pathfinder.get();
-        }
-    }
-    return nullptr;
-}
-
-void SimulatedPlayerBuilder::stopPlayerPathfinding(SimulatedPlayer* player) {
-    auto pathfinder = getPlayerPathfinder(player);
-    if (pathfinder) {
-        pathfinder->stop();
-    }
-}
-
-bool SimulatedPlayerBuilder::isPlayerPathfinding(SimulatedPlayer* player) const {
-    for (const auto& managedPlayer : mPlayerPool) {
-        if (managedPlayer->player == player && managedPlayer->pathfinder) {
-            return managedPlayer->pathfinder->isMoving();
-        }
-    }
-    return false;
-}
-
-Vec3 SimulatedPlayerBuilder::getPlayerCurrentPosition(SimulatedPlayer* player) const {
-    for (const auto& managedPlayer : mPlayerPool) {
-        if (managedPlayer->player == player && managedPlayer->pathfinder) {
-            return managedPlayer->pathfinder->getCurrentPosition();
-        }
-    }
-    return Vec3{0.0f, 0.0f, 0.0f};
-}
-
-bool SimulatedPlayerBuilder::createSimulatedPlayer(
-    const std::string& name,
-    DimensionType      dimension
-) {
-    if (mPlayerPool.size() >= mMaxPlayers) {
+bool SimulatedPlayerBuilder::createSimulatedPlayer(DimensionType dimension) {
+    if (mUnusedPlayerIndices.empty()) {
         return false;
     }
-
+    auto idx = *mUnusedPlayerIndices.begin();
     // Create SimulatedPlayer in the specified dimension
-    auto* player = createSimulatedPlayerInDimension(name, dimension);
+    auto* player = createSimulatedPlayerInDimension(
+        fmt::format("BotBuilder_{}_{}", context.getUuid().asString().substr(0, 4), idx),
+        dimension
+    );
     if (!player) {
         return false;
     }
+    mUnusedPlayerIndices.erase(mUnusedPlayerIndices.begin());
 
-    auto managedPlayer = std::make_unique<ManagedSimulatedPlayer>(
-        player,
-        dimension,
-        [this](BlockPos const& pos) { return mPendingPositions.contains(pos); }
-    );
-    mPlayerPool.push_back(std::move(managedPlayer));
-    mActivePlayers++;
+    auto managedPlayer =
+        std::make_shared<ManagedSimulatedPlayer>(player, dimension, this);
+    mPlayerPool[idx] = std::move(managedPlayer);
 
     return true;
 }
@@ -216,50 +176,46 @@ SimulatedPlayer* SimulatedPlayerBuilder::createSimulatedPlayerInDimension(
 void SimulatedPlayerBuilder::removeIdlePlayers() {
     auto now = std::chrono::steady_clock::now();
 
-    for (int i = static_cast<int>(mPlayerPool.size()) - 1; i >= 0; --i) {
-        auto& managedPlayer = mPlayerPool[i];
-
+    for (auto iter = mPlayerPool.begin(); iter != mPlayerPool.end();) {
+        auto& [id, managedPlayer] = *iter;
         if (managedPlayer->isIdle
             && std::chrono::duration_cast<std::chrono::milliseconds>(
                    now - managedPlayer->lastActivityTime
                ) > mPlayerIdleTimeout) {
-            removePlayer(i);
+            removePlayer(id);
+            iter = mPlayerPool.erase(iter);
+        } else {
+            ++iter;
         }
     }
 }
 
 void SimulatedPlayerBuilder::removeAllPlayers() {
-    while (!mPlayerPool.empty()) {
-        removePlayer(mPlayerPool.size() - 1);
+    for (auto iter = mPlayerPool.begin(); iter != mPlayerPool.end();) {
+        removePlayer(iter->first);
+        iter = mPlayerPool.erase(iter);
     }
 }
 
 
 void SimulatedPlayerBuilder::removePlayer(size_t index) {
-    if (index >= mPlayerPool.size()) return;
-
     auto& managedPlayer = mPlayerPool[index];
-
     // Cancel current task if any
     if (managedPlayer->currentTask) {
-        managedPlayer->currentTask->status = TaskStatus::Cancelled;
-        if (managedPlayer->currentTask->callback) {
-            managedPlayer->currentTask->callback(false);
-        }
+        handleTaskFailure(managedPlayer->currentTask, managedPlayer.get());
     }
     if (managedPlayer->player) {
         managedPlayer->player->kill();
-        managedPlayer->player->disconnect();
-        managedPlayer->player->remove();
-        managedPlayer->player->setGameTestHelper(nullptr);
+        managedPlayer->player->simulateDisconnect();
+        managedPlayer->player = nullptr;
     }
-    // Remove the player
-    mPlayerPool.erase(mPlayerPool.begin() + index);
-    mActivePlayers--;
+    managedPlayer->pathfinder->finalize();
+    managedPlayer->pathfinder->resetPlayer();
+    mUnusedPlayerIndices.insert(index);
 }
 
 ManagedSimulatedPlayer* SimulatedPlayerBuilder::findIdlePlayer(DimensionType dimension) {
-    for (auto& managedPlayer : mPlayerPool) {
+    for (auto& [_, managedPlayer] : mPlayerPool) {
         if (managedPlayer->isIdle && managedPlayer->dimension == dimension) {
             return managedPlayer.get();
         }
@@ -269,46 +225,38 @@ ManagedSimulatedPlayer* SimulatedPlayerBuilder::findIdlePlayer(DimensionType dim
 
 ll::coro::CoroTask<> SimulatedPlayerBuilder::processTasksAsync() {
     // Process tasks
-    size_t tasksProcessed = 0;
-    while (true) {
-        bool hasDeadPlayers = false;
-        for (auto& managedPlayer : mPlayerPool) {
-            if (!managedPlayer->player->isAlive() || managedPlayer->player->mRemoved) {
-                handleTaskFailure(managedPlayer->currentTask, managedPlayer.get());
-                removePlayer(&managedPlayer - &mPlayerPool[0]);
-                hasDeadPlayers = true;
-                break;
-            }
+
+    for (auto iter = mPlayerPool.begin(); iter != mPlayerPool.end();) {
+        auto& [id, managedPlayer] = *iter;
+        if (!managedPlayer->player->isAlive() || managedPlayer->player->mRemoved) {
+            removePlayer(id);
+            iter = mPlayerPool.erase(iter);
+        } else {
+            ++iter;
         }
-        if (!hasDeadPlayers) break;
     }
     // Check completion of current tasks
-    for (auto& managedPlayer : mPlayerPool) {
-        if (!managedPlayer->pathfinder->tick()) {
-            assignTaskToPlayerAsync(managedPlayer->currentTask, managedPlayer.get());
+    for (auto& [_, managedPlayer] : mPlayerPool) {
+        if (managedPlayer->pathfinder->failToExecute()) {
+            managedPlayer->pathfinder->resetFailToExecute();
+            handleTaskFailure(managedPlayer->currentTask, managedPlayer.get());
         }
         if (!managedPlayer->isIdle && managedPlayer->currentTask) {
             co_await processTaskAsync(managedPlayer.get());
         }
     }
 
+    std::vector<ll::coro::CoroTask<>> tasksToAwait;
+
     // Assign new tasks to idle players
-    while (!mTaskQueue.empty() && tasksProcessed < mTasksPerTick) {
+    while (!mTaskQueue.empty()) {
         auto task = mTaskQueue.top();
 
         // Find an idle player in the same dimension as the task
         auto* idlePlayer = findIdlePlayer(task->dimension);
         if (!idlePlayer) {
             // Try to create a new player in the task's dimension if we have capacity
-            if (mPlayerPool.size() < mMaxPlayers
-                && createSimulatedPlayer(
-                    fmt::format(
-                        "BotBuilder_{}_{}",
-                        context.getUuid().asString().substr(0, 4),
-                        mPlayerPool.size()
-                    ),
-                    task->dimension
-                )) {
+            if (createSimulatedPlayer(task->dimension)) {
                 idlePlayer = findIdlePlayer(task->dimension);
             }
         }
@@ -316,14 +264,15 @@ ll::coro::CoroTask<> SimulatedPlayerBuilder::processTasksAsync() {
         if (!idlePlayer) break; // No available player for this dimension
 
         mTaskQueue.pop();
-        co_await assignTaskToPlayerAsync(task, idlePlayer);
-        tasksProcessed++;
+        idlePlayer->isIdle = false;
+        tasksToAwait.push_back(assignTaskToPlayerAsync(task, idlePlayer));
     }
 
+    co_await ll::coro::collectAll(std::move(tasksToAwait));
+
     // Clean up idle players periodically
-    static int cleanupCounter = 0;
-    if (++cleanupCounter >= 100) { // Every ~5 seconds at 20 TPS
-        cleanupCounter = 0;
+    if (++mCleanupCounter >= 100) { // Every ~5 seconds at 20 TPS
+        mCleanupCounter = 0;
         removeIdlePlayers();
     }
 }
@@ -335,8 +284,10 @@ ll::coro::CoroTask<> SimulatedPlayerBuilder::assignTaskToPlayerAsync(
     if (!task || !managedPlayer || !managedPlayer->player) {
         co_return;
     }
+    auto& blockSource = managedPlayer->player->getDimensionBlockSource();
+    auto  start       = managedPlayer->player->getFeetPos();
 
-    managedPlayer->currentTask      = task;
+    managedPlayer->currentTask      = nullptr;
     managedPlayer->isIdle           = false;
     managedPlayer->lastActivityTime = std::chrono::steady_clock::now();
 
@@ -347,21 +298,31 @@ ll::coro::CoroTask<> SimulatedPlayerBuilder::assignTaskToPlayerAsync(
     auto goal =
         std::make_unique<bot::GoalNear>(task->pos.x, task->pos.y + 1, task->pos.z, 2.0);
 
-    // Use async pathfinding
-    auto result = co_await managedPlayer->pathfinder->getPathToAsync(*goal);
-    if (result.status != bot::ComputedPath::Status::Success)
-        managedPlayer->player->simulateChat(
-            fmt::format("{} {}", result.status, result.path.size())
-        );
-    if (!result.path.empty()) {
-        // Set the path for execution
-        managedPlayer->pathfinder->setExecutingPath(std::move(result.path));
-    } else {
-        // Navigation failed, mark task as failed
-        if (managedPlayer->currentTask) {
-            handleTaskFailure(managedPlayer->currentTask, managedPlayer);
+    ll::coro::keepThis(
+        [self = static_pointer_cast<SimulatedPlayerBuilder>(shared_from_this()),
+         start,
+         goal          = std::move(goal),
+         blockSource   = &blockSource,
+         managedPlayer = managedPlayer->shared_from_this(),
+         task          = std::move(task)]() -> ll::coro::CoroTask<> {
+            auto result = co_await bot::BotPathfinder::getPathToAsync(
+                start,
+                *goal,
+                *blockSource,
+                [&](BlockPos const& pos) { return self->mDonePositions.contains(pos); }
+            );
+            if (!managedPlayer->player || self->mIsRunning == false) {
+                co_return;
+            }
+            if (!result.path.empty()) {
+                // Set the path for execution
+                managedPlayer->pathfinder->setExecutingPath(std::move(result.path));
+                managedPlayer->currentTask = task;
+            } else {
+                self->handleTaskFailure(task, managedPlayer.get());
+            }
         }
-    }
+    ).launch(ll::thread::ThreadPoolExecutor::getDefault());
 }
 
 ll::coro::CoroTask<>
@@ -369,6 +330,7 @@ SimulatedPlayerBuilder::processTaskAsync(ManagedSimulatedPlayer* managedPlayer) 
     if (!managedPlayer || !managedPlayer->currentTask) {
         co_return;
     }
+    managedPlayer->lastActivityTime = std::chrono::steady_clock::now();
 
     auto& task = managedPlayer->currentTask;
 
@@ -403,6 +365,7 @@ SimulatedPlayerBuilder::processTaskAsync(ManagedSimulatedPlayer* managedPlayer) 
     bool success = false;
 
     success = managedPlayer->pathfinder->placeBlock(task->pos, task->block);
+    mDonePositions.insert(task->pos);
 
     if (success) {
         task->status = TaskStatus::Completed;
@@ -427,6 +390,8 @@ void SimulatedPlayerBuilder::handleTaskFailure(
     ManagedSimulatedPlayer*    managedPlayer
 ) {
     if (!task || !managedPlayer) return;
+
+    std::lock_guard lock(taskMutex);
 
     task->retryCount++;
 

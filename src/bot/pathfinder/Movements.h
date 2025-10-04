@@ -43,10 +43,9 @@ public:
     std::vector<BoundingBox> exclusionAreasStep;
     std::vector<BoundingBox> exclusionAreasBreak;
     std::vector<BoundingBox> exclusionAreasPlace;
+    StackRefResult<BlockSource>             mBlockSource = nullptr;
 
 private:
-    SimulatedPlayer* mPlayer;
-
     // Entity collision tracking
     struct EntityCollision {
         Vec3 position;
@@ -59,7 +58,7 @@ private:
 
 public:
     explicit Movements(
-        SimulatedPlayer*                     player,
+        BlockSource*                         blockSource,
         std::function<bool(BlockPos const&)> customBlockCheck
     );
 
@@ -81,10 +80,6 @@ public:
     size_t countScaffoldingItems() const;
     bool   hasScaffoldingItems() const;
 
-    // Entity collision methods
-    void updateCollisionIndex();
-    void clearCollisionIndex();
-    bool isEntityCollision(Vec3 const& pos) const;
 
     // Exclusion area methods
     bool
@@ -95,9 +90,7 @@ public:
     bool         isBlockType(BlockPos const& pos, int blockId) const;
 
     // Player access methods
-    BlockSource*     getBlockSource() const;
-    Dimension*       getDimension() const;
-    SimulatedPlayer* getPlayer() const { return mPlayer; }
+    BlockSource* getBlockSource() const;
 
     // Movement generation methods corresponding to JavaScript implementation
     void getMoveForward(

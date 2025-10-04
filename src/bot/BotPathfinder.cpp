@@ -17,32 +17,32 @@ BotPathfinder::BotPathfinder(
     std::function<bool(BlockPos const&)> customBlockCheck
 )
 : mPlayer(player),
-  mMovements(std::make_unique<Movements>(player, std::move(customBlockCheck))) {
+  mCustomBlockCheck(std::move(customBlockCheck)) {
+    WE_ASSERT(mPlayer, "SimulatedPlayer must be provided");
+    WE_ASSERT(mCustomBlockCheck, "Custom block check function must be provided");
+    mScaffoldingBlock = Block::tryGetFromRegistry(HashedString("minecraft:camera"));
+
     // Initialize path deviation tracking
     mLastProgressTick  = mCurrentTick;
     mLastProgressIndex = 0;
 }
 
+ll::coro::CoroTask<ComputedPath> BotPathfinder::getPathToAsync(
+    Vec3 const&                          start,
+    Goal const&                          goal,
+    BlockSource&                         bs,
+    std::function<bool(BlockPos const&)> customBlockCheck
+) {
+    Movements movements(&bs, std::move(customBlockCheck));
 
-void BotPathfinder::setMovements(std::unique_ptr<Movements> movements) {
-    mMovements = std::move(movements);
-    resetPath("movements_updated");
-}
-
-ll::coro::CoroTask<ComputedPath>
-BotPathfinder::getPathToAsync(Goal const& goal, std::chrono::milliseconds timeout) {
-    if (timeout == std::chrono::milliseconds(0)) {
-        timeout = thinkTimeout;
-    }
-
-    auto currentPos = BlockPos(getCurrentPosition() + Vec3(0.0f, 0.5f, 0.0f));
+    auto currentPos = BlockPos(start + Vec3(0.0f, 0.5f, 0.0f));
 
     // Create a start move from current position
     auto startMove = std::make_unique<Move>(
         currentPos.x,
         currentPos.y,
         currentPos.z,
-        (int)mMovements->countScaffoldingItems(),
+        (int)movements.countScaffoldingItems(),
         0.0
     );
 
@@ -50,24 +50,13 @@ BotPathfinder::getPathToAsync(Goal const& goal, std::chrono::milliseconds timeou
     auto goalCopy = goal.clone();
 
     // Create AStar instance
-    auto astar = std::make_unique<AStar>(
-        std::move(startMove),
-        mMovements.get(),
-        std::move(goalCopy),
-        timeout,
-        this->searchRadius
-    );
+    auto astar =
+        std::make_unique<AStar>(std::move(startMove), &movements, std::move(goalCopy));
 
     co_return co_await astar->computeAsync();
 }
 
 void BotPathfinder::stop() {
-    mStopRequested = true;
-    mIsMoving      = false;
-    mIsMining      = false;
-    mIsBuilding    = false;
-    mIsExecuting   = false;
-
     resetPath("stop_requested", true);
     clearControlStates();
 }
@@ -79,7 +68,7 @@ void BotPathfinder::setExecutingPath(std::vector<std::unique_ptr<Move>> path) {
     mCurrentPath      = postProcessPath(std::move(path));
     mCurrentPathIndex = 0;
     mIsExecuting      = true;
-    mIsMoving         = true;
+    mFailToExecute    = false;
 
     // Reset path deviation tracking for new path
     mLastProgressTick  = mCurrentTick;
@@ -98,19 +87,52 @@ void BotPathfinder::setExecutingPath(std::vector<std::unique_ptr<Move>> path) {
             0.1f
         );
     }
+    initialize();
+}
 
-    // Notify path updated
-    if (mOnPathUpdated) {
-        mOnPathUpdated(mCurrentPath);
+void BotPathfinder::initialize() {
+    if (initialized) return;
+    initialized = true;
+    running     = true;
+
+    ll::coro::keepThis([self = shared_from_this()]() -> ll::coro::CoroTask<> {
+        while (self->running) {
+            self->tick();
+            co_await std::chrono::milliseconds(50);
+        }
+    }).launch(ll::thread::ServerThreadExecutor::getDefault());
+}
+
+void BotPathfinder::finalize() {
+    running          = false;
+    auto blockSource = getBlockSource();
+    if (!blockSource) return;
+    while (!mRecentlyPlacedBlocks.empty()) {
+        auto& pos = mRecentlyPlacedBlocks.top().pos;
+        if (!mCustomBlockCheck(pos) && mScaffoldingBlock == &blockSource->getBlock(pos)) {
+            blockSource->removeBlock(pos);
+        }
+        mRecentlyPlacedBlocks.pop();
     }
 }
 
 bool BotPathfinder::tick() {
     mCurrentTick++;
+    auto blockSource = getBlockSource();
+    if (!blockSource) return true;
+    while (!mRecentlyPlacedBlocks.empty()
+           && (mCurrentTick - mRecentlyPlacedBlocks.top().tick) > SCAFFOLDING_TIMEOUT) {
+        auto& pos = mRecentlyPlacedBlocks.top().pos;
+        if (!mCustomBlockCheck(pos) && mScaffoldingBlock == &blockSource->getBlock(pos)) {
+            blockSource->removeBlock(pos);
+        }
+        mRecentlyPlacedBlocks.pop();
+    }
+
     if (!mIsExecuting || !mPlayer) return true;
     bool result = executeNextMove();
     if (!result) {
-        mPlayer->simulateChat("I'm stuck!");
+        mFailToExecute = true;
         stop();
     }
     return result;
@@ -175,6 +197,9 @@ bool BotPathfinder::executeNextMove() {
 
         bool allBroken = true;
         for (auto const& blockToBreak : currentMove.toBreak) {
+            if (mCustomBlockCheck(blockToBreak.pos)) {
+                continue; // can't break
+            }
             auto breakState = breakBlock(blockToBreak.pos);
             if (breakState == BreakBlockState::Fail) {
                 allBroken = false;
@@ -204,6 +229,9 @@ bool BotPathfinder::executeNextMove() {
 
         bool allPlaced = true;
         for (auto const& blockToPlace : currentMove.toPlace) {
+            if (mCustomBlockCheck(blockToPlace.pos)) {
+                continue; // Already placed by another process
+            }
             if (blockToPlace.pos == BlockPos{currentPos}) {
                 updateControlStateForPosition(targetPos);
                 return true;
@@ -214,6 +242,8 @@ bool BotPathfinder::executeNextMove() {
                 clearControlStates();
                 applyControlStatesToPlayer();
                 return true;
+            } else {
+                mRecentlyPlacedBlocks.push({blockToPlace.pos, mCurrentTick});
             }
         }
 
@@ -281,9 +311,7 @@ bool BotPathfinder::shouldJump(Move const& from, Move const& to) const {
 
 bool BotPathfinder::shouldSprint(Move const& from, Move const& to) const {
     // Sprint if movements allow it and we're moving horizontally
-    if (!getMovements()->allowSprinting) return false;
-
-    return std::abs(to.x - from.x) > 0 || std::abs(to.z - from.z) > 0;
+    return false;
 }
 
 bool BotPathfinder::needsToBreakBlocks(Move const& move) const {
@@ -305,7 +333,7 @@ BotPathfinder::BreakBlockState BotPathfinder::breakBlock(BlockPos const& pos) {
     Block const& block = blockSource->getBlock(pos);
 
     // Skip if block is already air
-    if (mMovements->isEmptyBlock(block)) return BreakBlockState::Success;
+    if (block.isAir()) return BreakBlockState::Success;
 
     // Equip best tool for this block
     if (!equipBestTool(&block)) {
@@ -331,15 +359,8 @@ bool BotPathfinder::placeBlock(BlockPos const& pos, Block const* block) {
 
     bool success =
         blockSource
-            ->setBlock(pos, *block, BlockUpdateFlag::All, nullptr, nullptr, mPlayer);
-
-    if (success) {
-        // Simulate the placement animation/sound if needed
-        // This could trigger events or effects
-        return true;
-    }
-
-    return false;
+            ->setBlock(pos, *block, BlockUpdateFlag::Network, nullptr, nullptr, mPlayer);
+    return true;
 }
 
 bool BotPathfinder::equipBestTool(Block const* block) {
@@ -433,7 +454,7 @@ void BotPathfinder::applyControlStatesToPlayer() {
     } else
         mPlayer->simulateMoveToLocation(
             mControlState.target,
-            (1.0f + (mControlState.sprint ? 1.0f : 0.0f)) * 10000.0f,
+            (1.0f + (mControlState.sprint ? 1.0f : 0.0f)) * 2.0f,
             true
         );
 }
@@ -476,13 +497,7 @@ void BotPathfinder::updateControlStateForPosition(Vec3 const& targetPos) {
     applyControlStatesToPlayer();
 }
 
-Block const* BotPathfinder::getScaffoldingBlock() const {
-    // Return a default scaffolding block
-    // In a real implementation, this could be configurable
-    static optional_ref<Block const> scaffoldingBlock =
-        Block::tryGetFromRegistry(HashedString("minecraft:stone"));
-    return scaffoldingBlock ? &*scaffoldingBlock : nullptr;
-}
+Block const* BotPathfinder::getScaffoldingBlock() const { return mScaffoldingBlock; }
 
 std::vector<std::unique_ptr<Move>>
 BotPathfinder::postProcessPath(std::vector<std::unique_ptr<Move>> path) const {
@@ -521,29 +536,16 @@ BotPathfinder::postProcessPath(std::vector<std::unique_ptr<Move>> path) const {
 
 void BotPathfinder::resetPath(std::string const& reason, bool clearStates) {
     mDebugPathGeo.reset();
-    if (!mStopRequested && !mCurrentPath.empty() && mOnPathReset) {
-        mOnPathReset(reason);
-    }
-
     mCurrentPath.clear();
-    mPathUpdated = false;
 
     // Reset path deviation tracking
     mLastProgressTick  = mCurrentTick;
     mLastProgressIndex = 0;
 
     if (clearStates) {
-        mIsMoving   = false;
         mIsMining   = false;
         mIsBuilding = false;
     }
-
-    if (mMovements) {
-        mMovements->clearCollisionIndex();
-    }
-
-    if (mStopRequested) {
-        mStopRequested = false;
-    }
+    mIsExecuting = false;
 }
 } // namespace we::bot

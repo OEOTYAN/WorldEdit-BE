@@ -34,6 +34,11 @@ struct ComputedPath {
     std::vector<std::unique_ptr<Move>> path;
     double                             cost = 0.0;
 
+    ComputedPath() = default;
+
+    ComputedPath(ComputedPath&&) = default;
+    ComputedPath& operator=(ComputedPath&&) = default;
+
     ComputedPath(Status status) : status(status) {}
 };
 
@@ -65,7 +70,7 @@ public:
         std::unique_ptr<Move>     start,
         Movements*                movements,
         std::unique_ptr<Goal>     goal,
-        std::chrono::milliseconds timeout      = std::chrono::milliseconds(5000),
+        std::chrono::milliseconds timeout      = std::chrono::milliseconds(20000),
         double                    searchRadius = -1.0
     );
 
