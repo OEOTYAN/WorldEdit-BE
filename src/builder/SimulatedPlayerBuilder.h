@@ -36,7 +36,7 @@ struct BlockTask {
     std::chrono::steady_clock::time_point startTime;
     std::function<void(bool)>             callback; // Called when task completes
     int                                   retryCount;
-    static constexpr int                  MAX_RETRIES = 1000000;
+    static constexpr int                  MAX_RETRIES = 6;
 
     BlockTask(
         BlockPos                    pos,

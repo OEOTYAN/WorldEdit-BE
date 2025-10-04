@@ -72,7 +72,6 @@ private:
 
     public :
     // Configuration
-    std::chrono::milliseconds thinkTimeout{20000};        // Total timeout for pathfinding
     bool                      enablePathShortcut = false; // Path optimization
     bool LOSWhenPlacingBlocks = true; // Line of sight for block placement
 
@@ -135,7 +134,6 @@ private:
     postProcessPath(std::vector<std::unique_ptr<Move>> path) const;
 
     // Configuration
-    void setThinkTimeout(std::chrono::milliseconds timeout) { thinkTimeout = timeout; }
     void setEnablePathShortcut(bool enable) { enablePathShortcut = enable; }
 
     // Player access methods

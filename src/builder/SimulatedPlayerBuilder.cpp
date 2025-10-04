@@ -72,7 +72,16 @@ bool SimulatedPlayerBuilder::setBlock(
         block,
         blockActor,
         TaskPriority::Normal,
-        nullptr
+        [level = &blockSource.getLevel(), pos](bool success) {
+            if (!success) {
+                level->forEachPlayer([&](Player& player) {
+                    player.sendMessage(
+                        "§c[BotBuilder] Failed to set block at " + pos.toCommandString()
+                    );
+                    return true;
+                });
+            }
+        }
     );
 }
 
