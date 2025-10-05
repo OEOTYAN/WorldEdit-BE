@@ -11,6 +11,9 @@ LocalContext::LocalContext(mce::UUID const& uuid, bool temp)
   history(*this) {
     setupBuilder(temp ? BuilderType::Inplace : BuilderType::None);
 }
+LocalContext::~LocalContext() {
+    if (builder) builder->remove();
+}
 
 SimulatedPlayer* LocalContext::createSimulatedPlayer(std::string const& name) const {
     return SimulatedPlayer::create(name, lastPos, lastDim);

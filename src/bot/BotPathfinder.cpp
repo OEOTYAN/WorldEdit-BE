@@ -37,6 +37,14 @@ ll::coro::CoroTask<ComputedPath> BotPathfinder::getPathToAsync(
 
     auto currentPos = BlockPos(start + Vec3(0.0f, 0.5f, 0.0f));
 
+    while (!movements.canWalkOn(currentPos)) {
+        currentPos.y--;
+        if (currentPos.y < bs.getMinHeight()) {
+            co_return ComputedPath{};
+        }
+    }
+    currentPos.y++;
+
     // Create a start move from current position
     auto startMove = std::make_unique<Move>(
         currentPos.x,

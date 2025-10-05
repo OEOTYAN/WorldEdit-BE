@@ -41,6 +41,7 @@ public:
     mce::UUID getUuid() const { return uuid; }
 
     LocalContext(mce::UUID const& uuid, bool temp);
+    ~LocalContext();
 
     void setupBuilder(BuilderType type);
 

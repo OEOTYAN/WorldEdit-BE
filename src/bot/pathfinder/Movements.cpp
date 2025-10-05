@@ -23,9 +23,8 @@ Movements::Movements(
     BlockSource*                         blockSource,
     std::function<bool(BlockPos const&)> customBlockCheck
 )
-: mBlockSource( blockSource->getWeakRef().lock()),
-  mCustomBlockCheck(std::move(customBlockCheck)) {
-  }
+: mBlockSource(blockSource),
+  mCustomBlockCheck(std::move(customBlockCheck)) {}
 
 // Block checking functions (replacing unordered_set based checks)
 bool Movements::canBreakBlockType(Block const& block) const {
@@ -281,7 +280,7 @@ bool Movements::isInExclusionArea(
     return false;
 }
 
-BlockSource* Movements::getBlockSource() const { return mBlockSource.get(); }
+BlockSource* Movements::getBlockSource() const { return mBlockSource; }
 
 // Movement generation methods corresponding to JavaScript implementation
 void Movements::getMoveForward(

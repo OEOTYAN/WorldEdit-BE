@@ -51,8 +51,8 @@ private:
     size_t mLastProgressIndex = 0;
 
     // Path deviation thresholds
-    static constexpr double MAX_DEVIATION_DISTANCE = 6.0; // Max distance from path
-    static constexpr size_t PROGRESS_TIMEOUT{10 * 20};    // seconds without progress
+    static constexpr double MAX_DEVIATION_DISTANCE = 3.0; // Max distance from path
+    static constexpr size_t PROGRESS_TIMEOUT{2 * 20};    // seconds without progress
     static constexpr size_t SCAFFOLDING_TIMEOUT{60 * 20}; // seconds to keep scaffolding
 
     // Associated objects

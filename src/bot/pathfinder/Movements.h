@@ -40,10 +40,10 @@ public:
     // bool shouldAvoidEntity(Block const& block) const;
 
     // Exclusion areas
-    std::vector<BoundingBox> exclusionAreasStep;
-    std::vector<BoundingBox> exclusionAreasBreak;
-    std::vector<BoundingBox> exclusionAreasPlace;
-    StackRefResult<BlockSource>             mBlockSource = nullptr;
+    std::vector<BoundingBox>    exclusionAreasStep;
+    std::vector<BoundingBox>    exclusionAreasBreak;
+    std::vector<BoundingBox>    exclusionAreasPlace;
+  BlockSource* mBlockSource = nullptr;
 
 private:
     // Entity collision tracking

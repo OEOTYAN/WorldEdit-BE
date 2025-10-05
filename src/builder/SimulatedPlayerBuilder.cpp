@@ -65,6 +65,14 @@ bool SimulatedPlayerBuilder::setBlock(
     Block const&                block,
     std::shared_ptr<BlockActor> blockActor
 ) const {
+    auto& currentBlock = blockSource.getBlock(pos);
+    if (&currentBlock == &block && !blockActor) {
+        if (block.isAir()) {
+            const_cast<SimulatedPlayerBuilder*>(this)->mDonePositions.insert(pos);
+        }
+        return true;
+    }
+
     // Queue the task instead of immediate execution
     return const_cast<SimulatedPlayerBuilder*>(this)->setBlockQueued(
         blockSource,
@@ -72,29 +80,35 @@ bool SimulatedPlayerBuilder::setBlock(
         block,
         blockActor,
         TaskPriority::Normal,
-        [level = &blockSource.getLevel(), pos](bool success) {
+        [level = &blockSource.getLevel(), this](bool success, BlockTask& task) {
             if (!success) {
-                level->forEachPlayer([&](Player& player) {
-                    player.sendMessage(
-                        "§c[BotBuilder] Failed to set block at " + pos.toCommandString()
-                    );
-                    return true;
-                });
+                auto dim = level->getDimension(task.dimension).lock();
+                if (!dim) return;
+                auto& bs = dim->getBlockSourceFromMainChunkSource();
+                const_cast<SimulatedPlayerBuilder*>(this)->mDonePositions.insert(task.pos);
+                bs.setBlock(
+                    task.pos,
+                    *task.block,
+                    BlockUpdateFlag::Network,
+                    std::move(task.blockActor),
+                    nullptr,
+                    nullptr
+                );
             }
         }
     );
 }
 
 bool SimulatedPlayerBuilder::setBlockQueued(
-    BlockSource&                blockSource,
-    BlockPos const&             pos,
-    Block const&                block,
-    std::shared_ptr<BlockActor> blockActor,
-    TaskPriority                priority,
-    std::function<void(bool)>   callback
+    BlockSource&                          blockSource,
+    BlockPos const&                       pos,
+    Block const&                          block,
+    std::shared_ptr<BlockActor>           blockActor,
+    TaskPriority                          priority,
+    std::function<void(bool, BlockTask&)> callback
 ) {
     // Get dimension from BlockSource
-    DimensionType dimension = getDimensionFromBlockSource(blockSource);
+    DimensionType dimension = blockSource.getDimensionId();
 
     // Create new task with dimension info
     auto task = std::make_shared<BlockTask>(
@@ -115,6 +129,16 @@ void SimulatedPlayerBuilder::addTask(std::shared_ptr<BlockTask> task) {
 }
 
 void SimulatedPlayerBuilder::clearTasks() {
+    {
+        std::lock_guard lock(taskMutex);
+        for (auto& [task, player] : mPendingFailures) {
+            task->status = TaskStatus::Cancelled;
+            if (task->callback) {
+                task->callback(false, *task);
+            }
+        }
+        mPendingFailures.clear();
+    }
     // Clear the queue
     while (!mTaskQueue.empty()) {
         auto task = mTaskQueue.top();
@@ -122,7 +146,7 @@ void SimulatedPlayerBuilder::clearTasks() {
 
         task->status = TaskStatus::Cancelled;
         if (task->callback) {
-            task->callback(false);
+            task->callback(false, *task);
         }
     }
 
@@ -131,7 +155,7 @@ void SimulatedPlayerBuilder::clearTasks() {
         if (managedPlayer->currentTask) {
             managedPlayer->currentTask->status = TaskStatus::Cancelled;
             if (managedPlayer->currentTask->callback) {
-                managedPlayer->currentTask->callback(false);
+                managedPlayer->currentTask->callback(false, *managedPlayer->currentTask);
             }
             managedPlayer->currentTask.reset();
             managedPlayer->isIdle = true;
@@ -171,6 +195,7 @@ SimulatedPlayer* SimulatedPlayerBuilder::createSimulatedPlayerInDimension(
     if (!player) {
         return nullptr;
     }
+    player->setPlayerGameType(GameType::Survival);
 
     // If the target dimension is different from spawn, teleport the player
     if (dimension != player->getDimensionId()) {
@@ -234,6 +259,12 @@ ManagedSimulatedPlayer* SimulatedPlayerBuilder::findIdlePlayer(DimensionType dim
 
 ll::coro::CoroTask<> SimulatedPlayerBuilder::processTasksAsync() {
     // Process tasks
+    {
+        std::lock_guard lock(taskMutex);
+        for (auto& [task, player] : mPendingFailures) {
+            handleTaskFailure(task, player.get());
+        }
+    }
 
     for (auto iter = mPlayerPool.begin(); iter != mPlayerPool.end();) {
         auto& [id, managedPlayer] = *iter;
@@ -311,7 +342,7 @@ ll::coro::CoroTask<> SimulatedPlayerBuilder::assignTaskToPlayerAsync(
         [self = static_pointer_cast<SimulatedPlayerBuilder>(shared_from_this()),
          start,
          goal          = std::move(goal),
-         blockSource   = &blockSource,
+         blockSource   = blockSource.getWeakRef().lock(),
          managedPlayer = managedPlayer->shared_from_this(),
          task          = std::move(task)]() -> ll::coro::CoroTask<> {
             auto result = co_await bot::BotPathfinder::getPathToAsync(
@@ -328,7 +359,8 @@ ll::coro::CoroTask<> SimulatedPlayerBuilder::assignTaskToPlayerAsync(
                 managedPlayer->pathfinder->setExecutingPath(std::move(result.path));
                 managedPlayer->currentTask = task;
             } else {
-                self->handleTaskFailure(task, managedPlayer.get());
+                std::lock_guard lock(self->taskMutex);
+                self->mPendingFailures.emplace_back(task, managedPlayer);
             }
         }
     ).launch(ll::thread::ThreadPoolExecutor::getDefault());
@@ -381,7 +413,7 @@ SimulatedPlayerBuilder::processTaskAsync(ManagedSimulatedPlayer* managedPlayer) 
         mTasksCompleted++;
 
         if (task->callback) {
-            task->callback(true);
+            task->callback(true, *task);
         }
     } else {
         handleTaskFailure(task, managedPlayer);
@@ -400,8 +432,6 @@ void SimulatedPlayerBuilder::handleTaskFailure(
 ) {
     if (!task || !managedPlayer) return;
 
-    std::lock_guard lock(taskMutex);
-
     task->retryCount++;
 
     if (task->retryCount < BlockTask::MAX_RETRIES) {
@@ -417,7 +447,7 @@ void SimulatedPlayerBuilder::handleTaskFailure(
         mTasksFailed++;
 
         if (task->callback) {
-            task->callback(false);
+            task->callback(false, *task);
         }
     }
 
@@ -431,10 +461,4 @@ void SimulatedPlayerBuilder::cleanupCompletedTasks() {
     // This method can be called periodically to clean up any remaining references
     // to completed tasks, but most cleanup is handled inline
 }
-
-DimensionType
-SimulatedPlayerBuilder::getDimensionFromBlockSource(BlockSource& blockSource) const {
-    return blockSource.getDimensionId();
-}
-
 } // namespace we

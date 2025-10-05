@@ -34,7 +34,7 @@ struct BlockTask {
     TaskStatus                            status;
     std::chrono::steady_clock::time_point createdTime;
     std::chrono::steady_clock::time_point startTime;
-    std::function<void(bool)>             callback; // Called when task completes
+    std::function<void(bool, BlockTask&)> callback; // Called when task completes
     int                                   retryCount;
     static constexpr int                  MAX_RETRIES = 6;
 
@@ -44,7 +44,7 @@ struct BlockTask {
         DimensionType               dimension,
         std::shared_ptr<BlockActor> blockActor = nullptr,
         TaskPriority                priority   = TaskPriority::Normal,
-        std::function<void(bool)>   callback   = nullptr
+        std::function<void(bool, BlockTask&)>   callback   = nullptr
     )
     : pos(pos),
       block(block),
@@ -99,7 +99,6 @@ struct ManagedSimulatedPlayer
 
 class SimulatedPlayerBuilder : public Builder {
 private:
-    std::mutex taskMutex;
 
     // Task queue management
     std::priority_queue<
@@ -124,6 +123,9 @@ public:
     std::atomic_bool                 mIsRunning;
     ll::ConcurrentDenseSet<BlockPos> mDonePositions; // To avoid break blocks
 
+    std::mutex taskMutex;
+    std::vector<std::pair<std::shared_ptr<BlockTask>, std::shared_ptr<ManagedSimulatedPlayer>>> mPendingFailures;
+
     SimulatedPlayerBuilder(LocalContext& context, size_t maxPlayers = 8);
     virtual ~SimulatedPlayerBuilder();
 
@@ -146,7 +148,7 @@ public:
         Block const&                block,
         std::shared_ptr<BlockActor> blockActor = nullptr,
         TaskPriority                priority   = TaskPriority::Normal,
-        std::function<void(bool)>   callback   = nullptr
+        std::function<void(bool, BlockTask&)>   callback   = nullptr
     );
 
     // Task queue management
@@ -185,7 +187,6 @@ private:
     ManagedSimulatedPlayer* findIdlePlayer(DimensionType dimension);
     void                    cleanupCompletedTasks();
     void                    removePlayer(size_t index);
-    DimensionType           getDimensionFromBlockSource(BlockSource& blockSource) const;
 };
 
 } // namespace we

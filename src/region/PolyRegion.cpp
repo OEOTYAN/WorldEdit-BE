@@ -230,38 +230,36 @@ bool PolyRegion::contains(BlockPos const& pos) const {
     }
     bool inside = false;
 
-    auto lastPoint = points.front();
-    for (auto& point : points) {
-        if (lastPoint == point) {
-            return true;
+    Pos2d testPos{pos.x, pos.z};
+    for (size_t i = 0; i < points.size(); ++i) {
+        size_t       j      = (i + 1) % points.size();
+        const Pos2d& point1 = points[i];
+        const Pos2d& point2 = points[j];
+
+        if (point1 == point2) {
+            continue;
         }
-        int x1;
-        int z1;
-        int x2;
-        int z2;
-        if (point.x > lastPoint.x) {
-            x1 = lastPoint.x;
-            x2 = point.x;
-            z1 = lastPoint.z;
-            z2 = point.z;
+
+        Pos2d p1, p2;
+        if (point2.x > point1.x) {
+            p1 = point1;
+            p2 = point2;
         } else {
-            x1 = point.x;
-            x2 = lastPoint.x;
-            z1 = point.z;
-            z2 = lastPoint.z;
+            p1 = point2;
+            p2 = point1;
         }
-        if (x1 <= pos.x && pos.x <= x2) {
-            int64 crossproduct = ((int64)pos.z - (int64)z1) * (int64)(x2 - x1)
-                               - ((int64)z2 - (int64)z1) * (int64)(pos.x - x1);
+
+        if (p1.x <= testPos.x && testPos.x <= p2.x) {
+            int64 crossproduct = ((int64)testPos.z - (int64)p1.z) * (int64)(p2.x - p1.x)
+                               - ((int64)p2.z - (int64)p1.z) * (int64)(testPos.x - p1.x);
             if (crossproduct == 0) {
-                if ((z1 <= pos.z) == (pos.z <= z2)) {
+                if ((p1.z <= testPos.z) == (testPos.z <= p2.z)) {
                     return true;
                 }
-            } else if (crossproduct < 0 && (x1 != pos.x)) {
+            } else if (crossproduct < 0 && (p1.x != testPos.x)) {
                 inside = !inside;
             }
         }
-        lastPoint = point;
     }
     return inside;
 }
