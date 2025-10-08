@@ -29,7 +29,7 @@ Movements::Movements(
 // Block checking functions (replacing unordered_set based checks)
 bool Movements::canBreakBlockType(Block const& block) const {
     // Check basic properties
-    if (isEmptyBlock(block)) return false;
+    if (isEmptyBlock(block) || isLiquidBlock(block)) return false;
 
     // Can't break bedrock, barrier blocks, etc.
     auto blockName = block.getTypeName();

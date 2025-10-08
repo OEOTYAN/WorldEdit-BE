@@ -35,13 +35,13 @@ public:
         BlockPos const&,
         Block const&,
         std::shared_ptr<BlockActor>
-    ) const {
+    )  {
         return false;
     }
-    virtual bool setExtraBlock(BlockSource&, BlockPos const&, Block const&) const {
+    virtual bool setExtraBlock(BlockSource&, BlockPos const&, Block const&)  {
         return false;
     }
-    virtual bool setBiome(BlockSource&, BlockPos const&, Biome const&) const {
+    virtual bool setBiome(BlockSource&, BlockPos const&, Biome const&)  {
         return false;
     }
     static std::shared_ptr<Builder> create(BuilderType type, LocalContext& context);

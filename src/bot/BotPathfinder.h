@@ -120,6 +120,7 @@ private:
     // Bot-specific functionality
     bool tick(); // Called every game tick to execute movement
     bool executeNextMove();
+    void executeDefaultBehavior();
     void clearControlStates();
 
     enum class BreakBlockState { Fail = 0, Breaking = 1, Success = 2 };
@@ -147,9 +148,6 @@ private:
     // Core pathfinding methods
     void resetPath(std::string const& reason, bool clearStates = true);
     // Bot control methods
-    void updateControlState(Move const& currentMove, Move const& nextMove);
-    bool shouldJump(Move const& from, Move const& to) const;
-    bool shouldSprint(Move const& from, Move const& to) const;
     bool needsToBreakBlocks(Move const& move) const;
     bool needsToPlaceBlocks(Move const& move) const;
     void applyControlStatesToPlayer();

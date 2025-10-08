@@ -53,9 +53,7 @@ ManagedSimulatedPlayer::ManagedSimulatedPlayer(
     // Create individual pathfinder for this player
     pathfinder = std::make_shared<bot::BotPathfinder>(
         player,
-        [this, builder](BlockPos const& pos) {
-            return builder->mDonePositions.contains(pos);
-        }
+        [this, builder](BlockPos const& pos) { return builder->isPositionDone(pos); }
     );
 }
 
@@ -64,36 +62,30 @@ bool SimulatedPlayerBuilder::setBlock(
     BlockPos const&             pos,
     Block const&                block,
     std::shared_ptr<BlockActor> blockActor
-) const {
+) {
     auto& currentBlock = blockSource.getBlock(pos);
     if (&currentBlock == &block && !blockActor) {
-        if (block.isAir()) {
-            const_cast<SimulatedPlayerBuilder*>(this)->mDonePositions.insert(pos);
-        }
+        addDonePosition(pos, block.isAir());
         return true;
     }
 
     // Queue the task instead of immediate execution
-    return const_cast<SimulatedPlayerBuilder*>(this)->setBlockQueued(
+    return setBlockQueued(
         blockSource,
         pos,
         block,
-        blockActor,
+        std::move(blockActor),
         TaskPriority::Normal,
         [level = &blockSource.getLevel(), this](bool success, BlockTask& task) {
-            if (!success) {
+            if (success) {
+                addDonePosition(task.pos, task.block->isAir());
+            } else {
                 auto dim = level->getDimension(task.dimension).lock();
                 if (!dim) return;
                 auto& bs = dim->getBlockSourceFromMainChunkSource();
-                const_cast<SimulatedPlayerBuilder*>(this)->mDonePositions.insert(task.pos);
-                bs.setBlock(
-                    task.pos,
-                    *task.block,
-                    BlockUpdateFlag::Network,
-                    std::move(task.blockActor),
-                    nullptr,
-                    nullptr
-                );
+                addDonePosition(task.pos, task.block->isAir());
+                fallbackBuilder
+                    .setBlock(bs, task.pos, *task.block, std::move(task.blockActor));
             }
         }
     );
@@ -115,11 +107,11 @@ bool SimulatedPlayerBuilder::setBlockQueued(
         pos,
         &block,
         dimension,
-        blockActor,
+        std::move(blockActor),
         priority,
-        callback
+        std::move(callback)
     );
-    addTask(task);
+    addTask(std::move(task));
     return true;
 }
 
@@ -264,6 +256,7 @@ ll::coro::CoroTask<> SimulatedPlayerBuilder::processTasksAsync() {
         for (auto& [task, player] : mPendingFailures) {
             handleTaskFailure(task, player.get());
         }
+        mPendingFailures.clear();
     }
 
     for (auto iter = mPlayerPool.begin(); iter != mPlayerPool.end();) {
@@ -349,7 +342,7 @@ ll::coro::CoroTask<> SimulatedPlayerBuilder::assignTaskToPlayerAsync(
                 start,
                 *goal,
                 *blockSource,
-                [&](BlockPos const& pos) { return self->mDonePositions.contains(pos); }
+                [&](BlockPos const& pos) { return self->isPositionDone(pos); }
             );
             if (!managedPlayer->player || self->mIsRunning == false) {
                 co_return;
@@ -406,7 +399,6 @@ SimulatedPlayerBuilder::processTaskAsync(ManagedSimulatedPlayer* managedPlayer) 
     bool success = false;
 
     success = managedPlayer->pathfinder->placeBlock(task->pos, task->block);
-    mDonePositions.insert(task->pos);
 
     if (success) {
         task->status = TaskStatus::Completed;

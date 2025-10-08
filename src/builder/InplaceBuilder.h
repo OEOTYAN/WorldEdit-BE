@@ -24,16 +24,16 @@ public:
     : Builder(context),
       updateFlags(updateFlags) {}
 
-    virtual ~InplaceBuilder() = default;
+    ~InplaceBuilder() override = default;
 
-    virtual bool setBlock(
+    bool setBlock(
         BlockSource&,
         BlockPos const&,
         Block const&,
         std::shared_ptr<BlockActor>
-    ) const;
-    virtual bool setExtraBlock(BlockSource&, BlockPos const&, Block const&) const;
-    virtual bool setBiome(BlockSource&, BlockPos const&, Biome const&) const;
+    ) override;
+    bool setExtraBlock(BlockSource&, BlockPos const&, Block const&) override;
+    bool setBiome(BlockSource&, BlockPos const&, Biome const&) override;
 };
 
 } // namespace we

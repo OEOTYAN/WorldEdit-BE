@@ -38,6 +38,10 @@ ll::coro::CoroTask<ComputedPath> BotPathfinder::getPathToAsync(
     auto currentPos = BlockPos(start + Vec3(0.0f, 0.5f, 0.0f));
 
     while (!movements.canWalkOn(currentPos)) {
+        if (movements.isLiquid(currentPos)) {
+            currentPos.y--;
+            break;
+        }
         currentPos.y--;
         if (currentPos.y < bs.getMinHeight()) {
             co_return ComputedPath{};
@@ -136,14 +140,22 @@ bool BotPathfinder::tick() {
         }
         mRecentlyPlacedBlocks.pop();
     }
-
-    if (!mIsExecuting || !mPlayer) return true;
+    if (!mIsExecuting) {
+        executeDefaultBehavior();
+        return true;
+    }
     bool result = executeNextMove();
     if (!result) {
         mFailToExecute = true;
         stop();
     }
     return result;
+}
+void BotPathfinder::executeDefaultBehavior() {
+    clearControlStates();
+    mPlayer->simulateStopDestroyingBlock();
+    mPlayer->simulateStopUsingItem();
+    applyControlStatesToPlayer();
 }
 
 bool BotPathfinder::executeNextMove() {
@@ -177,7 +189,7 @@ bool BotPathfinder::executeNextMove() {
     // Check for progress timeout - stuck at same index for too long
     if (mCurrentPathIndex == mLastProgressIndex) {
         auto timeSinceProgress = now - mLastProgressTick;
-        if (timeSinceProgress > PROGRESS_TIMEOUT) {
+        if (timeSinceProgress > (PROGRESS_TIMEOUT * (isMining() ? 10 : 1))) {
             mIsExecuting = false;
             mIsMining    = false;
             mIsBuilding  = false;
@@ -274,52 +286,6 @@ bool BotPathfinder::executeNextMove() {
     // Update movement controls based on current position and target
     updateControlStateForPosition(targetPos);
     return true;
-}
-
-void BotPathfinder::updateControlState(Move const& currentMove, Move const& nextMove) {
-    // This method now provides look-ahead optimization for smoother movement
-
-    // Check if we need to prepare for upcoming actions
-    if (shouldJump(currentMove, nextMove)) {
-        mControlState.jump = true;
-    }
-
-    // Check if we should start sprinting early for upcoming long movements
-    if (shouldSprint(currentMove, nextMove)) {
-        mControlState.sprint = true;
-    }
-
-    // Handle special movement cases
-    if (nextMove.parkour) {
-        // Prepare for parkour movement
-        mControlState.sprint = true;
-        mControlState.jump   = true;
-    }
-
-    // If the next move requires breaking blocks, slow down
-    if (needsToBreakBlocks(nextMove)) {
-        mControlState.sprint = false;
-        mControlState.sneak  = true; // More precise movement
-    }
-
-    // If the next move requires placing blocks, also slow down
-    if (needsToPlaceBlocks(nextMove)) {
-        mControlState.sprint = false;
-        mControlState.sneak  = true; // More precise movement
-    }
-
-    // Apply the updated control states
-    applyControlStatesToPlayer();
-}
-
-bool BotPathfinder::shouldJump(Move const& from, Move const& to) const {
-    // Jump if moving up or if it's a parkour move
-    return to.y > from.y || to.parkour;
-}
-
-bool BotPathfinder::shouldSprint(Move const& from, Move const& to) const {
-    // Sprint if movements allow it and we're moving horizontally
-    return false;
 }
 
 bool BotPathfinder::needsToBreakBlocks(Move const& move) const {
@@ -450,21 +416,39 @@ void BotPathfinder::applyControlStatesToPlayer() {
     if (!mPlayer) return;
 
     if (mControlState.sneak) {
-        (void)mPlayer->simulateSneaking();
+        mPlayer->simulateSneaking();
     } else {
-        (void)mPlayer->simulateStopSneaking();
+        mPlayer->simulateStopSneaking();
     }
     if (mControlState.jump) {
-        (void)mPlayer->simulateJump();
+        mPlayer->simulateJump();
+    }
+    if (mPlayer->isInWater()) {
+        if (!mPlayer->isSwimming()) mPlayer->startSwimming();
+    } else {
+        if (mPlayer->isSwimming()) mPlayer->stopSwimming();
     }
     if (mControlState.localDirection == 0.0f) {
-        mPlayer->mSimulatedMovement->mType->emplace<0>();
-    } else
-        mPlayer->simulateMoveToLocation(
-            mControlState.target,
-            (1.0f + (mControlState.sprint ? 1.0f : 0.0f)) * 2.0f,
-            true
-        );
+        if (mPlayer->isInWater()) {
+            mPlayer->simulateWorldMove(Vec3(0.0f, 1.0f, 0.0f));
+        } else {
+            mPlayer->simulateStopMoving();
+        }
+    } else {
+        if (mPlayer->isInWater()) {
+            if (mCurrentTick % 2 == 0) {
+                mPlayer->simulateWorldMove(Vec3(0.0f, 1.0f, 0.0f));
+            } else {
+                mPlayer->simulateWorldMove(mControlState.localDirection);
+            }
+        } else {
+            mPlayer->simulateMoveToLocation(
+                mControlState.target,
+                (1.0f + (mControlState.sprint ? 1.0f : 0.0f)) * 2.0f,
+                true
+            );
+        }
+    }
 }
 
 void BotPathfinder::updateControlStateForPosition(Vec3 const& targetPos) {
@@ -490,7 +474,8 @@ void BotPathfinder::updateControlStateForPosition(Vec3 const& targetPos) {
     mControlState.target         = targetPos;
 
     // Handle vertical movement
-    if (direction.y > 0.5f || getCurrentPath()[mCurrentPathIndex]->parkour) {
+    if (direction.y > 0.5f || mPlayer->isInWater()
+        || getCurrentPath()[mCurrentPathIndex]->parkour) {
         mControlState.jump = true;
     }
     const float threshold = 0.1f;

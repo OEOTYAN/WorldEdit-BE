@@ -47,7 +47,7 @@ bool InplaceBuilder::setBlock(
     BlockPos const&             pos,
     Block const&                block,
     std::shared_ptr<BlockActor> blockActor
-) const {
+) {
     auto chunk   = source.getChunkSource().getExistingChunk(ChunkPos{pos});
     bool applied = false;
     if (!chunk
@@ -98,7 +98,7 @@ bool InplaceBuilder::setBlock(
                     chunk->mBorderBlockMap->at(chunkBlockPos.x + (chunkBlockPos.z << 4));
                 auto previousIsBorder = ref;
                 if (previousIsBorder != currentIsBorder) {
-                    ref = currentIsBorder;
+                    ref            = currentIsBorder;
                     auto totalTime = chunk->mFullChunkDirtyTicksCounters[4]->totalTime;
                     if (totalTime < 0) {
                         totalTime                                         = 0;
@@ -117,7 +117,7 @@ bool InplaceBuilder::setExtraBlock(
     BlockSource&    source,
     BlockPos const& pos,
     Block const&    block
-) const {
+) {
     auto chunk = source.getChunkSource().getExistingChunk(ChunkPos{pos});
     if (!chunk
         || chunk->mLoadState->load(std::memory_order_relaxed)
@@ -138,7 +138,7 @@ bool InplaceBuilder::setBiome(
     BlockSource&    source,
     BlockPos const& pos,
     Biome const&    biome
-) const {
+) {
     auto chunk = source.getChunkSource().getExistingChunk(ChunkPos{pos});
     if (!chunk
         || chunk->mLoadState->load(std::memory_order_relaxed)

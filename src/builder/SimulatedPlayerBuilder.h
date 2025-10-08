@@ -1,6 +1,6 @@
 #pragma once
 
-#include "builder/Builder.h"
+#include "builder/InplaceBuilder.h"
 #include <mc/deps/core/utility/AutomaticID.h>
 #include <mc/server/SimulatedPlayer.h>
 #include <mc/world/level/dimension/Dimension.h>
@@ -36,7 +36,7 @@ struct BlockTask {
     std::chrono::steady_clock::time_point startTime;
     std::function<void(bool, BlockTask&)> callback; // Called when task completes
     int                                   retryCount;
-    static constexpr int                  MAX_RETRIES = 6;
+    static constexpr int                  MAX_RETRIES = 16;
 
     BlockTask(
         BlockPos                    pos,
@@ -99,6 +99,7 @@ struct ManagedSimulatedPlayer
 
 class SimulatedPlayerBuilder : public Builder {
 private:
+    InplaceBuilder fallbackBuilder{context, BlockUpdateFlag::Network};
 
     // Task queue management
     std::priority_queue<
@@ -118,10 +119,10 @@ private:
     // Statistics
     std::atomic<size_t> mTasksCompleted;
     std::atomic<size_t> mTasksFailed;
+    ll::ConcurrentDenseSet<BlockPos> mDonePositions; // To avoid break blocks
 
 public:
     std::atomic_bool                 mIsRunning;
-    ll::ConcurrentDenseSet<BlockPos> mDonePositions; // To avoid break blocks
 
     std::mutex taskMutex;
     std::vector<std::pair<std::shared_ptr<BlockTask>, std::shared_ptr<ManagedSimulatedPlayer>>> mPendingFailures;
@@ -139,7 +140,7 @@ public:
         BlockPos const&,
         Block const&,
         std::shared_ptr<BlockActor>
-    ) const override;
+    )  override;
 
     // Enhanced block placement with priority and callback
     bool setBlockQueued(
@@ -167,6 +168,8 @@ public:
     void setPlayerIdleTimeout(std::chrono::milliseconds timeout) {
         mPlayerIdleTimeout = timeout;
     }
+    void addDonePosition(BlockPos const& pos, bool isAir) {if(!isAir) mDonePositions.insert(pos); }
+    bool isPositionDone(BlockPos const& pos) const { return mDonePositions.contains(pos); }
 
     ll::coro::CoroTask<> processTasksAsync(); // Process tasks asynchronously
 
