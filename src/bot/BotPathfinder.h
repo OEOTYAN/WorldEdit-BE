@@ -130,6 +130,8 @@ private:
     bool            placeBlock(BlockPos const& pos, Block const* block);
     bool            equipBestTool(Block const* block);
 
+    bool isInWater() const;
+
     // Utility methods
     std::vector<std::unique_ptr<Move>>
     postProcessPath(std::vector<std::unique_ptr<Move>> path) const;

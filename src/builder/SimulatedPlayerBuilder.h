@@ -5,9 +5,6 @@
 #include <mc/server/SimulatedPlayer.h>
 #include <mc/world/level/dimension/Dimension.h>
 
-// Type alias for DimensionType
-using DimensionType = AutomaticID<Dimension, int>;
-
 namespace we {
 
 namespace bot {
@@ -36,7 +33,7 @@ struct BlockTask {
     std::chrono::steady_clock::time_point startTime;
     std::function<void(bool, BlockTask&)> callback; // Called when task completes
     int                                   retryCount;
-    static constexpr int                  MAX_RETRIES = 16;
+    static constexpr int                  MAX_RETRIES = 1;
 
     BlockTask(
         BlockPos                    pos,

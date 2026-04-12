@@ -2,6 +2,7 @@
 
 #include <mc/world/level/block/BedrockBlockNames.h>
 #include <mc/world/level/block/Block.h>
+#include <mc/world/level/block/BlockChangeContext.h>
 #include <mc/world/level/block/registry/BlockTypeRegistry.h>
 
 namespace we {
@@ -11,5 +12,7 @@ public:
         return *BlockTypeRegistry::get().getDirectAccessBlocks().mAirBlock.mDefaultState;
     }
 };
+
+inline BlockChangeContext bcc{};
 
 } // namespace we

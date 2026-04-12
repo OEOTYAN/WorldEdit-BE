@@ -47,8 +47,8 @@ REG_CMD(edit, set, "Set blocks in the region to a specific block type") {
                     exblock = getBlock(params.exblock, params.exstates);
                     if (!exblock) return;
                 }
-                OperationData::Operation op;
-                auto& blockOp = op.operation.emplace<OperationData::BlockOperation>();
+                Operation op;
+                auto& blockOp = op.operation.emplace<BlockOperation>();
                 blockOp.block = block;
                 if (exblock) blockOp.extraBlock = exblock;
 

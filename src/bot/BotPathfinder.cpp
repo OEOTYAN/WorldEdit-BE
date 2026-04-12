@@ -1,7 +1,11 @@
 #include "BotPathfinder.h"
 #include "worldedit/WorldEdit.h"
+#include "utils/BlockUtils.h"
+
 #include <algorithm>
 #include <chrono>
+
+#include <mc/entity/components/WasInWaterFlagComponent.h>
 
 namespace we::bot {
 
@@ -122,7 +126,7 @@ void BotPathfinder::finalize() {
     while (!mRecentlyPlacedBlocks.empty()) {
         auto& pos = mRecentlyPlacedBlocks.top().pos;
         if (!mCustomBlockCheck(pos) && mScaffoldingBlock == &blockSource->getBlock(pos)) {
-            blockSource->removeBlock(pos);
+            blockSource->removeBlock(pos, bcc);
         }
         mRecentlyPlacedBlocks.pop();
     }
@@ -136,7 +140,7 @@ bool BotPathfinder::tick() {
            && (mCurrentTick - mRecentlyPlacedBlocks.top().tick) > SCAFFOLDING_TIMEOUT) {
         auto& pos = mRecentlyPlacedBlocks.top().pos;
         if (!mCustomBlockCheck(pos) && mScaffoldingBlock == &blockSource->getBlock(pos)) {
-            blockSource->removeBlock(pos);
+            blockSource->removeBlock(pos, bcc);
         }
         mRecentlyPlacedBlocks.pop();
     }
@@ -331,9 +335,14 @@ bool BotPathfinder::placeBlock(BlockPos const& pos, Block const* block) {
     BlockSource* blockSource = getBlockSource();
     if (!blockSource) return false;
 
-    bool success =
-        blockSource
-            ->setBlock(pos, *block, BlockUpdateFlag::Network, nullptr, nullptr, mPlayer);
+    bool success = blockSource->setBlock(
+        pos,
+        *block,
+        BlockUpdateFlag::Network,
+        nullptr,
+        nullptr,
+        bcc
+    );
     return true;
 }
 
@@ -423,19 +432,19 @@ void BotPathfinder::applyControlStatesToPlayer() {
     if (mControlState.jump) {
         mPlayer->simulateJump();
     }
-    if (mPlayer->isInWater()) {
+    if (isInWater()) {
         if (!mPlayer->isSwimming()) mPlayer->startSwimming();
     } else {
         if (mPlayer->isSwimming()) mPlayer->stopSwimming();
     }
     if (mControlState.localDirection == 0.0f) {
-        if (mPlayer->isInWater()) {
+        if (isInWater()) {
             mPlayer->simulateWorldMove(Vec3(0.0f, 1.0f, 0.0f));
         } else {
             mPlayer->simulateStopMoving();
         }
     } else {
-        if (mPlayer->isInWater()) {
+        if (isInWater()) {
             if (mCurrentTick % 2 == 0) {
                 mPlayer->simulateWorldMove(Vec3(0.0f, 1.0f, 0.0f));
             } else {
@@ -449,6 +458,10 @@ void BotPathfinder::applyControlStatesToPlayer() {
             );
         }
     }
+}
+
+bool BotPathfinder::isInWater() const {
+    return mPlayer && mPlayer->getEntityContext().hasComponent<WasInWaterFlagComponent>();
 }
 
 void BotPathfinder::updateControlStateForPosition(Vec3 const& targetPos) {
@@ -474,7 +487,7 @@ void BotPathfinder::updateControlStateForPosition(Vec3 const& targetPos) {
     mControlState.target         = targetPos;
 
     // Handle vertical movement
-    if (direction.y > 0.5f || mPlayer->isInWater()
+    if (direction.y > 0.5f || isInWater()
         || getCurrentPath()[mCurrentPathIndex]->parkour) {
         mControlState.jump = true;
     }

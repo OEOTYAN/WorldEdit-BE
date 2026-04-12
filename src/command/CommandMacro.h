@@ -214,10 +214,9 @@ struct ll::command::ParamTraits<T> : ParamTraitsBase<T> {
         WE_DEBUG("{}", enumName);
         return enumName;
     }
-    static void transformData(CommandParameterData&) {
+    static void transformData(CommandParameterData&, CommandRegistrar& registrar) {
         WE_DEBUG("{}", enumValues);
-        CommandRegistrar::getInstance()
-            .tryRegisterEnum(enumName, enumValues, Base::typeId(), Base::parseFn());
+        registrar.tryRegisterEnum(enumName, enumValues, Base::typeId(), Base::parseFn());
     }
 };
 
@@ -233,7 +232,7 @@ struct ll::command::ParamTraits<T> : ParamTraitsBase<T> {
                 if (!config.enabled) {                                                   \
                     return std::nullopt;                                                 \
                 }                                                                        \
-                return ll::command::CommandRegistrar::getInstance()                      \
+                return ll::command::CommandRegistrar::getInstance(false)                 \
                     .getOrCreateCommand(#name, description##_tr(), config.permission);   \
             }                                                                            \
         }                                                                                \

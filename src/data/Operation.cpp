@@ -1,10 +1,10 @@
-#include "OperationData.h"
+#include "Operation.h"
 #include "data/LocalContext.h"
 #include <mc/world/level/chunk/ChunkSource.h>
 #include <mc/world/level/chunk/LevelChunk.h>
 
 namespace we {
-bool OperationData::BlockOperation::apply(
+bool BlockOperation::apply(
     LocalContext&   context,
     BlockSource&    source,
     BlockPos const& pos
@@ -22,13 +22,13 @@ bool OperationData::BlockOperation::apply(
     return applied;
 }
 
-OperationData::BlockOperation OperationData::BlockOperation::record(
+BlockOperation BlockOperation::record(
     LocalContext&,
     BlockSource&    source,
     BlockPos const& pos,
     bool&           valid
 ) const {
-    OperationData::BlockOperation result;
+    BlockOperation result;
     if (pos.y < source.getMinHeight() || source.getMaxHeight() <= pos.y) {
         // out of height range
         valid = false;

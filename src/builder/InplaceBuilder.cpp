@@ -5,7 +5,6 @@
 #include <mc/world/level/chunk/ChunkSource.h>
 #include <mc/world/level/chunk/LevelChunk.h>
 
-
 namespace we {
 
 void InplaceBuilder::fireBlockChanged(
@@ -86,7 +85,7 @@ bool InplaceBuilder::setBlock(
     }
 
     auto& previousBlock =
-        chunk->setBlock(chunkBlockPos, block, &source, std::move(blockActor));
+        chunk->setBlock(chunkBlockPos, block, &source, std::move(blockActor), bcc);
     if (previousBlock != block) {
         applied           = true;
         auto& borderBlock = source.getLevel().getRegisteredBorderBlock();

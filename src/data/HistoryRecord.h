@@ -1,6 +1,6 @@
 #pragma once
 
-#include "data/OperationData.h"
+#include "data/Operations.h"
 #include "worldedit/Global.h"
 
 namespace we {
@@ -23,11 +23,11 @@ public:
     ) const;
     size_t apply(LocalContext& context, BlockSource& source) const;
 
-    void record(LocalContext& context, BlockSource& source, OperationData::Operation op);
+    void record(LocalContext& context, BlockSource& source, Operation op);
 
 private:
-    OperationData                  newData;
-    OperationData                  oldData;
+    Operations                     newData;
+    Operations                     oldData;
     ll::DenseMap<BlockPos, size_t> positionMap;
 };
 
