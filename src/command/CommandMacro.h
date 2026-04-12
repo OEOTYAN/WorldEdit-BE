@@ -232,7 +232,7 @@ struct ll::command::ParamTraits<T> : ParamTraitsBase<T> {
                 if (!config.enabled) {                                                   \
                     return std::nullopt;                                                 \
                 }                                                                        \
-                return ll::command::CommandRegistrar::getInstance(false)                 \
+                return ll::command::CommandRegistrar::getServerInstance()                 \
                     .getOrCreateCommand(#name, description##_tr(), config.permission);   \
             }                                                                            \
         }                                                                                \

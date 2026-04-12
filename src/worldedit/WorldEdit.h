@@ -6,6 +6,7 @@
 #include "data/LocalContextManager.h"
 
 #include <ll/api/mod/NativeMod.h>
+#include <ll/api/event/ListenerBase.h>
 
 namespace we {
 
@@ -47,6 +48,7 @@ private:
     std::unique_ptr<bsci::GeometryGroup> mGeometryGroup;
     std::optional<Config>                mConfig;
     std::shared_ptr<LocalContextManager> mLocalContextManager;
+    std::vector<ll::event::ListenerPtr>   mListeners;
 };
 
 inline ll::io::Logger& logger() { return WorldEdit::getInstance().getLogger(); }

@@ -1,12 +1,17 @@
-add_rules("mode.release")
+add_rules("mode.release", "mode.debug")
 
 add_rules("plugin.compile_commands.autoupdate", {outputdir=".vscode"})
 
 add_repositories("liteldev-repo https://github.com/LiteLDev/xmake-repo.git")
 add_repositories("oeo-repo https://github.com/OEOTYAN/xmake-repo.git")
 
+option("target_type")
+    set_default("server")
+    set_showmenu(true)
+    set_values("server", "client")
+option_end()
 
-add_requires("levilamina")
+add_requires("levilamina", {configs = {target_type = get_config("target_type")}})
 add_requires("levibuildscript")
 
 add_requires("bsci")
@@ -33,3 +38,10 @@ target("WorldEdit") -- Change this to your mod name.
     set_kind("shared")
     set_languages("c++20")
     set_symbols("debug")
+    if is_config("target_type", "server") then
+    --  add_includedirs("src-server")
+    --  add_files("src-server/**.cpp")
+    else
+    --  add_includedirs("src-client")
+    --  add_files("src-client/**.cpp")
+    end

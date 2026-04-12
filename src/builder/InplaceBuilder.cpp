@@ -1,9 +1,8 @@
 #include "InplaceBuilder.h"
 #include "utils/BlockUtils.h"
+#include "utils/ChunkUtils.h"
 #include <mc/world/level/block/BedrockBlockNames.h>
 #include <mc/world/level/block/actor/BlockActor.h>
-#include <mc/world/level/chunk/ChunkSource.h>
-#include <mc/world/level/chunk/LevelChunk.h>
 
 namespace we {
 
@@ -47,11 +46,9 @@ bool InplaceBuilder::setBlock(
     Block const&                block,
     std::shared_ptr<BlockActor> blockActor
 ) {
-    auto chunk   = source.getChunkSource().getExistingChunk(ChunkPos{pos});
+    auto chunk   = tryGetUsableChunk(source, pos);
     bool applied = false;
-    if (!chunk
-        || chunk->mLoadState->load(std::memory_order_relaxed)
-               <= ChunkState::CheckingForReplacementData) {
+    if (!chunk) {
         return applied;
     }
     ChunkBlockPos chunkBlockPos{pos, source.getMinHeight()};
@@ -117,10 +114,8 @@ bool InplaceBuilder::setExtraBlock(
     BlockPos const& pos,
     Block const&    block
 ) {
-    auto chunk = source.getChunkSource().getExistingChunk(ChunkPos{pos});
-    if (!chunk
-        || chunk->mLoadState->load(std::memory_order_relaxed)
-               <= ChunkState::CheckingForReplacementData) {
+    auto chunk = tryGetUsableChunk(source, pos);
+    if (!chunk) {
         return false;
     }
 
@@ -138,10 +133,8 @@ bool InplaceBuilder::setBiome(
     BlockPos const& pos,
     Biome const&    biome
 ) {
-    auto chunk = source.getChunkSource().getExistingChunk(ChunkPos{pos});
-    if (!chunk
-        || chunk->mLoadState->load(std::memory_order_relaxed)
-               <= ChunkState::CheckingForReplacementData) {
+    auto chunk = tryGetUsableChunk(source, pos);
+    if (!chunk) {
         return false;
     }
     chunk->_setBiome(biome, ChunkBlockPos{pos, source.getMinHeight()}, false);

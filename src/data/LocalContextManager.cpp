@@ -23,7 +23,10 @@
 namespace we {
 LocalContextManager::LocalContextManager(WorldEdit& we)
 : mod(we),
-  storagedState(mod.getSelf().getDataDir() / u8"player_states") {
+  storagedState(
+      mod.getSelf().getWorldDataDir().value_or(mod.getSelf().getDataDir())
+      / u8"player_states"
+  ) {
     using namespace ll::event;
     if (ll::getGamingStatus() == ll::GamingStatus::Running && ll::service::getLevel()) {
         ll::service::getLevel()->forEachPlayer([this](Player& player) {

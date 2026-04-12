@@ -1,7 +1,6 @@
 #include "Operation.h"
 #include "data/LocalContext.h"
-#include <mc/world/level/chunk/ChunkSource.h>
-#include <mc/world/level/chunk/LevelChunk.h>
+#include "utils/ChunkUtils.h"
 
 namespace we {
 bool BlockOperation::apply(
@@ -34,10 +33,8 @@ BlockOperation BlockOperation::record(
         valid = false;
         return result;
     }
-    auto chunk = source.getChunkSource().getExistingChunk(ChunkPos{pos});
-    if (!chunk
-        || chunk->mLoadState->load(std::memory_order_relaxed)
-               <= ChunkState::CheckingForReplacementData) {
+    auto chunk = tryGetUsableChunk(source, pos);
+    if (!chunk) {
         // chunk not loaded
         valid = false;
         return result;

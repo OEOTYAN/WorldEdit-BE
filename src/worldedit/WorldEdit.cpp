@@ -6,8 +6,13 @@
 #include "utils/Serialize.h"
 
 #include <ll/api/Config.h>
+#include <ll/api/event/EventBus.h>
+#include <ll/api/event/command/ServerCommandRegisterEvent.h>
+#include <ll/api/event/server/ServerStartedEvent.h>
+#include <ll/api/event/server/ServerStoppingEvent.h>
 #include <ll/api/mod/NativeMod.h>
 #include <ll/api/mod/RegisterHelper.h>
+#include <ll/api/service/GamingStatus.h>
 #include <ll/api/utils/ErrorUtils.h>
 #include <mc/network/packet/TextPacket.h>
 
@@ -37,7 +42,12 @@ bool WorldEdit::loadConfig() {
     return res;
 }
 
-bool WorldEdit::saveConfig() { return ll::config::saveConfig(*mConfig, getConfigPath()); }
+bool WorldEdit::saveConfig() {
+    if (!mConfig) {
+        return true;
+    }
+    return ll::config::saveConfig(*mConfig, getConfigPath());
+}
 
 bool WorldEdit::load() {
     mGeometryGroup = bsci::GeometryGroup::createDefault();
@@ -48,26 +58,45 @@ bool WorldEdit::load() {
         getLogger().error("i18n load failed");
         res.error().log(getLogger());
     }
+    mListeners.push_back(
+        ll::event::EventBus::getInstance()
+            .emplaceListener<ll::event::ServerCommandRegisterEvent>([this](auto&&) {
+                setupCommands();
+            })
+    );
+    mListeners.push_back(
+        ll::event::EventBus::getInstance().emplaceListener<ll::event::ServerStartedEvent>(
+            [this](auto&&) {
+                mLocalContextManager = std::make_shared<LocalContextManager>(*this);
+            }
+        )
+    );
+    mListeners.push_back(
+        ll::event::EventBus::getInstance()
+            .emplaceListener<ll::event::ServerStoppingEvent>([this](auto&&) {
+                mLocalContextManager.reset();
+            })
+    );
+
     return true;
 }
 
 bool WorldEdit::enable() {
-    if (!mConfig) {
-        loadConfig();
+    if (ll::getGamingStatus() == ll::GamingStatus::Running) {
+        mLocalContextManager = std::make_shared<LocalContextManager>(*this);
     }
-    mLocalContextManager = std::make_shared<LocalContextManager>(*this);
-    setupCommands();
     return true;
 }
 
 bool WorldEdit::disable() {
-    saveConfig();
-    mConfig.reset();
     mLocalContextManager.reset();
     return true;
 }
 
-bool WorldEdit::unload() { return true; }
+bool WorldEdit::unload() {
+    saveConfig();
+    return true;
+}
 
 } // namespace we
 
