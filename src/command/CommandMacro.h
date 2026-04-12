@@ -115,10 +115,9 @@ public:
                    ::Command const&     cmd
                ) {
             CommandContextRef ctxref{origin, output, cmd};
-            if constexpr (std::is_invocable_v<
-                              Fn,
-                              CommandContextRef const&,
-                              decltype((param))>) {
+            if constexpr (
+                std::is_invocable_v<Fn, CommandContextRef const&, decltype((param))>
+            ) {
                 fn(ctxref, param);
             } else if constexpr (std::is_invocable_v<Fn, CommandContextRef const&>) {
                 fn(ctxref);
@@ -228,12 +227,16 @@ struct ll::command::ParamTraits<T> : ParamTraitsBase<T> {
         SetupCommandFunctor{                                                             \
             #type "." #name,                                                             \
             []() -> optional_ref<ll::command::CommandHandle> {                           \
-                auto& config = WorldEdit::getInstance().getConfig().commands.type.name;  \
-                if (!config.enabled) {                                                   \
+                auto& config = WorldEdit::getInstance().getConfig().commands;            \
+                if (!config.type.name.enabled) {                                         \
                     return std::nullopt;                                                 \
                 }                                                                        \
-                return ll::command::CommandRegistrar::getServerInstance()                 \
-                    .getOrCreateCommand(#name, description##_tr(), config.permission);   \
+                return ll::command::CommandRegistrar::getServerInstance()                \
+                    .getOrCreateCommand(                                                 \
+                        config.custom_cmd_prefix + #name,                                \
+                        description##_tr(),                                              \
+                        config.type.name.permission                                      \
+                    );                                                                   \
             }                                                                            \
         }                                                                                \
         | &type##_##name##_sb_reg_fn;                                                    \

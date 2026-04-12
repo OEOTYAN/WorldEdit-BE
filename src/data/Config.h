@@ -38,6 +38,7 @@ struct Config {
             CmdSetting set{};
             CmdSetting buildercfg{};
         } edit;
+        std::string custom_cmd_prefix = "";
     } commands{};
     struct {
         mce::Color region_line_color{"#FFEC27"};

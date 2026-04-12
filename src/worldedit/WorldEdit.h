@@ -23,7 +23,7 @@ public:
 
     [[nodiscard]] ll::io::Logger& getLogger() const { return getSelf().getLogger(); }
 
-    [[nodiscard]] Config& getConfig() { return *mConfig; }
+    [[nodiscard]] Config& getConfig() { return mConfig.value(); }
 
     [[nodiscard]] LocalContextManager& getLocalContextManager() {
         return *mLocalContextManager;
