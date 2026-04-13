@@ -1,5 +1,6 @@
 #pragma once
 
+#include "data/Operation.h"
 #include "worldedit/Global.h"
 
 namespace we {
@@ -35,13 +36,16 @@ struct ClipboardData {
                       + static_cast<size_t>(size.y + 1) * static_cast<size_t>(pos.z));
     }
 
-    optional_ref<Block const> getBlock(BlockPos const& pos) const {
+    BlockOperation getBlock(BlockPos const& pos) const {
         auto wrapped = wrap(pos);
         auto idx     = index(wrapped);
         if (idx >= blocks.size()) {
-            return nullptr;
+            return {};
         }
-        return Block::tryGetFromRegistry(blocks[idx]);
+
+        BlockOperation operation;
+        operation.block = Block::tryGetFromRegistry(blocks[idx]);
+        return operation;
     }
 };
 } // namespace we

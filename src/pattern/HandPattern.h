@@ -11,6 +11,6 @@ public:
 
     ll::Expected<> prepare(CommandContextRef const& ctx) override;
 
-    optional_ref<Block const> pickBlock(BlockPos const& pos) const override;
+    BlockOperation pickBlock(BlockPos const& pos) const override;
 };
 } // namespace we

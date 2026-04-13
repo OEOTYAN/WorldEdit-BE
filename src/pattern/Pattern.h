@@ -1,5 +1,6 @@
 #pragma once
 
+#include "data/Operation.h"
 #include "pattern/PatternAst.h"
 #include "worldedit/Global.h"
 
@@ -12,7 +13,7 @@ public:
 
     virtual ll::Expected<> prepare(CommandContextRef const&) { return {}; }
 
-    virtual optional_ref<Block const> pickBlock(BlockPos const& pos) const = 0;
+    virtual BlockOperation pickBlock(BlockPos const& pos) const = 0;
 
     static ll::Expected<std::shared_ptr<Pattern>> fromAst(PatternAst const& ast);
 };

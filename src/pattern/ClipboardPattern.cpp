@@ -34,9 +34,9 @@ ll::Expected<> ClipboardPattern::prepare(CommandContextRef const& ctx) {
     return {};
 }
 
-optional_ref<Block const> ClipboardPattern::pickBlock(BlockPos const& pos) const {
+BlockOperation ClipboardPattern::pickBlock(BlockPos const& pos) const {
     if (!clipboard) {
-        return nullptr;
+        return {};
     }
     return clipboard->getBlock(pos - bias);
 }

@@ -100,7 +100,7 @@ compileExpr(PatternExpr const& expr) {
     return compiled;
 }
 
-static optional_ref<Block const>
+static BlockOperation
 resolveBlock(PatternCompiledEntry const& entry, BlockPos const& pos) {
     std::string_view blockName;
     if (entry.blockName) {
@@ -108,16 +108,20 @@ resolveBlock(PatternCompiledEntry const& entry, BlockPos const& pos) {
     } else {
         entry.blockExpr->updateVariables(pos);
         if (!entry.blockExpr->evalString(blockName)) {
-            return nullptr;
+            return {};
         }
     }
+
+    BlockOperation operation;
     if (entry.data) {
         entry.data->updateVariables(pos);
         auto dataEval  = std::llround(entry.data->evalScalar());
         auto dataValue = static_cast<ushort>(dataEval < 0 ? 0 : dataEval);
-        return Block::tryGetFromRegistry(blockName, dataValue);
+        operation.block = Block::tryGetFromRegistry(blockName, dataValue);
+        return operation;
     }
-    return Block::tryGetFromRegistry(blockName);
+    operation.block = Block::tryGetFromRegistry(blockName);
+    return operation;
 }
 
 BlockListPattern::BlockListPattern(std::vector<PatternCompiledEntry> entries)
@@ -160,9 +164,9 @@ BlockListPattern::create(BlockListPatternAst const& ast) {
     return std::make_shared<BlockListPattern>(std::move(compiledEntries));
 }
 
-optional_ref<Block const> BlockListPattern::pickBlock(BlockPos const& pos) const {
+BlockOperation BlockListPattern::pickBlock(BlockPos const& pos) const {
     if (entries.empty()) {
-        return nullptr;
+        return {};
     }
 
     std::vector<double> weights;
@@ -175,7 +179,7 @@ optional_ref<Block const> BlockListPattern::pickBlock(BlockPos const& pos) const
         total += weight;
     }
     if (total <= 0.0) {
-        return nullptr;
+        return {};
     }
 
     auto   target = ll::utils::random_utils::rand<double>(total);
@@ -186,6 +190,6 @@ optional_ref<Block const> BlockListPattern::pickBlock(BlockPos const& pos) const
             return resolveBlock(entries[i], pos);
         }
     }
-    return nullptr;
+    return {};
 }
 } // namespace we

@@ -22,7 +22,9 @@ ll::Expected<> HandPattern::prepare(CommandContextRef const& ctx) {
     return {};
 }
 
-optional_ref<Block const> HandPattern::pickBlock(BlockPos const&) const {
-    return handBlock;
+BlockOperation HandPattern::pickBlock(BlockPos const&) const {
+    BlockOperation operation;
+    operation.block = handBlock;
+    return operation;
 }
 } // namespace we

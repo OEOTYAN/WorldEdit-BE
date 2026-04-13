@@ -44,14 +44,13 @@ REG_CMD(edit, set, "Set blocks in the region to a specific block type") {
 
         auto record = std::make_shared<HistoryRecord>();
         region->forEachBlockInRegion([&](BlockPos const& pos) {
-            auto block = (*pattern)->pickBlock(pos);
-            if (!block) {
+            auto blockOp = (*pattern)->pickBlock(pos);
+            if (blockOp.empty()) {
                 return;
             }
             Operation op;
-            op.pos        = pos;
-            auto& blockOp = op.operation.emplace<BlockOperation>();
-            blockOp.block = block;
+            op.pos       = pos;
+            op.operation = std::move(blockOp);
             record->record(*lctx, blockSource, op);
         });
         auto num = record->apply(*lctx, blockSource);

@@ -22,6 +22,6 @@ public:
     static ll::Expected<std::shared_ptr<BlockListPattern>>
     create(BlockListPatternAst const& ast);
 
-    optional_ref<Block const> pickBlock(BlockPos const& pos) const override;
+    BlockOperation pickBlock(BlockPos const& pos) const override;
 };
 } // namespace we
