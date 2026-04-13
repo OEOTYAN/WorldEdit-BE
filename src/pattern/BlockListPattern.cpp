@@ -31,37 +31,55 @@ struct PatternCompiledExpr {
 
         Parser parser;
         if (!parser.compile(source, expression)) {
-            return ll::makeStringError(
-                std::string("Failed to compile pattern expression: ") + source
-            );
+            ll::Error err;
+            for (size_t i = 0; i < parser.error_count(); ++i) {
+                auto const& error = parser.get_error(i);
+                err.join(
+                    ll::makeStringError(
+                        fmt::format(
+                            "Expression error at '{}': {}",
+                            error.token.value,
+                            error.diagnostic
+                        )
+                    )
+                );
+            }
+            return ll::forwardError(err);
         }
         return {};
     }
 
-    double evalScalar(BlockPos const& pos) const {
+    void updateVariables(BlockPos const& pos) const {
+        if (literalMode) {
+            return;
+        }
+
+        x = static_cast<double>(pos.x);
+        y = static_cast<double>(pos.y);
+        z = static_cast<double>(pos.z);
+    }
+
+    double evalScalar() const {
         if (literalMode) {
             return literal;
         }
 
-        x = static_cast<double>(pos.x);
-        y = static_cast<double>(pos.y);
-        z = static_cast<double>(pos.z);
         return expression.value();
     }
 
-    bool evalString(BlockPos const& pos, std::string& out) const {
+    bool evalString(std::string_view& out) const {
         if (literalMode) {
             return false;
         }
 
-        x = static_cast<double>(pos.x);
-        y = static_cast<double>(pos.y);
-        z = static_cast<double>(pos.z);
         expression.value();
 
         auto const& results = expression.results();
         for (size_t index = 0; index < results.count(); ++index) {
-            if (results.get_string(index, out)) {
+            auto& t = results[index];
+            if (t.type == exprtk::type_store<double>::e_string) {
+                const auto str = typename exprtk::type_store<double>::string_view(t);
+                out            = std::string_view(str.begin(), str.size());
                 return true;
             }
         }
@@ -69,9 +87,8 @@ struct PatternCompiledExpr {
     }
 };
 
-namespace {
-
-ll::Expected<std::unique_ptr<PatternCompiledExpr>> compileExpr(PatternExpr const& expr) {
+static ll::Expected<std::unique_ptr<PatternCompiledExpr>>
+compileExpr(PatternExpr const& expr) {
     if (auto literal = std::get_if<PatternLiteralExpr>(&expr)) {
         return std::make_unique<PatternCompiledExpr>(literal->value);
     }
@@ -83,26 +100,25 @@ ll::Expected<std::unique_ptr<PatternCompiledExpr>> compileExpr(PatternExpr const
     return compiled;
 }
 
-optional_ref<Block const>
+static optional_ref<Block const>
 resolveBlock(PatternCompiledEntry const& entry, BlockPos const& pos) {
-    HashedString blockName;
+    std::string_view blockName;
     if (entry.blockName) {
-        blockName = HashedString(*entry.blockName);
+        blockName = *entry.blockName;
     } else {
-        std::string blockNameStr;
-        if (!entry.blockExpr->evalString(pos, blockNameStr)) {
+        entry.blockExpr->updateVariables(pos);
+        if (!entry.blockExpr->evalString(blockName)) {
             return nullptr;
         }
-        blockName = std::move(blockNameStr);
     }
     if (entry.data) {
-        auto dataEval  = std::llround(entry.data->evalScalar(pos));
+        entry.data->updateVariables(pos);
+        auto dataEval  = std::llround(entry.data->evalScalar());
         auto dataValue = static_cast<ushort>(dataEval < 0 ? 0 : dataEval);
         return Block::tryGetFromRegistry(blockName, dataValue);
     }
     return Block::tryGetFromRegistry(blockName);
 }
-} // namespace
 
 BlockListPattern::BlockListPattern(std::vector<PatternCompiledEntry> entries)
 : entries(std::move(entries)) {}
@@ -153,7 +169,8 @@ optional_ref<Block const> BlockListPattern::pickBlock(BlockPos const& pos) const
     weights.reserve(entries.size());
     double total = 0.0;
     for (auto const& entry : entries) {
-        auto weight = std::max(0.0, entry.weight->evalScalar(pos));
+        entry.weight->updateVariables(pos);
+        auto weight = std::max(0.0, entry.weight->evalScalar());
         weights.push_back(weight);
         total += weight;
     }

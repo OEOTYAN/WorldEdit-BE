@@ -35,8 +35,14 @@ REG_CMD(edit, set, "Set blocks in the region to a specific block type") {
             return;
         }
 
-        auto   record = std::make_shared<HistoryRecord>();
-        size_t num    = 0;
+        auto prepared = (*pattern)->prepare(ctx);
+        if (!prepared) {
+            ctx.error("Failed to prepare pattern");
+            prepared.error().log(ctx.output);
+            return;
+        }
+
+        auto record = std::make_shared<HistoryRecord>();
         region->forEachBlockInRegion([&](BlockPos const& pos) {
             auto block = (*pattern)->pickBlock(pos);
             if (!block) {
@@ -48,7 +54,7 @@ REG_CMD(edit, set, "Set blocks in the region to a specific block type") {
             blockOp.block = block;
             record->record(*lctx, blockSource, op);
         });
-        num = record->apply(*lctx, blockSource);
+        auto num = record->apply(*lctx, blockSource);
         lctx->history.addRecord(std::move(record));
         if (num == 0) {
             ctx.success("No blocks were changed");

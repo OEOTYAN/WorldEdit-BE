@@ -26,9 +26,11 @@ struct PatternWeightedEntry {
     std::optional<PatternExpr> data;
 };
 
+struct HandPatternAst {};
+
 struct BlockListPatternAst {
     std::vector<PatternWeightedEntry> entries;
 };
 
-using PatternAst = std::variant<BlockListPatternAst>;
+using PatternAst = std::variant<HandPatternAst, BlockListPatternAst>;
 } // namespace we

@@ -218,6 +218,10 @@ ll::Expected<PatternAst> PatternParser::parse(std::string_view input) {
         input = trimView(input.substr(1, input.size() - 2));
     }
 
+    if (input == "#hand") {
+        return PatternAst{HandPatternAst{}};
+    }
+
     BlockListPatternAst ast;
     for (auto& token : splitTopLevel(input, ',')) {
         if (token.empty()) {
