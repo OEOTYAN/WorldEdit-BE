@@ -61,7 +61,7 @@ jobs:
           path: artifact
 
       - run: |
-          cp CHANGELOG.md LICENSE README.md artifact/
+          cp LICENSE README.md artifact/
 
       - run: |
           zip -r ../${{ github.event.repository.name }}-${{ matrix.target_type }}-windows-x64.zip *

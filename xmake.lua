@@ -14,7 +14,7 @@ option_end()
 add_requires("levilamina", {configs = {target_type = get_config("target_type")}})
 add_requires("levibuildscript")
 
-add_requires("bsci")
+add_requires("bsci", {configs = {target_type = get_config("target_type")}})
 add_requires("tinyobjloader")
 add_requires("exprtk")
 -- add_requires("openimageio")
