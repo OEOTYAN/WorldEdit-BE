@@ -18,11 +18,10 @@ HistoryManager::HistoryManager(
     mHistoryRecords.resize(mMaxHistoryLength);
 }
 
-bool HistoryManager::addRecord(std::shared_ptr<HistoryRecord> record) {
-    if (!record || record->size() == 0) {
-        return false;
+void HistoryManager::addRecord(gsl::not_null<std::shared_ptr<HistoryRecord>> record) {
+    if (record->size() == 0) {
+        return; // 不记录没有实际操作的历史记录
     }
-
     std::lock_guard<std::mutex> lock(mMutex);
 
     // 如果当前不在历史记录的末尾，清除后续的记录
@@ -51,7 +50,6 @@ bool HistoryManager::addRecord(std::shared_ptr<HistoryRecord> record) {
     // 添加新记录
     mHistoryRecords[insertIndex] = std::move(record);
     mCurrentIndex                = mSize;
-    return true;
 }
 
 std::shared_ptr<HistoryRecord> HistoryManager::undo() {

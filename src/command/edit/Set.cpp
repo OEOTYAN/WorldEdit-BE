@@ -1,80 +1,63 @@
 #include "command/CommandMacro.h"
+#include "pattern/Pattern.h"
+#include "pattern/PatternParser.h"
 
 namespace we {
 REG_CMD(edit, set, "Set blocks in the region to a specific block type") {
     struct Params {
-        CommandBlockName                        block;
-        std::vector<BlockStateCommandParam>     states;
-        ll::command::Optional<CommandBlockName> exblock;
-        std::vector<BlockStateCommandParam>     exstates;
+        CommandBlockName block{};
+        CommandRawText   pattern;
     };
-    command.overload<Params>()
-        .required("block")
-        .optional("states")
-        .optional("exblock")
-        .optional("exstates")
-        .execute(
-            CmdCtxBuilder{} | [](CommandContextRef const& ctx, Params const& params) {
-                auto lctx = checkLocalContext(ctx);
-                if (!lctx) return;
-                auto region = checkRegion(ctx);
-                if (!region) return;
-                auto dim = checkDimension(ctx);
-                if (!dim) return;
-                auto& blockSource = dim->getBlockSourceFromMainChunkSource();
 
-                auto getBlock = [&](CommandBlockName const&                    b,
-                                    std::vector<BlockStateCommandParam> const& p) {
-                    optional_ref<Block const> block;
-                    auto&                     name = b.getBlockName();
-                    auto states = BlockStateCommandParam::toStateMap(p);
-                    if (!states) {
-                        ctx.error("Invalid block states:");
-                        states.error().log(ctx.output);
-                        return block;
-                    }
-                    block = Block::tryGetFromRegistry(name, states.value());
-                    if (!block) {
-                        ctx.error("Unknown block type: {0}", name);
-                    }
-                    return block;
-                };
+    auto executor = [](CommandContextRef const& ctx, Params const& params) {
+        auto lctx = checkLocalContext(ctx);
+        if (!lctx) return;
+        auto region = checkRegion(ctx);
+        if (!region) return;
+        auto dim = checkDimension(ctx);
+        if (!dim) return;
+        auto& blockSource = dim->getBlockSourceFromMainChunkSource();
 
-                auto block = getBlock(params.block, params.states);
-                if (!block) return;
-                optional_ref<Block const> exblock;
-                if (params.exblock) {
-                    exblock = getBlock(params.exblock, params.exstates);
-                    if (!exblock) return;
-                }
-                Operation op;
-                auto& blockOp = op.operation.emplace<BlockOperation>();
-                blockOp.block = block;
-                if (exblock) blockOp.extraBlock = exblock;
+        std::string_view patternStr = params.pattern.mText;
+        if (params.block.mBlockNameHash != 0) {
+            patternStr = params.block.getBlockName();
+        }
+        auto patternAst = PatternParser::parse(patternStr);
+        if (!patternAst) {
+            ctx.error("Invalid pattern");
+            patternAst.error().log(ctx.output);
+            return;
+        }
+        auto pattern = Pattern::fromAst(*patternAst);
+        if (!pattern) {
+            ctx.error("Failed to create pattern");
+            pattern.error().log(ctx.output);
+            return;
+        }
 
-                auto record = std::make_shared<HistoryRecord>();
-
-                region->forEachBlockInRegion([&](BlockPos const& pos) {
-                    op.pos = pos;
-                    record->record(*lctx, blockSource, op);
-                });
-                auto num = record->apply(*lctx, blockSource);
-                if (!lctx->history.addRecord(std::move(record))) {
-                    ctx.error("Failed to set");
-                    return;
-                }
-                if (params.exblock) {
-                    ctx.success(
-                        "Set {0} blocks to {1} with {2}",
-                        num,
-                        exblock->getTypeName(),
-                        block->getTypeName()
-                    );
-                } else {
-                    ctx.output
-                        .success("Set {0} blocks to {1}", num, block->getTypeName());
-                }
+        auto   record = std::make_shared<HistoryRecord>();
+        size_t num    = 0;
+        region->forEachBlockInRegion([&](BlockPos const& pos) {
+            auto block = (*pattern)->pickBlock(pos);
+            if (!block) {
+                return;
             }
-        );
+            Operation op;
+            op.pos        = pos;
+            auto& blockOp = op.operation.emplace<BlockOperation>();
+            blockOp.block = block;
+            record->record(*lctx, blockSource, op);
+        });
+        num = record->apply(*lctx, blockSource);
+        lctx->history.addRecord(std::move(record));
+        if (num == 0) {
+            ctx.success("No blocks were changed");
+        } else {
+            ctx.success("Set {0} blocks", num);
+        }
+    };
+
+    command.overload<Params>().required("block").execute(CmdCtxBuilder{} | executor);
+    command.overload<Params>().required("pattern").execute(CmdCtxBuilder{} | executor);
 }
 } // namespace we
