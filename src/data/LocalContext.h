@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ClipboardData.h"
 #include "Config.h"
 #include "builder/Builder.h"
 #include "data/HistoryManager.h"
@@ -13,6 +14,7 @@
 
 namespace we {
 class LocalContextManager;
+
 class LocalContext {
     friend LocalContextManager;
     std::atomic<Tick> mutable lastLeftClick;
@@ -34,6 +36,7 @@ public:
     std::optional<WithGeo<WithDim<BlockPos>>> offPos;
     std::optional<RegionType>                 regionType;
     std::shared_ptr<Region>                   region;
+    std::shared_ptr<ClipboardData>            clipboard;
     Config::PlayerConfig                      config;
     HistoryManager                            history;
     std::shared_ptr<Builder>                  builder;

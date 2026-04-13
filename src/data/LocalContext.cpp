@@ -7,6 +7,7 @@ namespace we {
 LocalContext::LocalContext(mce::UUID const& uuid, bool temp)
 : temp(temp),
   uuid(uuid),
+  clipboard(std::make_shared<ClipboardData>()),
   config(WorldEdit::getInstance().getConfig().player_default_config),
   history(*this) {
     setupBuilder(temp ? BuilderType::Inplace : BuilderType::None);

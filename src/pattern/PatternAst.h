@@ -28,9 +28,14 @@ struct PatternWeightedEntry {
 
 struct HandPatternAst {};
 
+struct ClipboardPatternAst {
+    BlockPos offset{0, 0, 0};
+    bool     useCenter = false;
+};
+
 struct BlockListPatternAst {
     std::vector<PatternWeightedEntry> entries;
 };
 
-using PatternAst = std::variant<HandPatternAst, BlockListPatternAst>;
+using PatternAst = std::variant<HandPatternAst, ClipboardPatternAst, BlockListPatternAst>;
 } // namespace we

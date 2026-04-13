@@ -82,6 +82,46 @@ std::vector<std::string_view> splitTopLevel(std::string_view input, char sep) {
     return result;
 }
 
+static ll::Expected<ClipboardPatternAst> parseClipboardPattern(std::string_view input) {
+    ClipboardPatternAst ast;
+    auto                value = trimView(input);
+    if (!value.starts_with("#clipboard")) {
+        return ll::makeStringError("invalid clipboard pattern");
+    }
+
+    auto suffix = trimView(value.substr(10));
+    if (suffix.empty()) {
+        return ast;
+    }
+    if (!suffix.starts_with("[") || !suffix.ends_with("]")) {
+        return ll::makeStringError("clipboard pattern arguments must be wrapped by []");
+    }
+
+    auto inner = trimView(suffix.substr(1, suffix.size() - 2));
+    if (inner.empty()) {
+        return ast;
+    }
+
+    if (inner == "@c") {
+        ast.useCenter = true;
+        return ast;
+    }
+
+    auto tokens = splitTopLevel(inner, ',');
+    if (tokens.size() > 3) {
+        return ll::makeStringError("clipboard offset supports at most 3 integers");
+    }
+
+    for (size_t i = 0; i < tokens.size(); ++i) {
+        auto token  = trimView(tokens[i]);
+        auto result = std::from_chars(&*token.begin(), &*token.end(), ast.offset[i]);
+        if (result.ec != std::errc{} || result.ptr != &*token.end()) {
+            return ll::makeStringError("clipboard offset must be integer");
+        }
+    }
+    return ast;
+}
+
 ll::Expected<PatternExpr> parseExpr(std::string_view input) {
     auto value = trimView(input);
     if (value.empty()) {
@@ -220,6 +260,13 @@ ll::Expected<PatternAst> PatternParser::parse(std::string_view input) {
 
     if (input == "#hand") {
         return PatternAst{HandPatternAst{}};
+    }
+    if (input.starts_with("#clipboard")) {
+        auto clipboard = parseClipboardPattern(input);
+        if (!clipboard) {
+            return ll::forwardError(clipboard.error());
+        }
+        return PatternAst{std::move(*clipboard)};
     }
 
     BlockListPatternAst ast;
