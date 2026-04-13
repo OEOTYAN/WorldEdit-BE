@@ -27,6 +27,10 @@ std::filesystem::path WorldEdit::getConfigPath() const {
     return getSelf().getConfigDir() / u8"config.json";
 }
 
+std::filesystem::path WorldEdit::getGradientDataPath() const {
+    return getSelf().getDataDir() / u8"gradients";
+}
+
 bool WorldEdit::loadConfig() {
     bool res{};
     mConfig.emplace();

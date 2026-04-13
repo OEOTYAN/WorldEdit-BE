@@ -45,3 +45,11 @@ target("WorldEdit") -- Change this to your mod name.
     --  add_includedirs("src-client")
     --  add_files("src-client/**.cpp")
     end
+    after_buildcmd(function(target, batchcmds)
+    local outputdir = path.join(os.projectdir(), "bin", target:name())
+    local assetsdir = path.join(os.projectdir(), "assets")
+        if os.isdir(assetsdir) then
+            batchcmds:mkdir(outputdir)
+            batchcmds:cp(path.join(assetsdir, "*"), outputdir)
+        end
+    end)

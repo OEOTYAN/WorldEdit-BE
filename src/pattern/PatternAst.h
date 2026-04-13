@@ -33,9 +33,15 @@ struct ClipboardPatternAst {
     bool     useCenter = false;
 };
 
+struct GradientPatternAst {
+    bool                     lighten = false;
+    std::vector<std::string> selectors;
+};
+
 struct BlockListPatternAst {
     std::vector<PatternWeightedEntry> entries;
 };
 
-using PatternAst = std::variant<HandPatternAst, ClipboardPatternAst, BlockListPatternAst>;
+using PatternAst = std::
+    variant<HandPatternAst, ClipboardPatternAst, GradientPatternAst, BlockListPatternAst>;
 } // namespace we

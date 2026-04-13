@@ -4,7 +4,13 @@
 
 ## 1. 当前范围
 
-当前 Pattern 模块只实现了 **Block List Pattern**，并已经接入 `set` 命令的 pattern 重载。
+当前 Pattern 模块已经实现以下几类 pattern，并已经接入 `set` 命令的 pattern 重载：
+
+- `Block List Pattern`
+- `#hand`
+- `#clipboard[...]`
+- `#lighten[...]`
+- `#darken[...]`
 
 当前涉及的主要文件：
 
@@ -12,12 +18,26 @@
 - `PatternParser.h/.cpp`：字符串解析
 - `Pattern.h/.cpp`：运行时接口与 AST 分发
 - `BlockListPattern.h/.cpp`：加权方块列表的编译与求值
+- `HandPattern.h/.cpp`：手持方块 pattern
+- `ClipboardPattern.h/.cpp`：剪贴板 pattern
+- `GradientPattern.h/.cpp`：梯度明暗切换 pattern
+- `data/GradientManager.h/.cpp`：梯度加载、保存、预设导入
 
 当前命令入口：
 
 - `set <pattern>`
 
 也就是说，目前 README 中提到的 pattern 语法，都是给 `set` 使用的。
+
+梯度文件当前存储为：
+
+- 数据目录：`data/gradients/<namespace>/<name>.json`
+- JSON 内容：纯字符串数组，例如 `[
+   "minecraft:white_wool",
+   "minecraft:light_gray_wool"
+]`
+
+`namespace` 与 `name` 由路径决定，不写在 JSON 本体里。
 
 ---
 
@@ -257,6 +277,41 @@ minecraft:planks:(y+z)
 ---
 
 ## 7. 示例
+
+### 7.1 手持方块
+
+```text
+#hand
+```
+
+使用执行者当前手持物品对应的方块。
+
+### 7.2 剪贴板
+
+```text
+#clipboard
+#clipboard[@c]
+#clipboard[1,0,-2]
+```
+
+- `#clipboard`：以选区最小点为基准
+- `#clipboard[@c]`：以选区中心为基准
+- `#clipboard[x,y,z]`：附加偏移
+
+### 7.3 梯度
+
+```text
+#lighten[nc:blue]
+#darken[nc:blue]
+#lighten[nc:blue,nc:purple]
+```
+
+- `#lighten[...]`：若当前位置方块属于某个梯度，则替换为该梯度中的下一项
+- `#darken[...]`：若当前位置方块属于某个梯度，则替换为该梯度中的上一项
+- 可传多个 selector，按顺序匹配第一个命中的梯度
+- selector 形式为 `<namespace>:<name>`；若省略命名空间，当前实现会落到 `default:<name>`
+
+如果当前位置方块不在任何梯度中，或者已经位于梯度边界，则该位置不会产生修改。
 
 下面示例都基于当前 parser 和运行时实现。
 

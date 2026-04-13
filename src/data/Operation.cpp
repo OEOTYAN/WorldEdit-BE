@@ -15,9 +15,6 @@ bool BlockOperation::apply(
     if (extraBlock) {
         applied |= context.setExtraBlock(source, pos, *extraBlock);
     }
-    if (biome) {
-        applied |= context.setBiome(source, pos, *biome);
-    }
     return applied;
 }
 
@@ -52,9 +49,38 @@ BlockOperation BlockOperation::record(
             }
         }
     }
-    if (biome) {
-        result.biome = &source.getBiome(pos);
+    return result;
+}
+
+bool BiomeOperation::apply(
+    LocalContext&   context,
+    BlockSource&    source,
+    BlockPos const& pos
+) const {
+    if (!biome) {
+        return false;
     }
+    return context.setBiome(source, pos, *biome);
+}
+
+BiomeOperation BiomeOperation::record(
+    LocalContext&,
+    BlockSource&    source,
+    BlockPos const& pos,
+    bool&           valid
+) const {
+    BiomeOperation result;
+    if (pos.y < source.getMinHeight() || source.getMaxHeight() <= pos.y) {
+        valid = false;
+        return result;
+    }
+    auto chunk = tryGetUsableChunk(source, pos);
+    if (!chunk) {
+        valid = false;
+        return result;
+    }
+    valid        = true;
+    result.biome = &source.getBiome(pos);
     return result;
 }
 } // namespace we

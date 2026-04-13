@@ -7,6 +7,7 @@ namespace we {
 struct ClipboardData {
     BlockPos                  size{0, 0, 0};
     std::vector<HashedString> blocks;
+    std::vector<HashedString> extraBlocks;
 
     bool empty() const {
         return blocks.empty() || size.x < 0 || size.y < 0 || size.z < 0;
@@ -45,6 +46,11 @@ struct ClipboardData {
 
         BlockOperation operation;
         operation.block = Block::tryGetFromRegistry(blocks[idx]);
+
+        if (idx < extraBlocks.size()) {
+            operation.extraBlock = Block::tryGetFromRegistry(extraBlocks[idx]);
+        }
+
         return operation;
     }
 };

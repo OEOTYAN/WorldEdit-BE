@@ -122,6 +122,43 @@ static ll::Expected<ClipboardPatternAst> parseClipboardPattern(std::string_view 
     return ast;
 }
 
+static ll::Expected<GradientPatternAst>
+parseGradientPattern(std::string_view input, bool lighten) {
+    GradientPatternAst ast;
+    ast.lighten = lighten;
+
+    auto prefix = lighten ? std::string_view{"#lighten"} : std::string_view{"#darken"};
+    auto value  = trimView(input);
+    if (!value.starts_with(prefix)) {
+        return ll::makeStringError("invalid gradient pattern");
+    }
+
+    auto suffix = trimView(value.substr(prefix.size()));
+    if (suffix.empty()) {
+        return ll::makeStringError("gradient pattern requires selectors");
+    }
+    if (!suffix.starts_with("[") || !suffix.ends_with("]")) {
+        return ll::makeStringError("gradient pattern arguments must be wrapped by []");
+    }
+
+    auto inner = trimView(suffix.substr(1, suffix.size() - 2));
+    if (inner.empty()) {
+        return ll::makeStringError("gradient pattern requires at least one selector");
+    }
+
+    for (auto token : splitTopLevel(inner, ',')) {
+        auto selector = trimView(token);
+        if (selector.empty()) {
+            continue;
+        }
+        ast.selectors.emplace_back(selector);
+    }
+    if (ast.selectors.empty()) {
+        return ll::makeStringError("gradient pattern requires at least one selector");
+    }
+    return ast;
+}
+
 ll::Expected<PatternExpr> parseExpr(std::string_view input) {
     auto value = trimView(input);
     if (value.empty()) {
@@ -267,6 +304,20 @@ ll::Expected<PatternAst> PatternParser::parse(std::string_view input) {
             return ll::forwardError(clipboard.error());
         }
         return PatternAst{std::move(*clipboard)};
+    }
+    if (input.starts_with("#lighten")) {
+        auto gradient = parseGradientPattern(input, true);
+        if (!gradient) {
+            return ll::forwardError(gradient.error());
+        }
+        return PatternAst{std::move(*gradient)};
+    }
+    if (input.starts_with("#darken")) {
+        auto gradient = parseGradientPattern(input, false);
+        if (!gradient) {
+            return ll::forwardError(gradient.error());
+        }
+        return PatternAst{std::move(*gradient)};
     }
 
     BlockListPatternAst ast;

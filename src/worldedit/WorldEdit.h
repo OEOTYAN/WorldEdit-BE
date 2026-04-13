@@ -5,8 +5,8 @@
 #include "data/Config.h"
 #include "data/LocalContextManager.h"
 
-#include <ll/api/mod/NativeMod.h>
 #include <ll/api/event/ListenerBase.h>
+#include <ll/api/mod/NativeMod.h>
 
 namespace we {
 
@@ -31,6 +31,8 @@ public:
 
     [[nodiscard]] std::filesystem::path getConfigPath() const;
 
+    [[nodiscard]] std::filesystem::path getGradientDataPath() const;
+
     bool loadConfig();
 
     bool saveConfig();
@@ -48,7 +50,7 @@ private:
     std::unique_ptr<bsci::GeometryGroup> mGeometryGroup;
     std::optional<Config>                mConfig;
     std::shared_ptr<LocalContextManager> mLocalContextManager;
-    std::vector<ll::event::ListenerPtr>   mListeners;
+    std::vector<ll::event::ListenerPtr>  mListeners;
 };
 
 inline ll::io::Logger& logger() { return WorldEdit::getInstance().getLogger(); }
