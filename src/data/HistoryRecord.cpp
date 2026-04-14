@@ -57,11 +57,7 @@ size_t HistoryRecord::apply(LocalContext& context, BlockSource& source) const {
     return totalApplied;
 }
 
-void HistoryRecord::record(
-    LocalContext&         context,
-    BlockSource&          source,
-    Operation op
-) {
+void HistoryRecord::record(LocalContext& context, BlockSource& source, Operation op) {
     if (context.masked(source, op.pos)) {
         // position is masked, do not record
         return;
@@ -70,9 +66,14 @@ void HistoryRecord::record(
         // already recorded
         return;
     }
+    if (op.pos.y < source.getMinHeight() || source.getMaxHeight() <= op.pos.y) {
+        // out of height range, do not record
+        return;
+    }
     bool valid;
     auto oldOp = op.record(context, source, valid);
     if (!valid) {
+        // TODO: wait for chunk to load and try again, for now just skip recording this operation
         return;
     }
     positionMap[op.pos] = newData.operations.size();

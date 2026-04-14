@@ -22,21 +22,16 @@ BlockOperation BlockOperation::record(
     LocalContext&,
     BlockSource&    source,
     BlockPos const& pos,
-    bool&           valid
+    bool&           deferred
 ) const {
     BlockOperation result;
-    if (pos.y < source.getMinHeight() || source.getMaxHeight() <= pos.y) {
-        // out of height range
-        valid = false;
-        return result;
-    }
-    auto chunk = tryGetUsableChunk(source, pos);
+    auto           chunk = tryGetUsableChunk(source, pos);
     if (!chunk) {
         // chunk not loaded
-        valid = false;
+        deferred = false;
         return result;
     }
-    valid = true;
+    deferred = true;
     ChunkBlockPos chunkBlockPos{pos, source.getMinHeight()};
     if (block) {
         result.block      = &chunk->getBlock(chunkBlockPos);
@@ -67,19 +62,15 @@ BiomeOperation BiomeOperation::record(
     LocalContext&,
     BlockSource&    source,
     BlockPos const& pos,
-    bool&           valid
+    bool&           deferred
 ) const {
     BiomeOperation result;
-    if (pos.y < source.getMinHeight() || source.getMaxHeight() <= pos.y) {
-        valid = false;
-        return result;
-    }
-    auto chunk = tryGetUsableChunk(source, pos);
+    auto           chunk = tryGetUsableChunk(source, pos);
     if (!chunk) {
-        valid = false;
+        deferred = false;
         return result;
     }
-    valid        = true;
+    deferred     = true;
     result.biome = &source.getBiome(pos);
     return result;
 }

@@ -22,7 +22,7 @@ struct BlockOperation {
         LocalContext&   context,
         BlockSource&    source,
         BlockPos const& pos,
-        bool&           valid
+        bool&           deferred
     ) const;
 };
 struct BiomeOperation {
@@ -35,7 +35,7 @@ struct BiomeOperation {
         LocalContext&   context,
         BlockSource&    source,
         BlockPos const& pos,
-        bool&           valid
+        bool&           deferred
     ) const;
 };
 struct EntityOperation {
@@ -56,12 +56,12 @@ public:
             operation
         );
     }
-    Operation record(LocalContext& context, BlockSource& source, bool& valid) const {
+    Operation record(LocalContext& context, BlockSource& source, bool& deferred) const {
         return Operation{
             pos,
             std::visit(
                 [&](auto&& arg) -> VariantType {
-                    return arg.record(context, source, pos, valid);
+                    return arg.record(context, source, pos, deferred);
                 },
                 operation
             )
