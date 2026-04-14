@@ -11,6 +11,9 @@
 - `#clipboard[...]`
 - `#lighten[...]`
 - `#darken[...]`
+- `SNBT Block`
+- `Packed Block`（`[block, extra, blockEntity]`）
+- `block[k=v,...]` 状态块
 
 当前涉及的主要文件：
 
@@ -63,13 +66,23 @@ entry := [weight "%"] block [":" data]
 - `block`：方块说明，可以是静态方块名，也可以是表达式
 - `data`：方块 data，可省略；可为数字或表达式
 
+其中 `block` 现在还可以进一步写成：
+
+```text
+block
+block[k=v,...]
+{...}
+[block, extra]
+[block, extra, blockEntity]
+```
+
 ---
 
 ## 3. 词法与分隔规则
 
 ### 3.1 顶层逗号
 
-顶层逗号用于分隔条目，但 **括号表达式内部** 和 **exprtk 单引号字符串内部** 的逗号不会被当作分隔符。
+顶层逗号用于分隔条目，但 **括号表达式内部**、**状态列表内部**、**SNBT 内部** 和 **字符串内部** 的逗号不会被当作分隔符。
 
 例如：
 
@@ -111,7 +124,31 @@ minecraft:stone
 
 如果想让 block 字段走表达式路径，必须把整个表达式包在一层括号里。
 
-### 3.4 exprtk 字符串
+### 3.4 方括号的两种意义
+
+方括号现在有两种不同语义：
+
+1. `block[k=v,...]`
+   - 当方括号紧跟在块名后面时，表示**方块状态列表**
+2. `[block, extra, blockEntity]`
+   - 当条目本体直接以 `[` 开头时，表示**固定顺序打包**
+   - 第 1 项：主方块
+   - 第 2 项：extra 方块
+   - 第 3 项：方块实体 SNBT
+
+外层打包当前最多支持 3 项。
+
+### 3.5 花括号的意义
+
+花括号表示一个独立的 SNBT 方块描述：
+
+```text
+{"name":"minecraft:stone"}
+```
+
+它既可以单独作为一个 block，也可以出现在外层打包里。
+
+### 3.6 exprtk 字符串
 
 因为外层 pattern 现在使用 `()` 标记表达式，所以 exprtk 内部仍然可以继续使用单引号字符串。
 
@@ -193,6 +230,47 @@ stone
 - 字符串路径：表达式返回块名
 - 数值路径：表达式返回 runtime id
 
+#### 形式 C：状态块
+
+可以在块名后面附加状态列表：
+
+```text
+piston[face=north]
+oak_stairs[waterlogged=true,facing=north]
+```
+
+状态值支持：
+
+- `bool`
+- `int`
+- `float`
+- `string`
+
+当 key 或 value 以字母或下划线开头，且后续字符只包含字母数字、`-`、`+`、`_`、`.` 时，可以省略双引号。
+
+#### 形式 D：SNBT 块
+
+可以直接写一个 SNBT block：
+
+```text
+{"name":"minecraft:stone"}
+```
+
+#### 形式 E：打包块
+
+可以写固定顺序打包：
+
+```text
+[stair,{"name":"minecraft:water"}]
+[stair,{"name":"minecraft:water"},{id:"Sign",Text:"hi"}]
+```
+
+含义为：
+
+- 第 1 项主方块
+- 第 2 项 extra 方块
+- 第 3 项方块实体 SNBT
+
 ### 4.3 data
 
 `data` 位于最后一个 `:` 右边。
@@ -215,6 +293,8 @@ minecraft:planks:(y+z)
 - `data` 表达式结果会先四舍五入
 - 如果结果小于 `0`，则会被钳制为 `0`
 - 随后按 `tryGetFromRegistry(name, data)` 解析
+
+注意：当前 `:data` 只用于普通块名/动态块名路径，不和状态块、SNBT 块做组合语义扩展。
 
 ---
 

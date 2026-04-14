@@ -16,14 +16,44 @@ struct PatternRuntimeExpr {
 
 using PatternExpr = std::variant<PatternLiteralExpr, PatternRuntimeExpr>;
 
+using PatternStateValue = std::variant<int, float, bool, std::string>;
+
+struct PatternBlockStateAst {
+    std::string       key;
+    PatternStateValue value;
+};
+
+struct PatternNamedBlockAst {
+    std::string                       name;
+    std::vector<PatternBlockStateAst> states;
+    std::optional<PatternExpr>        data;
+};
+
+struct PatternDynamicBlockAst {
+    PatternRuntimeExpr         source;
+    std::optional<PatternExpr> data;
+};
+
+struct PatternSnbtBlockAst {
+    std::string source;
+};
+
+using PatternSimpleBlockSpec =
+    std::variant<PatternNamedBlockAst, PatternDynamicBlockAst, PatternSnbtBlockAst>;
+
+struct PatternPackedBlockSpec {
+    std::optional<PatternSimpleBlockSpec> block;
+    std::optional<PatternSimpleBlockSpec> extraBlock;
+    std::optional<std::string>            blockEntity;
+};
+
 struct PatternBlockSpec {
-    std::variant<std::string, PatternRuntimeExpr> source;
+    std::variant<PatternSimpleBlockSpec, PatternPackedBlockSpec> source;
 };
 
 struct PatternWeightedEntry {
-    PatternExpr                weight;
-    PatternBlockSpec           block;
-    std::optional<PatternExpr> data;
+    PatternExpr      weight;
+    PatternBlockSpec block;
 };
 
 struct HandPatternAst {};

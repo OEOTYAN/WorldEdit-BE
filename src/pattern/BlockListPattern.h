@@ -6,11 +6,24 @@
 
 namespace we {
 struct PatternCompiledExpr;
-struct PatternCompiledEntry {
-    std::unique_ptr<PatternCompiledExpr> weight;
+struct PatternCachedSimpleBlock {
+    optional_ref<Block const> block = nullptr;
+};
+
+struct PatternDynamicSimpleBlock {
     std::optional<std::string>           blockName;
-    std::unique_ptr<PatternCompiledExpr> blockExpr;
     std::unique_ptr<PatternCompiledExpr> data;
+    std::unique_ptr<PatternCompiledExpr> blockExpr;
+};
+
+using PatternCompiledSimpleBlock =
+    std::variant<PatternCachedSimpleBlock, PatternDynamicSimpleBlock>;
+
+struct PatternCompiledEntry {
+    std::unique_ptr<PatternCompiledExpr>      weight;
+    std::optional<PatternCompiledSimpleBlock> block;
+    std::optional<PatternCompiledSimpleBlock> extraBlock;
+    std::optional<CompoundTag>                cachedBlockEntityTag;
 };
 
 class BlockListPattern : public Pattern {

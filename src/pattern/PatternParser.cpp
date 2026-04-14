@@ -22,26 +22,55 @@ bool isBlockNameChar(char ch) {
         || ch == '-';
 }
 
-std::optional<size_t> findParenthesizedEnd(std::string_view input, size_t begin) {
-    if (begin >= input.size() || input[begin] != '(') {
+bool isBlockNamespaceStartChar(char ch) {
+    return std::isalpha(static_cast<unsigned char>(ch)) || ch == '_';
+}
+
+bool isTrivialNbtStringStartChar(char ch) {
+    return std::isalpha(static_cast<unsigned char>(ch)) || ch == '_';
+}
+
+bool isTrivialNbtStringChar(char ch) {
+    return std::isalnum(static_cast<unsigned char>(ch)) || ch == '-' || ch == '+'
+        || ch == '_' || ch == '.';
+}
+
+std::optional<size_t>
+findMatching(std::string_view input, size_t begin, char open, char close) {
+    if (begin >= input.size() || input[begin] != open) {
         return std::nullopt;
     }
-    int  parenDepth = 0;
-    bool inQuote    = false;
+
+    int  depth          = 0;
+    bool inSingleQuote  = false;
+    bool inDoubleQuote  = false;
+    bool escapeNextChar = false;
     for (size_t i = begin; i < input.size(); ++i) {
         char ch = input[i];
-        if (ch == '\'') {
-            inQuote = !inQuote;
+        if (escapeNextChar) {
+            escapeNextChar = false;
             continue;
         }
-        if (inQuote) {
+        if (ch == '\\') {
+            escapeNextChar = true;
             continue;
         }
-        if (ch == '(') {
-            ++parenDepth;
-        } else if (ch == ')') {
-            --parenDepth;
-            if (parenDepth == 0) {
+        if (!inDoubleQuote && ch == '\'') {
+            inSingleQuote = !inSingleQuote;
+            continue;
+        }
+        if (!inSingleQuote && ch == '"') {
+            inDoubleQuote = !inDoubleQuote;
+            continue;
+        }
+        if (inSingleQuote || inDoubleQuote) {
+            continue;
+        }
+        if (ch == open) {
+            ++depth;
+        } else if (ch == close) {
+            --depth;
+            if (depth == 0) {
                 return i;
             }
         }
@@ -51,23 +80,41 @@ std::optional<size_t> findParenthesizedEnd(std::string_view input, size_t begin)
 
 std::vector<std::string_view> splitTopLevel(std::string_view input, char sep) {
     std::vector<std::string_view> result;
-    auto                          start      = size_t{0};
-    int                           parenDepth = 0;
-    bool                          inString   = false;
+    size_t                        start          = 0;
+    int                           parenDepth     = 0;
+    int                           bracketDepth   = 0;
+    int                           braceDepth     = 0;
+    bool                          inSingleQuote  = false;
+    bool                          inDoubleQuote  = false;
+    bool                          escapeNextChar = false;
     for (size_t i = 0; i < input.size(); ++i) {
         char ch = input[i];
-        if (ch == '\'') {
-            inString = !inString;
+        if (escapeNextChar) {
+            escapeNextChar = false;
             continue;
         }
-        if (inString) {
+        if (ch == '\\') {
+            escapeNextChar = true;
             continue;
         }
-        if (ch == '(') {
-            ++parenDepth;
-        } else if (ch == ')') {
-            --parenDepth;
-        } else if (ch == sep && parenDepth == 0) {
+        if (!inDoubleQuote && ch == '\'') {
+            inSingleQuote = !inSingleQuote;
+            continue;
+        }
+        if (!inSingleQuote && ch == '"') {
+            inDoubleQuote = !inDoubleQuote;
+            continue;
+        }
+        if (inSingleQuote || inDoubleQuote) {
+            continue;
+        }
+        if (ch == '(') ++parenDepth;
+        else if (ch == ')') --parenDepth;
+        else if (ch == '[') ++bracketDepth;
+        else if (ch == ']') --bracketDepth;
+        else if (ch == '{') ++braceDepth;
+        else if (ch == '}') --braceDepth;
+        else if (ch == sep && parenDepth == 0 && bracketDepth == 0 && braceDepth == 0) {
             auto token = trimView(input.substr(start, i - start));
             if (!token.empty()) {
                 result.push_back(token);
@@ -82,7 +129,427 @@ std::vector<std::string_view> splitTopLevel(std::string_view input, char sep) {
     return result;
 }
 
-static ll::Expected<ClipboardPatternAst> parseClipboardPattern(std::string_view input) {
+ll::Expected<PatternExpr> parseExpr(std::string_view input) {
+    auto value = trimView(input);
+    if (value.empty()) {
+        return ll::makeStringError("empty expression");
+    }
+    if (value.front() == '(') {
+        auto end = findMatching(value, 0, '(', ')');
+        if (!end) {
+            return ll::makeStringError("unterminated expression");
+        }
+        if (!trimView(value.substr(*end + 1)).empty()) {
+            return ll::makeStringError("unexpected trailing characters after expression");
+        }
+        return PatternRuntimeExpr{std::string(value.substr(1, *end - 1))};
+    }
+
+    double literal = 0.0;
+    auto   begin   = value.data();
+    auto   end     = value.data() + value.size();
+    auto   result  = std::from_chars(begin, end, literal);
+    if (result.ec == std::errc{} && result.ptr == end) {
+        return PatternLiteralExpr{literal};
+    }
+    return PatternRuntimeExpr{std::string(value)};
+}
+
+ll::Expected<std::optional<PatternExpr>> parseOptionalData(std::string_view input) {
+    auto value = trimView(input);
+    if (value.empty()) {
+        return std::nullopt;
+    }
+    return parseExpr(value);
+}
+
+ll::Expected<std::string> parseSimpleString(std::string_view input) {
+    auto value = trimView(input);
+    if (value.empty()) {
+        return ll::makeStringError("expected string");
+    }
+    if (value.front() == '"') {
+        bool escapeNextChar = false;
+        for (size_t i = 1; i < value.size(); ++i) {
+            char ch = value[i];
+            if (escapeNextChar) {
+                escapeNextChar = false;
+                continue;
+            }
+            if (ch == '\\') {
+                escapeNextChar = true;
+                continue;
+            }
+            if (ch == '"') {
+                if (!trimView(value.substr(i + 1)).empty()) {
+                    return ll::makeStringError(
+                        "unexpected trailing characters after string"
+                    );
+                }
+                return std::string(value.substr(1, i - 1));
+            }
+        }
+        return ll::makeStringError("unterminated string");
+    }
+
+    if (!isTrivialNbtStringStartChar(value.front())) {
+        return ll::makeStringError("invalid unquoted string");
+    }
+    for (char ch : value) {
+        if (!isTrivialNbtStringChar(ch)) {
+            return ll::makeStringError("invalid unquoted string");
+        }
+    }
+    return std::string(value);
+}
+
+ll::Expected<PatternStateValue> parseStateValue(std::string_view input) {
+    auto value = trimView(input);
+    if (value.empty()) {
+        return ll::makeStringError("state value is empty");
+    }
+    if (value == "true") {
+        return PatternStateValue{true};
+    }
+    if (value == "false") {
+        return PatternStateValue{false};
+    }
+
+    int  intValue = 0;
+    auto intRes   = std::from_chars(value.data(), value.data() + value.size(), intValue);
+    if (intRes.ec == std::errc{} && intRes.ptr == value.data() + value.size()) {
+        return PatternStateValue{intValue};
+    }
+
+    bool maybeFloat = false;
+    for (char ch : value) {
+        if (ch == '.' || ch == 'e' || ch == 'E') {
+            maybeFloat = true;
+            break;
+        }
+    }
+    if (maybeFloat) {
+        try {
+            size_t parsed     = 0;
+            float  floatValue = std::stof(std::string(value), &parsed);
+            if (parsed == value.size()) {
+                return PatternStateValue{floatValue};
+            }
+        } catch (...) {}
+    }
+
+    auto stringValue = parseSimpleString(value);
+    if (!stringValue) {
+        return ll::forwardError(stringValue.error());
+    }
+    return PatternStateValue{stringValue.value()};
+}
+
+ll::Expected<PatternBlockStateAst> parseStateItem(std::string_view input) {
+    auto value = trimView(input);
+    if (value.empty()) {
+        return ll::makeStringError("empty block state item");
+    }
+
+    size_t equalsPos      = std::string::npos;
+    bool   inSingleQuote  = false;
+    bool   inDoubleQuote  = false;
+    bool   escapeNextChar = false;
+    for (size_t i = 0; i < value.size(); ++i) {
+        char ch = value[i];
+        if (escapeNextChar) {
+            escapeNextChar = false;
+            continue;
+        }
+        if (ch == '\\') {
+            escapeNextChar = true;
+            continue;
+        }
+        if (!inDoubleQuote && ch == '\'') {
+            inSingleQuote = !inSingleQuote;
+            continue;
+        }
+        if (!inSingleQuote && ch == '"') {
+            inDoubleQuote = !inDoubleQuote;
+            continue;
+        }
+        if (!inSingleQuote && !inDoubleQuote && ch == '=') {
+            equalsPos = i;
+            break;
+        }
+    }
+    if (equalsPos == std::string::npos) {
+        return ll::makeStringError("block state item must contain '='");
+    }
+
+    auto key = parseSimpleString(value.substr(0, equalsPos));
+    if (!key) {
+        return ll::forwardError(key.error());
+    }
+    auto parsedValue = parseStateValue(value.substr(equalsPos + 1));
+    if (!parsedValue) {
+        return ll::forwardError(parsedValue.error());
+    }
+    return PatternBlockStateAst{key.value(), parsedValue.value()};
+}
+
+ll::Expected<std::vector<PatternBlockStateAst>> parseStateList(std::string_view input) {
+    std::vector<PatternBlockStateAst> result;
+    for (auto token : splitTopLevel(trimView(input), ',')) {
+        auto state = parseStateItem(token);
+        if (!state) {
+            return ll::forwardError(state.error());
+        }
+        result.push_back(std::move(state.value()));
+    }
+    return result;
+}
+
+ll::Expected<PatternSimpleBlockSpec> parseSimpleBlock(std::string_view input) {
+    auto value = trimView(input);
+    if (value.empty()) {
+        return ll::makeStringError("empty block spec");
+    }
+    if (value.front() == '(') {
+        auto end = findMatching(value, 0, '(', ')');
+        if (!end) {
+            return ll::makeStringError("unterminated block expression");
+        }
+        if (!trimView(value.substr(*end + 1)).empty()) {
+            return ll::makeStringError(
+                "unexpected trailing characters after block expression"
+            );
+        }
+        PatternDynamicBlockAst block;
+        block.source = PatternRuntimeExpr{std::string(value.substr(1, *end - 1))};
+        return block;
+    }
+    if (value.front() == '{') {
+        auto end = findMatching(value, 0, '{', '}');
+        if (!end) {
+            return ll::makeStringError("unterminated SNBT block");
+        }
+        if (!trimView(value.substr(*end + 1)).empty()) {
+            return ll::makeStringError("unexpected trailing characters after SNBT block");
+        }
+        return PatternSnbtBlockAst{std::string(value.substr(0, *end + 1))};
+    }
+
+    size_t i = 0;
+    while (i < value.size() && isBlockNameChar(value[i])) {
+        ++i;
+    }
+    if (i < value.size() && value[i] == ':' && i + 1 < value.size()
+        && isBlockNamespaceStartChar(value[i + 1])) {
+        ++i;
+        while (i < value.size() && isBlockNameChar(value[i])) {
+            ++i;
+        }
+    }
+    if (i == 0) {
+        return ll::makeStringError("invalid block spec");
+    }
+
+    PatternNamedBlockAst block;
+    block.name = std::string(value.substr(0, i));
+
+    auto tail = trimView(value.substr(i));
+    if (!tail.empty()) {
+        if (tail.front() != '[') {
+            return ll::makeStringError("unexpected trailing characters after block spec");
+        }
+        auto end = findMatching(tail, 0, '[', ']');
+        if (!end) {
+            return ll::makeStringError("unterminated block state list");
+        }
+        if (!trimView(tail.substr(*end + 1)).empty()) {
+            return ll::makeStringError(
+                "unexpected trailing characters after block state list"
+            );
+        }
+        auto states = parseStateList(tail.substr(1, *end - 1));
+        if (!states) {
+            return ll::forwardError(states.error());
+        }
+        block.states = std::move(states.value());
+    }
+    return block;
+}
+
+ll::Expected<std::pair<PatternSimpleBlockSpec, std::string_view>>
+parseSimpleBlockWithTail(std::string_view input) {
+    auto value = trimView(input);
+    if (value.empty()) {
+        return ll::makeStringError("empty block spec");
+    }
+    if (value.front() == '(') {
+        auto end = findMatching(value, 0, '(', ')');
+        if (!end) {
+            return ll::makeStringError("unterminated block expression");
+        }
+        PatternDynamicBlockAst block;
+        block.source = PatternRuntimeExpr{std::string(value.substr(1, *end - 1))};
+        return std::pair{
+            PatternSimpleBlockSpec{std::move(block)},
+            trimView(value.substr(*end + 1))
+        };
+    }
+    if (value.front() == '{') {
+        auto end = findMatching(value, 0, '{', '}');
+        if (!end) {
+            return ll::makeStringError("unterminated SNBT block");
+        }
+        return std::pair{
+            PatternSimpleBlockSpec{
+                PatternSnbtBlockAst{std::string(value.substr(0, *end + 1))}
+            },
+            trimView(value.substr(*end + 1))
+        };
+    }
+
+    size_t i = 0;
+    while (i < value.size() && isBlockNameChar(value[i])) {
+        ++i;
+    }
+    if (i < value.size() && value[i] == ':' && i + 1 < value.size()
+        && isBlockNamespaceStartChar(value[i + 1])) {
+        ++i;
+        while (i < value.size() && isBlockNameChar(value[i])) {
+            ++i;
+        }
+    }
+    if (i == 0) {
+        return ll::makeStringError("invalid block spec");
+    }
+
+    PatternNamedBlockAst block;
+    block.name = std::string(value.substr(0, i));
+
+    auto tail = trimView(value.substr(i));
+    if (!tail.empty() && tail.front() == '[') {
+        auto end = findMatching(tail, 0, '[', ']');
+        if (!end) {
+            return ll::makeStringError("unterminated block state list");
+        }
+        auto states = parseStateList(tail.substr(1, *end - 1));
+        if (!states) {
+            return ll::forwardError(states.error());
+        }
+        block.states = std::move(states.value());
+        tail         = trimView(tail.substr(*end + 1));
+    }
+
+    if (!tail.empty() && tail.front() == ':') {
+        auto data = parseOptionalData(tail.substr(1));
+        if (!data) {
+            return ll::forwardError(data.error());
+        }
+        block.data = std::move(data.value());
+        tail       = std::string_view{};
+    }
+
+    return std::pair{PatternSimpleBlockSpec{std::move(block)}, trimView(tail)};
+}
+
+ll::Expected<PatternBlockSpec> parseBlockSpec(std::string_view input) {
+    auto value = trimView(input);
+    if (value.empty()) {
+        return ll::makeStringError("empty block spec");
+    }
+    if (value.front() == '[') {
+        auto end = findMatching(value, 0, '[', ']');
+        if (!end) {
+            return ll::makeStringError("unterminated packed block spec");
+        }
+        if (!trimView(value.substr(*end + 1)).empty()) {
+            return ll::makeStringError(
+                "unexpected trailing characters after packed block spec"
+            );
+        }
+
+        auto items = splitTopLevel(value.substr(1, *end - 1), ',');
+        if (items.empty() || items.size() > 3) {
+            return ll::makeStringError("packed block spec supports 1 to 3 items");
+        }
+
+        PatternPackedBlockSpec packed;
+        auto                   block = parseSimpleBlockWithTail(items[0]);
+        if (!block) {
+            return ll::forwardError(block.error());
+        }
+        if (!trimView(block.value().second).empty()) {
+            return ll::makeStringError(
+                "unexpected trailing characters after packed block item"
+            );
+        }
+        packed.block = std::move(block.value().first);
+
+        if (items.size() >= 2) {
+            auto extra = parseSimpleBlockWithTail(items[1]);
+            if (!extra) {
+                return ll::forwardError(extra.error());
+            }
+            if (!trimView(extra.value().second).empty()) {
+                return ll::makeStringError(
+                    "unexpected trailing characters after packed extra block item"
+                );
+            }
+            packed.extraBlock = std::move(extra.value().first);
+        }
+
+        if (items.size() == 3) {
+            auto entity = trimView(items[2]);
+            if (entity.empty() || entity.front() != '{') {
+                return ll::makeStringError("packed block entity must be SNBT");
+            }
+            auto entityEnd = findMatching(entity, 0, '{', '}');
+            if (!entityEnd || !trimView(entity.substr(*entityEnd + 1)).empty()) {
+                return ll::makeStringError("invalid packed block entity SNBT");
+            }
+            packed.blockEntity = std::string(entity.substr(0, *entityEnd + 1));
+        }
+        return PatternBlockSpec{std::move(packed)};
+    }
+
+    auto simple = parseSimpleBlockWithTail(value);
+    if (!simple) {
+        return ll::forwardError(simple.error());
+    }
+    if (!trimView(simple.value().second).empty()) {
+        return ll::makeStringError("unexpected trailing characters after block spec");
+    }
+    return PatternBlockSpec{std::move(simple.value().first)};
+}
+
+ll::Expected<std::pair<PatternBlockSpec, std::string_view>>
+parseBlockSpecWithTail(std::string_view input) {
+    auto value = trimView(input);
+    if (value.empty()) {
+        return ll::makeStringError("empty block spec");
+    }
+    if (value.front() == '[') {
+        auto end = findMatching(value, 0, '[', ']');
+        if (!end) {
+            return ll::makeStringError("unterminated packed block spec");
+        }
+        auto block = parseBlockSpec(value.substr(0, *end + 1));
+        if (!block) {
+            return ll::forwardError(block.error());
+        }
+        return std::pair{std::move(block.value()), trimView(value.substr(*end + 1))};
+    }
+
+    auto simple = parseSimpleBlockWithTail(value);
+    if (!simple) {
+        return ll::forwardError(simple.error());
+    }
+    return std::pair{
+        PatternBlockSpec{std::move(simple.value().first)},
+        simple.value().second
+    };
+}
+
+ll::Expected<ClipboardPatternAst> parseClipboardPattern(std::string_view input) {
     ClipboardPatternAst ast;
     auto                value = trimView(input);
     if (!value.starts_with("#clipboard")) {
@@ -101,7 +568,6 @@ static ll::Expected<ClipboardPatternAst> parseClipboardPattern(std::string_view 
     if (inner.empty()) {
         return ast;
     }
-
     if (inner == "@c") {
         ast.useCenter = true;
         return ast;
@@ -111,18 +577,18 @@ static ll::Expected<ClipboardPatternAst> parseClipboardPattern(std::string_view 
     if (tokens.size() > 3) {
         return ll::makeStringError("clipboard offset supports at most 3 integers");
     }
-
     for (size_t i = 0; i < tokens.size(); ++i) {
-        auto token  = trimView(tokens[i]);
-        auto result = std::from_chars(&*token.begin(), &*token.end(), ast.offset[i]);
-        if (result.ec != std::errc{} || result.ptr != &*token.end()) {
+        auto token = trimView(tokens[i]);
+        auto result =
+            std::from_chars(token.data(), token.data() + token.size(), ast.offset[i]);
+        if (result.ec != std::errc{} || result.ptr != token.data() + token.size()) {
             return ll::makeStringError("clipboard offset must be integer");
         }
     }
     return ast;
 }
 
-static ll::Expected<GradientPatternAst>
+ll::Expected<GradientPatternAst>
 parseGradientPattern(std::string_view input, bool lighten) {
     GradientPatternAst ast;
     ast.lighten = lighten;
@@ -148,84 +614,14 @@ parseGradientPattern(std::string_view input, bool lighten) {
 
     for (auto token : splitTopLevel(inner, ',')) {
         auto selector = trimView(token);
-        if (selector.empty()) {
-            continue;
+        if (!selector.empty()) {
+            ast.selectors.emplace_back(selector);
         }
-        ast.selectors.emplace_back(selector);
     }
     if (ast.selectors.empty()) {
         return ll::makeStringError("gradient pattern requires at least one selector");
     }
     return ast;
-}
-
-ll::Expected<PatternExpr> parseExpr(std::string_view input) {
-    auto value = trimView(input);
-    if (value.empty()) {
-        return ll::makeStringError("empty expression");
-    }
-    if (value.front() == '(') {
-        auto end = findParenthesizedEnd(value, 0);
-        if (!end) {
-            return ll::makeStringError("unterminated expression");
-        }
-        if (!trimView(value.substr(*end + 1)).empty()) {
-            return ll::makeStringError("unexpected trailing characters after expression");
-        }
-        return PatternRuntimeExpr{std::string(value.substr(1, *end - 1))};
-    }
-    double literal = 0.0;
-    auto   begin   = value.data();
-    auto   end     = value.data() + value.size();
-    auto   result  = std::from_chars(begin, end, literal);
-    if (result.ec == std::errc{} && result.ptr == end) {
-        return PatternLiteralExpr{literal};
-    }
-    return PatternRuntimeExpr{std::string(value)};
-}
-
-ll::Expected<std::pair<PatternBlockSpec, std::string_view>>
-parseBlockSpecWithTail(std::string_view input) {
-    auto value = trimView(input);
-    if (value.empty()) {
-        return ll::makeStringError("empty block spec");
-    }
-    if (value.front() == '(') {
-        auto end = findParenthesizedEnd(value, 0);
-        if (!end) {
-            return ll::makeStringError("unterminated block expression");
-        }
-        return std::pair{
-            PatternBlockSpec{PatternRuntimeExpr{std::string(value.substr(1, *end - 1))}},
-            trimView(value.substr(*end + 1))
-        };
-    }
-
-    size_t i = 0;
-    while (i < value.size() && isBlockNameChar(value[i])) {
-        ++i;
-    }
-    if (i < value.size() && value[i] == ':' && i + 1 < value.size()
-        && isBlockNameChar(value[i + 1])) {
-        ++i;
-        while (i < value.size() && isBlockNameChar(value[i])) {
-            ++i;
-        }
-    }
-    if (i == 0) {
-        return ll::makeStringError("invalid block spec");
-    }
-
-    std::string blockName{value.substr(0, i)};
-    return std::pair{PatternBlockSpec{std::move(blockName)}, trimView(value.substr(i))};
-}
-
-ll::Expected<std::optional<PatternExpr>> parseDataSpec(std::string_view input) {
-    auto value = trimView(input);
-    if (value.empty()) {
-        return std::nullopt;
-    }
-    return parseExpr(value);
 }
 
 ll::Expected<PatternWeightedEntry> parseEntry(std::string_view input) {
@@ -234,21 +630,41 @@ ll::Expected<PatternWeightedEntry> parseEntry(std::string_view input) {
         return ll::makeStringError("empty pattern entry");
     }
 
-    size_t percentPos = std::string::npos;
-    bool   inString   = false;
-    int    parenDepth = 0;
+    size_t percentPos     = std::string::npos;
+    bool   inSingleQuote  = false;
+    bool   inDoubleQuote  = false;
+    bool   escapeNextChar = false;
+    int    parenDepth     = 0;
+    int    bracketDepth   = 0;
+    int    braceDepth     = 0;
     for (size_t i = 0; i < text.size(); ++i) {
         char ch = text[i];
-        if (ch == '\'') {
-            inString = !inString;
+        if (escapeNextChar) {
+            escapeNextChar = false;
             continue;
         }
-        if (inString) {
+        if (ch == '\\') {
+            escapeNextChar = true;
+            continue;
+        }
+        if (!inDoubleQuote && ch == '\'') {
+            inSingleQuote = !inSingleQuote;
+            continue;
+        }
+        if (!inSingleQuote && ch == '"') {
+            inDoubleQuote = !inDoubleQuote;
+            continue;
+        }
+        if (inSingleQuote || inDoubleQuote) {
             continue;
         }
         if (ch == '(') ++parenDepth;
         else if (ch == ')') --parenDepth;
-        else if (ch == '%' && parenDepth == 0) {
+        else if (ch == '[') ++bracketDepth;
+        else if (ch == ']') --bracketDepth;
+        else if (ch == '{') ++braceDepth;
+        else if (ch == '}') --braceDepth;
+        else if (ch == '%' && parenDepth == 0 && bracketDepth == 0 && braceDepth == 0) {
             percentPos = i;
             break;
         }
@@ -261,31 +677,16 @@ ll::Expected<PatternWeightedEntry> parseEntry(std::string_view input) {
         if (!expr) {
             return ll::forwardError(expr.error());
         }
-        weight = *expr;
+        weight = expr.value();
         remain = trimView(text.substr(percentPos + 1));
     }
 
-    PatternBlockSpec           block;
-    std::optional<PatternExpr> data;
-    auto                       parsedBlock = parseBlockSpecWithTail(remain);
-    if (!parsedBlock) {
-        return ll::forwardError(parsedBlock.error());
-    }
-    block = std::move(parsedBlock->first);
-
-    auto tail = trimView(parsedBlock->second);
-    if (!tail.empty()) {
-        if (tail.front() != ':') {
-            return ll::makeStringError("unexpected trailing characters after block spec");
-        }
-        auto parsedData = parseDataSpec(tail.substr(1));
-        if (!parsedData) {
-            return ll::forwardError(parsedData.error());
-        }
-        data = std::move(*parsedData);
+    auto block = parseBlockSpec(remain);
+    if (!block) {
+        return ll::forwardError(block.error());
     }
 
-    return PatternWeightedEntry{weight, block, data};
+    return PatternWeightedEntry{weight, std::move(block.value())};
 }
 } // namespace
 
@@ -303,33 +704,30 @@ ll::Expected<PatternAst> PatternParser::parse(std::string_view input) {
         if (!clipboard) {
             return ll::forwardError(clipboard.error());
         }
-        return PatternAst{std::move(*clipboard)};
+        return PatternAst{std::move(clipboard.value())};
     }
     if (input.starts_with("#lighten")) {
         auto gradient = parseGradientPattern(input, true);
         if (!gradient) {
             return ll::forwardError(gradient.error());
         }
-        return PatternAst{std::move(*gradient)};
+        return PatternAst{std::move(gradient.value())};
     }
     if (input.starts_with("#darken")) {
         auto gradient = parseGradientPattern(input, false);
         if (!gradient) {
             return ll::forwardError(gradient.error());
         }
-        return PatternAst{std::move(*gradient)};
+        return PatternAst{std::move(gradient.value())};
     }
 
     BlockListPatternAst ast;
-    for (auto& token : splitTopLevel(input, ',')) {
-        if (token.empty()) {
-            continue;
-        }
+    for (auto token : splitTopLevel(input, ',')) {
         auto entry = parseEntry(token);
         if (!entry) {
             return ll::forwardError(entry.error());
         }
-        ast.entries.push_back(std::move(*entry));
+        ast.entries.push_back(std::move(entry.value()));
     }
     if (ast.entries.empty()) {
         return ll::makeStringError("pattern is empty");
