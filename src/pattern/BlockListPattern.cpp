@@ -1,88 +1,67 @@
 #include "pattern/BlockListPattern.h"
 
+#include "command/CommandMacro.h"
 #include "expression/expression.h"
 #include "utils/BlockUtils.h"
 
 #include <cmath>
 #include <ll/api/utils/RandomUtils.h>
+#include <utility>
 
 namespace we {
-struct PatternCompiledExpr {
-    bool   literalMode = true;
-    double literal     = 0.0;
+static std::shared_ptr<ExprState> makeExprState(BlockListPatternAst const& ast) {
+    bool needsState = false;
 
-    mutable double x = 0.0;
-    mutable double y = 0.0;
-    mutable double z = 0.0;
+    auto inspectExpr = [&](PatternExpr const& expr) {
+        needsState = needsState || std::holds_alternative<PatternRuntimeExpr>(expr);
+    };
 
-    SymbolTable symbolTable;
-    Expression  expression;
-
-    explicit PatternCompiledExpr(double value) : literal(value) {}
-    PatternCompiledExpr() = default;
-
-    ll::Expected<> compile(std::string const& source) {
-        literalMode = false;
-        symbolTable.add_variable("x", x);
-        symbolTable.add_variable("y", y);
-        symbolTable.add_variable("z", z);
-        symbolTable.add_constants();
-        expression.register_symbol_table(symbolTable);
-
-        Parser parser;
-        if (!parser.compile(source, expression)) {
-            ll::Error err;
-            for (size_t i = 0; i < parser.error_count(); ++i) {
-                auto const& error = parser.get_error(i);
-                err.join(
-                    ll::makeStringError(
-                        fmt::format(
-                            "Expression error at '{}': {}",
-                            error.token.value,
-                            error.diagnostic
-                        )
-                    )
-                );
+    for (auto const& entry : ast.entries) {
+        inspectExpr(entry.weight);
+        if (auto simple = std::get_if<PatternSimpleBlockSpec>(&entry.block.source)) {
+            if (auto named = std::get_if<PatternNamedBlockAst>(simple)) {
+                if (named->data) {
+                    inspectExpr(*named->data);
+                }
+            } else if (auto dynamic = std::get_if<PatternDynamicBlockAst>(simple)) {
+                inspectExpr(dynamic->source);
+                if (dynamic->data) {
+                    inspectExpr(*dynamic->data);
+                }
             }
-            return ll::forwardError(err);
+        } else {
+            auto const& packed = std::get<PatternPackedBlockSpec>(entry.block.source);
+            auto inspectSimple = [&](
+                                     std::optional<PatternSimpleBlockSpec> const& simple
+                                 ) {
+                if (!simple) {
+                    return;
+                }
+                if (auto named = std::get_if<PatternNamedBlockAst>(&*simple)) {
+                    if (named->data) {
+                        inspectExpr(*named->data);
+                    }
+                } else if (auto dynamic = std::get_if<PatternDynamicBlockAst>(&*simple)) {
+                    inspectExpr(dynamic->source);
+                    if (dynamic->data) {
+                        inspectExpr(*dynamic->data);
+                    }
+                }
+            };
+            inspectSimple(packed.block);
+            inspectSimple(packed.extraBlock);
         }
-        return {};
     }
 
-    void updateVariables(BlockPos const& pos) const {
-        if (literalMode) {
-            return;
-        }
-        x = static_cast<double>(pos.x);
-        y = static_cast<double>(pos.y);
-        z = static_cast<double>(pos.z);
+    if (!needsState) {
+        return nullptr;
     }
 
-    double evalScalar() const {
-        if (literalMode) {
-            return literal;
-        }
-        return expression.value();
-    }
-
-    bool evalString(std::string_view& out) const {
-        if (literalMode) {
-            return false;
-        }
-
-        expression.value();
-        auto const& results = expression.results();
-        for (size_t index = 0; index < results.count(); ++index) {
-            auto& t = results[index];
-            if (t.type == exprtk::type_store<double>::e_string) {
-                const auto str = typename exprtk::type_store<double>::string_view(t);
-                out            = std::string_view(str.begin(), str.size());
-                return true;
-            }
-        }
-        return false;
-    }
-};
+    auto state = std::make_shared<ExprState>();
+    state->bindVars();
+    state->bindFns();
+    return state;
+}
 
 static std::string_view trimBlockResult(std::string_view value) {
     size_t begin = 0;
@@ -96,13 +75,13 @@ static std::string_view trimBlockResult(std::string_view value) {
     return value.substr(begin, end - begin);
 }
 
-static ll::Expected<std::unique_ptr<PatternCompiledExpr>>
-compileExpr(PatternExpr const& expr) {
+static ll::Expected<std::unique_ptr<CompiledExpr>>
+compileExpr(PatternExpr const& expr, ExprState& state) {
     if (auto literal = std::get_if<PatternLiteralExpr>(&expr)) {
-        return std::make_unique<PatternCompiledExpr>(literal->value);
+        return std::make_unique<CompiledExpr>(literal->value);
     }
-    auto compiled = std::make_unique<PatternCompiledExpr>();
-    auto result   = compiled->compile(std::get<PatternRuntimeExpr>(expr).source);
+    auto compiled = std::make_unique<CompiledExpr>();
+    auto result   = compiled->compile(std::get<PatternRuntimeExpr>(expr).source, state);
     if (!result) {
         return ll::forwardError(result.error());
     }
@@ -131,7 +110,7 @@ makeCachedSimpleBlock(optional_ref<Block const> block, std::string const& descri
 }
 
 static ll::Expected<PatternCompiledSimpleBlock>
-compileSimpleBlock(PatternSimpleBlockSpec const& spec) {
+compileSimpleBlock(PatternSimpleBlockSpec const& spec, ExprState& state) {
     if (auto named = std::get_if<PatternNamedBlockAst>(&spec)) {
         if (!named->data) {
             if (!named->states.empty()) {
@@ -161,7 +140,7 @@ compileSimpleBlock(PatternSimpleBlockSpec const& spec) {
         PatternDynamicSimpleBlock compiled;
         compiled.blockName = named->name;
         if (named->data) {
-            auto data = compileExpr(*named->data);
+            auto data = compileExpr(*named->data, state);
             if (!data) {
                 return ll::forwardError(data.error());
             }
@@ -171,13 +150,13 @@ compileSimpleBlock(PatternSimpleBlockSpec const& spec) {
     }
     if (auto expr = std::get_if<PatternDynamicBlockAst>(&spec)) {
         PatternDynamicSimpleBlock compiled;
-        auto                      blockExpr = compileExpr(expr->source);
+        auto                      blockExpr = compileExpr(expr->source, state);
         if (!blockExpr) {
             return ll::forwardError(blockExpr.error());
         }
         compiled.blockExpr = std::move(*blockExpr);
         if (expr->data) {
-            auto data = compileExpr(*expr->data);
+            auto data = compileExpr(*expr->data, state);
             if (!data) {
                 return ll::forwardError(data.error());
             }
@@ -210,7 +189,7 @@ resolveStaticSimpleBlock(PatternDynamicSimpleBlock const& block) {
 }
 
 static optional_ref<Block const>
-resolveSimpleBlock(PatternCompiledSimpleBlock const& block, BlockPos const& pos) {
+resolveSimpleBlock(PatternCompiledSimpleBlock const& block) {
     if (auto cached = std::get_if<PatternCachedSimpleBlock>(&block)) {
         return cached->block;
     }
@@ -219,7 +198,6 @@ resolveSimpleBlock(PatternCompiledSimpleBlock const& block, BlockPos const& pos)
 
     std::optional<ushort> dataValue;
     if (dynamic.data) {
-        dynamic.data->updateVariables(pos);
         auto dataEval = std::llround(dynamic.data->evalScalar());
         dataValue     = static_cast<ushort>(dataEval < 0 ? 0 : dataEval);
     }
@@ -235,7 +213,6 @@ resolveSimpleBlock(PatternCompiledSimpleBlock const& block, BlockPos const& pos)
     if (!dynamic.blockExpr) {
         return nullptr;
     }
-    dynamic.blockExpr->updateVariables(pos);
     if (!dynamic.blockExpr->evalString(dynamicName)) {
         return nullptr;
     }
@@ -258,10 +235,10 @@ resolveEntry(PatternCompiledEntry const& entry, BlockPos const& pos) {
     BlockOperation operation;
 
     if (entry.block) {
-        operation.block = resolveSimpleBlock(*entry.block, pos);
+        operation.block = resolveSimpleBlock(*entry.block);
     }
     if (entry.extraBlock) {
-        operation.extraBlock = resolveSimpleBlock(*entry.extraBlock, pos);
+        operation.extraBlock = resolveSimpleBlock(*entry.extraBlock);
     }
     if (entry.cachedBlockEntityTag) {
         operation.blockActor = BlockActor::create(*entry.cachedBlockEntityTag, pos);
@@ -269,24 +246,30 @@ resolveEntry(PatternCompiledEntry const& entry, BlockPos const& pos) {
     return operation;
 }
 
-BlockListPattern::BlockListPattern(std::vector<PatternCompiledEntry> entries)
-: entries(std::move(entries)) {}
+BlockListPattern::BlockListPattern(
+    std::vector<PatternCompiledEntry> entries,
+    std::shared_ptr<ExprState>        exprState
+)
+: entries(std::move(entries)),
+  exprState(std::move(exprState)) {}
 
 ll::Expected<std::shared_ptr<BlockListPattern>>
 BlockListPattern::create(BlockListPatternAst const& ast) {
+    auto sharedExprState = makeExprState(ast);
+
     std::vector<PatternCompiledEntry> compiledEntries;
     compiledEntries.reserve(ast.entries.size());
     for (auto const& entry : ast.entries) {
         PatternCompiledEntry compiled;
 
-        auto weight = compileExpr(entry.weight);
+        auto weight = compileExpr(entry.weight, *sharedExprState);
         if (!weight) {
             return ll::forwardError(weight.error());
         }
         compiled.weight = std::move(*weight);
 
         if (auto simple = std::get_if<PatternSimpleBlockSpec>(&entry.block.source)) {
-            auto compiledBlock = compileSimpleBlock(*simple);
+            auto compiledBlock = compileSimpleBlock(*simple, *sharedExprState);
             if (!compiledBlock) {
                 return ll::forwardError(compiledBlock.error());
             }
@@ -308,7 +291,7 @@ BlockListPattern::create(BlockListPatternAst const& ast) {
         } else {
             auto const& packed = std::get<PatternPackedBlockSpec>(entry.block.source);
             if (packed.block) {
-                auto compiledBlock = compileSimpleBlock(*packed.block);
+                auto compiledBlock = compileSimpleBlock(*packed.block, *sharedExprState);
                 if (!compiledBlock) {
                     return ll::forwardError(compiledBlock.error());
                 }
@@ -329,7 +312,8 @@ BlockListPattern::create(BlockListPatternAst const& ast) {
                 }
             }
             if (packed.extraBlock) {
-                auto compiledExtra = compileSimpleBlock(*packed.extraBlock);
+                auto compiledExtra =
+                    compileSimpleBlock(*packed.extraBlock, *sharedExprState);
                 if (!compiledExtra) {
                     return ll::forwardError(compiledExtra.error());
                 }
@@ -360,7 +344,26 @@ BlockListPattern::create(BlockListPatternAst const& ast) {
 
         compiledEntries.push_back(std::move(compiled));
     }
-    return std::make_shared<BlockListPattern>(std::move(compiledEntries));
+    return std::make_shared<BlockListPattern>(
+        std::move(compiledEntries),
+        std::move(sharedExprState)
+    );
+}
+
+ll::Expected<> BlockListPattern::prepare(CommandContextRef const& ctx) {
+    if (!exprState) {
+        return {};
+    }
+    auto dim = checkDimension(ctx);
+    if (!dim) {
+        return ll::makeStringError("failed to get dimension for pattern context");
+    }
+    exprState->setBlockSource(&dim->getBlockSourceFromMainChunkSource());
+    auto region = checkRegion(ctx);
+    if (region) {
+        exprState->setBoundingBox(region->getBoundingBox());
+    }
+    return {};
 }
 
 BlockOperation BlockListPattern::pickBlock(BlockPos const& pos) const {
@@ -368,11 +371,14 @@ BlockOperation BlockListPattern::pickBlock(BlockPos const& pos) const {
         return {};
     }
 
+    if (exprState) {
+        exprState->update(pos);
+    }
+
     std::vector<double> weights;
     weights.reserve(entries.size());
     double total = 0.0;
     for (auto const& entry : entries) {
-        entry.weight->updateVariables(pos);
         auto weight = std::max(0.0, entry.weight->evalScalar());
         weights.push_back(weight);
         total += weight;
