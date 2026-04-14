@@ -15,4 +15,8 @@ public:
 
 inline BlockChangeContext bcc{};
 
+inline bool hasBlockState(Block const& block, HashedString const& stateName) {
+    return block.getBlockType().getBlockState(stateName) != nullptr;
+}
+
 } // namespace we

@@ -343,6 +343,7 @@ bool BotPathfinder::placeBlock(BlockPos const& pos, Block const* block) {
         nullptr,
         bcc
     );
+    (void)success;
     return true;
 }
 
@@ -540,7 +541,7 @@ BotPathfinder::postProcessPath(std::vector<std::unique_ptr<Move>> path) const {
     return optimizedPath;
 }
 
-void BotPathfinder::resetPath(std::string const& reason, bool clearStates) {
+void BotPathfinder::resetPath(std::string const& /*reason*/, bool clearStates) {
     mDebugPathGeo.reset();
     mCurrentPath.clear();
 

@@ -210,7 +210,7 @@ bool Movements::canBreakBlock(BlockPos const& pos) const {
 }
 
 bool Movements::canPlaceBlock(BlockPos const& pos) const {
-    Block const* block = getBlock(pos);
+    // Block const* block = getBlock(pos);
     // if (!block || !block->getBlockType().mayPlace(*getBlockSource(), pos)) return
     // false;
 
@@ -227,13 +227,13 @@ bool Movements::canPlaceBlock(BlockPos const& pos) const {
 
 float Movements::getBlockHeight(BlockPos const& pos) const {
     Block const* block = getBlock(pos);
-    if (!block || block->isAir()) return pos.y;
+    if (!block || block->isAir()) return (float)pos.y;
 
     auto box =
         block->getBlockType().getCollisionShape(*block, *getBlockSource(), pos, nullptr);
 
     if (auto size = (box.max - box.min); size.x * size.y * size.z <= 0) {
-        return pos.y;
+        return (float)pos.y;
     }
     return box.max.y;
 }

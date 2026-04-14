@@ -15,6 +15,7 @@ struct Config {
     struct {
         struct {
             CmdSetting sel{};
+            CmdSetting distr{};
             CmdSetting loftcycle{};
             CmdSetting pos1{};
             CmdSetting pos2{};
