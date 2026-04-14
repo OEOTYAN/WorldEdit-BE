@@ -21,6 +21,7 @@
 #include <mc/world/level/block/actor/BlockActor.h>
 
 namespace we {
+
 LocalContextManager::LocalContextManager(WorldEdit& we)
 : mod(we),
   storagedState(
@@ -300,6 +301,14 @@ void LocalContextManager::removeTemps() {
     erase_if(playerStates, [](auto&& p) { return p.second->temp; });
 }
 
+static bool isSameClickPosition(
+    std::optional<WithGeo<WithDim<BlockPos>>> const& selectedPos,
+    WithDim<BlockPos> const&                         dst
+) {
+    return selectedPos && selectedPos->data.dim == dst.dim
+        && selectedPos->data.pos == dst.pos;
+}
+
 LocalContextManager::ClickState LocalContextManager::playerLeftClick(
     Player&                  player,
     bool                     isLong,
@@ -307,11 +316,12 @@ LocalContextManager::ClickState LocalContextManager::playerLeftClick(
     WithDim<BlockPos> const& dst,
     FacingID //  mFace TODO: brush
 ) {
-    auto  data    = getOrCreate(player.getUuid(), player.isSimulated());
-    auto& current = player.getLevel().getCurrentTick();
-    bool  needDiscard{};
+    auto data    = getOrCreate(player.getUuid(), player.isSimulated());
+    auto current = player.getLevel().getCurrentServerTick();
+    bool needDiscard{};
     if (current.tickID - data->lastLeftClick.load().tickID
-        < mod.getConfig().player_state.minimum_response_tick) {
+            < mod.getConfig().player_state.minimum_response_tick
+        || isSameClickPosition(data->mainPos, dst)) {
         needDiscard = true;
     }
     auto& itemName = item.getFullNameHash();
@@ -334,11 +344,12 @@ LocalContextManager::ClickState LocalContextManager::playerRightClick(
     WithDim<BlockPos> const& dst,
     FacingID // mFace TODO: brush
 ) {
-    auto  data    = getOrCreate(player.getUuid(), player.isSimulated());
-    auto& current = player.getLevel().getCurrentTick();
-    bool  needDiscard{};
+    auto data    = getOrCreate(player.getUuid(), player.isSimulated());
+    auto current = player.getLevel().getCurrentServerTick();
+    bool needDiscard{};
     if (current.tickID - data->lastRightClick.load().tickID
-        < mod.getConfig().player_state.minimum_response_tick) {
+            < mod.getConfig().player_state.minimum_response_tick
+        || isSameClickPosition(data->offPos, dst)) {
         needDiscard = true;
     }
     auto& itemName = item.getFullNameHash();

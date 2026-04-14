@@ -82,18 +82,19 @@ void LoftRegion::updateBoundingBox() {
     std::vector<bsci::GeometryGroup::GeoId> ids;
 
     auto addline = [&](KochanekBartelsInterpolation const& line) {
-        if (line.segCount == 0) {
+        if (line.getSegCount() == 0) {
             return;
-        } else if (line.segCount == 1) {
+        } else if (line.getSegCount() == 1) {
             ids.emplace_back(geo.line(
                 getDim(),
                 line.getPosition(0.0),
                 line.getPosition(1.0),
                 we.getConfig().colors.region_line_color
             ));
+            return;
         }
         std::vector<Vec3> points;
-        for (int i = 0; i < line.segCount; i++) {
+        for (int i = 0; i < line.getSegCount(); i++) {
             size_t linenum =
                 2 * std::clamp<size_t>((size_t)(line.arcLength(i) / 1.5), 1, 8);
             for (int j = 0; j < linenum; j++) {

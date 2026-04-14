@@ -19,17 +19,23 @@ public:
     Vec3 const& getVec3() const { return *this; }
 };
 class KochanekBartelsInterpolation {
-public:
     std::vector<Node> nodes;
     std::vector<Vec3> coeffA;
     std::vector<Vec3> coeffB;
     std::vector<Vec3> coeffC;
     std::vector<Vec3> coeffD;
-    int               segCount;
-    bool              cycle = false;
+
+public:
+    bool cycle = false;
     KochanekBartelsInterpolation(bool c = false) : cycle(c) {}
     KochanekBartelsInterpolation(std::vector<Node> n, bool c = false) : cycle(c) {
         setNodes(std::move(n));
+    }
+    size_t getSegCount() const {
+        if (nodes.size() == 0) {
+            return 0;
+        }
+        return nodes.size() - (cycle ? 0 : 1);
     }
     Vec3   retrieve(int index) const;
     void   setNodes(std::vector<Node> nodes);
