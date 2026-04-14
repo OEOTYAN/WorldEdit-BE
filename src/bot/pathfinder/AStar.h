@@ -36,7 +36,7 @@ struct ComputedPath {
 
     ComputedPath() = default;
 
-    ComputedPath(ComputedPath&&) = default;
+    ComputedPath(ComputedPath&&)            = default;
     ComputedPath& operator=(ComputedPath&&) = default;
 
     ComputedPath(Status status) : status(status) {}
@@ -50,7 +50,7 @@ private:
     std::chrono::milliseconds             mTimeout;
     double                                mSearchRadius;
 
-    std::unordered_set<BlockPos> mClosedDataSet;
+    ll::SmallDenseSet<BlockPos> mClosedDataSet;
     class NodeCompare {
     public:
         bool operator()(
@@ -60,7 +60,7 @@ private:
     };
 
     Heap<std::unique_ptr<PathNode>, NodeCompare> mOpenHeap;
-    std::unordered_map<BlockPos, PathNode*>      mOpenDataMap;
+    ll::SmallDenseMap<BlockPos, PathNode*>       mOpenDataMap;
     std::unique_ptr<PathNode>                    mBestNode;
 
     size_t mVisitedNodes = 0;

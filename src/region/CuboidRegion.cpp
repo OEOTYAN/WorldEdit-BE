@@ -54,6 +54,15 @@ bool CuboidRegion::setOffPos(BlockPos const& pos) {
     return true;
 }
 
+std::vector<std::string> CuboidRegion::getInfo() const {
+    auto delta = offPos - mainPos;
+    return {
+        fmt::format("main: {}", mainPos),
+        fmt::format("off: {}", offPos),
+        fmt::format("diagonal: ({}, {}, {})", delta.x, delta.y, delta.z),
+    };
+}
+
 bool CuboidRegion::expand(std::span<BlockPos> changes) {
     for (auto& change : changes) {
         if (change.x > 0) {

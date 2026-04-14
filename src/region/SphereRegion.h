@@ -45,6 +45,8 @@ public:
 
     bool setOffPos(BlockPos const&) override;
 
+    std::vector<std::string> getInfo() const override;
+
     bool contains(BlockPos const& pos) const override {
         return pos.distanceTo(center) <= radius;
     }

@@ -66,17 +66,22 @@ void SphereRegion::forEachBlockUVInRegion(
                     pos,
                     (std::atan2(pos.z - center.z, pos.x - center.x) + std::numbers::pi)
                         / (std::numbers::pi * 2),
-                    std::acos(std::clamp(
-                        -sign(y)
-                            * sqrt(std::max(
-                                0.0,
-                                pow2(radius) - pow2(static_cast<double>(pos.z) - center.z)
-                                    - pow2(static_cast<double>(pos.x) - center.x)
-                            ))
-                            / radius,
-                        -1.0,
-                        1.0
-                    )) * std::numbers::inv_pi
+                    std::acos(
+                        std::clamp(
+                            -sign(y)
+                                * sqrt(
+                                    std::max(
+                                        0.0,
+                                        pow2(radius)
+                                            - pow2(static_cast<double>(pos.z) - center.z)
+                                            - pow2(static_cast<double>(pos.x) - center.x)
+                                    )
+                                )
+                                / radius,
+                            -1.0,
+                            1.0
+                        )
+                    ) * std::numbers::inv_pi
                 );
             } else {
                 todo(
@@ -101,6 +106,12 @@ bool SphereRegion::setOffPos(BlockPos const& pos) {
     radius = pos.distanceTo(center) + 0.5;
     updateBoundingBox();
     return true;
+}
+
+std::vector<std::string> SphereRegion::getInfo() const {
+    return {
+        fmt::format("radius: {:.3f}", radius),
+    };
 }
 
 std::optional<int> SphereRegion::checkChanges(std::span<BlockPos> changes) {

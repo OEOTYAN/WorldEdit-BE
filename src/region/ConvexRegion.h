@@ -13,10 +13,10 @@ class ConvexRegion : public Region {
 
     void updateEdges();
 
-    phmap::flat_hash_set<BlockPos>      vertices;
-    std::vector<Triangle>               triangles;
-    phmap::flat_hash_set<WithGeo<Edge>> edges;
-    phmap::flat_hash_set<BlockPos>      vertexBacklog;
+    ll::SmallDenseSet<BlockPos>      vertices;
+    std::vector<Triangle>            triangles;
+    ll::SmallDenseSet<WithGeo<Edge>> edges;
+    ll::SmallDenseSet<BlockPos>      vertexBacklog;
 
     ll::math::longlong3 centerAccum;
 
@@ -42,6 +42,8 @@ public:
     Vec3 getCenter() const override {
         return Vec3{centerAccum} * (1.0f / vertices.size()) + 0.5;
     };
+
+    std::vector<std::string> getInfo() const override;
 
     void
     forEachLine(std::function<void(BlockPos const&, BlockPos const&)>&&) const override;

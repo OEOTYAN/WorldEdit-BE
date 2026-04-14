@@ -31,6 +31,15 @@ ll::Expected<> LoftRegion::deserialize(CompoundTag const& tag) {
             return ll::reflection::deserialize(cycle, tag.at("cycle"));
         });
 }
+
+std::vector<std::string> LoftRegion::getInfo() const {
+    return {
+        fmt::format("tracks: {}", loftPoints.size()),
+        fmt::format("max-points: {}", maxPointCount),
+        fmt::format("cycle: {}", cycle),
+    };
+}
+
 void LoftRegion::updateBoundingBox() {
     posCached   = false;
     boundingBox = BoundingBox();
@@ -237,7 +246,7 @@ void LoftRegion::forEachBlockInLines(
             }
             return;
         } else {
-            phmap::flat_hash_set<BlockPos> posCache2;
+            ll::SmallDenseSet<BlockPos> posCache2;
             for (int i = 0; i < num; ++i) {
                 std::vector<Node> nodes2;
                 nodes2.clear();
@@ -258,7 +267,7 @@ void LoftRegion::forEachBlockInLines(
             return;
         }
     } else {
-        phmap::flat_hash_set<BlockPos> posCache2;
+        ll::SmallDenseSet<BlockPos> posCache2;
 
         for (int i = 0; i < num; ++i) {
             std::vector<Node> nodes2;

@@ -143,6 +143,14 @@ Vec3 PolyRegion::getCenter() const {
         static_cast<double>(tmp.z) / size + 0.5
     );
 }
+
+std::vector<std::string> PolyRegion::getInfo() const {
+    return {
+        fmt::format("points: {}", points.size()),
+        fmt::format("y-range: {}..{}", minY, maxY),
+    };
+}
+
 bool PolyRegion::setMainPos(BlockPos const& pos) {
     minY = pos.y;
     maxY = pos.y;

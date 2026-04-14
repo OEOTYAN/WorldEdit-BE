@@ -20,8 +20,9 @@ ll::Expected<> CylinderRegion::serialize(CompoundTag& tag) const {
             return ll::reflection::serialize_to(tag["radius"], radius);
         })
         .and_then([&, this]() { return ll::reflection::serialize_to(tag["minY"], minY); })
-        .and_then([&, this]() { return ll::reflection::serialize_to(tag["maxY"], maxY); }
-        );
+        .and_then([&, this]() {
+            return ll::reflection::serialize_to(tag["maxY"], maxY);
+        });
 }
 ll::Expected<> CylinderRegion::deserialize(CompoundTag const& tag) {
     return Region::deserialize(tag)
@@ -129,6 +130,14 @@ bool CylinderRegion::setOffPos(BlockPos const& pos) {
     setY(pos.y);
     updateBoundingBox();
     return true;
+}
+
+std::vector<std::string> CylinderRegion::getInfo() const {
+    return {
+        fmt::format("radius: {:.3f}", radius),
+        fmt::format("height: {}", maxY - minY + 1),
+        fmt::format("y-range: {}..{}", minY, maxY),
+    };
 }
 
 bool CylinderRegion::contains(BlockPos const& pos) const {

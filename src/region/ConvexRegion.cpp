@@ -34,6 +34,14 @@ ll::Expected<> ConvexRegion::deserialize(CompoundTag const& tag) {
     }
     return {};
 }
+
+std::vector<std::string> ConvexRegion::getInfo() const {
+    return {
+        fmt::format("vertices: {}", vertices.size()),
+        fmt::format("triangles: {}", triangles.size()),
+    };
+}
+
 bool ConvexRegion::removePoint(std::optional<BlockPos> const& pos) {
     if (indexedVertices.empty()) {
         return false;
@@ -161,7 +169,7 @@ bool ConvexRegion::addVertex(BlockPos const& vertex) {
     default:
         break;
     }
-    phmap::flat_hash_set<Edge> borderEdges;
+    ll::SmallDenseSet<Edge> borderEdges;
     for (auto iter = triangles.begin(); iter != triangles.end();) {
         if ((*iter).above(vertex)) {
             for (int i = 0; i < 3; ++i) {
@@ -182,7 +190,7 @@ bool ConvexRegion::addVertex(BlockPos const& vertex) {
     }
     if (!vertexBacklog.empty()) {
         vertices.erase(vertex);
-        phmap::flat_hash_set<BlockPos> vertexBacklog2(std::move(vertexBacklog));
+        ll::SmallDenseSet<BlockPos> vertexBacklog2(std::move(vertexBacklog));
         for (auto& vertex2 : vertexBacklog2) {
             addVertex(vertex2);
         }

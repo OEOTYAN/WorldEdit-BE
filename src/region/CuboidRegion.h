@@ -33,7 +33,10 @@ public:
 
     bool setOffPos(BlockPos const&) override;
 
-    void forEachLine(std::function<void(BlockPos const&, BlockPos const&)>&& todo
+    std::vector<std::string> getInfo() const override;
+
+    void forEachLine(
+        std::function<void(BlockPos const&, BlockPos const&)>&& todo
     ) const override;
 };
 } // namespace we

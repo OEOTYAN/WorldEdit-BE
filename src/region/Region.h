@@ -5,6 +5,9 @@
 
 #include "utils/GeoContainer.h"
 
+#include <string>
+#include <vector>
+
 namespace we {
 
 class Region {
@@ -56,6 +59,8 @@ public:
     virtual bool setOffPos(BlockPos const&) { return false; }
 
     virtual bool contains(BlockPos const& pos) const { return boundingBox.contains(pos); }
+
+    virtual std::vector<std::string> getInfo() const { return {}; }
 
     virtual void forEachBlockInRegion(std::function<void(BlockPos const&)>&&) const;
 

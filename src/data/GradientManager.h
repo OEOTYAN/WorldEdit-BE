@@ -5,7 +5,7 @@
 
 namespace we {
 class GradientManager {
-    std::unordered_map<std::string, GradientData> gradients;
+    ll::DenseMap<std::string, GradientData> gradients;
 
     static std::string
     makeKey(std::string_view namespaceName, std::string_view gradientName);

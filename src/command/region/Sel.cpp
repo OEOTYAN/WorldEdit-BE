@@ -14,8 +14,7 @@ REG_CMD(region, sel, "manipulate region") {
         ll::command::Optional<CommandPositionFloat> pos;
     };
     command.overload().text("clear").execute(
-        CmdCtxBuilder{} |
-        [](CommandContextRef const& ctx) {
+        CmdCtxBuilder{} | [](CommandContextRef const& ctx) {
             auto lctx = checkLocalContext(ctx);
             if (!lctx) return;
             lctx->region.reset();
@@ -24,9 +23,40 @@ REG_CMD(region, sel, "manipulate region") {
             ctx.success("region cleared");
         }
     );
+    command.overload().text("info").execute(
+        CmdCtxBuilder{} | [](CommandContextRef const& ctx) {
+            auto lctx = checkLocalContext(ctx);
+            if (!lctx) return;
+            auto region = checkRegion(ctx);
+            if (!region) return;
+
+            auto   box     = region->getBoundingBox();
+            auto   boxSize = box.max - box.min + 1;
+            auto   center  = region->getCenter();
+            size_t actual  = 0;
+            region->forEachBlockInRegion([&](BlockPos const&) { ++actual; });
+
+            ctx.success("type: {}", magic_enum::enum_name(region->getType()));
+            ctx.success("dimension: {}", region->getDim().id);
+            ctx.success("min: {}", box.min);
+            ctx.success("max: {}", box.max);
+            ctx.success("center: {}", center);
+            ctx.success("volume: {}", boxSize);
+            ctx.success("approxsize: {}", region->size());
+            ctx.success("actual-blocks: {}", actual);
+            if (lctx->mainPos) {
+                ctx.success("main: {}", lctx->mainPos->data.pos);
+            }
+            if (lctx->offPos) {
+                ctx.success("off: {}", lctx->offPos->data.pos);
+            }
+            for (auto const& entry : region->getInfo()) {
+                ctx.success("{}", entry);
+            }
+        }
+    );
     command.overload<SelRm>().text("remove").required("type").optional("pos").execute(
-        CmdCtxBuilder{} |
-        [](CommandContextRef const& ctx, SelRm const& params) {
+        CmdCtxBuilder{} | [](CommandContextRef const& ctx, SelRm const& params) {
             auto dim = checkDimension(ctx);
             if (!dim) return;
             auto region = checkRegion(ctx);
@@ -51,8 +81,7 @@ REG_CMD(region, sel, "manipulate region") {
         }
     );
     command.overload<Sel>().required("type").execute(
-        CmdCtxBuilder{} |
-        [](CommandContextRef const& ctx, Sel const& params) {
+        CmdCtxBuilder{} | [](CommandContextRef const& ctx, Sel const& params) {
             auto lctx = getLocalContext(ctx);
             if (lctx->region) {
                 lctx->region = Region::create(

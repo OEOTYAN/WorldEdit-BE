@@ -15,9 +15,9 @@ class LoftRegion : public Region {
 
     GeoContainer views;
 
-    mutable phmap::flat_hash_map<BlockPos, std::pair<double, double>> posCache;
-    mutable bool                                                      posCached = false;
-    mutable BoundingBox                                               boundingBox;
+    mutable ll::DenseMap<BlockPos, std::pair<double, double>> posCache;
+    mutable bool                                              posCached = false;
+    mutable BoundingBox                                       boundingBox;
 
     static constexpr int quality = 16;
 
@@ -42,6 +42,8 @@ public:
         cycle = value;
         updateBoundingBox();
     };
+
+    std::vector<std::string> getInfo() const override;
 
     size_t size() const override {
         auto bSize = boundingBox.max - boundingBox.min + 1;
