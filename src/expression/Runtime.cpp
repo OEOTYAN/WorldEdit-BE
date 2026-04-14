@@ -32,9 +32,8 @@ ExprFnBinding::type ExprFnBinding::operator()(std::string& out, parameter_list_t
     return this->operator()(size_t(0), out, params);
 }
 
-ExprFnBinding::type ExprFnBinding::operator()(
-    size_t const&, std::string& out, parameter_list_t params
-) {
+ExprFnBinding::type
+ExprFnBinding::operator()(size_t const&, std::string& out, parameter_list_t params) {
     mLast = mFn(*mCtx, params);
     if (auto ptr = mLast.string()) {
         out = *ptr;
@@ -95,11 +94,18 @@ double CompiledExpr::evalScalar() const {
     return mExpr.value();
 }
 
-bool CompiledExpr::evalString(std::string_view& out) const {
+bool CompiledExpr::evalString(std::string_view& out, optional_ref<double> scalar) const {
     if (mLiteralMode) {
+        if (scalar) {
+            *scalar = mLiteral;
+        }
         return false;
     }
-    mExpr.value();
+    if (scalar) {
+        *scalar = mExpr.value();
+    } else {
+        (void)mExpr.value();
+    }
     auto const& results = mExpr.results();
     if (results.count() != 1) {
         return false;

@@ -47,7 +47,7 @@ public:
     ll::Expected<> compile(std::string const& source, ExprState& state);
 
     [[nodiscard]] double evalScalar() const;
-    bool                 evalString(std::string_view& out) const;
+    bool                 evalString(std::string_view& out, optional_ref<double> scalar = nullptr) const;
 
 private:
     bool   mLiteralMode = true;

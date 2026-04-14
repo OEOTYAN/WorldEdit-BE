@@ -213,8 +213,12 @@ resolveSimpleBlock(PatternCompiledSimpleBlock const& block) {
     if (!dynamic.blockExpr) {
         return nullptr;
     }
-    if (!dynamic.blockExpr->evalString(dynamicName)) {
-        return nullptr;
+    double legacyId{};
+    if (!dynamic.blockExpr->evalString(dynamicName, legacyId)) {
+        return Block::tryGetFromRegistry(
+            static_cast<uint>(legacyId < 0 ? 0 : legacyId),
+            dataValue.value_or(0)
+        );
     }
     dynamicName = trimBlockResult(dynamicName);
     if (!dynamicName.empty() && dynamicName.front() == '{') {
