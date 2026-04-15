@@ -37,6 +37,12 @@ struct Config {
         } history;
         struct {
             CmdSetting set{};
+            CmdSetting rep{};
+            CmdSetting center{};
+            CmdSetting walls{};
+            CmdSetting faces{};
+            CmdSetting overlay{};
+            CmdSetting naturalize{};
             CmdSetting buildercfg{};
         } edit;
         std::string custom_cmd_prefix = "";

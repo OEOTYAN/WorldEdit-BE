@@ -11,7 +11,7 @@ option("target_type")
     set_values("server", "client")
 option_end()
 
-add_requires("levilamina", {configs = {target_type = get_config("target_type")}})
+add_requires("levilamina 2d60b68f40acb5a415e385bc1d2e104302a0bfee", {configs = {target_type = get_config("target_type")}})
 add_requires("levibuildscript")
 
 add_requires("bsci", {configs = {target_type = get_config("target_type")}})

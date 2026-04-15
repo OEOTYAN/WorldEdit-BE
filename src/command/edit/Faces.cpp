@@ -1,7 +1,7 @@
 #include "command/edit/CommandHelpers.h"
 
 namespace we {
-REG_CMD(edit, set, "Set blocks in the region to a specific block type") {
+REG_CMD(edit, faces, "Fill the outer faces of the region") {
     struct Params {
         CommandBlockName block{};
         CommandRawText   pattern;
@@ -21,18 +21,22 @@ REG_CMD(edit, set, "Set blocks in the region to a specific block type") {
 
         auto record = std::make_shared<HistoryRecord>();
         region->forEachBlockInRegion([&](BlockPos const& pos) {
-            auto blockOp = pattern->pickBlock(pos);
-            if (blockOp.empty()) {
+            int neighborCount = 0;
+            for (auto const& neighbor : pos.getNeighbors()) {
+                neighborCount += region->contains(neighbor) ? 1 : 0;
+            }
+            if (neighborCount >= 6) {
                 return;
             }
-            record->record(*lctx, blockSource, {pos, std::move(blockOp)});
+            record->record(*lctx, blockSource, {pos, pattern->pickBlock(pos)});
         });
-        auto num = record->apply(*lctx, blockSource);
+
+        auto changed = record->apply(*lctx, blockSource);
         lctx->history.addRecord(std::move(record));
-        if (num == 0) {
+        if (changed == 0) {
             ctx.success("No blocks were changed");
         } else {
-            ctx.success("Set {0} blocks", num);
+            ctx.success("Set {0} face block(s)", changed);
         }
     };
 

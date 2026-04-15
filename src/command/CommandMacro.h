@@ -46,7 +46,6 @@ public:
     CommandOrigin const& origin;
     CommandOutput&       output;
     ::Command const&     cmd;
-
     template <class... Args>
     void success(fmt::format_string<Args...> fmt, Args&&... args) const {
         auto fsv = fmt.get();
@@ -83,6 +82,10 @@ public:
                 fmt::make_format_args(args...)
             )
         );
+    }
+
+    auto error() const {
+        return [this](std::string_view msg) { error("{}", msg); };
     }
 
     Vec3 pos() const { return origin.getWorldPosition(); }

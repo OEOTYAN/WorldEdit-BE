@@ -1,6 +1,6 @@
 #include "command/CommandMacro.h"
-#include "mc/world/Container.h"
-#include "mc/world/item/ItemStack.h"
+#include <mc/world/Container.h>
+#include <mc/world/item/ItemStack.h>
 #include "utils/BlockUtils.h"
 #include <mc/world/level/block/Block.h>
 #include <numeric>
@@ -193,12 +193,13 @@ REG_CMD(region, distr, "show region block distribution or count matched blocks")
                 ctx,
                 params.args,
                 [&](Block const& blockRef) {
-                    return *blockRef.getBlockType().mNameInfo->mFullName == blockName;
+                    return blockRef.getBlockType().mNameInfo->mFullName->getHash()
+                        == blockName.getHash();
                 },
                 [&](ItemStack const& item) {
                     if (item.mBlock) {
-                        return *item.mBlock->getBlockType().mNameInfo->mFullName
-                            == blockName;
+                        return item.mBlock->getBlockType().mNameInfo->mFullName->getHash()
+                            == blockName.getHash();
                     }
                     return false;
                 }

@@ -1,11 +1,11 @@
 #include "Movements.h"
-#include "mc/world/actor/player/Inventory.h"
-#include "mc/world/actor/player/PlayerInventory.h"
-#include "mc/world/level/chunk/ChunkSource.h"
-#include "mc/world/level/chunk/LevelChunk.h"
 #include "utils/BlockUtils.h"
 #include <algorithm>
 #include <cmath>
+#include <mc/world/actor/player/Inventory.h>
+#include <mc/world/actor/player/PlayerInventory.h>
+#include <mc/world/level/chunk/ChunkSource.h>
+#include <mc/world/level/chunk/LevelChunk.h>
 
 namespace we::bot {
 
@@ -604,8 +604,10 @@ void Movements::getMoveParkourForward(
             }
         }
         // Downward parkour (fall down)
-        else if ((ceilingClear || d == 2) && canWalkThrough(blockB)
-                 && canWalkThrough(blockC) && canWalkThrough(blockD) && floorCleared) {
+        else if (
+            (ceilingClear || d == 2) && canWalkThrough(blockB) && canWalkThrough(blockC)
+            && canWalkThrough(blockD) && floorCleared
+        ) {
             BlockPos blockE(targetX, node.y - 2, targetZ);
             if (canWalkOn(blockE)) {
                 neighbors.push_back(

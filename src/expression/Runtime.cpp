@@ -44,12 +44,12 @@ ExprFnBinding::operator()(size_t const&, std::string& out, parameter_list_t para
 }
 
 void ExprState::bindVars() {
-    table.add_variable("rx", realPos.x);
-    table.add_variable("ry", realPos.y);
-    table.add_variable("rz", realPos.z);
-    table.add_variable("x", unitPos.x);
-    table.add_variable("y", unitPos.y);
-    table.add_variable("z", unitPos.z);
+    table.add_variable("rx", realPos.x, true);
+    table.add_variable("ry", realPos.y, true);
+    table.add_variable("rz", realPos.z, true);
+    table.add_variable("x", unitPos.x, true);
+    table.add_variable("y", unitPos.y, true);
+    table.add_variable("z", unitPos.z, true);
     table.add_constants();
 }
 

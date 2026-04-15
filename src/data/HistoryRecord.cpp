@@ -58,6 +58,9 @@ size_t HistoryRecord::apply(LocalContext& context, BlockSource& source) const {
 }
 
 void HistoryRecord::record(LocalContext& context, BlockSource& source, Operation op) {
+    if (op.empty()) {
+        return;
+    }
     if (context.masked(source, op.pos)) {
         // position is masked, do not record
         return;

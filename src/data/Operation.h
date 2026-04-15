@@ -39,6 +39,8 @@ struct BiomeOperation {
     ) const;
 };
 struct EntityOperation {
+    bool empty() const { return true; }
+
     bool apply(LocalContext&, BlockSource&, BlockPos const&) const { return false; }
     EntityOperation record(LocalContext&, BlockSource&, BlockPos const&, bool&) const {
         return EntityOperation{};
@@ -49,6 +51,18 @@ public:
     using VariantType = std::variant<BlockOperation, BiomeOperation, EntityOperation>;
     BlockPos    pos;
     VariantType operation;
+
+    Operation() = default;
+
+    template <typename Op>
+    Operation(BlockPos const& pos, Op&& op) : pos(pos), operation(std::forward<Op>(op)) {}
+
+    bool empty() const {
+        return std::visit(
+            [&](auto&& arg) -> bool { return arg.empty(); },
+            operation
+        );
+    }
 
     bool apply(LocalContext& context, BlockSource& source) const {
         return std::visit(

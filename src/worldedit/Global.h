@@ -46,6 +46,11 @@
 #include <mc/world/level/levelgen/structure/BoundingBox.h>
 #include <mc/world/phys/AABB.h>
 #include <mc/world/phys/HitResult.h>
+#include <mc/world/level/block/VanillaBlockTypeIds.h>
+#include <mc/world/level/block/BedrockBlockNames.h>
+#include <mc/world/level/block/Block.h>
+#include <mc/world/level/block/BlockChangeContext.h>
+#include <mc/world/level/block/registry/BlockTypeRegistry.h>
 
 using namespace ll::literals;
 

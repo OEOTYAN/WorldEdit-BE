@@ -1,7 +1,7 @@
 #include "command/edit/CommandHelpers.h"
 
 namespace we {
-REG_CMD(edit, set, "Set blocks in the region to a specific block type") {
+REG_CMD(edit, center, "Set the center blocks of the region") {
     struct Params {
         CommandBlockName block{};
         CommandRawText   pattern;
@@ -19,20 +19,26 @@ REG_CMD(edit, set, "Set blocks in the region to a specific block type") {
 
         auto& blockSource = dim->getBlockSourceFromMainChunkSource();
 
+        auto        center = region->getCenter();
+        BoundingBox centerBox;
+        centerBox.min.x = static_cast<int>(std::floor(center.x - 0.49f));
+        centerBox.min.y = static_cast<int>(std::floor(center.y - 0.49f));
+        centerBox.min.z = static_cast<int>(std::floor(center.z - 0.49f));
+        centerBox.max.x = static_cast<int>(std::floor(center.x + 0.49f));
+        centerBox.max.y = static_cast<int>(std::floor(center.y + 0.49f));
+        centerBox.max.z = static_cast<int>(std::floor(center.z + 0.49f));
+
         auto record = std::make_shared<HistoryRecord>();
-        region->forEachBlockInRegion([&](BlockPos const& pos) {
-            auto blockOp = pattern->pickBlock(pos);
-            if (blockOp.empty()) {
-                return;
-            }
-            record->record(*lctx, blockSource, {pos, std::move(blockOp)});
-        });
-        auto num = record->apply(*lctx, blockSource);
+        for (auto const& pos : centerBox.forEachPos()) {
+            record->record(*lctx, blockSource, {pos, pattern->pickBlock(pos)});
+        }
+
+        auto changed = record->apply(*lctx, blockSource);
         lctx->history.addRecord(std::move(record));
-        if (num == 0) {
+        if (changed == 0) {
             ctx.success("No blocks were changed");
         } else {
-            ctx.success("Set {0} blocks", num);
+            ctx.success("Set {0} center block(s)", changed);
         }
     };
 

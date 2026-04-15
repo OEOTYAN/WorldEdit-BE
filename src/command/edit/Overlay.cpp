@@ -1,7 +1,7 @@
 #include "command/edit/CommandHelpers.h"
 
 namespace we {
-REG_CMD(edit, set, "Set blocks in the region to a specific block type") {
+REG_CMD(edit, overlay, "Set the top blocks of the region") {
     struct Params {
         CommandBlockName block{};
         CommandRawText   pattern;
@@ -20,19 +20,18 @@ REG_CMD(edit, set, "Set blocks in the region to a specific block type") {
         auto& blockSource = dim->getBlockSourceFromMainChunkSource();
 
         auto record = std::make_shared<HistoryRecord>();
-        region->forEachBlockInRegion([&](BlockPos const& pos) {
-            auto blockOp = pattern->pickBlock(pos);
-            if (blockOp.empty()) {
-                return;
-            }
-            record->record(*lctx, blockSource, {pos, std::move(blockOp)});
+        forEachTopBlock(*region, blockSource, [&](BlockPos pos) {
+            pos.y++;
+            if (region->contains(pos))
+                record->record(*lctx, blockSource, {pos, pattern->pickBlock(pos)});
         });
-        auto num = record->apply(*lctx, blockSource);
+
+        auto changed = record->apply(*lctx, blockSource);
         lctx->history.addRecord(std::move(record));
-        if (num == 0) {
+        if (changed == 0) {
             ctx.success("No blocks were changed");
         } else {
-            ctx.success("Set {0} blocks", num);
+            ctx.success("Overlayed {0} block(s)", changed);
         }
     };
 
