@@ -88,6 +88,13 @@ compileExpr(PatternExpr const& expr, ExprState& state) {
     return compiled;
 }
 
+static std::optional<double> getLiteralExprValue(PatternExpr const& expr) {
+    if (auto literal = std::get_if<PatternLiteralExpr>(&expr)) {
+        return literal->value;
+    }
+    return std::nullopt;
+}
+
 static std::pair<std::string, Block::BlockStateValueType>
 compileState(PatternBlockStateAst const& state) {
     return {
@@ -109,6 +116,25 @@ makeCachedSimpleBlock(optional_ref<Block const> block, std::string const& descri
     return PatternCachedSimpleBlock{block};
 }
 
+static ll::Expected<PatternCachedSimpleBlock>
+makeCachedLegacyIdBlock(double legacyIdValue, std::optional<double> dataValue) {
+    auto legacyId = static_cast<uint>(std::llround(legacyIdValue));
+    if (legacyIdValue < 0) {
+        legacyId = 0;
+    }
+
+    ushort data = 0;
+    if (dataValue) {
+        auto rounded = std::llround(*dataValue);
+        data         = static_cast<ushort>(rounded < 0 ? 0 : rounded);
+    }
+
+    return makeCachedSimpleBlock(
+        Block::tryGetFromRegistry(legacyId, data),
+        fmt::format("{}:{}", legacyId, data)
+    );
+}
+
 static ll::Expected<PatternCompiledSimpleBlock>
 compileSimpleBlock(PatternSimpleBlockSpec const& spec, ExprState& state) {
     if (auto named = std::get_if<PatternNamedBlockAst>(&spec)) {
@@ -117,8 +143,8 @@ compileSimpleBlock(PatternSimpleBlockSpec const& spec, ExprState& state) {
                 std::vector<std::pair<std::string, Block::BlockStateValueType>>
                     blockStates;
                 blockStates.reserve(named->states.size());
-                for (auto const& state : named->states) {
-                    blockStates.push_back(compileState(state));
+                for (auto const& blockState : named->states) {
+                    blockStates.push_back(compileState(blockState));
                 }
                 return makeCachedSimpleBlock(
                     Block::tryGetFromRegistry(named->name, blockStates),
@@ -149,6 +175,12 @@ compileSimpleBlock(PatternSimpleBlockSpec const& spec, ExprState& state) {
         return compiled;
     }
     if (auto expr = std::get_if<PatternDynamicBlockAst>(&spec)) {
+        auto literalSource = getLiteralExprValue(expr->source);
+        auto literalData   = expr->data ? getLiteralExprValue(*expr->data) : std::nullopt;
+        if (literalSource && (!expr->data || literalData)) {
+            return makeCachedLegacyIdBlock(*literalSource, literalData);
+        }
+
         PatternDynamicSimpleBlock compiled;
         auto                      blockExpr = compileExpr(expr->source, state);
         if (!blockExpr) {

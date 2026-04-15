@@ -26,6 +26,18 @@ bool isBlockNamespaceStartChar(char ch) {
     return std::isalpha(static_cast<unsigned char>(ch)) || ch == '_';
 }
 
+bool isDigitString(std::string_view input) {
+    if (input.empty()) {
+        return false;
+    }
+    for (char ch : input) {
+        if (!std::isdigit(static_cast<unsigned char>(ch))) {
+            return false;
+        }
+    }
+    return true;
+}
+
 bool isTrivialNbtStringStartChar(char ch) {
     return std::isalpha(static_cast<unsigned char>(ch)) || ch == '_';
 }
@@ -324,6 +336,17 @@ ll::Expected<PatternSimpleBlockSpec> parseSimpleBlock(std::string_view input) {
         block.source = PatternRuntimeExpr{std::string(value.substr(1, *end - 1))};
         return block;
     }
+    if (isDigitString(value)) {
+        double literal = 0.0;
+        auto   begin   = value.data();
+        auto   end     = value.data() + value.size();
+        auto   result  = std::from_chars(begin, end, literal);
+        if (result.ec == std::errc{} && result.ptr == end) {
+            PatternDynamicBlockAst block;
+            block.source = PatternLiteralExpr{literal};
+            return block;
+        }
+    }
     if (value.front() == '{') {
         auto end = findMatching(value, 0, '{', '}');
         if (!end) {
@@ -393,6 +416,34 @@ parseSimpleBlockWithTail(std::string_view input) {
             PatternSimpleBlockSpec{std::move(block)},
             trimView(value.substr(*end + 1))
         };
+    }
+    if (!value.empty() && std::isdigit(static_cast<unsigned char>(value.front()))) {
+        size_t i = 0;
+        while (i < value.size() && std::isdigit(static_cast<unsigned char>(value[i]))) {
+            ++i;
+        }
+
+        PatternDynamicBlockAst block;
+        double                 literal = 0.0;
+        auto                   begin   = value.data();
+        auto                   end     = value.data() + i;
+        auto                   result  = std::from_chars(begin, end, literal);
+        if (result.ec != std::errc{} || result.ptr != end) {
+            return ll::makeStringError("invalid numeric block id");
+        }
+        block.source = PatternLiteralExpr{literal};
+
+        auto tail = trimView(value.substr(i));
+        if (!tail.empty() && tail.front() == ':') {
+            auto data = parseOptionalData(tail.substr(1));
+            if (!data) {
+                return ll::forwardError(data.error());
+            }
+            block.data = std::move(data.value());
+            tail       = std::string_view{};
+        }
+
+        return std::pair{PatternSimpleBlockSpec{std::move(block)}, trimView(tail)};
     }
     if (value.front() == '{') {
         auto end = findMatching(value, 0, '{', '}');

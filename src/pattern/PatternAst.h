@@ -30,7 +30,7 @@ struct PatternNamedBlockAst {
 };
 
 struct PatternDynamicBlockAst {
-    PatternRuntimeExpr         source;
+    PatternExpr                source;
     std::optional<PatternExpr> data;
 };
 
