@@ -40,23 +40,22 @@ ll::Expected<> CylinderRegion::deserialize(CompoundTag const& tag) {
         });
 }
 
-void CylinderRegion::forEachBlockUVInRegion(
-    std::function<void(BlockPos const&, double, double)>&& todo
-) const {
-    forEachBlockInRegion([&](BlockPos const& pos) {
+ll::coro::Generator<std::tuple<BlockPos, double, double>>
+CylinderRegion::forEachBlockUVInRegion() const {
+    for (auto const& pos : Region::forEachBlockInRegion()) {
         int counts = 0;
         for (auto& calPos : pos.getNeighbors()) {
             counts += contains(calPos);
         }
         if (counts < 6) {
-            todo(
+            co_yield {
                 pos,
                 (atan2(pos.z - center.z, pos.x - center.x) + std::numbers::pi)
                     / (std::numbers::pi * 2),
                 (pos.y - minY) / static_cast<double>(maxY - minY)
-            );
+            };
         }
-    });
+    }
 }
 
 void CylinderRegion::updateBoundingBox() {

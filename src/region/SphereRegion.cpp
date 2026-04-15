@@ -51,10 +51,9 @@ void SphereRegion::updateBoundingBox() {
     );
 }
 
-void SphereRegion::forEachBlockUVInRegion(
-    std::function<void(BlockPos const&, double, double)>&& todo
-) const {
-    forEachBlockInRegion([todo = std::move(todo), this](BlockPos const& pos) {
+ll::coro::Generator<std::tuple<BlockPos, double, double>>
+SphereRegion::forEachBlockUVInRegion() const {
+    for (auto const& pos : Region::forEachBlockInRegion()) {
         int counts = 0;
         for (auto& calPos : pos.getNeighbors()) {
             counts += contains(calPos);
@@ -62,7 +61,7 @@ void SphereRegion::forEachBlockUVInRegion(
         if (counts < 6) {
             double y = (pos.y - center.y) / radius;
             if (std::abs(y) > 0.8) {
-                todo(
+                co_yield {
                     pos,
                     (std::atan2(pos.z - center.z, pos.x - center.x) + std::numbers::pi)
                         / (std::numbers::pi * 2),
@@ -82,17 +81,17 @@ void SphereRegion::forEachBlockUVInRegion(
                             1.0
                         )
                     ) * std::numbers::inv_pi
-                );
+                };
             } else {
-                todo(
+                co_yield {
                     pos,
                     (atan2(pos.z - center.z, pos.x - center.x) + std::numbers::pi)
                         / (std::numbers::pi * 2),
                     acos(-y) * std::numbers::inv_pi
-                );
+                };
             }
         }
-    });
+    }
 }
 
 bool SphereRegion::setMainPos(BlockPos const& pos) {

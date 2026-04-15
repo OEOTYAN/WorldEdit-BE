@@ -37,7 +37,7 @@ REG_CMD(edit, rope, "Draw catenary curves between region vertices") {
         int    radius      = static_cast<int>(params.radius);
         ll::SmallDenseSet<BlockPos> tmp;
 
-        region->forEachLine([&](BlockPos const& pos1, BlockPos const& pos2) {
+        for (auto const& [pos1, pos2] : region->forEachLine()) {
             if (extraLength > 1.0 && (pos1.x != pos2.x || pos1.z != pos2.z)) {
                 double d   = pos1.distanceTo(pos2);
                 double dh  = std::sqrt(pow2(pos1.x - pos2.x) + pow2(pos1.z - pos2.z));
@@ -78,16 +78,16 @@ REG_CMD(edit, rope, "Draw catenary curves between region vertices") {
                     }
                 }
             } else {
-                plotLine(pos1, pos2, [&](BlockPos const& pos) {
+                for (auto const& pos : plotLine(pos1, pos2)) {
                     auto box = BoundingBox(pos - (radius + 1), pos + (radius + 1));
                     for (auto const& posk : box.forEachPos()) {
                         if ((pos - posk).length() <= 0.5f + params.radius) {
                             tmp.insert(posk);
                         }
                     }
-                });
+                }
             }
-        });
+        }
 
         if (params.args.hollow) {
             ll::SmallDenseSet<BlockPos> tmp2;
@@ -101,10 +101,7 @@ REG_CMD(edit, rope, "Draw catenary curves between region vertices") {
 
         auto record = std::make_shared<HistoryRecord>();
         for (auto const& pos : tmp) {
-            auto blockOp = pattern->pickBlock(pos);
-            if (!blockOp.empty()) {
-                record->record(*lctx, blockSource, {pos, std::move(blockOp)});
-            }
+            record->record(*lctx, blockSource, {pos, pattern->pickBlock(pos)});
         }
 
         auto changed = record->apply(*lctx, blockSource);

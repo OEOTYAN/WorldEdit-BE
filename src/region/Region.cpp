@@ -15,43 +15,37 @@ ll::Expected<> Region::serialize(CompoundTag& tag) const {
         .and_then([&, this]() {
             return ll::reflection::serialize_to(tag["boundingBox"], boundingBox);
         })
-        .and_then([&, this]() { return ll::reflection::serialize_to(tag["dim"], dim.id); }
-        );
+        .and_then([&, this]() {
+            return ll::reflection::serialize_to(tag["dim"], dim.id);
+        });
 }
 ll::Expected<> Region::deserialize(CompoundTag const&) { return {}; }
 
-void Region::forEachBlockInRegion(std::function<void(BlockPos const&)>&& todo) const {
+ll::coro::Generator<BlockPos> Region::forEachBlockInRegion() const {
     for (auto&& pos : boundingBox.forEachPos()) {
         if (contains(pos)) {
-            todo(pos);
+            co_yield pos;
         }
     }
 }
-void Region::forEachBlockUVInRegion(
-    std::function<void(BlockPos const&, double, double)>&& todo
-) const {
+ll::coro::Generator<std::tuple<BlockPos, double, double>>
+Region::forEachBlockUVInRegion() const {
     auto size = boundingBox.getSideLength();
     if (size.x == 1) {
-        Region::forEachBlockInRegion(
-            [todo = std::move(todo), this, &size](BlockPos const& pos) {
-                auto localPos = pos - boundingBox.min;
-                todo(pos, (localPos.z + 0.5) / size.z, (localPos.y + 0.5) / size.y);
-            }
-        );
+        for (auto const& pos : Region::forEachBlockInRegion()) {
+            auto localPos = pos - boundingBox.min;
+            co_yield {pos, (localPos.z + 0.5) / size.z, (localPos.y + 0.5) / size.y};
+        }
     } else if (size.z == 1) {
-        Region::forEachBlockInRegion(
-            [todo = std::move(todo), this, &size](BlockPos const& pos) {
-                auto localPos = pos - boundingBox.min;
-                todo(pos, (localPos.x + 0.5) / size.x, (localPos.y + 0.5) / size.y);
-            }
-        );
+        for (auto const& pos : Region::forEachBlockInRegion()) {
+            auto localPos = pos - boundingBox.min;
+            co_yield {pos, (localPos.x + 0.5) / size.x, (localPos.y + 0.5) / size.y};
+        }
     } else {
-        Region::forEachBlockInRegion(
-            [todo = std::move(todo), this, &size](BlockPos const& pos) {
-                auto localPos = pos - boundingBox.min;
-                todo(pos, (localPos.x + 0.5) / size.x, (localPos.z + 0.5) / size.z);
-            }
-        );
+        for (auto const& pos : Region::forEachBlockInRegion()) {
+            auto localPos = pos - boundingBox.min;
+            co_yield {pos, (localPos.x + 0.5) / size.x, (localPos.z + 0.5) / size.z};
+        }
     }
 }
 

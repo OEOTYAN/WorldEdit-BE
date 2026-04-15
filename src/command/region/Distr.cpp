@@ -1,7 +1,7 @@
 #include "command/CommandMacro.h"
+#include "utils/BlockUtils.h"
 #include <mc/world/Container.h>
 #include <mc/world/item/ItemStack.h>
-#include "utils/BlockUtils.h"
 #include <mc/world/level/block/Block.h>
 #include <numeric>
 
@@ -138,7 +138,7 @@ REG_CMD(region, distr, "show region block distribution or count matched blocks")
         auto& source = dim->getBlockSourceFromMainChunkSource();
 
         DistrCounter counter;
-        region->forEachBlockInRegion([&](BlockPos const& pos) {
+        for (auto const& pos : region->forEachBlockInRegion()) {
             auto const& block      = source.getBlock(pos);
             auto const& extraBlock = source.getExtraBlock(pos);
 
@@ -158,13 +158,13 @@ REG_CMD(region, distr, "show region block distribution or count matched blocks")
             }
 
             if (!args.container_included) {
-                return;
+                continue;
             }
 
             if (auto container = source.tryGetContainer(pos)) {
                 count_container(*container, counter, args.detailed, itemFilter);
             }
-        });
+        }
         counter.report(ctx);
     };
 

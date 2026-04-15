@@ -20,13 +20,9 @@ REG_CMD(edit, set, "Set blocks in the region to a specific block type") {
         auto& blockSource = dim->getBlockSourceFromMainChunkSource();
 
         auto record = std::make_shared<HistoryRecord>();
-        region->forEachBlockInRegion([&](BlockPos const& pos) {
-            auto blockOp = pattern->pickBlock(pos);
-            if (blockOp.empty()) {
-                return;
-            }
-            record->record(*lctx, blockSource, {pos, std::move(blockOp)});
-        });
+        for (auto const& pos : region->forEachBlockInRegion()) {
+            record->record(*lctx, blockSource, {pos, pattern->pickBlock(pos)});
+        }
         auto num = record->apply(*lctx, blockSource);
         lctx->history.addRecord(std::move(record));
         if (num == 0) {

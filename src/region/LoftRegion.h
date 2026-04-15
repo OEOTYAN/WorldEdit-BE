@@ -55,21 +55,14 @@ public:
 
     bool removePoint(std::optional<BlockPos> const&) override;
 
-    void forEachBlockInRegion(std::function<void(BlockPos const&)>&&) const override;
+    ll::coro::Generator<BlockPos> forEachBlockInRegion() const override;
 
-    void forEachBlockUVInRegion(
-        std::function<void(BlockPos const&, double, double)>&&
-    ) const override;
+    ll::coro::Generator<std::tuple<BlockPos, double, double>>
+    forEachBlockUVInRegion() const override;
 
-    void forEachBlockInLines(
-        int                                         num,
-        bool                                        isX,
-        const std::function<void(BlockPos const&)>& todo
-    );
+    ll::coro::Generator<BlockPos> forEachBlockInLines(int num, bool isX) const;
 
-    void forEachLine(
-        std::function<void(BlockPos const&, BlockPos const&)>&& todo
-    ) const override;
+    ll::coro::Generator<std::pair<BlockPos, BlockPos>> forEachLine() const override;
 
     bool setMainPos(BlockPos const& pos) override;
 

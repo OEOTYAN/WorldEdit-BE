@@ -28,30 +28,34 @@ REG_CMD(edit, rep, "Replace matching blocks in the region") {
         auto beforeName = HashedString{params.blockBefore.getBlockName()};
 
         auto record = std::make_shared<HistoryRecord>();
-        region->forEachBlockInRegion([&](BlockPos const& pos) {
+        for (auto const& pos : region->forEachBlockInRegion()) {
             auto& current = blockSource.getBlock(pos);
             if (current.getBlockType().mNameInfo->mFullName->getHash()
                 != beforeName.getHash()) {
-                return;
+                continue;
             }
             if (!beforeStates->empty()) {
                 if (!current.mSerializationId->contains("states", Tag::Type::Compound)) {
-                    return;
+                    continue;
                 }
                 auto& states = current.mSerializationId->at("states").get<CompoundTag>();
+                bool  mismatch = false;
                 for (auto& [name, val] : *beforeStates) {
                     if (!states.contains(name)) {
-                        return;
+                        mismatch = true;
+                        break;
                     }
                     CompoundTagVariant v{};
                     std::visit([&](auto& p) { v = p; }, val);
                     if (states.at(name) != v) {
-                        return;
+                        mismatch = true;
+                        break;
                     }
                 }
+                if (mismatch) continue;
             }
             record->record(*lctx, blockSource, {pos, pattern->pickBlock(pos)});
-        });
+        }
 
         auto changed = record->apply(*lctx, blockSource);
         lctx->history.addRecord(std::move(record));

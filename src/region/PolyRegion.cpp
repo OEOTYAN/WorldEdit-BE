@@ -87,9 +87,8 @@ bool PolyRegion::removePoint(std::optional<BlockPos> const& pos) {
     updateBoundingBox();
     return true;
 }
-void PolyRegion::forEachBlockUVInRegion(
-    std::function<void(BlockPos const&, double, double)>&& todo
-) const {
+ll::coro::Generator<std::tuple<BlockPos, double, double>>
+PolyRegion::forEachBlockUVInRegion() const {
     auto faceNum = points.size() - 1;
     for (int i = 0; i < faceNum; ++i) {
         auto pos0 = points[i];
@@ -109,11 +108,11 @@ void PolyRegion::forEachBlockUVInRegion(
                 int tipx = x0 + domstep * sx;
                 int tipz = (int)round(z0 + domstep / ((double)dx) * ((double)dz) * sz);
                 for (int y = minY; y <= maxY; ++y) {
-                    todo(
+                    co_yield {
                         BlockPos(tipx, y, tipz),
                         (i + (static_cast<double>(domstep) / dx)) / faceNum,
                         static_cast<double>(y - minY) / (maxY - minY)
-                    );
+                    };
                 }
             }
         } else {
@@ -121,11 +120,11 @@ void PolyRegion::forEachBlockUVInRegion(
                 int tipx = (int)round(x0 + domstep / ((double)dz) * ((double)dx) * sx);
                 int tipz = z0 + domstep * sz;
                 for (int y = minY; y <= maxY; ++y) {
-                    todo(
+                    co_yield {
                         BlockPos(tipx, y, tipz),
                         (i + (static_cast<double>(domstep) / dz)) / faceNum,
                         static_cast<double>(y - minY) / (maxY - minY)
-                    );
+                    };
                 }
             }
         }

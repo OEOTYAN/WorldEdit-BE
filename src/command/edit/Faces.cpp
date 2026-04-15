@@ -20,16 +20,16 @@ REG_CMD(edit, faces, "Fill the outer faces of the region") {
         auto& blockSource = dim->getBlockSourceFromMainChunkSource();
 
         auto record = std::make_shared<HistoryRecord>();
-        region->forEachBlockInRegion([&](BlockPos const& pos) {
+        for (auto const& pos : region->forEachBlockInRegion()) {
             int neighborCount = 0;
             for (auto const& neighbor : pos.getNeighbors()) {
                 neighborCount += region->contains(neighbor) ? 1 : 0;
             }
             if (neighborCount >= 6) {
-                return;
+                continue;
             }
             record->record(*lctx, blockSource, {pos, pattern->pickBlock(pos)});
-        });
+        }
 
         auto changed = record->apply(*lctx, blockSource);
         lctx->history.addRecord(std::move(record));

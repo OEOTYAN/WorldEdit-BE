@@ -20,11 +20,11 @@ REG_CMD(edit, overlay, "Set the top blocks of the region") {
         auto& blockSource = dim->getBlockSourceFromMainChunkSource();
 
         auto record = std::make_shared<HistoryRecord>();
-        forEachTopBlock(*region, blockSource, [&](BlockPos pos) {
+        for (auto pos : forEachTopBlock(*region, blockSource)) {
             pos.y++;
             if (region->contains(pos))
                 record->record(*lctx, blockSource, {pos, pattern->pickBlock(pos)});
-        });
+        }
 
         auto changed = record->apply(*lctx, blockSource);
         lctx->history.addRecord(std::move(record));

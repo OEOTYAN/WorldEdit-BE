@@ -34,8 +34,8 @@ inline std::shared_ptr<Pattern> preparePattern(
     }
     return *parsedPattern;
 }
-template <typename Visitor>
-inline void forEachTopBlock(Region const& region, BlockSource& bs, Visitor&& visitor) {
+inline ll::coro::Generator<BlockPos>
+forEachTopBlock(Region const& region, BlockSource& bs) {
     auto box = region.getBoundingBox();
     for (int x = box.min.x; x <= box.max.x; ++x) {
         for (int z = box.min.z; z <= box.max.z; ++z) {
@@ -46,7 +46,7 @@ inline void forEachTopBlock(Region const& region, BlockSource& bs, Visitor&& vis
             }
             BlockPos pos{x, top, z};
             if (region.contains(pos)) {
-                visitor(pos);
+                co_yield pos;
             }
         }
     }

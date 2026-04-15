@@ -45,8 +45,7 @@ public:
 
     std::vector<std::string> getInfo() const override;
 
-    void
-    forEachLine(std::function<void(BlockPos const&, BlockPos const&)>&&) const override;
+    ll::coro::Generator<std::pair<BlockPos, BlockPos>> forEachLine() const override;
 
     bool setMainPos(BlockPos const&) override;
 

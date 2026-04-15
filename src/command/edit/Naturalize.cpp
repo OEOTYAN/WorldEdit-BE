@@ -22,7 +22,7 @@ REG_CMD(edit, naturalize, "Replace exposed stone with grass and dirt") {
         auto bottom =
             std::max(region->getBoundingBox().min.y, (int)dim->mHeightRange->mMin);
 
-        forEachTopBlock(*region, blockSource, [&](BlockPos pos) {
+        for (auto pos : forEachTopBlock(*region, blockSource)) {
             while (pos.y >= bottom) {
                 int dist = 0;
                 while (pos.y >= bottom) {
@@ -47,7 +47,7 @@ REG_CMD(edit, naturalize, "Replace exposed stone with grass and dirt") {
                     pos.y--;
                 }
             }
-        });
+        }
         auto changed = record->apply(*lctx, blockSource);
         lctx->history.addRecord(std::move(record));
         if (changed == 0) {

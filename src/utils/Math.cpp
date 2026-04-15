@@ -1,11 +1,7 @@
 #include "Math.h"
 
 namespace we {
-void plotLine(
-    BlockPos const&                             pos0,
-    BlockPos const&                             pos1,
-    std::function<void(BlockPos const&)> const& todo
-) {
+ll::coro::Generator<BlockPos> plotLine(BlockPos const& pos0, BlockPos const& pos1) {
     int x0 = pos0.x;
     int y0 = pos0.y;
     int z0 = pos0.z;
@@ -25,24 +21,23 @@ void plotLine(
             int tipx = x0 + domstep * sx;
             int tipy = (int)round(y0 + domstep / ((double)dx) * ((double)dy) * sy);
             int tipz = (int)round(z0 + domstep / ((double)dx) * ((double)dz) * sz);
-            todo(BlockPos(tipx, tipy, tipz));
+            co_yield BlockPos(tipx, tipy, tipz);
         }
     } else if (dMax == dy) {
         for (int domstep = 0; domstep <= dy; domstep++) {
             int tipx = (int)round(x0 + domstep / ((double)dy) * ((double)dx) * sx);
             int tipy = y0 + domstep * sy;
             int tipz = (int)round(z0 + domstep / ((double)dy) * ((double)dz) * sz);
-            todo(BlockPos(tipx, tipy, tipz));
+            co_yield BlockPos(tipx, tipy, tipz);
         }
     } else {
         for (int domstep = 0; domstep <= dz; domstep++) {
             int tipx = (int)round(x0 + domstep / ((double)dz) * ((double)dx) * sx);
             int tipy = (int)round(y0 + domstep / ((double)dz) * ((double)dy) * sy);
             int tipz = z0 + domstep * sz;
-            todo(BlockPos(tipx, tipy, tipz));
+            co_yield BlockPos(tipx, tipy, tipz);
         }
     }
-    return;
 }
 
 double getCatenaryParameter(double d, double h, double l) {

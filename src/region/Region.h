@@ -62,13 +62,14 @@ public:
 
     virtual std::vector<std::string> getInfo() const { return {}; }
 
-    virtual void forEachBlockInRegion(std::function<void(BlockPos const&)>&&) const;
+    virtual ll::coro::Generator<BlockPos> forEachBlockInRegion() const;
 
-    virtual void
-    forEachBlockUVInRegion(std::function<void(BlockPos const&, double, double)>&&) const;
+    virtual ll::coro::Generator<std::tuple<BlockPos, double, double>>
+    forEachBlockUVInRegion() const;
 
-    virtual void
-    forEachLine(std::function<void(BlockPos const&, BlockPos const&)>&&) const {}
+    virtual ll::coro::Generator<std::pair<BlockPos, BlockPos>> forEachLine() const {
+        co_return;
+    }
 
     virtual bool removePoint(std::optional<BlockPos> const&) { return false; }
 };

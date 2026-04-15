@@ -34,7 +34,9 @@ REG_CMD(region, sel, "manipulate region") {
             auto   boxSize = box.max - box.min + 1;
             auto   center  = region->getCenter();
             size_t actual  = 0;
-            region->forEachBlockInRegion([&](BlockPos const&) { ++actual; });
+            for (auto const& _ : region->forEachBlockInRegion()) {
+                ++actual;
+            }
 
             ctx.success("type: {}", magic_enum::enum_name(region->getType()));
             ctx.success("dimension: {}", region->getDim().id);

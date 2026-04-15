@@ -214,37 +214,31 @@ BoundingBox LoftRegion::getBoundingBox() const {
     return boundingBox;
 }
 
-void LoftRegion::forEachBlockInRegion(std::function<void(BlockPos const&)>&& todo) const {
+ll::coro::Generator<BlockPos> LoftRegion::forEachBlockInRegion() const {
     buildCache();
     for (auto& pos : posCache) {
-        todo(pos.first);
+        co_yield pos.first;
     }
 }
 
-void LoftRegion::forEachBlockUVInRegion(
-    std::function<void(BlockPos const&, double, double)>&& todo
-) const {
+ll::coro::Generator<std::tuple<BlockPos, double, double>>
+LoftRegion::forEachBlockUVInRegion() const {
     buildCache();
     for (auto& pos : posCache) {
-        todo(pos.first, pos.second.first, pos.second.second);
+        co_yield {pos.first, pos.second.first, pos.second.second};
     }
 }
 
-void LoftRegion::forEachBlockInLines(
-    int                                         num,
-    bool                                        isX,
-    const std::function<void(BlockPos const&)>& todo
-) {
+ll::coro::Generator<BlockPos> LoftRegion::forEachBlockInLines(int num, bool isX) const {
     if (num < 2) {
-        return;
+        co_return;
     }
     buildCache();
     if (isX) {
         if (loftPoints.size() == 1) {
             for (auto& pos : posCache) {
-                todo(pos.first);
+                co_yield pos.first;
             }
-            return;
         } else {
             ll::SmallDenseSet<BlockPos> posCache2;
             for (int i = 0; i < num; ++i) {
@@ -262,9 +256,8 @@ void LoftRegion::forEachBlockInLines(
                 }
             }
             for (auto& pos : posCache2) {
-                todo(pos);
+                co_yield pos;
             }
-            return;
         }
     } else {
         ll::SmallDenseSet<BlockPos> posCache2;
@@ -285,20 +278,17 @@ void LoftRegion::forEachBlockInLines(
         }
 
         for (auto& pos : posCache2) {
-            todo(pos);
+            co_yield pos;
         }
-        return;
     }
 }
-void LoftRegion::forEachLine(
-    std::function<void(BlockPos const&, BlockPos const&)>&& todo
-) const {
+ll::coro::Generator<std::pair<BlockPos, BlockPos>> LoftRegion::forEachLine() const {
     for (auto const& track : loftPoints) {
         if (track.size() <= 1) {
             continue;
         }
         for (size_t i = 0; i + 1 < track.size(); ++i) {
-            todo(track[i], track[i + 1]);
+            co_yield {track[i], track[i + 1]};
         }
     }
 }

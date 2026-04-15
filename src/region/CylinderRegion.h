@@ -37,9 +37,8 @@ public:
 
     bool shift(BlockPos const&) override;
 
-    void forEachBlockUVInRegion(
-        std::function<void(BlockPos const&, double, double)>&& todo
-    ) const override;
+    ll::coro::Generator<std::tuple<BlockPos, double, double>>
+    forEachBlockUVInRegion() const override;
 
     bool setMainPos(BlockPos const&) override;
 

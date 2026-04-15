@@ -32,7 +32,7 @@ REG_CMD(edit, hollow, "Hollow out the region") {
         try {
             ll::SmallDenseSet<BlockPos> tmp;
 
-            region->forEachBlockInRegion([&](BlockPos const& pos) {
+            for (auto const& pos : region->forEachBlockInRegion()) {
                 int counts = 0;
                 for (auto const& calPos : pos.getNeighbors()) {
                     if (!blockSource.getBlock(calPos).isAir()) {
@@ -42,7 +42,7 @@ REG_CMD(edit, hollow, "Hollow out the region") {
                 if (counts == 6) {
                     tmp.insert(pos);
                 }
-            });
+            }
 
             for (int manhattan = 0; manhattan < params.num; ++manhattan) {
                 ll::SmallDenseSet<BlockPos> tmp2;
@@ -55,14 +55,11 @@ REG_CMD(edit, hollow, "Hollow out the region") {
             }
 
             auto record = std::make_shared<HistoryRecord>();
-            region->forEachBlockInRegion([&](BlockPos const& pos) {
+            for (auto const& pos : region->forEachBlockInRegion()) {
                 if (tmp.contains(pos)) {
-                    auto blockOp = pattern->pickBlock(pos);
-                    if (!blockOp.empty()) {
-                        record->record(*lctx, blockSource, {pos, std::move(blockOp)});
-                    }
+                    record->record(*lctx, blockSource, {pos, pattern->pickBlock(pos)});
                 }
-            });
+            }
 
             auto changed = record->apply(*lctx, blockSource);
             lctx->history.addRecord(std::move(record));

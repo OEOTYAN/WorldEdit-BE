@@ -36,8 +36,8 @@ REG_CMD(edit, line, "Draw lines between region vertices") {
 
         ll::SmallDenseSet<BlockPos> tmp;
 
-        region->forEachLine([&](BlockPos const& pos1, BlockPos const& pos2) {
-            plotLine(pos1, pos2, [&](BlockPos const& pos) {
+        for (auto const& [pos1, pos2] : region->forEachLine()) {
+            for (auto const& pos : plotLine(pos1, pos2)) {
                 if (params.radius == 0) {
                     tmp.insert(pos);
                 } else {
@@ -48,8 +48,8 @@ REG_CMD(edit, line, "Draw lines between region vertices") {
                         }
                     }
                 }
-            });
-        });
+            }
+        }
 
         if (params.args.hollow) {
             ll::SmallDenseSet<BlockPos> tmp2;

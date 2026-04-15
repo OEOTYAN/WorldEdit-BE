@@ -274,12 +274,10 @@ bool ConvexRegion::contains(BlockPos const& pos) const {
     return containsRaw(pos);
 }
 
-void ConvexRegion::forEachLine(
-    std::function<void(BlockPos const&, BlockPos const&)>&& todo
-) const {
+ll::coro::Generator<std::pair<BlockPos, BlockPos>> ConvexRegion::forEachLine() const {
     if (indexedVertices.size() > 1) {
         for (int i = 0; i < indexedVertices.size() - 1; ++i) {
-            todo(indexedVertices[i].data, indexedVertices[i + 1].data);
+            co_yield {indexedVertices[i].data, indexedVertices[i + 1].data};
         }
     }
 }

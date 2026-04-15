@@ -23,16 +23,12 @@ REG_CMD(edit, walls, "Fill the walls of the region") {
         auto record = std::make_shared<HistoryRecord>();
         if (region->getType() == RegionType::Loft) {
             auto* loft = static_cast<LoftRegion*>(region.get());
-            loft->forEachBlockInLines(2, true, [&](BlockPos const& pos) {
-                auto blockOp = pattern->pickBlock(pos);
-                if (blockOp.empty()) {
-                    return;
-                }
-                record->record(*lctx, blockSource, {pos, std::move(blockOp)});
-            });
+            for (auto const& pos : loft->forEachBlockInLines(2, true)) {
+                record->record(*lctx, blockSource, {pos, pattern->pickBlock(pos)});
+            }
         } else {
             auto box = region->getBoundingBox();
-            region->forEachBlockInRegion([&](BlockPos const& pos) {
+            for (auto const& pos : region->forEachBlockInRegion()) {
                 int neighborCount = 0;
                 for (auto const& neighbor : pos.getNeighbors()) {
                     if (neighbor.y < box.min.y || neighbor.y > box.max.y) {
@@ -42,14 +38,10 @@ REG_CMD(edit, walls, "Fill the walls of the region") {
                     neighborCount += region->contains(neighbor) ? 1 : 0;
                 }
                 if (neighborCount >= 6) {
-                    return;
+                    continue;
                 }
-                auto blockOp = pattern->pickBlock(pos);
-                if (blockOp.empty()) {
-                    return;
-                }
-                record->record(*lctx, blockSource, {pos, std::move(blockOp)});
-            });
+                record->record(*lctx, blockSource, {pos, pattern->pickBlock(pos)});
+            }
         }
 
         auto changed = record->apply(*lctx, blockSource);

@@ -166,9 +166,7 @@ bool CuboidRegion::shift(BlockPos const& change) {
     return true;
 }
 
-void CuboidRegion::forEachLine(
-    std::function<void(BlockPos const&, BlockPos const&)>&& todo
-) const {
-    todo(mainPos, offPos);
+ll::coro::Generator<std::pair<BlockPos, BlockPos>> CuboidRegion::forEachLine() const {
+    co_yield {mainPos, offPos};
 }
 } // namespace we

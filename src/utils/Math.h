@@ -45,11 +45,7 @@ inline T signedSqrt(T const& a) {
     return sign(a) * std::sqrt(std::abs(a));
 }
 
-void plotLine(
-    BlockPos const&                             pos0,
-    BlockPos const&                             pos1,
-    std::function<void(BlockPos const&)> const& todo
-);
+ll::coro::Generator<BlockPos> plotLine(BlockPos const& pos0, BlockPos const& pos1);
 
 double getCatenaryParameter(double d, double h, double l);
 
