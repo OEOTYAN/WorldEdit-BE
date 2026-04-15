@@ -67,6 +67,10 @@ public:
         const std::function<void(BlockPos const&)>& todo
     );
 
+    void forEachLine(
+        std::function<void(BlockPos const&, BlockPos const&)>&& todo
+    ) const override;
+
     bool setMainPos(BlockPos const& pos) override;
 
     bool setOffPos(BlockPos const& pos) override;

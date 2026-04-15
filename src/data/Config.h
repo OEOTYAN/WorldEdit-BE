@@ -44,6 +44,9 @@ struct Config {
             CmdSetting overlay{};
             CmdSetting naturalize{};
             CmdSetting buildercfg{};
+            CmdSetting line{};
+            CmdSetting rope{};
+            CmdSetting hollow{};
         } edit;
         std::string custom_cmd_prefix = "";
     } commands{};

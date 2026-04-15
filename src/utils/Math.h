@@ -51,6 +51,8 @@ void plotLine(
     std::function<void(BlockPos const&)> const& todo
 );
 
+double getCatenaryParameter(double d, double h, double l);
+
 inline std::pair<Vec3, Vec3> branchlessONB(Vec3 const& n) {
     float const sign = std::copysign(1.0f, n.z);
     float const a    = -1.0f / (sign + n.z);

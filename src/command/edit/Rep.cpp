@@ -72,5 +72,9 @@ REG_CMD(edit, rep, "Replace matching blocks in the region") {
         .required("beforeStates")
         .required("pattern")
         .execute(CmdCtxBuilder{} | executor);
+    command.overload<Params>()
+        .required("blockBefore")
+        .required("block")
+        .execute(CmdCtxBuilder{} | executor);
 }
 } // namespace we

@@ -18,13 +18,7 @@ ll::Expected<> HandPattern::prepare(CommandContextRef const& ctx) {
         return ll::makeStringError("#hand requires holding a block item");
     }
 
-    handBlock = selectedItem.mBlock;
+    block = selectedItem.mBlock;
     return {};
-}
-
-BlockOperation HandPattern::pickBlock(BlockPos const&) const {
-    BlockOperation operation;
-    operation.block = handBlock;
-    return operation;
 }
 } // namespace we

@@ -4,6 +4,7 @@
 #include "data/HistoryRecord.h"
 #include "pattern/Pattern.h"
 #include "pattern/PatternParser.h"
+#include "utils/BlockUtils.h"
 
 namespace we {
 inline std::shared_ptr<Pattern> preparePattern(
@@ -39,7 +40,7 @@ inline void forEachTopBlock(Region const& region, BlockSource& bs, Visitor&& vis
     for (int x = box.min.x; x <= box.max.x; ++x) {
         for (int z = box.min.z; z <= box.max.z; ++z) {
             int top = region.getHeighest({x, z});
-            while (top >= box.min.y&&bs.getBlock({x, top, z}).isAir()) top--;
+            while (top >= box.min.y && bs.getBlock({x, top, z}).isAir()) top--;
             if (top < box.min.y) {
                 continue;
             }
@@ -49,6 +50,15 @@ inline void forEachTopBlock(Region const& region, BlockSource& bs, Visitor&& vis
             }
         }
     }
+}
+
+template <typename Set>
+inline int countNeighbors6InSet(BlockPos const& pos, Set const& set) {
+    int count = 0;
+    for (auto const& n : pos.getNeighbors()) {
+        if (set.contains(n)) ++count;
+    }
+    return count;
 }
 
 } // namespace we

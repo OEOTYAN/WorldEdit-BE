@@ -290,6 +290,19 @@ void LoftRegion::forEachBlockInLines(
         return;
     }
 }
+void LoftRegion::forEachLine(
+    std::function<void(BlockPos const&, BlockPos const&)>&& todo
+) const {
+    for (auto const& track : loftPoints) {
+        if (track.size() <= 1) {
+            continue;
+        }
+        for (size_t i = 0; i + 1 < track.size(); ++i) {
+            todo(track[i], track[i + 1]);
+        }
+    }
+}
+
 bool LoftRegion::setMainPos(BlockPos const& pos) {
     loftPoints.push_back({pos});
     updateBoundingBox();

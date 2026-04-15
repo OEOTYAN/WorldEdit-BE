@@ -45,7 +45,7 @@ void plotLine(
     return;
 }
 
-inline double getCatenaryParameter(double d, double h, double l) {
+double getCatenaryParameter(double d, double h, double l) {
     const double m = sqrt(l * l - h * h) / d;
     double       x = acosh(m) + 1;
     ll::meta::unroll<10>([&]<size_t>() {
